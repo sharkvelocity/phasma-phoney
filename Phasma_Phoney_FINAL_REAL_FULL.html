@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phasma-Phoney: FINAL FULL</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: monospace;
+      color: white;
+      background: #000 url('data:image/jpeg;base64,[REAL_BG_IMAGE_DATA]') no-repeat center center fixed;
+      background-size: cover;
+    }
+    #ui-box {
+      background: rgba(0,0,0,0.9);
+      color: white;
+      padding: 24px;
+      width: 75%;
+      margin: 60px auto;
+      border-radius: 12px;
+    }
+    button {
+      padding: 12px 20px;
+      margin: 6px;
+      font-size: 16px;
+    }
+    .yellow { color: yellow; }
+    .white { color: white; }
+  </style>
+</head>
+<body>
+  <div id="ui-box">
+    <div id="mainMenu">
+      <h1 class="yellow">Phasma-Phoney</h1>
+      <button onclick="showDifficulty()">Start Investigation</button>
+    </div>
+    <div id="gamePhase" style="display:none;"></div>
+  </div>
+
+  <script>
+    const difficulties = [
+      "0. Custom", "1. Amateur", "2. Intermediate", "3. Professional",
+      "4. Nightmare", "5. Insanity", "6. Custom Extreme"
+    ];
+
+    function showDifficulty() {
+      document.getElementById("mainMenu").style.display = "none";
+      let phase = document.getElementById("gamePhase");
+      phase.style.display = "block";
+      phase.innerHTML = "<p class='yellow'>Select your difficulty:</p>";
+      difficulties.forEach((label, index) => {
+        const btn = document.createElement("button");
+        btn.textContent = label;
+        btn.onclick = () => beginInvestigation(index);
+        phase.appendChild(btn);
+      });
+    }
+
+    function beginInvestigation(difficulty) {
+      const phase = document.getElementById("gamePhase");
+      phase.innerHTML = `<p class='yellow'>DIFFICULTY: ${difficulties[difficulty]}</p>`;
+      phase.innerHTML += "<p>🚌 Arriving in van... Lights are dim. Loading investigation modules...</p>";
+
+      // Random cursed possession logic
+      const cursed = ["Ouija Board", "Haunted Mirror", "Music Box", "Voodoo Doll", "Summoning Circle", "Monkey Paw"];
+      const locations = ["Garage", "Basement", "Living Room", "Attic", "Master Bedroom", "Closet"];
+      const chosen = cursed[Math.floor(Math.random() * cursed.length)];
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      phase.innerHTML += `<p>Cursed Possession: <b>${chosen}</b> (hidden somewhere in the <b>${location}</b>)</p>`;
+
+      // Inventory setup
+      phase.innerHTML += "<p>Your Inventory:</p><ul><li>🕯 4 Candles</li><li>💨 4 Smudge Sticks</li><li>🌡 Thermometer</li><li>🎤 Parabolic Mic</li></ul>";
+
+      phase.innerHTML += "<p class='yellow'>Enter the house and begin your search...</p>";
+    }
+  </script>
+</body>
+</html>

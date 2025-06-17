@@ -1,0 +1,570 @@
+<!-- Filename: Phasma_Phoney_FINAL.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Phasma Phoney</title>
+<style>
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #000;
+        color: #0f0;
+        font-family: "Courier New", Courier, monospace;
+    }
+    #game-container {
+        position: relative;
+        width: 1024px;
+        height: 768px;
+        margin: 50px auto;
+        background-color: #000;
+        overflow: hidden;
+    }
+    .frame-corner, .frame-edge {
+        position: absolute;
+        background-color: transparent;
+    }
+    .frame-corner.tl { top: 0; left: 0; width: 50px; height: 50px; }
+    .frame-corner.tr { top: 0; right: 0; width: 50px; height: 50px; }
+    .frame-corner.bl { bottom: 0; left: 0; width: 50px; height: 50px; }
+    .frame-corner.br { bottom: 0; right: 0; width: 50px; height: 50px; }
+    .frame-edge.top { top: 0; left: 50px; right: 50px; height: 50px; }
+    .frame-edge.bottom { bottom: 0; left: 50px; right: 50px; height: 50px; }
+    .frame-edge.left { left: 0; top: 50px; bottom: 50px; width: 50px; }
+    .frame-edge.right { right: 0; top: 50px; bottom: 50px; width: 50px; }
+    #screen {
+        position: absolute;
+        top: 50px;
+        left: 50px;
+        right: 50px;
+        bottom: 50px;
+        background-color: #000;
+        background-size: cover;
+        background-position: center;
+        overflow-y: auto;
+        padding: 10px;
+        box-sizing: border-box;
+    }
+    #screen::-webkit-scrollbar {
+        width: 8px;
+    }
+    #screen::-webkit-scrollbar-track {
+        background: #000;
+    }
+    #screen::-webkit-scrollbar-thumb {
+        background: #0a0;
+    }
+    #main-menu {
+        text-align: center;
+    }
+    #main-menu h1 {
+        color: #0f0;
+        margin-bottom: 20px;
+        font-size: 2em;
+    }
+    #main-menu p {
+        margin: 10px 0;
+    }
+    #main-menu button {
+        background-color: #000;
+        color: #0f0;
+        border: 2px solid #0f0;
+        padding: 10px 20px;
+        font-size: 1em;
+        cursor: pointer;
+        font-family: "Courier New", Courier, monospace;
+        margin: 5px;
+    }
+    #main-menu button:hover {
+        background-color: #0f0;
+        color: #000;
+    }
+    #game-output .log-line {
+        margin: 5px 0;
+        white-space: pre-wrap;
+    }
+    #input-container {
+        margin-top: 10px;
+    }
+    #command-input {
+        width: 100%;
+        padding: 5px;
+        background-color: #000;
+        color: #0f0;
+        border: 2px solid #0f0;
+        font-family: "Courier New", Courier, monospace;
+        font-size: 1em;
+    }
+    #command-input:focus {
+        outline: none;
+        border-color: #0f0;
+    }
+    #game-ui {
+        display: none;
+    }
+</style>
+</head>
+<body>
+<div id="game-container">
+    <!-- Frame images (base64 data to be inserted for each src) -->
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-corner-tl" class="frame-corner tl" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-edge-top" class="frame-edge top" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-corner-tr" class="frame-corner tr" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-edge-right" class="frame-edge right" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-corner-br" class="frame-corner br" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-edge-bottom" class="frame-edge bottom" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-corner-bl" class="frame-corner bl" />
+    <img src="data:image/jpeg;base64,<!--BASE64_DATA-->" alt="frame-edge-left" class="frame-edge left" />
+    <div id="screen" style="background-image: url('data:image/jpeg;base64,<!--BASE64_DATA-->');">
+        <!-- Main Menu -->
+        <div id="main-menu">
+            <h1>Phasma Phoney</h1>
+            <p id="intro-dialogue"></p>
+            <button id="start-button">Start</button>
+            <div id="difficulty-select" style="display:none;">
+                <p>Select Difficulty:</p>
+                <button class="diff-button" data-difficulty="Amateur">Amateur</button>
+                <button class="diff-button" data-difficulty="Intermediate">Intermediate</button>
+                <button class="diff-button" data-difficulty="Professional">Professional</button>
+                <button class="diff-button" data-difficulty="Nightmare">Nightmare</button>
+            </div>
+            <div id="continue-section" style="display:none;">
+                <button id="continue-button">Continue</button>
+                <button id="newgame-button">New Game</button>
+            </div>
+        </div>
+        <!-- Game UI (hidden until game starts) -->
+        <div id="game-ui">
+            <div id="game-output"></div>
+            <div id="input-container">
+                <input type="text" id="command-input" placeholder="Type a command..." autocomplete="off" />
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+(function(){
+    const ghostTypes = [
+        { name: "Spirit", evidences: ["EMF", "Spirit Box", "Ghost Writing"] },
+        { name: "Wraith", evidences: ["EMF", "Spirit Box", "D.O.T.S"], noFootprints: true },
+        { name: "Phantom", evidences: ["Spirit Box", "Fingerprints", "D.O.T.S"] },
+        { name: "Poltergeist", evidences: ["Spirit Box", "Fingerprints", "Ghost Writing"] },
+        { name: "Banshee", evidences: ["Fingerprints", "Ghost Orb", "D.O.T.S"] },
+        { name: "Jinn", evidences: ["EMF", "Fingerprints", "Freezing"] },
+        { name: "Mare", evidences: ["Spirit Box", "Ghost Orb", "Ghost Writing"] },
+        { name: "Revenant", evidences: ["Ghost Orb", "Ghost Writing", "Freezing"] },
+        { name: "Shade", evidences: ["EMF", "Ghost Writing", "Freezing"], shy: true },
+        { name: "Demon", evidences: ["Fingerprints", "Ghost Writing", "Freezing"], huntsEarly: true },
+        { name: "Yurei", evidences: ["Ghost Orb", "Freezing", "D.O.T.S"] },
+        { name: "Oni", evidences: ["EMF", "Freezing", "D.O.T.S"], active: true },
+        { name: "Yokai", evidences: ["Spirit Box", "Ghost Orb", "D.O.T.S"] },
+        { name: "Hantu", evidences: ["Fingerprints", "Ghost Orb", "Freezing"] },
+        { name: "Goryo", evidences: ["EMF", "Fingerprints", "D.O.T.S"] },
+        { name: "Myling", evidences: ["EMF", "Fingerprints", "Ghost Writing"] },
+        { name: "Onryo", evidences: ["Spirit Box", "Ghost Orb", "Freezing"] },
+        { name: "The Twins", evidences: ["EMF", "Spirit Box", "Freezing"] },
+        { name: "Raiju", evidences: ["EMF", "Ghost Orb", "D.O.T.S"] },
+        { name: "Obake", evidences: ["EMF", "Fingerprints", "Ghost Orb"] },
+        { name: "The Mimic", evidences: ["Spirit Box", "Fingerprints", "Freezing", "Ghost Orb"] },
+        { name: "Moroi", evidences: ["Spirit Box", "Ghost Writing", "Freezing"] },
+        { name: "Deogen", evidences: ["Spirit Box", "Ghost Writing", "D.O.T.S"] },
+        { name: "Thaye", evidences: ["Ghost Orb", "Ghost Writing", "D.O.T.S"] }
+    ];
+    const locations = ["Van", "Entrance", "Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
+    let currentGhost = null;
+    let ghostRoom = null;
+    let difficulty = null;
+    let playerLocation = "Van";
+    let evidencesFound = [];
+    let gameActive = false;
+    let ghostHunting = false;
+    let crucifixPlaced = false;
+    let crucifixUsed = false;
+    let smudgeCount = 2;
+    let turnCount = 0;
+    let huntCooldown = 0;
+    let gameLog = [];
+    const difficultySettings = {
+        "Amateur": { huntThreshold: 20, huntChance: 0.10 },
+        "Intermediate": { huntThreshold: 15, huntChance: 0.15 },
+        "Professional": { huntThreshold: 10, huntChance: 0.20 },
+        "Nightmare": { huntThreshold: 5, huntChance: 0.25 }
+    };
+    const introDialogues = [
+        "Deo: I've got a bad feeling about this one...",
+        "Deo: Remember, this isn't a ghost story - it's real.",
+        "Deo: Stay on your toes out there.",
+        "Deo: Let's see what we're dealing with this time.",
+        "Deo: Keep the lights on and the sanity high!"
+    ];
+    function log(text) {
+        const outputElem = document.getElementById("game-output");
+        const lineElem = document.createElement("div");
+        lineElem.className = "log-line";
+        lineElem.textContent = text;
+        outputElem.appendChild(lineElem);
+        gameLog.push(text);
+        outputElem.scrollTop = outputElem.scrollHeight;
+    }
+    function saveGame() {
+        try {
+            const state = {
+                gameActive,
+                currentGhostName: currentGhost ? currentGhost.name : null,
+                ghostRoom,
+                difficulty,
+                playerLocation,
+                evidencesFound,
+                crucifixPlaced,
+                crucifixUsed,
+                smudgeCount,
+                turnCount,
+                huntCooldown,
+                gameLog
+            };
+            localStorage.setItem("PhasmaPhoneySave", JSON.stringify(state));
+        } catch(e) {
+            console.warn("Save failed:", e);
+        }
+    }
+    function loadGameState() {
+        try {
+            const state = JSON.parse(localStorage.getItem("PhasmaPhoneySave"));
+            if (state && state.gameActive) {
+                gameActive = true;
+                difficulty = state.difficulty;
+                playerLocation = state.playerLocation;
+                evidencesFound = state.evidencesFound || [];
+                crucifixPlaced = state.crucifixPlaced;
+                crucifixUsed = state.crucifixUsed;
+                smudgeCount = state.smudgeCount;
+                turnCount = state.turnCount;
+                huntCooldown = state.huntCooldown;
+                ghostHunting = false;
+                if (state.currentGhostName) {
+                    currentGhost = ghostTypes.find(g => g.name === state.currentGhostName);
+                }
+                ghostRoom = state.ghostRoom;
+                gameLog = state.gameLog || [];
+                return true;
+            }
+        } catch(e) {
+            console.warn("Load failed:", e);
+        }
+        return false;
+    }
+    function clearSavedGame() {
+        localStorage.removeItem("PhasmaPhoneySave");
+    }
+    function startGame(selectedDifficulty) {
+        difficulty = selectedDifficulty;
+        currentGhost = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
+        ghostRoom = locations[Math.floor(Math.random() * (locations.length - 1)) + 1];
+        playerLocation = "Van";
+        evidencesFound = [];
+        crucifixPlaced = false;
+        crucifixUsed = false;
+        smudgeCount = 2;
+        turnCount = 0;
+        huntCooldown = 0;
+        ghostHunting = false;
+        gameLog = [];
+        gameActive = true;
+        const outputElem = document.getElementById("game-output");
+        outputElem.innerHTML = "";
+        log(`Deo: Alright, we've arrived. The equipment is in the back. Let's get started on a ${difficulty} investigation.`);
+        log("You are in the van, parked outside the haunted location.");
+        log("Use the equipment to gather evidence and identify the ghost. Type commands to investigate.");
+        saveGame();
+    }
+    function endGame(resultMessage) {
+        log(resultMessage);
+        log("Game over.");
+        gameActive = false;
+        clearSavedGame();
+        const outputElem = document.getElementById("game-output");
+        const returnBtn = document.createElement("button");
+        returnBtn.textContent = "Return to Main Menu";
+        returnBtn.onclick = () => {
+            showMainMenu();
+        };
+        const wrapper = document.createElement("div");
+        wrapper.appendChild(returnBtn);
+        outputElem.appendChild(wrapper);
+    }
+    function handleCommand(input) {
+        const command = input.trim().toLowerCase();
+        if (!command) return;
+        if (ghostHunting) {
+            if (command.includes("smudge")) {
+                if (smudgeCount > 0) {
+                    smudgeCount--;
+                    log("You light a smudge stick, filling the area with cleansing smoke. The ghost's presence seems to retreat momentarily.");
+                    ghostHunting = false;
+                    huntCooldown = 3;
+                } else {
+                    log("You reach for a smudge stick, but you have none left!");
+                    log("The ghost catches up to you!");
+                    endGame("The ghost killed you before you could escape.");
+                    return;
+                }
+            } else if (command.includes("hide")) {
+                log("You scramble to hide, holding your breath as the ghost roams nearby...");
+                log("After a tense moment, the ghost disappears. You've survived the hunt.");
+                ghostHunting = false;
+                huntCooldown = 3;
+            } else {
+                log("Panicking, you try to " + command + ", but it's too late.");
+                endGame("The ghost caught and killed you.");
+                return;
+            }
+            saveGame();
+            return;
+        }
+        if (command.startsWith("move") || command.startsWith("go ")) {
+            let dest = command.replace(/^(move|go|go to|move to)\s*/, "").trim();
+            dest = dest.replace(/^the\s+/, "");
+            dest = dest.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+            if (locations.map(loc => loc.toLowerCase()).includes(dest.toLowerCase())) {
+                playerLocation = locations.find(loc => loc.toLowerCase() === dest.toLowerCase());
+                log(`You move to the ${playerLocation}.`);
+                if (playerLocation === ghostRoom) {
+                    log("You feel a chill in the air here...");
+                    if (currentGhost.evidences.includes("Freezing")) {
+                        log("You can see your breath in the freezing temperature.");
+                        if (!evidencesFound.includes("Freezing")) evidencesFound.push("Freezing");
+                    }
+                }
+                if (playerLocation.toLowerCase() === "van") {
+                    log("You are safe in the van. You can review your journal or grab more equipment.");
+                }
+            } else {
+                log("Unknown location. Try another area.");
+            }
+        } else if (command.startsWith("use ")) {
+            const item = command.replace(/^use\s+/, "").trim();
+            if (item.includes("emf")) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("EMF")) {
+                    log("The EMF Reader lights up to level 5!");
+                    if (!evidencesFound.includes("EMF")) evidencesFound.push("EMF");
+                } else {
+                    log("The EMF Reader shows no significant reading.");
+                }
+            } else if (item.includes("spirit") && item.includes("box")) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("Spirit Box")) {
+                    log("A distorted voice speaks through the Spirit Box: \"...I'm here...\"");
+                    if (!evidencesFound.includes("Spirit Box")) evidencesFound.push("Spirit Box");
+                } else {
+                    log("The Spirit Box remains silent.");
+                }
+            } else if ((item.includes("uv") || item.includes("fingerprint"))) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("Fingerprints")) {
+                    log("You shine the UV light and discover a glowing handprint!");
+                    if (!evidencesFound.includes("Fingerprints")) evidencesFound.push("Fingerprints");
+                } else {
+                    log("You scan with the UV light but find no fingerprints.");
+                }
+            } else if (item.includes("orb") || item.includes("camera")) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("Ghost Orb")) {
+                    log("Through the camera, you spot a ghostly orb floating in the air.");
+                    if (!evidencesFound.includes("Ghost Orb")) evidencesFound.push("Ghost Orb");
+                } else {
+                    log("You don't see any ghost orbs on the camera.");
+                }
+            } else if (item.includes("dots") || item.includes("projector")) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("D.O.T.S")) {
+                    log("A translucent silhouette darts across the D.O.T.S projector!");
+                    if (!evidencesFound.includes("D.O.T.S")) evidencesFound.push("D.O.T.S");
+                } else {
+                    log("You watch the D.O.T.S, but nothing appears.");
+                }
+            } else if (item.includes("book") || item.includes("writing")) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("Ghost Writing")) {
+                    log("You place the journal... After a moment, ghostly writing scribbles appear on the pages!");
+                    if (!evidencesFound.includes("Ghost Writing")) evidencesFound.push("Ghost Writing");
+                } else {
+                    log("You place a journal on the floor. It remains empty.");
+                }
+            } else if (item.includes("thermometer") || item.includes("temperature")) {
+                if (playerLocation === ghostRoom && currentGhost.evidences.includes("Freezing")) {
+                    log("The thermometer reads below 0°C. It's freezing here!");
+                    if (!evidencesFound.includes("Freezing")) evidencesFound.push("Freezing");
+                } else {
+                    log("The temperature is normal.");
+                }
+            } else if (item.includes("smudge")) {
+                if (smudgeCount > 0) {
+                    smudgeCount--;
+                    log("You burn a smudge stick. The area fills with cleansing smoke. The ghost should calm down for a bit.");
+                    huntCooldown += 2;
+                } else {
+                    log("You're out of smudge sticks.");
+                }
+            } else if (item.includes("crucifix")) {
+                if (!crucifixUsed) {
+                    crucifixUsed = true;
+                    if (playerLocation === ghostRoom) {
+                        crucifixPlaced = true;
+                        log("You place a crucifix on the ground. It should prevent the ghost from hunting in this room.");
+                    } else {
+                        log("You hold up a crucifix, but nothing seems to happen.");
+                    }
+                } else {
+                    log("You've already used your crucifix.");
+                }
+            } else if (item.includes("salt")) {
+                if (playerLocation === ghostRoom) {
+                    if (currentGhost.name === "Wraith") {
+                        log("You sprinkle salt. After a while, the salt remains untouched. No footsteps at all.");
+                    } else {
+                        log("You sprinkle salt. A moment later, you notice footprints in the salt.");
+                    }
+                } else {
+                    log("You scatter some salt around, but nothing happens here.");
+                }
+            } else {
+                log("You can't use that right now.");
+            }
+        } else if (command.startsWith("guess ")) {
+            const guessName = command.replace(/^guess\s+/, "").trim().toLowerCase();
+            const matchedGhost = ghostTypes.find(g => g.name.toLowerCase() === guessName || g.name.toLowerCase().includes(guessName));
+            if (!matchedGhost) {
+                log("Unknown ghost type. Check your spelling.");
+            } else {
+                if (matchedGhost.name === currentGhost.name) {
+                    endGame(`You guessed correctly! The ghost was a ${currentGhost.name}.`);
+                } else {
+                    endGame(`Your guess is wrong. The ghost was a ${currentGhost.name}.`);
+                }
+                return;
+            }
+        } else if (command === "help") {
+            log("Commands: move to [location], use [item], guess [ghost], hide (during hunt). Items include EMF, Spirit Box, UV light, camera, D.O.T.S, book, thermometer, smudge stick, crucifix, salt.");
+        } else {
+            log("I don't understand that command.");
+        }
+        turnCount++;
+        if (!ghostHunting && Math.random() < 0.1) {
+            if (currentGhost.active && Math.random() < 0.5) {
+                log("An object suddenly flies off a shelf!");
+            } else {
+                const events = [
+                    "The lights flicker briefly.",
+                    "A door creaks nearby.",
+                    "You hear a faint whisper.",
+                    "A sudden chill runs down your spine.",
+                    "You hear a soft humming sound."
+                ];
+                if (currentGhost.name === "Banshee") {
+                    events.push("You hear a distant musical hum, almost like a song.");
+                }
+                log(events[Math.floor(Math.random() * events.length)]);
+            }
+        }
+        if (huntCooldown > 0) {
+            huntCooldown--;
+        } else {
+            const settings = difficultySettings[difficulty] || difficultySettings["Amateur"];
+            if (turnCount >= settings.huntThreshold) {
+                let huntChance = settings.huntChance;
+                if (turnCount > settings.huntThreshold * 2) {
+                    huntChance *= 2;
+                }
+                if (currentGhost.huntsEarly) {
+                    huntChance *= 1.5;
+                }
+                if (currentGhost.shy && playerLocation === ghostRoom) {
+                    huntChance = 0;
+                }
+                if (playerLocation.toLowerCase() === "van") {
+                    huntChance = 0;
+                }
+                if (Math.random() < huntChance) {
+                    if (crucifixPlaced && playerLocation === ghostRoom) {
+                        crucifixPlaced = false;
+                        log("The crucifix on the floor suddenly burns and crumbles! A hunt was just prevented.");
+                    } else {
+                        ghostHunting = true;
+                        log("Your flashlight starts flickering! The ghost is hunting!");
+                    }
+                }
+            }
+        }
+        saveGame();
+    }
+    function showMainMenu() {
+        const mainMenu = document.getElementById("main-menu");
+        const gameUI = document.getElementById("game-ui");
+        mainMenu.style.display = "block";
+        gameUI.style.display = "none";
+        const startBtnElem = document.getElementById("start-button");
+        startBtnElem.style.display = "inline-block";
+        startBtnElem.textContent = "Start";
+        document.getElementById("difficulty-select").style.display = "none";
+        document.getElementById("continue-section").style.display = "none";
+        document.getElementById("game-output").innerHTML = "";
+    }
+    const startBtn = document.getElementById("start-button");
+    const diffButtons = document.querySelectorAll(".diff-button");
+    const continueBtn = document.getElementById("continue-button");
+    const newGameBtn = document.getElementById("newgame-button");
+    const commandInput = document.getElementById("command-input");
+    startBtn.addEventListener("click", () => {
+        if (localStorage.getItem("PhasmaPhoneySave")) {
+            document.getElementById("continue-section").style.display = "block";
+            startBtn.style.display = "none";
+        } else {
+            document.getElementById("difficulty-select").style.display = "block";
+            startBtn.style.display = "none";
+        }
+    });
+    continueBtn.addEventListener("click", () => {
+        const loaded = loadGameState();
+        if (loaded) {
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("game-ui").style.display = "block";
+            const outputElem = document.getElementById("game-output");
+            outputElem.innerHTML = "";
+            gameLog.forEach(line => {
+                const lineElem = document.createElement("div");
+                lineElem.className = "log-line";
+                lineElem.textContent = line;
+                outputElem.appendChild(lineElem);
+            });
+            outputElem.scrollTop = outputElem.scrollHeight;
+        } else {
+            document.getElementById("continue-section").style.display = "none";
+            document.getElementById("difficulty-select").style.display = "block";
+        }
+    });
+    newGameBtn.addEventListener("click", () => {
+        document.getElementById("continue-section").style.display = "none";
+        document.getElementById("difficulty-select").style.display = "block";
+    });
+    diffButtons.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const diff = btn.getAttribute("data-difficulty");
+            document.getElementById("main-menu").style.display = "none";
+            document.getElementById("game-ui").style.display = "block";
+            startGame(diff);
+        });
+    });
+    commandInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+            e.preventDefault();
+            const value = commandInput.value;
+            if (value) {
+                handleCommand(value);
+                commandInput.value = "";
+            }
+        }
+    });
+    document.getElementById("intro-dialogue").textContent = introDialogues[Math.floor(Math.random() * introDialogues.length)];
+    if (localStorage.getItem("PhasmaPhoneySave")) {
+        startBtn.textContent = "Load Game";
+    }
+})();
+</script>
+</body>
+</html>
