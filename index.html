@@ -2,67 +2,83 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="./styles.css" />
-  <link rel="manifest" href="./manifest.json" />
-  <script>
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./service-worker.js');
-    }
-  </script>
+  <script type="module" src="./game.js"></script>
 </head>
 <body>
-  <div id="main-container">
-    <header id="title-header">
-      <h1>Phasma-Phoney</h1>
-    </header>
+  <!-- Startup -->
+  <div id="startup-logo" class="fullscreen black-bg fade-in">
+    <img src="./logo.png" alt="Phasmophoney Logo" class="startup-image" />
+  </div>
 
-    <section id="narrator-box" class="narrator"></section>
+  <!-- Main Game UI -->
+  <div id="game-container" class="hidden">
 
-    <div id="game-ui">
-      <div id="left-controls">
-        <div id="static-buttons">
-          <button class="option-btn" data-key="1">1</button>
-          <button class="option-btn" data-key="2">2</button>
-          <button class="option-btn" data-key="3">3</button>
-          <button class="option-btn" data-key="4">4</button>
-          <button class="option-btn" data-key="5">5</button>
-        </div>
-        <div id="special-buttons">
-          <button id="journal-btn">Journal</button>
-          <button id="guess-btn">Guess</button>
-          <button id="use-item-btn">Use Item</button>
-          <button id="van-btn">Return to Van</button>
-        </div>
+    <!-- Central Narrator Readout -->
+    <div id="narrator-box" class="narrator-box">Welcome, Investigator.</div>
+
+    <!-- Left Side (Button 1–5 + Journal/Guess/Item/Van) -->
+    <div id="left-panel">
+      <div id="static-options">
+        <button id="option-1">1</button>
+        <button id="option-2">2</button>
+        <button id="option-3">3</button>
+        <button id="option-4">4</button>
+        <button id="option-5">5</button>
       </div>
-
-      <div id="center-display">
-        <div id="minimap"></div>
-        <div id="action-buttons" class="button-container"></div>
-      </div>
-
-      <div id="right-controls">
-        <div id="directional-buttons">
-          <button class="move-btn" data-dir="North">↑</button>
-          <button class="move-btn" data-dir="West">←</button>
-          <button class="move-btn" data-dir="South">↓</button>
-          <button class="move-btn" data-dir="East">→</button>
-        </div>
+      <div id="support-options">
+        <button id="toggle-journal">📓</button>
+        <button id="guess-ghost">👻</button>
+        <button id="use-item">🎒</button>
+        <button id="return-van">🚐</button>
       </div>
     </div>
 
-    <div id="journal-screen" class="hidden">
-      <textarea id="journal-entry" placeholder="Your notes..."></textarea>
-      <button id="close-journal">Close Journal</button>
-    </div>
-
-    <div id="guess-popup" class="popup hidden">
-      <div id="guess-options"></div>
-      <button id="close-guess">Cancel</button>
+    <!-- Right Side (Movement Compass + Map) -->
+    <div id="right-panel">
+      <div id="mini-map">Mini-map will show here</div>
+      <div id="movement-buttons">
+        <button id="move-north">⬆️</button><br>
+        <button id="move-west">⬅️</button>
+        <button id="move-east">➡️</button><br>
+        <button id="move-south">⬇️</button>
+      </div>
     </div>
   </div>
 
-  <script type="module" src="./game.js"></script>
+  <!-- Journal Sidebar -->
+  <div id="journal-screen" class="hidden">
+    <h2>Journal</h2>
+    <textarea id="journal-entry" placeholder="Type your notes here..."></textarea>
+    <button id="save-journal">Save</button>
+  </div>
+
+  <!-- Ghost Guess Popup -->
+  <div id="guess-popup" class="hidden popup">
+    <h3>Guess the Ghost</h3>
+    <div id="guess-options"></div>
+    <button id="close-guess-popup">Cancel</button>
+  </div>
+
+  <script>
+    window.addEventListener('load', () => {
+      const logo = document.getElementById('startup-logo');
+      const container = document.getElementById('game-container');
+      setTimeout(() => {
+        logo.classList.add('fade-out');
+        setTimeout(() => {
+          logo.style.display = 'none';
+          container.classList.remove('hidden');
+          if (typeof startGame === 'function') {
+            startGame();
+          } else {
+            import('./game.js').then(mod => mod.startGame());
+          }
+        }, 2000);
+      }, 2000);
+    });
+  </script>
 </body>
 </html>
