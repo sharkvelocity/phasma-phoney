@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Phasma-Phoney (Fixed)</title>
+  <style>
+    body {
+      background-color: black;
+      color: cyan;
+      font-family: monospace;
+    }
+    #ada {
+      width: 80%;
+      height: 400px;
+      border: 2px solid cyan;
+      padding: 10px;
+      margin: auto;
+      overflow-y: auto;
+      background-color: #000;
+    }
+    #input {
+      width: 80%;
+      margin: auto;
+      display: flex;
+      padding-top: 10px;
+    }
+    input[type="text"] {
+      flex: 1;
+      background: #000;
+      color: cyan;
+      border: 1px solid cyan;
+      padding: 5px;
+    }
+    button {
+      background: #000;
+      color: cyan;
+      border: 1px solid cyan;
+      padding: 5px 10px;
+    }
+  </style>
+</head>
+<body>
+  <h2 style="text-align:center;">Deo: "Welcome back, PhasmaPhoney."</h2>
+  <div id="ada">ADA: I'm here to assist you. Type 'start', 'map', 'move', or 'guess'.</div>
+  <div id="input">
+    <input type="text" id="command" placeholder="Type a command..." />
+    <button onclick="sendCommand()">Send</button>
+  </div>
+
+  <script>
+    function sendCommand() {
+      var cmd = document.getElementById("command").value.trim().toLowerCase();
+      var ada = document.getElementById("ada");
+      ada.innerHTML += "<br><span style='color:white'>You: " + cmd + "</span>";
+      switch(cmd) {
+        case "start":
+          ada.innerHTML += "<br>ADA: The game has begun.";
+          break;
+        case "move":
+          ada.innerHTML += "<br>ADA: You move deeper into the house.";
+          break;
+        case "map":
+          ada.innerHTML += "<br>ADA: Here's your current location.";
+          break;
+        case "guess":
+          ada.innerHTML += "<br>ADA: Who do you think it is?";
+          break;
+        default:
+          ada.innerHTML += "<br>ADA: Unknown command.";
+      }
+      document.getElementById("command").value = "";
+    }
+  </script>
+</body>
+</html>
