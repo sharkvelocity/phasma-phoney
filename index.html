@@ -2,82 +2,66 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Phasma-Phoney</title>
-  <link rel="stylesheet" href="./styles.css/" />
-  <script type="module" src="./game.js/"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <!-- Startup -->
-  <div id="startup-logo" class="fullscreen black-bg fade-in">
-    <img src="./logo.png" alt="Phasmophoney Logo" class="startup-image" />
+  <div id="narrator-box" class="narrator-box">Loading...</div>
+
+  <!-- Action Buttons Left -->
+  <div id="left-buttons" class="button-group left">
+    <button id="btn1">1</button>
+    <button id="btn2">2</button>
+    <button id="btn3">3</button>
+    <button id="btn4">4</button>
+    <button id="btn5">5</button>
+
+    <!-- Journal, Guess, Use Item, Van -->
+    <button id="journal-btn">Journal</button>
+    <button id="guess-btn">Guess</button>
+    <button id="item-btn">Use Item</button>
+    <button id="van-btn">Van</button>
   </div>
 
-  <!-- Main Game UI -->
-  <div id="game-container" class="hidden">
-
-    <!-- Central Narrator Readout -->
-    <div id="narrator-box" class="narrator-box">Welcome, Investigator.</div>
-
-    <!-- Left Side (Button 1–5 + Journal/Guess/Item/Van) -->
-    <div id="left-panel">
-      <div id="static-options">
-        <button id="option-1">1</button>
-        <button id="option-2">2</button>
-        <button id="option-3">3</button>
-        <button id="option-4">4</button>
-        <button id="option-5">5</button>
-      </div>
-      <div id="support-options">
-        <button id="toggle-journal">📓</button>
-        <button id="guess-ghost">👻</button>
-        <button id="use-item">🎒</button>
-        <button id="return-van">🚐</button>
-      </div>
-    </div>
-
-    <!-- Right Side (Movement Compass + Map) -->
-    <div id="right-panel">
-      <div id="mini-map">Mini-map will show here</div>
-      <div id="movement-buttons">
-        <button id="move-north">⬆️</button><br>
-        <button id="move-west">⬅️</button>
-        <button id="move-east">➡️</button><br>
-        <button id="move-south">⬇️</button>
-      </div>
+  <!-- Compass Arrows and Minimap -->
+  <div id="right-ui" class="button-group right">
+    <div id="minimap" class="minimap">[MiniMap]</div>
+    <div class="arrow-grid">
+      <button id="move-north">↑</button>
+      <div></div>
+      <button id="move-south">↓</button>
+      <button id="move-west">←</button>
+      <button id="move-east">→</button>
     </div>
   </div>
 
   <!-- Journal Sidebar -->
-  <div id="journal-screen" class="hidden">
+  <div id="journal-sidebar" class="sidebar hidden">
     <h2>Journal</h2>
-    <textarea id="journal-entry" placeholder="Type your notes here..."></textarea>
-    <button id="save-journal">Save</button>
+    <textarea id="journal-entry" placeholder="Your notes..."></textarea>
+    <button id="close-journal">Close Journal</button>
   </div>
 
-  <!-- Ghost Guess Popup -->
-  <div id="guess-popup" class="hidden popup">
-    <h3>Guess the Ghost</h3>
+  <!-- Guess Ghost Popup -->
+  <div id="guess-popup" class="popup hidden">
+    <h2>Guess the Ghost</h2>
     <div id="guess-options"></div>
-    <button id="close-guess-popup">Cancel</button>
+    <button id="cancel-guess">Cancel</button>
   </div>
 
-  <script>
-    window.addEventListener('load', () => {
-      const logo = document.getElementById('startup-logo');
-      const container = document.getElementById('game-container');
-      setTimeout(() => {
-        logo.classList.add('fade-out');
-        setTimeout(() => {
-          logo.style.display = 'none';
-          container.classList.remove('hidden');
-          if (typeof startGame === 'function') {
-            startGame();
-          } else {
-            import('./game.js').then(mod => mod.startGame());
-          }
-        }, 2000);
-      }, 2000);
+  <!-- Main Game Script -->
+  <script type="module">
+    import { startGame } from './game.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      try {
+        console.log('[Phasma-Phoney] Initializing game...');
+        startGame();
+      } catch (err) {
+        console.error('[Phasma-Phoney] Game failed to load:', err);
+        document.getElementById('narrator-box').innerText = 'Error loading game. Check console.';
+      }
     });
   </script>
 </body>
