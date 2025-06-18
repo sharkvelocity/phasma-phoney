@@ -2,8 +2,13 @@
 
 import { initializeMap, movePlayer, getCurrentRoom } from './map.js';
 import { initializeJournal, updateJournal } from './journal.js';
-import { getGhostActivity, isHunting, triggerHunt, endHunt, getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem } from './mechanics.js';
-import { getRandomGhost, initializeGhost } from './ghosts.js';
+import {
+  getGhostActivity, isHunting, triggerHunt, endHunt,
+  getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem
+} from './mechanics.js';
+import {
+  getRandomGhost, initializeGhost, performBehavior
+} from './ghosts.js';
 import { displayNarratorText } from './dialogueEngine.js';
 import { addItemToInventory, getInventory, useItem } from './inventory.js';
 
@@ -50,7 +55,7 @@ function renderOptions() {
 }
 
 function investigate() {
-  const result = ghost.performBehavior(getCurrentRoom());
+  const result = performBehavior(getCurrentRoom());
   updateJournal(result);
   displayNarratorText(result);
   updateHUD();
