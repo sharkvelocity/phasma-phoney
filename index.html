@@ -142,14 +142,15 @@
       log.scrollTop = log.scrollHeight;
     }
 
-    window.displayNarratorText = (text) => {
+    export function displayNarratorText(input) {
       const narratorBox = document.getElementById('narrator-box');
-      narratorBox.innerText = text;
-      appendReadout(text);
+      narratorBox.innerText = input;
+      appendReadout(input);
       const map = document.getElementById('mini-map');
       if (map) map.innerText = 'Room: ' + getCurrentRoom();
-    };
+    }
 
+    window.displayNarratorText = displayNarratorText;
     window.addToReadout = appendReadout;
 
     window.addEventListener('DOMContentLoaded', () => {
