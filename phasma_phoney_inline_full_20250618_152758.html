@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasma-Phoney</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 2.5em;
+      color: cyan;
+      text-shadow: 0 0 10px cyan;
+    }
+    #start-btn {
+      padding: 10px 20px;
+      font-size: 16px;
+      margin-top: 20px;
+      background: #333;
+      color: white;
+      border: 1px solid #666;
+      cursor: pointer;
+    }
+    .orb {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: float 10s linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh) translateX(0); }
+      100% { transform: translateY(-10vh) translateX(0); }
+    }
+    .hidden { display: none; }
+    #game-screen {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100vw;
+      height: 100vh;
+      padding: 10px;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      align-items: center;
+      padding: 10px;
+    }
+    #narrator-box {
+      background: #111;
+      padding: 10px;
+      min-height: 60px;
+      width: 90%;
+      margin-bottom: 10px;
+      border: 1px solid #444;
+    }
+    #hud-status {
+      font-size: 14px;
+      margin-bottom: 10px;
+    }
+    #option-buttons button,
+    #left-panel button,
+    #movement-buttons button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #movement-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .horiz {
+      display: flex;
+      gap: 8px;
+    }
+    #mini-map {
+      height: 100px;
+      width: 100px;
+      border: 2px solid green;
+      margin-bottom: 10px;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+    }
+    #main-readout {
+      width: 80%;
+      height: 200px;
+      border: 2px solid green;
+      background: #111;
+      color: #eee;
+      padding: 10px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>Phasma-Phoney</h1>
+  <button id="start-btn">Start Investigation</button>
+
+  <div id="game-screen" class="hidden">
+    <div id="left-panel">
+      <div id="option-buttons"></div>
+      <button id="journal-btn">Journal</button>
+      <button id="guess-btn">Guess Ghost</button>
+      <button id="item-btn">Use Item</button>
+      <button id="van-btn">Return to Van</button>
+    </div>
+    <div id="center-panel">
+      <div id="narrator-box">Narrator text will appear here.</div>
+      <div id="hud-status">Sanity: 100%    XP: 0    Inventory: none</div>
+      <div id="main-readout">Awaiting interaction...</div>
+    </div>
+    <div id="right-panel">
+      <div id="mini-map">Room: Unknown</div>
+      <div id="movement-buttons">
+        <button id="move-north">⬆</button>
+        <div class="horiz">
+          <button id="move-west">⬅</button>
+          <button id="move-east">➡</button>
+        </div>
+        <button id="move-south">⬇</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+    <h2>Investigation Journal</h2>
+    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
+    <br/>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
+  </div>
+<script>
+
+</script>
+</body>
+</html>
+
+// ========== MAP.JS ==========
+let currentRoom = 'Foyer';
+const rooms = {
+  'Foyer': { North: 'Living Room' },
+  'Living Room': { South: 'Foyer', East: 'Kitchen' },
+  'Kitchen': { West: 'Living Room' }
+};
+export function initializeMap() { currentRoom = 'Foyer'; }
+export function movePlayer(direction) {
+  if (rooms[currentRoom] && rooms[currentRoom][direction]) {
+    currentRoom = rooms[currentRoom][direction];
+    return `You move to the ${currentRoom}.`;
+  } else return `You can't go ${direction} from here.`;
+}
+export function getCurrentRoom() { return currentRoom; }
+
+// ========== INVENTORY.JS ==========
+let inventory = ['EMF Reader', 'Spirit Box', 'Crucifix'];
+export function getInventory() { return inventory; }
+export function addItemToInventory(item) { if (!inventory.includes(item)) inventory.push(item); }
+export function useItem(item, room, ghostType) {
+  if (!inventory.includes(item)) return `You don't have a ${item}.`;
+  if (item === 'EMF Reader') return `The EMF beeps faintly in the ${room}.`;
+  if (item === 'Spirit Box') return `A static-laced voice says "leave..." in the ${room}.`;
+  if (item === 'Crucifix') return `You hold the crucifix tight. A chill lingers in the ${room}.`;
+  return `You use the ${item} in the ${room}. Nothing noticeable happens.`;
+}
+
+// ========== MECHANICS.JS ==========
+let sanity = 100, activity = 0, hunt = false, evidence = [];
+export function getSanity() { return sanity; }
+export function adjustSanity(amount) { sanity = Math.max(0, Math.min(100, sanity + amount)); }
+export function isHunting() { return hunt; }
+export function triggerHunt() { hunt = true; activity = 10; adjustSanity(-25); }
+export function endHunt() { hunt = false; activity = 0; }
+export function getGhostActivity() { return activity; }
+export function discoverEvidence(type) { if (!evidence.includes(type)) evidence.push(type); }
+export function getEvidence() { return evidence; }
+export function useCursedItem(itemName) {
+  adjustSanity(-20);
+  return `You use the ${itemName}. The world bends around you.`;
+}
+
+// ========== JOURNAL.JS ==========
+let notes = '';
+export function initializeJournal() { notes = ''; }
+export function updateNotes(entry) { notes = entry; }
+export function getNotes() { return notes; }
+
+// ========== GHOSTS.JS ==========
+const ghostTypes = [
+  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee', 'Jinn', 'Mare', 'Revenant', 'Shade',
+  'Demon', 'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo', 'Myling', 'Onryo', 'The Twins', 'Raiju',
+  'Obake', 'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
+];
+let currentGhost = null;
+export function getRandomGhost() {
+  const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
+  return { type };
+}
+export function initializeGhost(ghost) {
+  currentGhost = {
+    ...ghost,
+    behaviorMap: generateBehavior(ghost.type)
+  };
+}
+export function performBehavior(room) {
+  if (!currentGhost || !currentGhost.behaviorMap) return "You feel watched...";
+  return currentGhost.behaviorMap(room);
+}
+function generateBehavior(type) {
+  const base = [
+    (room) => `A cold wind brushes past you in the ${room}.`,
+    (room) => `You hear faint breathing near the ${room}.`,
+    (room) => `An object moves slightly in the ${room}.`,
+    (room) => `Nothing happens... yet the ${room} feels strange.`
+  ];
+  const special = {
+    'Poltergeist': [(room) => `Objects fly across the ${room}.`],
+    'Demon': [(room) => `You feel overwhelming dread in the ${room}.`],
+    'Succubus': [(room) => `A sultry voice beckons from the shadows of the ${room}.`]
+  };
+  return (room) => [...base, ...(special[type] || [])][Math.floor(Math.random() * (base.length + (special[type]?.length || 0)))](room);
+}
+
+// ========== DIALOGUE ENGINE ==========
+export function displayNarratorText(text) {
+  const box = document.getElementById('narrator-box');
+  const log = document.getElementById('main-readout');
+  const hud = document.getElementById('hud-status');
+  if (box) box.innerText = text;
+  if (log) {
+    log.innerText += `
+${text}`;
+    log.scrollTop = log.scrollHeight;
+  }
+  if (hud) {
+    hud.innerText = `Sanity: ${getSanity()}%    XP: 0    Inventory: ${getInventory().join(', ') || 'none'}`;
+  }
+}
+
+// ========== GAME.JS ==========
+let ghost = null;
+let roundActive = false;
+export function startGame() {
+  roundActive = true;
+  ghost = getRandomGhost();
+  initializeGhost(ghost);
+  initializeMap();
+  initializeJournal();
+  displayNarratorText("🕵️ Investigation begins. Stay alert.");
+  renderOptions();
+}
+function renderOptions() {
+  const container = document.getElementById('option-buttons');
+  if (!container) return;
+  container.innerHTML = '';
+  const options = [
+    { label: '1. Investigate', action: investigate },
+    { label: '2. Use Item', action: handleItemUse },
+    { label: '3. Move', action: openMoveMenu },
+    { label: '4. Guess Ghost', action: openGuessPopup },
+    { label: '5. Return to Van', action: endGame }
+  ];
+  options.forEach((opt) => {
+    const btn = document.createElement('button');
+    btn.innerText = opt.label;
+    btn.onclick = opt.action;
+    container.appendChild(btn);
+  });
+}
+function investigate() {
+  const result = performBehavior(getCurrentRoom());
+  updateNotes(result);
+  displayNarratorText(result);
+  renderOptions();
+}
+function handleItemUse() {
+  const container = document.getElementById('option-buttons');
+  const items = getInventory();
+  container.innerHTML = '';
+  if (items.length === 0) {
+    displayNarratorText("🧳 No items.");
+    renderOptions();
+    return;
+  }
+  items.forEach((item, i) => {
+    const btn = document.createElement('button');
+    btn.innerText = `${i + 1}. Use ${item}`;
+    btn.onclick = () => {
+      const output = useItem(item, getCurrentRoom(), ghost.type);
+      displayNarratorText(output);
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
+}
+function openMoveMenu() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+  ['North', 'East', 'South', 'West'].forEach(dir => {
+    const btn = document.createElement('button');
+    btn.innerText = `Go ${dir}`;
+    btn.onclick = () => {
+      displayNarratorText(movePlayer(dir));
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
+}
+function openGuessPopup() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+  ghostTypes.forEach(type => {
+    const btn = document.createElement('button');
+    btn.innerText = type;
+    btn.onclick = () => handleGuess(type);
+    container.appendChild(btn);
+  });
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
+}
+function handleGuess(guess) {
+  if (guess === ghost.type) {
+    displayNarratorText(`🎯 Correct. It was a ${ghost.type}.`);
+  } else {
+    displayNarratorText(`💀 Wrong. It was ${ghost.type}.`);
+  }
+  roundActive = false;
+  endGame();
+}
+function endGame() {
+  roundActive = false;
+  displayNarratorText("📦 You return to the van. Game over.");
+  const container = document.getElementById('option-buttons');
+  if (container) container.innerHTML = '';
+}
+
+</script>
+</body>
+</html>
