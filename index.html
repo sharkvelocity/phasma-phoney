@@ -77,6 +77,9 @@
       width: 100px;
       border: 2px solid green;
       margin-bottom: 10px;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
     }
     #main-readout {
       width: 80%;
@@ -108,7 +111,7 @@
       <div id="main-readout">Awaiting interaction...</div>
     </div>
     <div id="right-panel">
-      <div id="mini-map"></div>
+      <div id="mini-map">Room: Unknown</div>
       <div id="movement-buttons">
         <button id="move-north">⬆</button>
         <div class="horiz">
@@ -131,6 +134,23 @@
   <script type="module">
     import { startGame } from './game.js';
     import { updateNotes, initializeJournal } from './journal.js';
+    import { getCurrentRoom } from './map.js';
+
+    function appendReadout(text) {
+      const log = document.getElementById('main-readout');
+      log.innerText += `\n${text}`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    window.displayNarratorText = (text) => {
+      const narratorBox = document.getElementById('narrator-box');
+      narratorBox.innerText = text;
+      appendReadout(text);
+      const map = document.getElementById('mini-map');
+      if (map) map.innerText = 'Room: ' + getCurrentRoom();
+    };
+
+    window.addToReadout = appendReadout;
 
     window.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('start-btn');
