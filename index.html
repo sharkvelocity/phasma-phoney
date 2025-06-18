@@ -16,8 +16,25 @@
       flex-direction: column;
       align-items: center;
     }
-    #title-screen {
-      margin-top: 30px;
+    .hidden { display: none; }
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #555;
+      padding: 10px 16px;
+      margin: 4px;
+      cursor: pointer;
+    }
+    #title-screen, #van-loadout {
+      margin-top: 40px;
+      text-align: center;
+    }
+    #item-selection {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px;
+      margin: 12px 0;
     }
     #game-screen {
       display: flex;
@@ -37,30 +54,33 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      justify-content: start;
       align-items: center;
       padding: 10px;
     }
     #narrator-box {
       background: #111;
       padding: 10px;
-      min-height: 60px;
-      width: 90%;
-      margin-bottom: 10px;
       border: 1px solid #444;
+      width: 90%;
+      min-height: 60px;
     }
-    .hidden {
-      display: none;
-    }
-    #option-buttons button,
-    #left-panel button,
-    #movement-buttons button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
+    #main-readout {
+      background: #111;
+      border: 2px solid green;
+      color: #eee;
+      width: 90%;
+      height: 200px;
+      margin-top: 10px;
       padding: 10px;
-      font-size: 14px;
-      cursor: pointer;
+      overflow-y: auto;
+    }
+    #mini-map {
+      height: 100px;
+      width: 100px;
+      border: 2px solid green;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
     }
     #movement-buttons {
       display: flex;
@@ -72,32 +92,25 @@
       display: flex;
       gap: 8px;
     }
-    #mini-map {
-      height: 100px;
-      width: 100px;
-      border: 2px solid green;
-      margin-bottom: 10px;
-      text-align: center;
-      padding: 4px;
-      font-size: 12px;
-    }
-    #main-readout {
-      width: 80%;
-      height: 200px;
-      border: 2px solid green;
-      background: #111;
-      color: #eee;
-      padding: 10px;
-      overflow-y: auto;
-    }
   </style>
 </head>
 <body>
+
+  <!-- Title -->
   <div id="title-screen">
-    <h1 class="game-title">Phasma-Phoney</h1>
+    <h1>Phasma-Phoney</h1>
     <button id="start-btn">Start Investigation</button>
   </div>
 
+  <!-- Van Loadout -->
+  <div id="van-loadout" class="hidden">
+    <h2>🎒 Choose 3 Items</h2>
+    <div id="item-selection"></div>
+    <p id="selected-count">Selected: 0 / 3</p>
+    <button id="confirm-loadout">Confirm Loadout</button>
+  </div>
+
+  <!-- Game UI -->
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
@@ -107,7 +120,7 @@
       <button id="van-btn">Return to Van</button>
     </div>
     <div id="center-panel">
-      <div id="narrator-box">Narrator text will appear here.</div>
+      <div id="narrator-box">Narrator will speak here.</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
     <div id="right-panel">
@@ -123,6 +136,7 @@
     </div>
   </div>
 
+  <!-- Journal Modal -->
   <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
     <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
@@ -132,54 +146,88 @@
   </div>
 
   <script type="module">
+    import {
+      addItemToInventory, clearInventory, getInventory, loadInventory
+    } from './inventory.js';
     import { startGame } from './game.js';
     import { updateNotes, initializeJournal } from './journal.js';
     import { getCurrentRoom } from './map.js';
 
-    // Narrator binding
-    window.displayNarratorText = function (text) {
-      const box = document.getElementById('narrator-box');
-      const readout = document.getElementById('main-readout');
-      if (box) box.innerText = text;
-      if (readout) {
-        readout.innerText += '\n' + text;
-        readout.scrollTop = readout.scrollHeight;
-      }
-      const mini = document.getElementById('mini-map');
-      if (mini) mini.innerText = 'Room: ' + getCurrentRoom();
-    };
+    const ITEMS = [
+      'EMF Reader', 'Spirit Box', 'UV Light', 'Thermometer',
+      'Camera', 'Candle', 'Crucifix', 'Salt', 'Cursed Mirror', 'Music Box'
+    ];
 
-    window.addToReadout = function (text) {
-      const readout = document.getElementById('main-readout');
-      readout.innerText += '\n' + text;
-      readout.scrollTop = readout.scrollHeight;
-    };
+    function showVanLoadout() {
+      document.getElementById('title-screen').classList.add('hidden');
+      document.getElementById('van-loadout').classList.remove('hidden');
+      clearInventory();
 
-    window.addEventListener('DOMContentLoaded', () => {
+      const selection = document.getElementById('item-selection');
+      const countText = document.getElementById('selected-count');
+      selection.innerHTML = '';
+      countText.innerText = `Selected: 0 / 3`;
+
+      ITEMS.forEach(item => {
+        const btn = document.createElement('button');
+        btn.innerText = item;
+        btn.onclick = () => {
+          const result = addItemToInventory(item);
+          const count = getInventory().length;
+          countText.innerText = `Selected: ${count} / 3`;
+          btn.disabled = true;
+          if (count === 3) {
+            selection.querySelectorAll('button').forEach(b => b.disabled = true);
+          }
+        };
+        selection.appendChild(btn);
+      });
+    }
+
+    function appendReadout(text) {
+      const log = document.getElementById('main-readout');
+      log.innerText += `\n${text}`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function displayNarratorText(text) {
+      document.getElementById('narrator-box').innerText = text;
+      appendReadout(text);
+      const map = document.getElementById('mini-map');
+      map.innerText = 'Room: ' + getCurrentRoom();
+    }
+
+    window.displayNarratorText = displayNarratorText;
+    window.addToReadout = appendReadout;
+
+    document.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('start-btn');
-      const title = document.getElementById('title-screen');
-      const screen = document.getElementById('game-screen');
-      const journalScreen = document.getElementById('journal-screen');
+      const confirmBtn = document.getElementById('confirm-loadout');
+      const journalBox = document.getElementById('journal-screen');
 
       if (startBtn) {
-        startBtn.onclick = () => {
-          console.log('🟢 Start clicked');
-          title.classList.add('hidden');
-          screen.classList.remove('hidden');
+        startBtn.onclick = showVanLoadout;
+      }
+
+      if (confirmBtn) {
+        confirmBtn.onclick = () => {
+          document.getElementById('van-loadout').classList.add('hidden');
+          document.getElementById('game-screen').classList.remove('hidden');
+          loadInventory();
           startGame();
           initializeJournal();
         };
       }
 
       document.getElementById('journal-btn').onclick = () => {
-        journalScreen.classList.toggle('hidden');
+        journalBox.classList.toggle('hidden');
       };
       document.getElementById('close-journal').onclick = () => {
-        journalScreen.classList.add('hidden');
+        journalBox.classList.add('hidden');
       };
       document.getElementById('save-journal').onclick = () => {
-        const note = document.getElementById('journal-entry').value;
-        updateNotes(note);
+        const text = document.getElementById('journal-entry').value;
+        updateNotes(text);
       };
     });
   </script>
