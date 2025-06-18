@@ -131,101 +131,84 @@
     <button id="close-journal">Close</button>
   </div>
 
-  <script type="module">
-    window.addEventListener("error", e => {
-  alert("🔥 Script Error: " + e.message);
-  console.error("Global error:", e);
-});
+<script type="module">
+  window.addEventListener("error", e => {
+    alert("🔥 Script Error: " + e.message);
+    console.error("Global error:", e);
+  });
 
-console.log("🧪 DEBUG: Inline JS loaded");
+  console.log("🧪 DEBUG: Inline JS loaded");
 
-(async () => {
-  try {
-    const game = await import('./game.js');
-    console.log("✅ game.js loaded");
+  (async () => {
+    try {
+      const game = await import('./game.js');
+      const journal = await import('./journal.js');
+      const { getCurrentRoom } = await import('./map.js');
 
-    if (!game.startGame) {
-      alert("❌ startGame() is missing in game.js");
-      return;
-    }
-
-    window.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('start-btn');
-      if (!btn) {
-        alert("🚨 start-btn not found");
+      if (!game.startGame) {
+        alert("❌ startGame() is missing in game.js");
         return;
       }
 
-      console.log("🎯 DOM loaded. Binding startGame...");
-      btn.onclick = () => {
-        console.log("🟢 Start clicked");
-        game.startGame();
-      };
-    });
-  } catch (err) {
-    alert("💥 Error loading game.js: " + err.message);
-    console.error(err);
-  }
-})();
-    (async () => {
-      try {
-        const game = await import('./game.js');
-        const journal = await import('./journal.js');
-        const { getCurrentRoom } = await import('./map.js');
-
-        function appendReadout(text) {
-          const log = document.getElementById('main-readout');
-          log.innerText += `\n${text}`;
-          log.scrollTop = log.scrollHeight;
-        }
-
-        function displayNarratorText(input) {
-          const narratorBox = document.getElementById('narrator-box');
-          narratorBox.innerText = input;
-          appendReadout(input);
-          const map = document.getElementById('mini-map');
-          if (map) map.innerText = 'Room: ' + getCurrentRoom();
-        }
-
-        window.displayNarratorText = displayNarratorText;
-        window.addToReadout = appendReadout;
-
-        window.addEventListener('DOMContentLoaded', () => {
-          const startBtn = document.getElementById('start-btn');
-          const title = document.getElementById('title-screen');
-          const screen = document.getElementById('game-screen');
-          const journalScreen = document.getElementById('journal-screen');
-
-          if (startBtn) {
-            startBtn.onclick = () => {
-              console.log('Start button clicked');
-              console.log('Game module:', game);
-              console.log('Calling game.startGame()...');
-              title.classList.add('hidden');
-              screen.classList.remove('hidden');
-              game.startGame();
-              journal.initializeJournal();
-            };
-          }
-
-          document.getElementById('journal-btn').onclick = () => {
-            journalScreen.classList.toggle('hidden');
-          };
-
-          document.getElementById('close-journal').onclick = () => {
-            journalScreen.classList.add('hidden');
-          };
-
-          document.getElementById('save-journal').onclick = () => {
-            const note = document.getElementById('journal-entry').value;
-            journal.updateNotes(note);
-          };
-        });
-      } catch (err) {
-        alert('Module load error: ' + err.message);
-        console.error(err);
+      function appendReadout(text) {
+        const log = document.getElementById('main-readout');
+        log.innerText += `\n${text}`;
+        log.scrollTop = log.scrollHeight;
       }
-    })();
-  </script>
+
+      function displayNarratorText(input) {
+        const narratorBox = document.getElementById('narrator-box');
+        narratorBox.innerText = input;
+        appendReadout(input);
+        const map = document.getElementById('mini-map');
+        if (map) map.innerText = 'Room: ' + getCurrentRoom();
+      }
+
+      window.displayNarratorText = displayNarratorText;
+      window.addToReadout = appendReadout;
+
+      window.addEventListener('DOMContentLoaded', () => {
+        console.log("🎯 DOMContentLoaded triggered");
+        const startBtn = document.getElementById('start-btn');
+        const title = document.getElementById('title-screen');
+        const screen = document.getElementById('game-screen');
+        const journalScreen = document.getElementById('journal-screen');
+
+        if (!startBtn) {
+          alert("🚨 start-btn not found");
+          return;
+        }
+
+        startBtn.onclick = () => {
+          console.log('🟢 Start button clicked');
+          title.classList.add('hidden');
+          screen.classList.remove('hidden');
+          try {
+            game.startGame();
+            journal.initializeJournal();
+            console.log('✅ game.startGame() executed');
+          } catch (err) {
+            alert('💥 Error running startGame: ' + err.message);
+            console.error(err);
+          }
+        };
+
+        document.getElementById('journal-btn').onclick = () => {
+          journalScreen.classList.toggle('hidden');
+        };
+        document.getElementById('close-journal').onclick = () => {
+          journalScreen.classList.add('hidden');
+        };
+        document.getElementById('save-journal').onclick = () => {
+          const note = document.getElementById('journal-entry').value;
+          journal.updateNotes(note);
+        };
+      });
+    } catch (err) {
+      alert("💥 Fatal module load error: " + err.message);
+      console.error(err);
+    }
+  })();
+</script>
 </body>
 </html>
