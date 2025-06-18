@@ -12,142 +12,170 @@
       font-family: sans-serif;
       margin: 0;
       padding: 0;
-      overflow: hidden;
-    }
-
-    #orb-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    #title-screen, #game-screen {
-      position: relative;
-      z-index: 1;
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
     }
-
-    .game-title {
-      font-size: 2.5em;
-      color: cyan;
-      text-shadow: 0 0 20px cyan;
-      margin-bottom: 20px;
+    #title-screen {
+      margin-top: 30px;
+      text-align: center;
     }
-
     .hidden { display: none; }
-
-    #option-buttons button {
-      background: #222;
-      color: white;
-      border: 1px solid #555;
+    #game-screen {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      width: 100vw;
+      height: 100vh;
       padding: 10px;
-      margin: 5px;
-      font-size: 16px;
-      cursor: pointer;
     }
-
-    #narrator-box, #hud-status, #main-readout {
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    #narrator-box {
       background: #111;
       border: 1px solid #444;
       padding: 10px;
-      margin: 10px;
-      width: 80%;
-      max-width: 600px;
-      font-size: 14px;
+      width: 90%;
+      margin-bottom: 5px;
     }
-
     #hud-status {
+      font-size: 12px;
+      padding: 4px;
+      background: #222;
+      width: 90%;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+    #main-readout {
+      width: 90%;
+      height: 200px;
+      background: #111;
+      color: #eee;
+      border: 2px solid green;
+      overflow-y: auto;
+      padding: 10px;
+    }
+    #mini-map {
+      height: 100px;
+      width: 100px;
+      border: 2px solid green;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    #movement-buttons {
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .horiz { display: flex; gap: 8px; }
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 8px;
+      font-size: 14px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-  <canvas id="orb-canvas"></canvas>
-
   <div id="title-screen">
-    <h1 class="game-title">Phasma-Phoney</h1>
+    <h1 class="game-title" style="color: cyan; text-shadow: 0 0 10px #0ff">Phasma-Phoney</h1>
     <button id="start-btn">Start Investigation</button>
   </div>
 
   <div id="game-screen" class="hidden">
-    <div id="narrator-box">Narrator text will appear here.</div>
-    <div id="hud-status">Sanity: 100% | XP: 0 | Inventory: none</div>
-    <div id="main-readout">Awaiting interaction...</div>
-    <div id="option-buttons"></div>
+    <div id="left-panel">
+      <div id="option-buttons"></div>
+      <button id="journal-btn">Journal</button>
+      <button id="guess-btn">Guess Ghost</button>
+      <button id="item-btn">Use Item</button>
+      <button id="van-btn">Return to Van</button>
+    </div>
+    <div id="center-panel">
+      <div id="narrator-box">Narrator text will appear here.</div>
+      <div id="hud-status">Sanity: 100% | XP: 0 | Inventory: none</div>
+      <div id="main-readout">Awaiting interaction...</div>
+    </div>
+    <div id="right-panel">
+      <div id="mini-map">Room: Unknown</div>
+      <div id="movement-buttons">
+        <button id="move-north">⬆</button>
+        <div class="horiz">
+          <button id="move-west">⬅</button>
+          <button id="move-east">➡</button>
+        </div>
+        <button id="move-south">⬇</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+    <h2>Investigation Journal</h2>
+    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
+    <br/>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
   </div>
 
   <script type="module">
     import { startGame } from './game.js';
+    import { initializeJournal, updateNotes } from './journal.js';
+    import { getCurrentRoom } from './map.js';
+
+    function appendReadout(text) {
+      const log = document.getElementById('main-readout');
+      log.innerText += `\n${text}`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function displayNarratorText(input) {
+      const narratorBox = document.getElementById('narrator-box');
+      narratorBox.innerText = input;
+      appendReadout(input);
+      const map = document.getElementById('mini-map');
+      if (map) map.innerText = 'Room: ' + getCurrentRoom();
+    }
+
+    window.displayNarratorText = displayNarratorText;
+    window.addToReadout = appendReadout;
 
     window.addEventListener('DOMContentLoaded', () => {
       const startBtn = document.getElementById('start-btn');
       const title = document.getElementById('title-screen');
-      const game = document.getElementById('game-screen');
+      const screen = document.getElementById('game-screen');
 
       startBtn.onclick = () => {
         title.classList.add('hidden');
-        game.classList.remove('hidden');
+        screen.classList.remove('hidden');
         startGame();
+        initializeJournal();
       };
-    });
-  </script>
 
-  <script>
-    // Optional: floating orbs background
-    const canvas = document.getElementById('orb-canvas');
-    const ctx = canvas.getContext('2d');
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-
-    function createOrb() {
-      return {
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: (Math.random() - 0.5) * 0.5,
-        radius: Math.random() * 2 + 1,
-        opacity: 0,
-        fadeIn: true
+      document.getElementById('journal-btn').onclick = () => {
+        document.getElementById('journal-screen').classList.toggle('hidden');
       };
-    }
-
-    let orbs = Array.from({ length: 30 }, createOrb);
-
-    function animate() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      orbs.forEach((orb, index) => {
-        orb.x += orb.vx;
-        orb.y += orb.vy;
-
-        if (orb.x < 0 || orb.x > canvas.width) orb.vx *= -1;
-        if (orb.y < 0 || orb.y > canvas.height) orb.vy *= -1;
-
-        orb.opacity += orb.fadeIn ? 0.003 : -0.002;
-        if (orb.opacity >= 0.5) orb.fadeIn = false;
-        if (orb.opacity <= 0) orbs[index] = createOrb();
-
-        ctx.beginPath();
-        ctx.arc(orb.x, orb.y, orb.radius, 0, 2 * Math.PI);
-        ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-        ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.5})`;
-        ctx.shadowBlur = 15;
-        ctx.fill();
-      });
-      requestAnimationFrame(animate);
-    }
-
-    animate();
-    window.addEventListener('resize', () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      document.getElementById('close-journal').onclick = () => {
+        document.getElementById('journal-screen').classList.add('hidden');
+      };
+      document.getElementById('save-journal').onclick = () => {
+        const note = document.getElementById('journal-entry').value;
+        updateNotes(note);
+      };
     });
   </script>
 </body>
