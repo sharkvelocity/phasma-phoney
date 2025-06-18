@@ -5,23 +5,99 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    #title-screen {
+      margin-top: 30px;
+    }
+    #game-screen {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 10px;
+      width: 100vw;
+      height: 100vh;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      align-items: center;
+      padding: 10px;
+    }
+    #narrator-box {
+      background: #111;
+      padding: 10px;
+      min-height: 60px;
+      width: 90%;
+      margin-bottom: 10px;
+      border: 1px solid #444;
+    }
+    .hidden {
+      display: none;
+    }
+    #option-buttons button,
+    #left-panel button,
+    #movement-buttons button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #movement-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .horiz {
+      display: flex;
+      gap: 8px;
+    }
+    #mini-map {
+      height: 100px;
+      width: 100px;
+      border: 2px solid green;
+      margin-bottom: 10px;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+    }
+    #main-readout {
+      width: 80%;
+      height: 200px;
+      border: 2px solid green;
+      background: #111;
+      color: #eee;
+      padding: 10px;
+      overflow-y: auto;
+    }
+  </style>
 </head>
 <body>
-  <!-- TITLE SCREEN -->
   <div id="title-screen">
-    <h1>Phasma-Phoney</h1>
+    <h1 class="game-title">Phasma-Phoney</h1>
     <button id="start-btn">Start Investigation</button>
   </div>
 
-  <!-- VAN LOADOUT -->
-  <div id="van-loadout" class="hidden">
-    <h2>🎒 Choose 3 Items</h2>
-    <div id="item-selection"></div>
-    <p id="selected-count">Selected: 0 / 3</p>
-    <button id="confirm-loadout">Confirm Loadout</button>
-  </div>
-
-  <!-- GAME SCREEN -->
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
@@ -31,14 +107,14 @@
       <button id="van-btn">Return to Van</button>
     </div>
     <div id="center-panel">
-      <div id="narrator-box">Narrator will speak here.</div>
+      <div id="narrator-box">Narrator text will appear here.</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
     <div id="right-panel">
-      <div id="mini-map">Room: Entry</div>
+      <div id="mini-map">Room: Unknown</div>
       <div id="movement-buttons">
         <button id="move-north">⬆</button>
-        <div>
+        <div class="horiz">
           <button id="move-west">⬅</button>
           <button id="move-east">➡</button>
         </div>
@@ -47,75 +123,96 @@
     </div>
   </div>
 
-  <!-- JOURNAL -->
-  <div id="journal-screen" class="screen hidden">
+  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..."></textarea>
+    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
     <br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
 
   <script type="module">
-    import { addItemToInventory, clearInventory, getInventory, loadInventory } from './inventory.js';
-    import { startGame } from './game.js';
-    import { updateNotes, initializeJournal } from './journal.js';
-    import { getCurrentRoom } from './map.js';
+    window.addEventListener("error", e => {
+      alert("🔥 Script Error: " + e.message);
+      console.error("Global error:", e);
+    });
 
-    const ITEMS = [
-      'EMF Reader', 'Spirit Box', 'UV Light', 'Thermometer',
-      'Camera', 'Candle', 'Crucifix', 'Salt'
-    ];
+    window.addEventListener("DOMContentLoaded", async () => {
+      try {
+        const game = await import('./game.js');
+        const journal = await import('./journal.js');
+        const { getCurrentRoom, movePlayer } = await import('./map.js');
 
-    const displayNarratorText = (text) => {
-      document.getElementById('narrator-box').innerText = text;
-      const log = document.getElementById('main-readout');
-      log.innerText += `\n${text}`;
-      log.scrollTop = log.scrollHeight;
-      document.getElementById('mini-map').innerText = 'Room: ' + getCurrentRoom();
-    };
-    window.displayNarratorText = displayNarratorText;
+        function appendReadout(text) {
+          const log = document.getElementById('main-readout');
+          log.innerText += `\n${text}`;
+          log.scrollTop = log.scrollHeight;
+        }
 
-    const title = document.getElementById('title-screen');
-    const van = document.getElementById('van-loadout');
-    const game = document.getElementById('game-screen');
-    const journalScreen = document.getElementById('journal-screen');
+        function displayNarratorText(input) {
+          const narratorBox = document.getElementById('narrator-box');
+          narratorBox.innerText = input;
+          appendReadout(input);
+          const map = document.getElementById('mini-map');
+          if (map) map.innerText = 'Room: ' + getCurrentRoom();
+        }
 
-    document.getElementById('start-btn').onclick = () => {
-      title.classList.add('hidden');
-      van.classList.remove('hidden');
-      clearInventory();
-      const selection = document.getElementById('item-selection');
-      const count = document.getElementById('selected-count');
-      selection.innerHTML = '';
-      count.innerText = 'Selected: 0 / 3';
-      ITEMS.forEach(item => {
-        const btn = document.createElement('button');
-        btn.innerText = item;
-        btn.onclick = () => {
-          if (getInventory().length < 3) {
-            addItemToInventory(item);
-            btn.disabled = true;
-            count.innerText = `Selected: ${getInventory().length} / 3`;
-          }
+        window.displayNarratorText = displayNarratorText;
+        window.addToReadout = appendReadout;
+
+        const startBtn = document.getElementById('start-btn');
+        const title = document.getElementById('title-screen');
+        const screen = document.getElementById('game-screen');
+        const journalScreen = document.getElementById('journal-screen');
+
+        if (!startBtn) {
+          alert("🚨 start-btn not found");
+          return;
+        }
+
+        startBtn.onclick = () => {
+          title.classList.add('hidden');
+          screen.classList.remove('hidden');
+          game.startGame();
+          journal.initializeJournal();
         };
-        selection.appendChild(btn);
-      });
-    };
 
-    document.getElementById('confirm-loadout').onclick = () => {
-      van.classList.add('hidden');
-      game.classList.remove('hidden');
-      initializeJournal();
-      loadInventory();
-      startGame();
-    };
+        document.getElementById('journal-btn').onclick = () => {
+          journalScreen.classList.toggle('hidden');
+        };
 
-    document.getElementById('journal-btn').onclick = () => journalScreen.classList.toggle('hidden');
-    document.getElementById('close-journal').onclick = () => journalScreen.classList.add('hidden');
-    document.getElementById('save-journal').onclick = () => {
-      updateNotes(document.getElementById('journal-entry').value);
-    };
+        document.getElementById('close-journal').onclick = () => {
+          journalScreen.classList.add('hidden');
+        };
+
+        document.getElementById('save-journal').onclick = () => {
+          const note = document.getElementById('journal-entry').value;
+          journal.updateNotes(note);
+        };
+
+        // ✅ Compass Movement Bindings
+        document.getElementById('move-north').onclick = () => {
+          const result = movePlayer('North');
+          displayNarratorText(result);
+        };
+        document.getElementById('move-south').onclick = () => {
+          const result = movePlayer('South');
+          displayNarratorText(result);
+        };
+        document.getElementById('move-east').onclick = () => {
+          const result = movePlayer('East');
+          displayNarratorText(result);
+        };
+        document.getElementById('move-west').onclick = () => {
+          const result = movePlayer('West');
+          displayNarratorText(result);
+        };
+
+      } catch (err) {
+        alert("💥 Fatal error: " + err.message);
+        console.error(err);
+      }
+    });
   </script>
 </body>
 </html>
