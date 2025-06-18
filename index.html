@@ -132,6 +132,41 @@
   </div>
 
   <script type="module">
+    window.addEventListener("error", e => {
+  alert("🔥 Script Error: " + e.message);
+  console.error("Global error:", e);
+});
+
+console.log("🧪 DEBUG: Inline JS loaded");
+
+(async () => {
+  try {
+    const game = await import('./game.js');
+    console.log("✅ game.js loaded");
+
+    if (!game.startGame) {
+      alert("❌ startGame() is missing in game.js");
+      return;
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('start-btn');
+      if (!btn) {
+        alert("🚨 start-btn not found");
+        return;
+      }
+
+      console.log("🎯 DOM loaded. Binding startGame...");
+      btn.onclick = () => {
+        console.log("🟢 Start clicked");
+        game.startGame();
+      };
+    });
+  } catch (err) {
+    alert("💥 Error loading game.js: " + err.message);
+    console.error(err);
+  }
+})();
     (async () => {
       try {
         const game = await import('./game.js');
