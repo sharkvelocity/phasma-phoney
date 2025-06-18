@@ -1,94 +1,80 @@
-// inventory.js – Player inventory management system
+// inventory.js – Item handling and effects
 
-export const defaultInventory = ['journal', 'lighter'];
-export let carriedItems = [...defaultInventory];
-export let vanInventory = [
-  'EMF Reader',
-  'Spirit Box',
-  'Video Camera',
-  'Photo Camera',
-  'Ghost Writing Book',
-  'UV Light',
-  'DOTS Projector',
-  'Thermometer',
-  'Salt',
-  'Candle',
-  'Smudge Stick',
-  'Motion Sensor',
-  'Sound Sensor',
-  'Parabolic Microphone'
-];
+let inventory = ['Crucifix', 'Camera', 'Salt', 'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box', 'Ghost Writing Book', 'UV Flashlight', 'Thermometer'];
 
-export let droppedItems = []; // Tracks in-house item placements
-
-const MAX_CARRY = 3;
-
-export function resetInventory() {
-  carriedItems = [...defaultInventory];
-  droppedItems = [];
+export function getInventory() {
+  return inventory;
 }
 
-export function getCurrentInventory() {
-  return carriedItems;
-}
-
-export function getVanInventory() {
-  return vanInventory;
-}
-
-export function getDroppedItems() {
-  return droppedItems;
-}
-
-export function carryItem(item) {
-  if (carriedItems.includes(item)) {
-    return `${item} is already in your hand.`;
-  }
-
-  if (carriedItems.length - defaultInventory.length >= MAX_CARRY) {
-    return `You can only carry ${MAX_CARRY} investigation items. Drop one first.`;
-  }
-
-  if (vanInventory.includes(item)) {
-    carriedItems.push(item);
-    return `You picked up the ${item}.`;
-  } else {
-    return `${item} is not available in the van.`;
+export function addItemToInventory(item) {
+  if (!inventory.includes(item)) {
+    inventory.push(item);
   }
 }
 
-export function dropItem(item) {
-  if (!carriedItems.includes(item)) {
-    return `${item} is not in your inventory.`;
+export function useItem(item, room, ghostType) {
+  if (!inventory.includes(item)) {
+    return `You don't have a ${item}.`;
   }
 
-  if (defaultInventory.includes(item)) {
-    return `You can't drop your default item: ${item}.`;
+  let message = '';
+  switch (item) {
+    case 'Crucifix':
+      message = ['Demon', 'Revenant', 'Thaye'].includes(ghostType)
+        ? 'The crucifix glows and repels something unseen.'
+        : 'The crucifix warms faintly... but nothing reacts.';
+      break;
+    case 'Camera':
+      message = ['Phantom', 'Goryo', 'The Mimic'].includes(ghostType)
+        ? 'A ghostly image appears for a split second!'
+        : 'The camera clicks. Empty photo.';
+      break;
+    case 'Salt':
+      message = ['Wraith', 'Banshee', 'Spirit', 'The Twins'].includes(ghostType)
+        ? 'Salt scatters. A footprint burns into it instantly.'
+        : 'The salt lays untouched.';
+      break;
+    case 'Smudge Stick':
+      message = ['Yurei', 'Oni', 'Moroi'].includes(ghostType)
+        ? 'Smoke surrounds you. The room lightens briefly.'
+        : 'The smudge fizzles out quietly.';
+      break;
+    case 'Candle':
+      message = ['Onryo', 'Mare'].includes(ghostType)
+        ? 'The candle extinguishes suddenly on its own.'
+        : 'The candle flickers gently but stays lit.';
+      break;
+    case 'EMF Reader':
+      message = ['Raiju', 'Obake', 'Spirit'].includes(ghostType)
+        ? 'The EMF spikes violently to red! Something is here.'
+        : 'Nothing detected on EMF.';
+      break;
+    case 'Spirit Box':
+      message = ['Yokai', 'Deogen', 'Spirit'].includes(ghostType)
+        ? 'A voice whispers: "leave..."'
+        : 'White noise crackles endlessly.';
+      break;
+    case 'Ghost Writing Book':
+      message = ['Demon', 'Yurei', 'Revenant'].includes(ghostType)
+        ? 'A page flips. Writing appears: "die."'
+        : 'The book remains blank.';
+      break;
+    case 'UV Flashlight':
+      message = ['Obake', 'Banshee', 'Goryo'].includes(ghostType)
+        ? 'You see a glowing fingerprint... and another forming.'
+        : 'No evidence under UV light.';
+      break;
+    case 'Thermometer':
+      message = ['Hantu', 'Moroi', 'Shade'].includes(ghostType)
+        ? 'The reading drops to freezing instantly.'
+        : 'Temperature remains steady.';
+      break;
+    default:
+      message = `You use the ${item}, but nothing happens.`;
+      break;
   }
 
-  carriedItems = carriedItems.filter(i => i !== item);
-  droppedItems.push(item);
-  return `You dropped the ${item} inside the house.`;
-}
-
-export function retrieveDroppedItem(item) {
-  if (!droppedItems.includes(item)) {
-    return `${item} is not in the house.`;
-  }
-
-  if (carriedItems.length - defaultInventory.length >= MAX_CARRY) {
-    return `You're carrying too much. Drop something before picking up ${item}.`;
-  }
-
-  droppedItems = droppedItems.filter(i => i !== item);
-  carriedItems.push(item);
-  return `You picked the ${item} back up.`;
-}
-
-export function listInventory() {
-  return `Inventory: ${carriedItems.join(', ')}`;
-}
-
-export function listVanItems() {
-  return `Available in van: ${vanInventory.join(', ')}`;
+  // Remove used item
+  inventory = inventory.filter(i => i !== item);
+  return message;
 }
