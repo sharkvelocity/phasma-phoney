@@ -5,92 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      background: black;
-      color: white;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    #title-screen {
-      margin-top: 30px;
-    }
-    #game-screen {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 10px;
-      width: 100vw;
-      height: 100vh;
-    }
-    #left-panel, #right-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-    }
-    #center-panel {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      justify-content: start;
-      align-items: center;
-      padding: 10px;
-    }
-    #narrator-box {
-      background: #111;
-      padding: 10px;
-      min-height: 60px;
-      width: 90%;
-      margin-bottom: 10px;
-      border: 1px solid #444;
-    }
-    .hidden {
-      display: none;
-    }
-    #option-buttons button,
-    #left-panel button,
-    #movement-buttons button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
-      padding: 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    #movement-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .horiz {
-      display: flex;
-      gap: 8px;
-    }
-    #mini-map {
-      height: 100px;
-      width: 100px;
-      border: 2px solid green;
-      margin-bottom: 10px;
-      text-align: center;
-      padding: 4px;
-      font-size: 12px;
-    }
-    #main-readout {
-      width: 80%;
-      height: 200px;
-      border: 2px solid green;
-      background: #111;
-      color: #eee;
-      padding: 10px;
-      overflow-y: auto;
-    }
-  </style>
 </head>
 <body>
   <div id="title-screen">
@@ -106,10 +20,12 @@
       <button id="item-btn">Use Item</button>
       <button id="van-btn">Return to Van</button>
     </div>
+
     <div id="center-panel">
       <div id="narrator-box">Narrator text will appear here.</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
+
     <div id="right-panel">
       <div id="mini-map">Room: Unknown</div>
       <div id="movement-buttons">
@@ -123,95 +39,83 @@
     </div>
   </div>
 
-  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+  <div id="journal-screen" class="screen hidden">
     <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
-    <br/>
+    <textarea id="journal-entry" placeholder="Write your notes here..."></textarea>
+    <br />
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
 
   <script type="module">
-    window.addEventListener("error", e => {
-      alert("🔥 Script Error: " + e.message);
-      console.error("Global error:", e);
-    });
+    import { startGame } from './game.js';
+    import { updateNotes, initializeJournal } from './journal.js';
+    import { movePlayer, getCurrentRoom } from './map.js';
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const game = await import('./game.js');
-        const journal = await import('./journal.js');
-        const { getCurrentRoom, movePlayer } = await import('./map.js');
+    function appendReadout(text) {
+      const log = document.getElementById('main-readout');
+      log.innerText += `\n${text}`;
+      log.scrollTop = log.scrollHeight;
+    }
 
-        function appendReadout(text) {
-          const log = document.getElementById('main-readout');
-          log.innerText += `\n${text}`;
-          log.scrollTop = log.scrollHeight;
-        }
+    function displayNarratorText(input) {
+      const narratorBox = document.getElementById('narrator-box');
+      narratorBox.innerText = input;
+      appendReadout(input);
+      const map = document.getElementById('mini-map');
+      if (map) map.innerText = 'Room: ' + getCurrentRoom();
+    }
 
-        function displayNarratorText(input) {
-          const narratorBox = document.getElementById('narrator-box');
-          narratorBox.innerText = input;
-          appendReadout(input);
-          const map = document.getElementById('mini-map');
-          if (map) map.innerText = 'Room: ' + getCurrentRoom();
-        }
+    window.displayNarratorText = displayNarratorText;
 
-        window.displayNarratorText = displayNarratorText;
-        window.addToReadout = appendReadout;
+    window.addEventListener('DOMContentLoaded', () => {
+      const startBtn = document.getElementById('start-btn');
+      const title = document.getElementById('title-screen');
+      const screen = document.getElementById('game-screen');
+      const journalScreen = document.getElementById('journal-screen');
 
-        const startBtn = document.getElementById('start-btn');
-        const title = document.getElementById('title-screen');
-        const screen = document.getElementById('game-screen');
-        const journalScreen = document.getElementById('journal-screen');
+      startBtn.onclick = () => {
+        title.classList.add('hidden');
+        screen.classList.remove('hidden');
+        startGame();
+        initializeJournal();
+      };
 
-        if (!startBtn) {
-          alert("🚨 start-btn not found");
-          return;
-        }
+      document.getElementById('journal-btn').onclick = () => {
+        journalScreen.classList.toggle('hidden');
+      };
 
-        startBtn.onclick = () => {
-          title.classList.add('hidden');
-          screen.classList.remove('hidden');
-          game.startGame();
-          journal.initializeJournal();
-        };
+      document.getElementById('close-journal').onclick = () => {
+        journalScreen.classList.add('hidden');
+      };
 
-        document.getElementById('journal-btn').onclick = () => {
-          journalScreen.classList.toggle('hidden');
-        };
+      document.getElementById('save-journal').onclick = () => {
+        const note = document.getElementById('journal-entry').value;
+        updateNotes(note);
+      };
 
-        document.getElementById('close-journal').onclick = () => {
-          journalScreen.classList.add('hidden');
-        };
+      document.getElementById('move-north').onclick = () => {
+        displayNarratorText(movePlayer("North"));
+      };
+      document.getElementById('move-east').onclick = () => {
+        displayNarratorText(movePlayer("East"));
+      };
+      document.getElementById('move-south').onclick = () => {
+        displayNarratorText(movePlayer("South"));
+      };
+      document.getElementById('move-west').onclick = () => {
+        displayNarratorText(movePlayer("West"));
+      };
 
-        document.getElementById('save-journal').onclick = () => {
-          const note = document.getElementById('journal-entry').value;
-          journal.updateNotes(note);
-        };
-
-        // ✅ Compass Movement Bindings
-        document.getElementById('move-north').onclick = () => {
-          const result = movePlayer('North');
-          displayNarratorText(result);
-        };
-        document.getElementById('move-south').onclick = () => {
-          const result = movePlayer('South');
-          displayNarratorText(result);
-        };
-        document.getElementById('move-east').onclick = () => {
-          const result = movePlayer('East');
-          displayNarratorText(result);
-        };
-        document.getElementById('move-west').onclick = () => {
-          const result = movePlayer('West');
-          displayNarratorText(result);
-        };
-
-      } catch (err) {
-        alert("💥 Fatal error: " + err.message);
-        console.error(err);
-      }
+      document.getElementById('guess-btn').onclick = () => {
+        import('./game.js').then(m => m.openGuessPopup());
+      };
+      document.getElementById('item-btn').onclick = () => {
+        import('./game.js').then(m => m.handleItemUse());
+      };
+      document.getElementById('van-btn').onclick = () => {
+        import('./game.js').then(m => m.endGame());
+      };
     });
   </script>
 </body>
