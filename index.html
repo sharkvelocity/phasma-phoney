@@ -1,74 +1,196 @@
-<script type="module">
-(async () => {
-  try {
-    console.log('🔧 Loading modules...');
-    const game = await import('./game.js');
-    const journal = await import('./journal.js');
-    const { getCurrentRoom } = await import('./map.js');
-    console.log('✅ Modules loaded.');
-
-    function appendReadout(text) {
-      const log = document.getElementById('main-readout');
-      log.innerText += `\n${text}`;
-      log.scrollTop = log.scrollHeight;
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasma-Phoney</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
     }
-
-    function displayNarratorText(input) {
-      const narratorBox = document.getElementById('narrator-box');
-      narratorBox.innerText = input;
-      appendReadout(input);
-      const map = document.getElementById('mini-map');
-      if (map) map.innerText = 'Room: ' + getCurrentRoom();
+    #title-screen {
+      margin-top: 30px;
     }
+    #game-screen {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 10px;
+      width: 100vw;
+      height: 100vh;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: start;
+      align-items: center;
+      padding: 10px;
+    }
+    #narrator-box {
+      background: #111;
+      padding: 10px;
+      min-height: 60px;
+      width: 90%;
+      margin-bottom: 10px;
+      border: 1px solid #444;
+    }
+    .hidden {
+      display: none;
+    }
+    #option-buttons button,
+    #left-panel button,
+    #movement-buttons button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 10px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #movement-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .horiz {
+      display: flex;
+      gap: 8px;
+    }
+    #mini-map {
+      height: 100px;
+      width: 100px;
+      border: 2px solid green;
+      margin-bottom: 10px;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+    }
+    #main-readout {
+      width: 80%;
+      height: 200px;
+      border: 2px solid green;
+      background: #111;
+      color: #eee;
+      padding: 10px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <div id="title-screen">
+    <h1 class="game-title">Phasma-Phoney</h1>
+    <button id="start-btn">Start Investigation</button>
+  </div>
 
-    window.displayNarratorText = displayNarratorText;
-    window.addToReadout = appendReadout;
+  <div id="game-screen" class="hidden">
+    <div id="left-panel">
+      <div id="option-buttons"></div>
+      <button id="journal-btn">Journal</button>
+      <button id="guess-btn">Guess Ghost</button>
+      <button id="item-btn">Use Item</button>
+      <button id="van-btn">Return to Van</button>
+    </div>
+    <div id="center-panel">
+      <div id="narrator-box">Narrator text will appear here.</div>
+      <div id="main-readout">Awaiting interaction...</div>
+    </div>
+    <div id="right-panel">
+      <div id="mini-map">Room: Unknown</div>
+      <div id="movement-buttons">
+        <button id="move-north">⬆</button>
+        <div class="horiz">
+          <button id="move-west">⬅</button>
+          <button id="move-east">➡</button>
+        </div>
+        <button id="move-south">⬇</button>
+      </div>
+    </div>
+  </div>
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const startBtn = document.getElementById('start-btn');
-      const title = document.getElementById('title-screen');
-      const screen = document.getElementById('game-screen');
-      const journalScreen = document.getElementById('journal-screen');
+  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+    <h2>Investigation Journal</h2>
+    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
+    <br/>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
+  </div>
 
-      if (!startBtn) {
-        alert("🚨 Couldn't find start button");
-        return;
+  <script type="module">
+    (async () => {
+      try {
+        const game = await import('./game.js');
+        const journal = await import('./journal.js');
+        const { getCurrentRoom } = await import('./map.js');
+
+        function appendReadout(text) {
+          const log = document.getElementById('main-readout');
+          log.innerText += `\n${text}`;
+          log.scrollTop = log.scrollHeight;
+        }
+
+        function displayNarratorText(input) {
+          const narratorBox = document.getElementById('narrator-box');
+          narratorBox.innerText = input;
+          appendReadout(input);
+          const map = document.getElementById('mini-map');
+          if (map) map.innerText = 'Room: ' + getCurrentRoom();
+        }
+
+        window.displayNarratorText = displayNarratorText;
+        window.addToReadout = appendReadout;
+
+        window.addEventListener('DOMContentLoaded', () => {
+          const startBtn = document.getElementById('start-btn');
+          const title = document.getElementById('title-screen');
+          const screen = document.getElementById('game-screen');
+          const journalScreen = document.getElementById('journal-screen');
+
+          if (startBtn) {
+            startBtn.onclick = () => {
+              console.log('Start button clicked');
+              console.log('Game module:', game);
+              console.log('Calling game.startGame()...');
+              title.classList.add('hidden');
+              screen.classList.remove('hidden');
+              game.startGame();
+              journal.initializeJournal();
+            };
+          }
+
+          document.getElementById('journal-btn').onclick = () => {
+            journalScreen.classList.toggle('hidden');
+          };
+
+          document.getElementById('close-journal').onclick = () => {
+            journalScreen.classList.add('hidden');
+          };
+
+          document.getElementById('save-journal').onclick = () => {
+            const note = document.getElementById('journal-entry').value;
+            journal.updateNotes(note);
+          };
+        });
+      } catch (err) {
+        alert('Module load error: ' + err.message);
+        console.error(err);
       }
-
-      startBtn.onclick = () => {
-        console.log('✅ Start button clicked');
-        console.log('🧠 Game module keys:', Object.keys(game));
-        if (!game.startGame) {
-          alert('🚫 startGame() is missing in game.js');
-          return;
-        }
-
-        title.classList.add('hidden');
-        screen.classList.remove('hidden');
-        try {
-          game.startGame();
-          journal.initializeJournal();
-          console.log('✅ startGame() executed');
-        } catch (err) {
-          alert('❌ Error in startGame(): ' + err.message);
-          console.error(err);
-        }
-      };
-
-      document.getElementById('journal-btn').onclick = () => {
-        journalScreen.classList.toggle('hidden');
-      };
-      document.getElementById('close-journal').onclick = () => {
-        journalScreen.classList.add('hidden');
-      };
-      document.getElementById('save-journal').onclick = () => {
-        const note = document.getElementById('journal-entry').value;
-        journal.updateNotes(note);
-      };
-    });
-  } catch (err) {
-    alert('🧨 Module load failure: ' + err.message);
-    console.error(err);
-  }
-})();
-</script>
+    })();
+  </script>
+</body>
+</html>
