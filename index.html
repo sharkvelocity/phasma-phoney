@@ -6,112 +6,216 @@
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="styles.css" />
   <style>
+    canvas#orb-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 1;
+    }
     body {
       background: black;
       color: white;
       font-family: sans-serif;
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
     }
-    .hidden {
-      display: none;
+    .hidden { display: none; }
+    #title-screen { margin-top: 30px; z-index: 2; }
+    #game-screen {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 10px;
+      width: 100vw;
+      height: 100vh;
+      z-index: 2;
     }
-    .game-title {
-      margin-top: 40px;
-      font-size: 32px;
-      font-weight: bold;
-      color: cyan;
-      text-shadow: 0 0 8px cyan;
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
     }
     button {
       background: #222;
       color: white;
       border: 1px solid #666;
       padding: 10px;
-      margin: 5px;
       font-size: 14px;
       cursor: pointer;
     }
-    #narrator-box, #main-readout {
+    #narrator-box {
       background: #111;
-      border: 1px solid #444;
-      margin: 10px;
       padding: 10px;
-      width: 80%;
+      width: 90%;
+      border: 1px solid #444;
+      margin-bottom: 10px;
     }
-    #hud-status {
+    #main-readout {
       width: 80%;
+      height: 200px;
+      border: 2px solid green;
+      background: #111;
+      color: #eee;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #mini-map {
+      height: 100px;
+      width: 100px;
+      border: 2px solid green;
+      margin-bottom: 10px;
       text-align: center;
-      color: #ccc;
-      font-size: 14px;
+      padding: 4px;
+      font-size: 12px;
+    }
+    #movement-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .horiz {
+      display: flex;
+      gap: 8px;
     }
   </style>
 </head>
 <body>
-  <div id="title-screen">
-    <h1 class="game-title">Phasma-Phoney</h1>
-    <button id="start-btn">Start Investigation</button>
+
+<canvas id="orb-canvas"></canvas>
+
+<div id="title-screen">
+  <h1 class="game-title">Phasma-Phoney</h1>
+  <button id="start-btn">Start Investigation</button>
+</div>
+
+<div id="game-screen" class="hidden">
+  <div id="left-panel">
+    <div id="option-buttons"></div>
+    <button id="journal-btn">Journal</button>
+    <button id="guess-btn">Guess Ghost</button>
+    <button id="item-btn">Use Item</button>
+    <button id="van-btn">Return to Van</button>
   </div>
-
-  <div id="game-screen" class="hidden">
-    <div id="narrator-box">Narrator text will appear here.</div>
-    <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
+  <div id="center-panel">
+    <div id="narrator-box">Narrator will speak here.</div>
+    <div id="hud-status">Sanity: --% | XP: 0 | Inventory: none</div>
     <div id="main-readout">Awaiting interaction...</div>
-
-    <div id="option-buttons">
-      <button id="journal-btn">Journal</button>
-      <button id="guess-btn">Guess Ghost</button>
-      <button id="item-btn">Use Item</button>
-      <button id="van-btn">Return to Van</button>
+  </div>
+  <div id="right-panel">
+    <div id="mini-map">Room: Unknown</div>
+    <div id="movement-buttons">
+      <button id="move-north">⬆</button>
+      <div class="horiz">
+        <button id="move-west">⬅</button>
+        <button id="move-east">➡</button>
+      </div>
+      <button id="move-south">⬇</button>
     </div>
   </div>
+</div>
 
-  <div id="journal-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
-    <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
-    <br/>
-    <button id="save-journal">Save</button>
-    <button id="close-journal">Close</button>
-  </div>
+<div id="journal-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:99;">
+  <h2>Investigation Journal</h2>
+  <textarea id="journal-entry" style="width:100%;height:120px;"></textarea><br/>
+  <button id="save-journal">Save</button>
+  <button id="close-journal">Close</button>
+</div>
 
-  <script type="module">
-    import { startGame } from './game.js';
-    import { updateNotes, initializeJournal } from './journal.js';
+<script type="module">
+  import { startGame } from './game.js';
+  import { updateNotes, initializeJournal } from './journal.js';
+  import { getCurrentRoom } from './map.js';
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const startBtn = document.getElementById('start-btn');
-      const titleScreen = document.getElementById('title-screen');
-      const gameScreen = document.getElementById('game-screen');
-      const journalScreen = document.getElementById('journal-screen');
+  function appendReadout(text) {
+    const log = document.getElementById('main-readout');
+    log.innerText += `\n${text}`;
+    log.scrollTop = log.scrollHeight;
+  }
 
-      startBtn.addEventListener('click', () => {
-        titleScreen.classList.add('hidden');
-        gameScreen.classList.remove('hidden');
-        startGame();
-        initializeJournal();
-      });
+  export function displayNarratorText(input) {
+    const narratorBox = document.getElementById('narrator-box');
+    narratorBox.innerText = input;
+    appendReadout(input);
+    const map = document.getElementById('mini-map');
+    if (map) map.innerText = 'Room: ' + getCurrentRoom();
+  }
 
-      document.getElementById('journal-btn').onclick = () => {
-        journalScreen.classList.toggle('hidden');
-      };
+  window.displayNarratorText = displayNarratorText;
+  window.addToReadout = appendReadout;
 
-      document.getElementById('close-journal').onclick = () => {
-        journalScreen.classList.add('hidden');
-      };
+  window.addEventListener('DOMContentLoaded', () => {
+    const title = document.getElementById('title-screen');
+    const screen = document.getElementById('game-screen');
+    const startBtn = document.getElementById('start-btn');
 
-      document.getElementById('save-journal').onclick = () => {
-        const note = document.getElementById('journal-entry').value;
-        updateNotes(note);
-      };
+    const journalBtn = document.getElementById('journal-btn');
+    const journalScreen = document.getElementById('journal-screen');
+    const closeJournal = document.getElementById('close-journal');
+    const saveJournal = document.getElementById('save-journal');
 
-      // Bind in-game buttons
-      document.getElementById('guess-btn').onclick = () => window.openGuessPopup?.();
-      document.getElementById('item-btn').onclick = () => window.handleItemUse?.();
-      document.getElementById('van-btn').onclick = () => window.endGame?.();
-    });
-  </script>
+    startBtn.onclick = () => {
+      title.classList.add('hidden');
+      screen.classList.remove('hidden');
+      initializeJournal();
+      startGame();
+    };
+
+    journalBtn.onclick = () => {
+      journalScreen.classList.toggle('hidden');
+    };
+    closeJournal.onclick = () => journalScreen.classList.add('hidden');
+    saveJournal.onclick = () => {
+      const note = document.getElementById('journal-entry').value;
+      updateNotes(note);
+    };
+  });
+</script>
+
+<script>
+  const canvas = document.getElementById('orb-canvas');
+  const ctx = canvas.getContext('2d');
+  let w = canvas.width = window.innerWidth;
+  let h = canvas.height = window.innerHeight;
+  const orbs = Array.from({ length: 15 }, () => ({
+    x: Math.random() * w,
+    y: Math.random() * h,
+    r: Math.random() * 2 + 1,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    opacity: 0.5 + Math.random() * 0.3
+  }));
+
+  function drawOrbs() {
+    ctx.clearRect(0, 0, w, h);
+    for (const orb of orbs) {
+      orb.x += orb.vx;
+      orb.y += orb.vy;
+      if (orb.x < 0 || orb.x > w) orb.vx *= -1;
+      if (orb.y < 0 || orb.y > h) orb.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, orb.r, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = 'white';
+      ctx.fill();
+    }
+    requestAnimationFrame(drawOrbs);
+  }
+
+  drawOrbs();
+</script>
+
 </body>
 </html>
