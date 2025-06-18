@@ -4,25 +4,32 @@ import { initializeMap, movePlayer, getCurrentRoom } from './map.js';
 import { initializeJournal, updateJournal } from './journal.js';
 import {
   getGhostActivity, isHunting, triggerHunt, endHunt,
-  getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem
+  getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem,
+  performGhostAction, initializeMechanics
 } from './mechanics.js';
 import {
   getRandomGhost, initializeGhost, performBehavior
 } from './ghosts.js';
-import { displayNarratorText } from './dialogueEngine.js';
 import { addItemToInventory, getInventory, useItem } from './inventory.js';
 
-let ghost;
+let ghost = null;
 let roundActive = false;
 
 export function startGame() {
+  console.log("▶️ startGame() triggered");
   roundActive = true;
+
   ghost = getRandomGhost();
+  console.log("👻 Ghost selected:", ghost.type);
+
   initializeGhost(ghost);
   initializeMap();
   initializeJournal();
+  initializeMechanics();
+
   updateHUD();
   displayNarratorText(`🕵️ A new investigation begins... The ghost type is unknown. Stay alert.`);
+
   renderOptions();
 }
 
@@ -46,7 +53,7 @@ function renderOptions() {
     { label: '5. Return to Van', action: endGame }
   ];
 
-  options.forEach((opt) => {
+  options.forEach(opt => {
     const btn = document.createElement('button');
     btn.innerText = opt.label;
     btn.onclick = opt.action;
@@ -55,7 +62,8 @@ function renderOptions() {
 }
 
 function investigate() {
-  const result = performBehavior(getCurrentRoom());
+  const room = getCurrentRoom();
+  const result = performBehavior(room);
   updateJournal(result);
   displayNarratorText(result);
   updateHUD();
@@ -94,9 +102,9 @@ function handleItemUse() {
 function openMoveMenu() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
-  const directions = ['North', 'East', 'South', 'West'];
 
-  directions.forEach((dir) => {
+  const directions = ['North', 'East', 'South', 'West'];
+  directions.forEach(dir => {
     const btn = document.createElement('button');
     btn.innerText = `Go ${dir}`;
     btn.onclick = () => {
