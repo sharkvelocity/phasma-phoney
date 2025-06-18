@@ -113,7 +113,7 @@
       <button id="van-btn">Return to Van</button>
     </div>
     <div id="center-panel">
-      <div id="narrator-box">Narrator text will appear here.</div>
+      <div id="narrator-box">Welcome!</div>
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
@@ -179,39 +179,200 @@
     window.addToReadout = appendReadout;
   </script>
 
-  <script type="module">
-    import { startGame, move, useItemUI, guessGhostUI, returnToVan, investigate } from './game.js';
-    import { initializeJournal, updateNotes } from './journal.js';
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-btn');
+  const screen = document.getElementById('game-screen');
+  const journalScreen = document.getElementById('journal-screen');
+  const optionPanel = document.getElementById('option-buttons');
+  const hudBar = document.getElementById('hud-status');
 
-    window.move = move;
+  let ghost = null;
+  let currentRoom = 'Foyer';
+  let sanity = 100;
+  let xp = 0;
+  let inventory = ['Smudge Stick', 'Candle', 'EMF Reader'];
+  let journalNotes = '';
 
-    document.addEventListener('DOMContentLoaded', () => {
-      const startBtn = document.getElementById('start-btn');
-      const journalBtn = document.getElementById('journal-btn');
-      const guessBtn = document.getElementById('guess-btn');
-      const itemBtn = document.getElementById('item-btn');
-      const vanBtn = document.getElementById('van-btn');
-      const journalScreen = document.getElementById('journal-screen');
+  const ghostList = [
+    'Spirit','Wraith','Phantom','Poltergeist','Banshee','Jinn','Mare','Revenant','Shade','Demon',
+    'Yurei','Oni','Hantu','Yokai','Goryo','Myling','Onryo','The Twins','Raiju','Obake',
+    'The Mimic','Moroi','Deogen','Thaye','Succubus'
+  ];
 
-      startBtn.onclick = () => {
-        document.getElementById('start-btn').style.display = 'none';
-        document.getElementById('game-screen').classList.remove('hidden');
-        startGame();
-        initializeJournal();
-      };
+  function getRandomGhost() {
+    const type = ghostList[Math.floor(Math.random() * ghostList.length)];
+    return {
+      type,
+      behavior: (room) => {
+        const messages = [
+          `You feel watched in the ${room}.`,
+          `A soft whisper glides through the ${room}.`,
+          `The air chills slightly in the ${room}.`
+        ];
+        return messages[Math.floor(Math.random() * messages.length)];
+      }
+    };
+  }
 
-      journalBtn.onclick = () => journalScreen.classList.toggle('hidden');
-      document.getElementById('close-journal').onclick = () => journalScreen.classList.add('hidden');
-      document.getElementById('save-journal').onclick = () => {
-        const note = document.getElementById('journal-entry').value;
-        updateNotes(note);
-      };
+  function updateHUD() {
+    if (hudBar) {
+      const inv = inventory.join(', ') || 'none';
+      hudBar.innerText = `Sanity: ${sanity}%    XP: ${xp}    Inventory: ${inv}`;
+    }
+    const map = document.getElementById('mini-map');
+    if (map) map.innerText = 'Room: ' + currentRoom;
+  }
 
-      guessBtn.onclick = () => guessGhostUI();
-      itemBtn.onclick = () => useItemUI();
-      vanBtn.onclick = () => returnToVan();
+  function displayNarratorText(text) {
+    const narratorBox = document.getElementById('narrator-box');
+    narratorBox.innerText = text;
+    const log = document.getElementById('main-readout');
+    log.innerText += '\n' + text;
+    log.scrollTop = log.scrollHeight;
+  }
+
+  function initializeJournal() {
+    const journalInput = document.getElementById('journal-entry');
+    if (journalInput) journalInput.value = journalNotes;
+  }
+
+  function updateNotes(text) {
+    journalNotes = text;
+    displayNarratorText("📝 Journal updated.");
+  }
+
+  function renderOptions() {
+    optionPanel.innerHTML = '';
+
+    const options = [
+      { label: '1. Investigate', action: () => investigate() },
+      { label: '2. Use Item', action: () => useItemMenu() },
+      { label: '3. Move', action: () => moveMenu() },
+      { label: '4. Guess Ghost', action: () => guessMenu() },
+      { label: '5. Return to Van', action: () => endGame() }
+    ];
+
+    options.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.innerText = opt.label;
+      btn.onclick = opt.action;
+      optionPanel.appendChild(btn);
     });
-  </script>
+  }
+
+  function investigate() {
+    const message = ghost.behavior(currentRoom);
+    displayNarratorText(message);
+    sanity = Math.max(0, sanity - 5);
+    updateHUD();
+  }
+
+  function useItemMenu() {
+    optionPanel.innerHTML = '';
+    if (inventory.length === 0) {
+      displayNarratorText("🧳 You have no items.");
+      renderOptions();
+      return;
+    }
+
+    inventory.forEach((item, i) => {
+      const btn = document.createElement('button');
+      btn.innerText = `${i + 1}. Use ${item}`;
+      btn.onclick = () => {
+        displayNarratorText(`You used ${item} in the ${currentRoom}.`);
+        inventory.splice(i, 1);
+        updateHUD();
+        renderOptions();
+      };
+      optionPanel.appendChild(btn);
+    });
+
+    const backBtn = document.createElement('button');
+    backBtn.innerText = 'Back';
+    backBtn.onclick = renderOptions;
+    optionPanel.appendChild(backBtn);
+  }
+
+  function moveMenu() {
+    optionPanel.innerHTML = '';
+    ['North', 'East', 'South', 'West'].forEach(dir => {
+      const btn = document.createElement('button');
+      btn.innerText = `Go ${dir}`;
+      btn.onclick = () => {
+        displayNarratorText(`You move ${dir}.`);
+        sanity = Math.max(0, sanity - 2);
+        updateHUD();
+        renderOptions();
+      };
+      optionPanel.appendChild(btn);
+    });
+
+    const backBtn = document.createElement('button');
+    backBtn.innerText = 'Back';
+    backBtn.onclick = renderOptions;
+    optionPanel.appendChild(backBtn);
+  }
+
+  function guessMenu() {
+    optionPanel.innerHTML = '';
+    ghostList.forEach(g => {
+      const btn = document.createElement('button');
+      btn.innerText = g;
+      btn.onclick = () => {
+        if (g === ghost.type) {
+          displayNarratorText(`✅ Correct! It was a ${g}.`);
+          xp += 100;
+        } else {
+          displayNarratorText(`💀 Wrong! It was a ${ghost.type}.`);
+          sanity = Math.max(0, sanity - 25);
+        }
+        updateHUD();
+        renderOptions();
+      };
+      optionPanel.appendChild(btn);
+    });
+
+    const backBtn = document.createElement('button');
+    backBtn.innerText = 'Back';
+    backBtn.onclick = renderOptions;
+    optionPanel.appendChild(backBtn);
+  }
+
+  function endGame() {
+    displayNarratorText("🚐 You return to the van. The investigation ends.");
+    optionPanel.innerHTML = '';
+  }
+
+  startBtn.onclick = () => {
+    document.getElementById('start-btn').style.display = 'none';
+    screen.classList.remove('hidden');
+    currentRoom = 'Foyer';
+    sanity = 100;
+    xp = 0;
+    inventory = ['Smudge Stick', 'Candle', 'EMF Reader'];
+    ghost = getRandomGhost();
+    initializeMap();
+    updateHUD();
+    initializeJournal();
+    displayNarratorText("🕵️ Investigation started. Tools ready.");
+    renderOptions();
+  };
+
+  document.getElementById('journal-btn').onclick = () => {
+    journalScreen.classList.toggle('hidden');
+  };
+
+  document.getElementById('close-journal').onclick = () => {
+    journalScreen.classList.add('hidden');
+  };
+
+  document.getElementById('save-journal').onclick = () => {
+    const note = document.getElementById('journal-entry').value;
+    updateNotes(note);
+  };
+});
+</script>
 <script type="module">
 // Inlined game logic (was game.js)
 
