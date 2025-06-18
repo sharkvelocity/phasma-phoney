@@ -16,55 +16,49 @@
       flex-direction: column;
       align-items: center;
     }
-    .hidden { display: none; }
+    .hidden {
+      display: none;
+    }
     #game-screen {
       display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 10px;
-      width: 100vw;
+      width: 100%;
       height: 100vh;
     }
     #left-panel, #right-panel {
+      padding: 10px;
       display: flex;
       flex-direction: column;
       gap: 10px;
-      padding: 10px;
     }
     #center-panel {
       flex-grow: 1;
+      padding: 10px;
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: 10px;
     }
-    #narrator-box, #main-readout {
+    #narrator-box {
       background: #111;
       border: 1px solid #444;
       padding: 10px;
+      margin-bottom: 10px;
       width: 90%;
+      min-height: 60px;
     }
-    #main-readout {
-      height: 200px;
-      overflow-y: auto;
-      color: #ccc;
-    }
-    button {
+    #option-buttons button,
+    #left-panel button,
+    #movement-buttons button {
       background: #222;
       color: white;
       border: 1px solid #666;
-      padding: 8px 12px;
+      padding: 10px;
       font-size: 14px;
       cursor: pointer;
     }
     #mini-map {
-      height: 80px;
-      width: 120px;
       border: 2px solid green;
+      padding: 5px;
       text-align: center;
-      padding: 4px;
-      font-size: 12px;
-      background: #111;
     }
     #movement-buttons {
       display: flex;
@@ -73,35 +67,43 @@
     }
     .horiz {
       display: flex;
-      gap: 8px;
+      gap: 6px;
+    }
+    #main-readout {
+      width: 90%;
+      height: 200px;
+      background: #111;
+      color: #eee;
+      border: 2px solid green;
+      overflow-y: auto;
+      padding: 10px;
     }
     #hud-status {
-      margin-top: 10px;
       font-size: 14px;
-      color: #8f8;
+      margin-top: 6px;
     }
   </style>
 </head>
 <body>
-  <!-- Title -->
+  <!-- Title Screen -->
   <div id="title-screen">
-    <h1>Phasma-Phoney</h1>
+    <h1 class="game-title">Phasma-Phoney</h1>
     <button id="start-btn">Start Investigation</button>
   </div>
 
-  <!-- Game UI -->
+  <!-- Game Screen -->
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
-      <button id="journal-btn">📓 Journal</button>
-      <button id="guess-btn">👻 Guess Ghost</button>
-      <button id="item-btn">🎒 Use Item</button>
-      <button id="van-btn">🚐 Return to Van</button>
+      <button id="journal-btn">Journal</button>
+      <button id="guess-btn">Guess Ghost</button>
+      <button id="item-btn">Use Item</button>
+      <button id="van-btn">Return to Van</button>
     </div>
     <div id="center-panel">
       <div id="narrator-box">Narrator text will appear here.</div>
+      <div id="hud-status">Sanity: 100% | XP: 0 | Inventory: Empty</div>
       <div id="main-readout">Awaiting input...</div>
-      <div id="hud-status">Sanity: 100% | XP: 0 | Inventory: none</div>
     </div>
     <div id="right-panel">
       <div id="mini-map">Room: Unknown</div>
@@ -116,51 +118,49 @@
     </div>
   </div>
 
-  <!-- Journal -->
-  <div id="journal-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
-    <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
-    <br/>
+  <!-- Journal Overlay -->
+  <div id="journal-screen" class="hidden" style="position: absolute; top: 10%; left: 10%; width: 80%; background: #111; border: 2px solid #666; padding: 10px; z-index: 999;">
+    <h2>Journal</h2>
+    <textarea id="journal-entry" style="width:100%; height:100px;"></textarea>
+    <br />
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
 
-  <!-- JS Logic -->
+  <!-- Scripts -->
   <script type="module">
-    window.addEventListener("error", e => {
-      alert("🔥 JS Error: " + e.message);
-      console.error("Global Error:", e);
-    });
-
     import { startGame } from './game.js';
     import { initializeJournal, updateNotes } from './journal.js';
-    import { getCurrentRoom } from './map.js';
+    import { getCurrentRoom, movePlayer } from './map.js';
 
-    function appendReadout(text) {
-      const box = document.getElementById('main-readout');
-      box.innerText += `\n${text}`;
-      box.scrollTop = box.scrollHeight;
-    }
+    // Debug trap
+    window.addEventListener("error", e => {
+      alert("🔥 JS Error: " + e.message);
+      console.error("Caught:", e);
+    });
 
-    function displayNarratorText(text) {
-      document.getElementById('narrator-box').innerText = text;
-      appendReadout(text);
-      const map = document.getElementById('mini-map');
-      if (map) map.innerText = `Room: ${getCurrentRoom()}`;
-    }
-
-    window.displayNarratorText = displayNarratorText;
+    // Global display function
+    window.displayNarratorText = function(text) {
+      const box = document.getElementById('narrator-box');
+      const log = document.getElementById('main-readout');
+      if (box) box.innerText = text;
+      if (log) {
+        log.innerText += `\n${text}`;
+        log.scrollTop = log.scrollHeight;
+      }
+    };
 
     window.addEventListener('DOMContentLoaded', () => {
-      const title = document.getElementById('title-screen');
+      const startBtn = document.getElementById('start-btn');
       const screen = document.getElementById('game-screen');
+      const title = document.getElementById('title-screen');
       const journalUI = document.getElementById('journal-screen');
 
-      document.getElementById('start-btn').onclick = () => {
+      startBtn.onclick = () => {
         title.classList.add('hidden');
         screen.classList.remove('hidden');
-        initializeJournal();
         startGame();
+        initializeJournal();
       };
 
       document.getElementById('journal-btn').onclick = () => {
@@ -174,18 +174,18 @@
         updateNotes(note);
       };
 
-      // Movement Buttons (hooked to map.js logic)
-      import('./map.js').then(({ movePlayer }) => {
-        document.getElementById('move-north').onclick = () => displayNarratorText(movePlayer("North"));
-        document.getElementById('move-south').onclick = () => displayNarratorText(movePlayer("South"));
-        document.getElementById('move-east').onclick = () => displayNarratorText(movePlayer("East"));
-        document.getElementById('move-west').onclick = () => displayNarratorText(movePlayer("West"));
-      });
+      // Movement bindings
+      document.getElementById('move-north').onclick = () => moveAndReport("North");
+      document.getElementById('move-south').onclick = () => moveAndReport("South");
+      document.getElementById('move-west').onclick = () => moveAndReport("West");
+      document.getElementById('move-east').onclick = () => moveAndReport("East");
 
-      // Bind static utility buttons to game.js context
-      document.getElementById('guess-btn').onclick = () => import('./game.js').then(m => m.openGuessPopup());
-      document.getElementById('item-btn').onclick = () => import('./game.js').then(m => m.handleItemUse());
-      document.getElementById('van-btn').onclick = () => import('./game.js').then(m => m.endGame());
+      function moveAndReport(dir) {
+        const result = movePlayer(dir);
+        displayNarratorText(result);
+        const map = document.getElementById('mini-map');
+        if (map) map.innerText = "Room: " + getCurrentRoom();
+      }
     });
   </script>
 </body>
