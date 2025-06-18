@@ -22,35 +22,26 @@
       color: cyan;
       text-shadow: 0 0 10px cyan;
     }
-    #start-btn {
-      padding: 10px 20px;
-      font-size: 16px;
-      margin-top: 20px;
-      background: #333;
+    button {
+      background: #222;
       color: white;
       border: 1px solid #666;
+      padding: 10px;
+      margin: 5px;
       cursor: pointer;
     }
-    .orb {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.8;
-      animation: float 10s linear infinite;
+    #start-btn {
+      font-size: 16px;
+      margin-top: 20px;
     }
-    @keyframes float {
-      0% { transform: translateY(100vh) translateX(0); }
-      100% { transform: translateY(-10vh) translateX(0); }
+    .hidden {
+      display: none;
     }
-    .hidden { display: none; }
     #game-screen {
       display: flex;
-      flex-direction: row;
-      justify-content: space-between;
       width: 100vw;
       height: 100vh;
+      justify-content: space-between;
       padding: 10px;
     }
     #left-panel, #right-panel {
@@ -63,59 +54,36 @@
       flex-grow: 1;
       display: flex;
       flex-direction: column;
-      justify-content: start;
       align-items: center;
       padding: 10px;
     }
-    #narrator-box {
+    #narrator-box, #main-readout, #hud-status {
       background: #111;
       padding: 10px;
-      min-height: 60px;
-      width: 90%;
-      margin-bottom: 10px;
+      margin: 5px;
       border: 1px solid #444;
-    }
-    #hud-status {
-      font-size: 14px;
-      margin-bottom: 10px;
-    }
-    #option-buttons button,
-    #left-panel button,
-    #movement-buttons button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
-      padding: 10px;
-      font-size: 14px;
-      cursor: pointer;
-    }
-    #movement-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .horiz {
-      display: flex;
-      gap: 8px;
+      width: 90%;
     }
     #mini-map {
+      border: 2px solid green;
+      padding: 4px;
       height: 100px;
       width: 100px;
-      border: 2px solid green;
-      margin-bottom: 10px;
       text-align: center;
-      padding: 4px;
       font-size: 12px;
     }
-    #main-readout {
-      width: 80%;
-      height: 200px;
-      border: 2px solid green;
-      background: #111;
-      color: #eee;
-      padding: 10px;
-      overflow-y: auto;
+    .orb {
+      position: absolute;
+      width: 4px;
+      height: 4px;
+      background: white;
+      border-radius: 50%;
+      opacity: 0.8;
+      animation: float 10s linear infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(100vh); }
+      100% { transform: translateY(-10vh); }
     }
   </style>
 </head>
@@ -133,243 +101,876 @@
     </div>
     <div id="center-panel">
       <div id="narrator-box">Narrator text will appear here.</div>
-      <div id="hud-status">Sanity: 100%    XP: 0    Inventory: none</div>
+      <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
     <div id="right-panel">
       <div id="mini-map">Room: Unknown</div>
       <div id="movement-buttons">
-        <button id="move-north">⬆</button>
-        <div class="horiz">
-          <button id="move-west">⬅</button>
-          <button id="move-east">➡</button>
+        <button onclick="move('North')">⬆</button>
+        <div>
+          <button onclick="move('West')">⬅</button>
+          <button onclick="move('East')">➡</button>
         </div>
-        <button id="move-south">⬇</button>
+        <button onclick="move('South')">⬇</button>
       </div>
     </div>
   </div>
-
-  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+    <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
     <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
     <br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
-<script>
 
-</script>
+  <script>
+    // Floating orbs generator
+    for (let i = 0; i < 30; i++) {
+      const orb = document.createElement('div');
+      orb.classList.add('orb');
+      orb.style.left = Math.random() * 100 + 'vw';
+      orb.style.animationDuration = (8 + Math.random() * 4) + 's';
+      orb.style.opacity = Math.random();
+      document.body.appendChild(orb);
+    }
+  </script>
+
+  <script>
+    // Utility functions
+    function appendReadout(text) {
+      const log = document.getElementById('main-readout');
+      log.innerText += `\n${text}`;
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function displayNarratorText(text) {
+      document.getElementById('narrator-box').innerText = text;
+      appendReadout(text);
+    }
+
+    window.displayNarratorText = displayNarratorText;
+    window.addToReadout = appendReadout;
+  </script>
+
+  <script type="module">
+    import { startGame, move, useItemUI, guessGhostUI, returnToVan, investigate } from './game.js';
+    import { initializeJournal, updateNotes } from './journal.js';
+
+    window.move = move;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const startBtn = document.getElementById('start-btn');
+      const journalBtn = document.getElementById('journal-btn');
+      const guessBtn = document.getElementById('guess-btn');
+      const itemBtn = document.getElementById('item-btn');
+      const vanBtn = document.getElementById('van-btn');
+      const journalScreen = document.getElementById('journal-screen');
+
+      startBtn.onclick = () => {
+        document.getElementById('start-btn').style.display = 'none';
+        document.getElementById('game-screen').classList.remove('hidden');
+        startGame();
+        initializeJournal();
+      };
+
+      journalBtn.onclick = () => journalScreen.classList.toggle('hidden');
+      document.getElementById('close-journal').onclick = () => journalScreen.classList.add('hidden');
+      document.getElementById('save-journal').onclick = () => {
+        const note = document.getElementById('journal-entry').value;
+        updateNotes(note);
+      };
+
+      guessBtn.onclick = () => guessGhostUI();
+      itemBtn.onclick = () => useItemUI();
+      vanBtn.onclick = () => returnToVan();
+    });
+  </script>
 </body>
 </html>
+<script type="module">
+// Inlined game logic (was game.js)
 
-// ========== MAP.JS ==========
 let currentRoom = 'Foyer';
-const rooms = {
-  'Foyer': { North: 'Living Room' },
-  'Living Room': { South: 'Foyer', East: 'Kitchen' },
-  'Kitchen': { West: 'Living Room' }
-};
-export function initializeMap() { currentRoom = 'Foyer'; }
-export function movePlayer(direction) {
-  if (rooms[currentRoom] && rooms[currentRoom][direction]) {
-    currentRoom = rooms[currentRoom][direction];
-    return `You move to the ${currentRoom}.`;
-  } else return `You can't go ${direction} from here.`;
-}
-export function getCurrentRoom() { return currentRoom; }
-
-// ========== INVENTORY.JS ==========
-let inventory = ['EMF Reader', 'Spirit Box', 'Crucifix'];
-export function getInventory() { return inventory; }
-export function addItemToInventory(item) { if (!inventory.includes(item)) inventory.push(item); }
-export function useItem(item, room, ghostType) {
-  if (!inventory.includes(item)) return `You don't have a ${item}.`;
-  if (item === 'EMF Reader') return `The EMF beeps faintly in the ${room}.`;
-  if (item === 'Spirit Box') return `A static-laced voice says "leave..." in the ${room}.`;
-  if (item === 'Crucifix') return `You hold the crucifix tight. A chill lingers in the ${room}.`;
-  return `You use the ${item} in the ${room}. Nothing noticeable happens.`;
-}
-
-// ========== MECHANICS.JS ==========
-let sanity = 100, activity = 0, hunt = false, evidence = [];
-export function getSanity() { return sanity; }
-export function adjustSanity(amount) { sanity = Math.max(0, Math.min(100, sanity + amount)); }
-export function isHunting() { return hunt; }
-export function triggerHunt() { hunt = true; activity = 10; adjustSanity(-25); }
-export function endHunt() { hunt = false; activity = 0; }
-export function getGhostActivity() { return activity; }
-export function discoverEvidence(type) { if (!evidence.includes(type)) evidence.push(type); }
-export function getEvidence() { return evidence; }
-export function useCursedItem(itemName) {
-  adjustSanity(-20);
-  return `You use the ${itemName}. The world bends around you.`;
-}
-
-// ========== JOURNAL.JS ==========
-let notes = '';
-export function initializeJournal() { notes = ''; }
-export function updateNotes(entry) { notes = entry; }
-export function getNotes() { return notes; }
-
-// ========== GHOSTS.JS ==========
-const ghostTypes = [
-  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee', 'Jinn', 'Mare', 'Revenant', 'Shade',
-  'Demon', 'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo', 'Myling', 'Onryo', 'The Twins', 'Raiju',
-  'Obake', 'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
+let sanity = 100;
+let inventory = ['Flashlight', 'Camera', 'Smudge Stick'];
+let ghost = null;
+let ghostTypes = [
+  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
+  'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
+  'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo',
+  'Myling', 'Onryo', 'The Twins', 'Raiju', 'Obake',
+  'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
 ];
-let currentGhost = null;
-export function getRandomGhost() {
+
+function getRandomGhost() {
   const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
-  return { type };
-}
-export function initializeGhost(ghost) {
-  currentGhost = {
-    ...ghost,
-    behaviorMap: generateBehavior(ghost.type)
+  return {
+    type,
+    behavior: generateBehavior(type)
   };
 }
-export function performBehavior(room) {
-  if (!currentGhost || !currentGhost.behaviorMap) return "You feel watched...";
-  return currentGhost.behaviorMap(room);
-}
+
 function generateBehavior(type) {
   const base = [
-    (room) => `A cold wind brushes past you in the ${room}.`,
-    (room) => `You hear faint breathing near the ${room}.`,
-    (room) => `An object moves slightly in the ${room}.`,
-    (room) => `Nothing happens... yet the ${room} feels strange.`
+    (room) => `You feel watched in the ${room}.`,
+    (room) => `A soft sound brushes past you in the ${room}.`,
+    (room) => `Lights flicker in the ${room}.`
   ];
-  const special = {
-    'Poltergeist': [(room) => `Objects fly across the ${room}.`],
-    'Demon': [(room) => `You feel overwhelming dread in the ${room}.`],
-    'Succubus': [(room) => `A sultry voice beckons from the shadows of the ${room}.`]
+  const specials = {
+    'Succubus': [
+      (room) => `A seductive whisper curls through the ${room}.`,
+      (room) => `The air heats strangely around you in the ${room}.`
+    ],
+    'Poltergeist': [
+      (room) => `Objects rattle violently in the ${room}.`,
+      (room) => `Something unseen throws items in the ${room}.`
+    ],
+    'Demon': [
+      (room) => `You feel a sense of dread in the ${room}.`,
+      (room) => `Growls vibrate the air of the ${room}.`
+    ]
   };
-  return (room) => [...base, ...(special[type] || [])][Math.floor(Math.random() * (base.length + (special[type]?.length || 0)))](room);
+  return (room) => {
+    const pool = [...base, ...(specials[type] || [])];
+    return pool[Math.floor(Math.random() * pool.length)](room);
+  };
 }
 
-// ========== DIALOGUE ENGINE ==========
-export function displayNarratorText(text) {
-  const box = document.getElementById('narrator-box');
-  const log = document.getElementById('main-readout');
-  const hud = document.getElementById('hud-status');
-  if (box) box.innerText = text;
-  if (log) {
-    log.innerText += `
-${text}`;
-    log.scrollTop = log.scrollHeight;
-  }
-  if (hud) {
-    hud.innerText = `Sanity: ${getSanity()}%    XP: 0    Inventory: ${getInventory().join(', ') || 'none'}`;
-  }
-}
-
-// ========== GAME.JS ==========
-let ghost = null;
-let roundActive = false;
 export function startGame() {
-  roundActive = true;
   ghost = getRandomGhost();
-  initializeGhost(ghost);
-  initializeMap();
-  initializeJournal();
-  displayNarratorText("🕵️ Investigation begins. Stay alert.");
+  sanity = 100;
+  currentRoom = 'Foyer';
+  displayNarratorText(`Investigation begins. A ${ghost.type} is suspected.`);
+  updateHUD();
   renderOptions();
 }
+
+function updateHUD() {
+  const hud = document.getElementById('hud-status');
+  if (hud) {
+    hud.innerText = `Sanity: ${sanity}%    XP: 0    Inventory: ${inventory.join(', ')}`;
+  }
+  const map = document.getElementById('mini-map');
+  if (map) map.innerText = 'Room: ' + currentRoom;
+}
+
 function renderOptions() {
   const container = document.getElementById('option-buttons');
-  if (!container) return;
   container.innerHTML = '';
-  const options = [
+
+  const buttons = [
     { label: '1. Investigate', action: investigate },
-    { label: '2. Use Item', action: handleItemUse },
-    { label: '3. Move', action: openMoveMenu },
-    { label: '4. Guess Ghost', action: openGuessPopup },
-    { label: '5. Return to Van', action: endGame }
+    { label: '2. Use Item', action: useItemUI },
+    { label: '3. Move', action: () => renderMoveButtons() },
+    { label: '4. Guess Ghost', action: guessGhostUI },
+    { label: '5. Return to Van', action: returnToVan }
   ];
-  options.forEach((opt) => {
-    const btn = document.createElement('button');
-    btn.innerText = opt.label;
-    btn.onclick = opt.action;
-    container.appendChild(btn);
+
+  buttons.forEach(btn => {
+    const b = document.createElement('button');
+    b.innerText = btn.label;
+    b.onclick = btn.action;
+    container.appendChild(b);
   });
 }
-function investigate() {
-  const result = performBehavior(getCurrentRoom());
-  updateNotes(result);
+
+export function investigate() {
+  if (!ghost) return;
+  const result = ghost.behavior(currentRoom);
+  sanity = Math.max(0, sanity - 5);
   displayNarratorText(result);
-  renderOptions();
+  updateHUD();
 }
-function handleItemUse() {
+
+export function useItemUI() {
   const container = document.getElementById('option-buttons');
-  const items = getInventory();
   container.innerHTML = '';
-  if (items.length === 0) {
-    displayNarratorText("🧳 No items.");
+
+  if (!inventory.length) {
+    displayNarratorText("You have no items.");
     renderOptions();
     return;
   }
-  items.forEach((item, i) => {
-    const btn = document.createElement('button');
-    btn.innerText = `${i + 1}. Use ${item}`;
-    btn.onclick = () => {
-      const output = useItem(item, getCurrentRoom(), ghost.type);
-      displayNarratorText(output);
+
+  inventory.forEach((item, index) => {
+    const b = document.createElement('button');
+    b.innerText = `Use ${item}`;
+    b.onclick = () => {
+      displayNarratorText(`You used ${item} in the ${currentRoom}.`);
+      inventory.splice(index, 1);
+      updateHUD();
       renderOptions();
     };
-    container.appendChild(btn);
+    container.appendChild(b);
   });
-  const backBtn = document.createElement('button');
-  backBtn.innerText = 'Back';
-  backBtn.onclick = renderOptions;
-  container.appendChild(backBtn);
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
 }
-function openMoveMenu() {
+</script>
+<script type="module">
+// Continued game logic...
+
+function renderMoveButtons() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
-  ['North', 'East', 'South', 'West'].forEach(dir => {
+  const directions = ['North', 'East', 'South', 'West'];
+
+  directions.forEach((dir) => {
     const btn = document.createElement('button');
     btn.innerText = `Go ${dir}`;
     btn.onclick = () => {
-      displayNarratorText(movePlayer(dir));
+      currentRoom = movePlayer(dir);
+      displayNarratorText(`You move to the ${currentRoom}.`);
+      sanity = Math.max(0, sanity - 2);
+      updateHUD();
       renderOptions();
     };
     container.appendChild(btn);
   });
+
   const backBtn = document.createElement('button');
   backBtn.innerText = 'Back';
   backBtn.onclick = renderOptions;
   container.appendChild(backBtn);
-}
-function openGuessPopup() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-  ghostTypes.forEach(type => {
-    const btn = document.createElement('button');
-    btn.innerText = type;
-    btn.onclick = () => handleGuess(type);
-    container.appendChild(btn);
-  });
-  const backBtn = document.createElement('button');
-  backBtn.innerText = 'Back';
-  backBtn.onclick = renderOptions;
-  container.appendChild(backBtn);
-}
-function handleGuess(guess) {
-  if (guess === ghost.type) {
-    displayNarratorText(`🎯 Correct. It was a ${ghost.type}.`);
-  } else {
-    displayNarratorText(`💀 Wrong. It was ${ghost.type}.`);
-  }
-  roundActive = false;
-  endGame();
-}
-function endGame() {
-  roundActive = false;
-  displayNarratorText("📦 You return to the van. Game over.");
-  const container = document.getElementById('option-buttons');
-  if (container) container.innerHTML = '';
 }
 
+function movePlayer(direction) {
+  const roomMap = {
+    'Foyer': { North: 'Living Room', East: 'Hallway', South: 'Basement', West: 'Garage' },
+    'Living Room': { South: 'Foyer' },
+    'Hallway': { West: 'Foyer', East: 'Bathroom' },
+    'Bathroom': { West: 'Hallway' },
+    'Basement': { North: 'Foyer' },
+    'Garage': { East: 'Foyer' }
+  };
+  const moves = roomMap[currentRoom] || {};
+  return moves[direction] || currentRoom;
+}
+
+function guessGhostUI() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  ghostTypes.forEach((type) => {
+    const btn = document.createElement('button');
+    btn.innerText = type;
+    btn.onclick = () => {
+      if (ghost && ghost.type === type) {
+        displayNarratorText(`🎯 Correct! The ghost was a ${type}. You gain 200 XP.`);
+      } else {
+        displayNarratorText(`💀 Incorrect. The ghost was a ${ghost?.type || "???"}... You've been claimed.`);
+      }
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+
+function returnToVan() {
+  displayNarratorText("🚐 You return to the van. The investigation ends.");
+  document.getElementById('option-buttons').innerHTML = '';
+}
 </script>
-</body>
-</html>
+<script type="module">
+// Journal functionality
+let journalNotes = '';
+
+export function initializeJournal() {
+  const journalInput = document.getElementById('journal-entry');
+  if (journalInput) journalInput.value = journalNotes;
+}
+
+export function updateNotes(text) {
+  journalNotes = text;
+  displayNarratorText("📝 Notes updated in your journal.");
+}
+</script>
+<script type="module">
+// --- Inventory System ---
+const inventory = [];
+
+export function addItemToInventory(item) {
+  if (!inventory.includes(item)) {
+    inventory.push(item);
+    displayNarratorText(`🎒 Added ${item} to your inventory.`);
+  } else {
+    displayNarratorText(`🧳 You already have a ${item}.`);
+  }
+  updateHUD();
+}
+
+export function getInventory() {
+  return inventory;
+}
+
+export function useItem(item, room, ghostType) {
+  const idx = inventory.indexOf(item);
+  if (idx === -1) return `❌ You don't have a ${item}.`;
+
+  // Item logic simulation
+  let result = '';
+  switch (item.toLowerCase()) {
+    case 'candle':
+      result = `🕯️ You light the candle. The ${room} glows softly.`;
+      break;
+    case 'emf reader':
+      const emf = Math.random() < 0.4 ? 5 : 2;
+      result = `📟 EMF Reader shows a level ${emf} reading.`;
+      if (emf === 5) discoverEvidence('EMF Level 5');
+      break;
+    case 'spirit box':
+      const heard = Math.random() < 0.3;
+      result = heard
+        ? `📻 A distorted voice replies through the Spirit Box.`
+        : `📻 Only static. The spirit is silent.`;
+      if (heard) discoverEvidence('Spirit Box');
+      break;
+    case 'smudge stick':
+      result = `💨 You burn the smudge stick. The air in the ${room} feels lighter.`;
+      adjustSanity(+10);
+      break;
+    case 'crucifix':
+      const safe = Math.random() < 0.5;
+      result = safe
+        ? `✝️ The Crucifix seems to calm the room.`
+        : `✝️ The Crucifix does nothing.`;
+      break;
+    case 'mirror':
+      result = `🪞 You gaze into the mirror. A fleeting image of a ${ghostType} appears.`;
+      adjustSanity(-15);
+      break;
+    case 'tarot cards':
+      result = tarotDraw();
+      break;
+    default:
+      result = `🛠️ You try to use the ${item}, but nothing happens.`;
+  }
+
+  inventory.splice(idx, 1);
+  updateHUD();
+  return result;
+}
+
+function tarotDraw() {
+  const cards = [
+    'The Fool: You feel nothing change.',
+    'The Hanged Man: Sanity drains rapidly!',
+    'The Sun: You feel hopeful. Sanity restored.',
+    'The Moon: A dark vision flashes through your mind.',
+    'Death: You hear footsteps begin to run.',
+    'The Hermit: Everything falls eerily quiet.',
+    'The Tower: A loud crash shakes the building!',
+    'The High Priestess: A friendly aura surrounds you briefly.'
+  ];
+  const card = cards[Math.floor(Math.random() * cards.length)];
+  if (card.includes('Sanity')) adjustSanity(card.includes('restored') ? +20 : -25);
+  return `🃏 You draw a tarot card: ${card}`;
+}
+</script>
+<script type="module">
+// --- Mechanics System ---
+let sanity = 100;
+let ghostActivityLevel = 0;
+let currentHunt = false;
+let evidenceDiscovered = [];
+let xp = 0;
+let turn = 0;
+let cursedItemsUsed = 0;
+
+export function getSanity() {
+  return sanity;
+}
+
+export function adjustSanity(amount) {
+  sanity = Math.max(0, Math.min(100, sanity + amount));
+}
+
+export function getXP() {
+  return xp;
+}
+
+export function isHunting() {
+  return currentHunt;
+}
+
+export function triggerHunt() {
+  currentHunt = true;
+  ghostActivityLevel = 10;
+  adjustSanity(-25);
+  return '🚨 Hunt started! You hear footsteps racing toward you!';
+}
+
+export function endHunt() {
+  currentHunt = false;
+  ghostActivityLevel = 0;
+  return '💨 The hunt ends. Silence returns.';
+}
+
+export function getGhostActivity() {
+  return ghostActivityLevel;
+}
+
+export function performGhostAction() {
+  turn++;
+  const roll = Math.random();
+  if (roll < 0.1) {
+    return triggerHunt();
+  } else if (roll < 0.3) {
+    ghostActivityLevel = 6;
+    adjustSanity(-10);
+    return '⚡ Flickering lights. The air feels heavy.';
+  } else if (roll < 0.6) {
+    ghostActivityLevel = 3;
+    return '👣 Footsteps echo somewhere nearby.';
+  } else {
+    ghostActivityLevel = 1;
+    return '🕯️ Nothing yet. Stay vigilant.';
+  }
+}
+
+export function discoverEvidence(evidence) {
+  if (!evidenceDiscovered.includes(evidence)) {
+    evidenceDiscovered.push(evidence);
+    xp += 10;
+    return `🔍 You recorded new evidence: ${evidence}`;
+  }
+  return `📝 Already documented: ${evidence}`;
+}
+
+export function getEvidence() {
+  return evidenceDiscovered;
+}
+
+export function useCursedItem(itemName) {
+  cursedItemsUsed++;
+  adjustSanity(-20);
+  return `🔮 You use the ${itemName}. Reality ripples around you.`;
+}
+
+export function getStats() {
+  return {
+    sanity,
+    xp,
+    evidenceDiscovered,
+    cursedItemsUsed,
+    turns: turn
+  };
+}
+
+export function resetStats() {
+  sanity = 100;
+  ghostActivityLevel = 0;
+  currentHunt = false;
+  evidenceDiscovered = [];
+  xp = 0;
+  cursedItemsUsed = 0;
+  turn = 0;
+}
+</script>
+<script type="module">
+// --- Ghosts System ---
+const ghostList = [
+  { type: 'Spirit', evidence: ['EMF 5', 'Ghost Writing', 'Spirit Box'], preferred: ['Smudge Stick', 'Book'] },
+  { type: 'Wraith', evidence: ['DOTS', 'EMF 5', 'Spirit Box'], preferred: ['Salt', 'UV Light'] },
+  { type: 'Phantom', evidence: ['DOTS', 'Fingerprints', 'Spirit Box'], preferred: ['Photo Camera'] },
+  { type: 'Poltergeist', evidence: ['Writing', 'Spirit Box', 'Fingerprints'], preferred: ['Sound Sensor'] },
+  { type: 'Banshee', evidence: ['DOTS', 'Fingerprints', 'Orb'], preferred: ['Parabolic Mic', 'Crucifix'] },
+  { type: 'Jinn', evidence: ['EMF 5', 'Fingerprints', 'Freezing'], preferred: ['Breaker Off', 'EMF Reader'] },
+  { type: 'Mare', evidence: ['Orb', 'Writing', 'Spirit Box'], preferred: ['Candle', 'Dark'] },
+  { type: 'Revenant', evidence: ['Orb', 'Writing', 'Freezing'], preferred: ['Smudge Stick', 'Crucifix'] },
+  { type: 'Shade', evidence: ['EMF 5', 'Writing', 'Freezing'], preferred: ['Thermometer'] },
+  { type: 'Demon', evidence: ['Writing', 'Freezing', 'Fingerprints'], preferred: ['Crucifix'] },
+  { type: 'Yurei', evidence: ['DOTS', 'Orb', 'Freezing'], preferred: ['Smudge Stick'] },
+  { type: 'Oni', evidence: ['DOTS', 'EMF 5', 'Freezing'], preferred: ['EMF Reader'] },
+  { type: 'Hantu', evidence: ['Fingerprints', 'Orb', 'Freezing'], preferred: ['Thermometer'] },
+  { type: 'Yokai', evidence: ['DOTS', 'Orb', 'Spirit Box'], preferred: ['Voice'] },
+  { type: 'Goryo', evidence: ['DOTS', 'EMF 5', 'Fingerprints'], preferred: ['Video Camera'] },
+  { type: 'Myling', evidence: ['EMF 5', 'Writing', 'Fingerprints'], preferred: ['Parabolic Mic'] },
+  { type: 'Onryo', evidence: ['Orb', 'Freezing', 'Spirit Box'], preferred: ['Candle'] },
+  { type: 'The Twins', evidence: ['EMF 5', 'Freezing', 'Spirit Box'], preferred: ['Motion Sensor'] },
+  { type: 'Raiju', evidence: ['DOTS', 'EMF 5', 'Orb'], preferred: ['Electronics'] },
+  { type: 'Obake', evidence: ['EMF 5', 'Orb', 'Fingerprints'], preferred: ['UV Light'] },
+  { type: 'The Mimic', evidence: ['Freezing', 'Fingerprints', 'Spirit Box'], preferred: ['Salt'] },
+  { type: 'Moroi', evidence: ['Freezing', 'Writing', 'Spirit Box'], preferred: ['Smudge Stick'] },
+  { type: 'Deogen', evidence: ['DOTS', 'Writing', 'Spirit Box'], preferred: ['Proximity Sensor'] },
+  { type: 'Thaye', evidence: ['DOTS', 'Orb', 'Writing'], preferred: ['Timer'] },
+  { type: 'Succubus', evidence: ['Spirit Box', 'Orb', 'Freezing'], preferred: ['Mirror', 'Candle'] }
+];
+
+let currentGhost = null;
+
+function getRandomGhost() {
+  const index = Math.floor(Math.random() * ghostList.length);
+  return ghostList[index];
+}
+
+function initializeGhost(ghost) {
+  currentGhost = {
+    ...ghost,
+    behavior: generateBehavior(ghost.type)
+  };
+}
+
+function performBehavior(room) {
+  if (!currentGhost || !currentGhost.behavior) return "Nothing happens.";
+  return currentGhost.behavior(room);
+}
+
+function generateBehavior(type) {
+  const base = [
+    (room) => `You feel watched in the ${room}.`,
+    (room) => `A faint breeze passes through the ${room}.`,
+    (room) => `The lights flicker in the ${room}.`,
+    (room) => `You hear soft whispering in the ${room}.`,
+    (room) => `Silence presses against your ears in the ${room}.`
+  ];
+
+  const special = {
+    'Poltergeist': [
+      (room) => `Objects fly across the ${room}.`,
+      (room) => `Drawers open and slam in the ${room}.`
+    ],
+    'Demon': [
+      (room) => `A low growl rumbles from the dark in the ${room}.`,
+      (room) => `You sense overwhelming malice in the ${room}.`
+    ],
+    'Succubus': [
+      (room) => `A sultry voice whispers in your ear in the ${room}.`,
+      (room) => `The air grows warm and intoxicating in the ${room}.`
+    ],
+    'The Twins': [
+      (room) => `Two sounds echo at once in the ${room}.`,
+      (room) => `The activity seems doubled in the ${room}.`
+    ],
+    'Mimic': [
+      (room) => `You hear behavior mimicking a different ghost in the ${room}.`,
+      (room) => `This feels familiar... but off.`
+    ]
+  };
+
+  const combined = [...base, ...(special[type] || [])];
+  return (room) => {
+    const action = combined[Math.floor(Math.random() * combined.length)];
+    return action(room);
+  };
+}
+
+window.getRandomGhost = getRandomGhost;
+window.initializeGhost = initializeGhost;
+window.performBehavior = performBehavior;
+</script>
+<script type="module">
+// --- Inventory System ---
+let inventory = [];
+
+function addItemToInventory(item) {
+  if (inventory.length >= 3) return `❌ You can only carry 3 items at once.`;
+  inventory.push(item);
+  return `✅ You added a ${item} to your inventory.`;
+}
+
+function getInventory() {
+  return [...inventory];
+}
+
+function useItem(item, room, ghostType) {
+  const index = inventory.indexOf(item);
+  if (index === -1) return `❌ You don't have a ${item} to use.`;
+  inventory.splice(index, 1);
+
+  const ghostReacts = {
+    'Smudge Stick': ['Spirit', 'Revenant', 'Yurei', 'Demon', 'Moroi'],
+    'Salt': ['Wraith', 'The Mimic'],
+    'Candle': ['Mare', 'Onryo', 'Succubus'],
+    'Crucifix': ['Demon', 'Revenant', 'Deogen'],
+    'Parabolic Mic': ['Myling', 'Banshee'],
+    'UV Light': ['Obake', 'Hantu'],
+    'Mirror': ['Succubus'],
+    'EMF Reader': ['Jinn', 'Oni', 'The Twins'],
+    'Thermometer': ['Hantu', 'Shade', 'Onryo'],
+    'Proximity Sensor': ['Deogen'],
+    'Voice': ['Yokai', 'Moroi'],
+    'Camera': ['Phantom', 'Banshee']
+  };
+
+  const effective = ghostReacts[item] || [];
+  if (effective.includes(ghostType)) {
+    return `🔮 The ${item} reacts strongly to the ${ghostType} in the ${room}.`;
+  } else {
+    return `The ${item} does nothing unusual in the ${room}.`;
+  }
+}
+
+window.addItemToInventory = addItemToInventory;
+window.getInventory = getInventory;
+window.useItem = useItem;
+</script>
+<script type="module">
+// --- Map System ---
+const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Basement', 'Bedroom', 'Garage'];
+let currentRoom = 'Foyer';
+
+function initializeMap() {
+  currentRoom = 'Foyer';
+  displayNarratorText(`📍 You are in the ${currentRoom}.`);
+}
+
+function movePlayer(direction) {
+  const transitions = {
+    'Foyer': { North: 'Living Room', East: 'Garage', South: null, West: null },
+    'Living Room': { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
+    'Kitchen': { West: 'Living Room' },
+    'Dining Room': { East: 'Living Room' },
+    'Garage': { West: 'Foyer' },
+    'Bathroom': { North: 'Bedroom' },
+    'Bedroom': { South: 'Bathroom' },
+    'Basement': { North: 'Foyer' }
+  };
+
+  const options = transitions[currentRoom] || {};
+  const newRoom = options[direction];
+  if (newRoom) {
+    currentRoom = newRoom;
+    return `🚪 You move ${direction} to the ${newRoom}.`;
+  } else {
+    return `❌ You can't move ${direction} from the ${currentRoom}.`;
+  }
+}
+
+function getCurrentRoom() {
+  return currentRoom;
+}
+
+window.initializeMap = initializeMap;
+window.movePlayer = movePlayer;
+window.getCurrentRoom = getCurrentRoom;
+</script>
+<script type="module">
+// --- Sanity and XP System ---
+let sanity = 100;
+let xp = 0;
+
+function getSanity() {
+  return sanity;
+}
+
+function adjustSanity(amount) {
+  sanity = Math.max(0, Math.min(100, sanity + amount));
+}
+
+function getXP() {
+  return xp;
+}
+
+function addXP(amount) {
+  xp += amount;
+}
+
+window.getSanity = getSanity;
+window.adjustSanity = adjustSanity;
+window.getXP = getXP;
+window.addXP = addXP;
+</script>
+<script type="module">
+  // --- Cursed Items & Tarot Logic ---
+const cursedItems = ['Music Box', 'Haunted Mirror', 'Summoning Circle', 'Voodoo Doll', 'Ouija Board', 'Tarot Cards'];
+
+function useCursedItem(name) {
+  adjustSanity(-20);
+  let result = `You use the ${name}. A strange force ripples through the air...`;
+
+  if (name === 'Tarot Cards') {
+    const outcome = rollTarotCard();
+    result += ` Tarot card drawn: ${outcome}.`;
+  }
+
+  return result;
+}
+
+function rollTarotCard() {
+  const cards = [
+    'The Fool – Nothing happens.',
+    'The Hanged Man – Instant death.',
+    'The Sun – Full sanity restored!',
+    'The Moon – Sanity drops to 0!',
+    'The Hermit – Ghost is trapped.',
+    'The Wheel of Fortune – Sanity up or down.',
+    'Death – Initiates hunt.',
+    'The Devil – Manifestation nearby.',
+    'The Tower – Ghost moves to your room.',
+    'The High Priestess – Revives fallen ally (irrelevant solo).'
+  ];
+  return cards[Math.floor(Math.random() * cards.length)];
+}
+
+window.useCursedItem = useCursedItem;
+// --- Game Start + Action Panel Wiring ---
+window.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-btn');
+  const screen = document.getElementById('game-screen');
+  const journalScreen = document.getElementById('journal-screen');
+  const optionPanel = document.getElementById('option-buttons');
+  const hudBar = document.getElementById('hud-status');
+
+  let ghost = null;
+  let gameStarted = false;
+
+  function updateHUD() {
+    if (hudBar) {
+      const inv = getInventory().join(', ') || 'none';
+      hudBar.innerText = `Sanity: ${getSanity()}%    XP: ${getXP()}    Inventory: ${inv}`;
+    }
+    const map = document.getElementById('mini-map');
+    if (map) map.innerText = 'Room: ' + getCurrentRoom();
+  }
+
+  function renderOptions() {
+    optionPanel.innerHTML = '';
+
+    const buttons = [
+      { label: '1. Investigate', action: investigate },
+      { label: '2. Use Item', action: useItemMenu },
+      { label: '3. Move', action: moveMenu },
+      { label: '4. Guess Ghost', action: guessMenu },
+      { label: '5. Return to Van', action: endGame }
+    ];
+
+    for (const opt of buttons) {
+      const b = document.createElement('button');
+      b.innerText = opt.label;
+      b.onclick = opt.action;
+      optionPanel.appendChild(b);
+    }
+  }
+
+  function investigate() {
+    const text = performBehavior(getCurrentRoom());
+    displayNarratorText(text);
+    adjustSanity(-5);
+    updateHUD();
+  }
+
+  function useItemMenu() {
+    optionPanel.innerHTML = '';
+    const items = getInventory();
+    if (items.length === 0) {
+      displayNarratorText("🧳 You have no items.");
+      renderOptions();
+      return;
+    }
+    items.forEach((item, i) => {
+      const b = document.createElement('button');
+      b.innerText = `${i + 1}. Use ${item}`;
+      b.onclick = () => {
+        const result = useItem(item, getCurrentRoom(), ghost.type);
+        displayNarratorText(result);
+        updateHUD();
+        renderOptions();
+      };
+      optionPanel.appendChild(b);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    optionPanel.appendChild(back);
+  }
+
+  function moveMenu() {
+    optionPanel.innerHTML = '';
+    const dirs = ['North', 'East', 'South', 'West'];
+    dirs.forEach((dir) => {
+      const b = document.createElement('button');
+      b.innerText = `Go ${dir}`;
+      b.onclick = () => {
+        const text = movePlayer(dir);
+        displayNarratorText(text);
+        updateHUD();
+        renderOptions();
+      };
+      optionPanel.appendChild(b);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    optionPanel.appendChild(back);
+  }
+
+  function guessMenu() {
+    optionPanel.innerHTML = '';
+    const guesses = [
+      'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
+      'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
+      'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo',
+      'Myling', 'Onryo', 'The Twins', 'Raiju', 'Obake',
+      'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
+    ];
+
+    guesses.forEach((g) => {
+      const b = document.createElement('button');
+      b.innerText = g;
+      b.onclick = () => {
+        if (g === ghost.type) {
+          displayNarratorText(`✅ Correct! It was a ${g}. You survive.`);
+          addXP(100);
+        } else {
+          displayNarratorText(`💀 Wrong. It was a ${ghost.type}.`);
+          adjustSanity(-50);
+        }
+        updateHUD();
+        renderOptions();
+      };
+      optionPanel.appendChild(b);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    optionPanel.appendChild(back);
+  }
+
+  function endGame() {
+    displayNarratorText(`🚐 You return to the van. Final Sanity: ${getSanity()}%. XP: ${getXP()}`);
+    gameStarted = false;
+    optionPanel.innerHTML = '';
+  }
+
+  startBtn.onclick = () => {
+    document.getElementById('start-btn').parentElement.classList.add('hidden');
+    screen.classList.remove('hidden');
+    initializeMap();
+    ghost = getRandomGhost();
+    initializeGhost(ghost);
+    addItemToInventory('Smudge Stick');
+    addItemToInventory('Candle');
+    addItemToInventory('EMF Reader');
+    displayNarratorText("🕵️ Investigation started. Tools loaded.");
+    updateHUD();
+    renderOptions();
+    gameStarted = true;
+  };
+
+  document.getElementById('journal-btn').onclick = () => {
+    document.getElementById('journal-screen').classList.toggle('hidden');
+  };
+
+  document.getElementById('close-journal').onclick = () => {
+    document.getElementById('journal-screen').classList.add('hidden');
+  };
+
+  document.getElementById('save-journal').onclick = () => {
+    const note = document.getElementById('journal-entry').value;
+    displayNarratorText(`📝 Note saved: "${note}"`);
+  };
+});
+</script>
