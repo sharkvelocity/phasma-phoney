@@ -5,25 +5,103 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="styles.css" />
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .hidden { display: none; }
+    #game-screen {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 10px;
+      width: 100vw;
+      height: 100vh;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+    }
+    #narrator-box, #main-readout {
+      background: #111;
+      border: 1px solid #444;
+      padding: 10px;
+      width: 90%;
+    }
+    #main-readout {
+      height: 200px;
+      overflow-y: auto;
+      color: #ccc;
+    }
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 8px 12px;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    #mini-map {
+      height: 80px;
+      width: 120px;
+      border: 2px solid green;
+      text-align: center;
+      padding: 4px;
+      font-size: 12px;
+      background: #111;
+    }
+    #movement-buttons {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .horiz {
+      display: flex;
+      gap: 8px;
+    }
+    #hud-status {
+      margin-top: 10px;
+      font-size: 14px;
+      color: #8f8;
+    }
+  </style>
 </head>
 <body>
+  <!-- Title -->
   <div id="title-screen">
-    <h1 class="game-title">Phasma-Phoney</h1>
+    <h1>Phasma-Phoney</h1>
     <button id="start-btn">Start Investigation</button>
   </div>
 
+  <!-- Game UI -->
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
-      <button id="journal-btn">Journal</button>
-      <button id="guess-btn">Guess Ghost</button>
-      <button id="item-btn">Use Item</button>
-      <button id="van-btn">Return to Van</button>
+      <button id="journal-btn">📓 Journal</button>
+      <button id="guess-btn">👻 Guess Ghost</button>
+      <button id="item-btn">🎒 Use Item</button>
+      <button id="van-btn">🚐 Return to Van</button>
     </div>
     <div id="center-panel">
       <div id="narrator-box">Narrator text will appear here.</div>
-      <div id="main-readout">Awaiting interaction...</div>
-      <div id="hud-status"></div>
+      <div id="main-readout">Awaiting input...</div>
+      <div id="hud-status">Sanity: 100% | XP: 0 | Inventory: none</div>
     </div>
     <div id="right-panel">
       <div id="mini-map">Room: Unknown</div>
@@ -38,58 +116,76 @@
     </div>
   </div>
 
-  <div id="journal-screen" class="screen hidden">
+  <!-- Journal -->
+  <div id="journal-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..."></textarea>
+    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
     <br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
 
+  <!-- JS Logic -->
   <script type="module">
+    window.addEventListener("error", e => {
+      alert("🔥 JS Error: " + e.message);
+      console.error("Global Error:", e);
+    });
+
     import { startGame } from './game.js';
     import { initializeJournal, updateNotes } from './journal.js';
     import { getCurrentRoom } from './map.js';
 
-    window.displayNarratorText = (text) => {
-      const box = document.getElementById('narrator-box');
-      const log = document.getElementById('main-readout');
-      const miniMap = document.getElementById('mini-map');
-      if (box) box.innerText = text;
-      if (log) log.innerText += `\n${text}`;
-      if (miniMap) miniMap.innerText = 'Room: ' + getCurrentRoom();
-    };
+    function appendReadout(text) {
+      const box = document.getElementById('main-readout');
+      box.innerText += `\n${text}`;
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function displayNarratorText(text) {
+      document.getElementById('narrator-box').innerText = text;
+      appendReadout(text);
+      const map = document.getElementById('mini-map');
+      if (map) map.innerText = `Room: ${getCurrentRoom()}`;
+    }
+
+    window.displayNarratorText = displayNarratorText;
 
     window.addEventListener('DOMContentLoaded', () => {
-      const start = document.getElementById('start-btn');
       const title = document.getElementById('title-screen');
-      const game = document.getElementById('game-screen');
+      const screen = document.getElementById('game-screen');
+      const journalUI = document.getElementById('journal-screen');
 
-      start.onclick = () => {
+      document.getElementById('start-btn').onclick = () => {
         title.classList.add('hidden');
-        game.classList.remove('hidden');
-        startGame();
+        screen.classList.remove('hidden');
         initializeJournal();
+        startGame();
       };
 
       document.getElementById('journal-btn').onclick = () => {
-        document.getElementById('journal-screen').classList.toggle('hidden');
+        journalUI.classList.toggle('hidden');
       };
-
-      document.getElementById('save-journal').onclick = () => {
-        const content = document.getElementById('journal-entry').value;
-        updateNotes(content);
-      };
-
       document.getElementById('close-journal').onclick = () => {
-        document.getElementById('journal-screen').classList.add('hidden');
+        journalUI.classList.add('hidden');
+      };
+      document.getElementById('save-journal').onclick = () => {
+        const note = document.getElementById('journal-entry').value;
+        updateNotes(note);
       };
 
-      document.getElementById('van-btn').onclick = () => {
-        displayNarratorText('You returned to the van. Investigation aborted.');
-        game.classList.add('hidden');
-        title.classList.remove('hidden');
-      };
+      // Movement Buttons (hooked to map.js logic)
+      import('./map.js').then(({ movePlayer }) => {
+        document.getElementById('move-north').onclick = () => displayNarratorText(movePlayer("North"));
+        document.getElementById('move-south').onclick = () => displayNarratorText(movePlayer("South"));
+        document.getElementById('move-east').onclick = () => displayNarratorText(movePlayer("East"));
+        document.getElementById('move-west').onclick = () => displayNarratorText(movePlayer("West"));
+      });
+
+      // Bind static utility buttons to game.js context
+      document.getElementById('guess-btn').onclick = () => import('./game.js').then(m => m.openGuessPopup());
+      document.getElementById('item-btn').onclick = () => import('./game.js').then(m => m.handleItemUse());
+      document.getElementById('van-btn').onclick = () => import('./game.js').then(m => m.endGame());
     });
   </script>
 </body>
