@@ -1,314 +1,142 @@
-/* Phasma-Phoney styles.css */
+/* styles.css — UI layout and theme */
 
 body {
+  background: black;
+  color: white;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #000;
-  color: #fff;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
-.game-title {
-  text-align: center;
-  font-size: 3em;
-  margin-top: 2em;
+h1.game-title {
+  font-size: 2.5em;
+  margin: 40px 0 20px 0;
+  color: #0ff;
+  text-shadow: 0 0 12px #0ff;
 }
 
 button {
-  margin: 5px;
-  padding: 10px 20px;
   background-color: #222;
-  color: #0f0;
-  border: 1px solid #555;
+  color: #fff;
+  border: 1px solid #666;
+  padding: 10px 16px;
+  font-size: 16px;
   cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
 }
 
 button:hover {
-  background-color: #0f0;
-  color: #000;
+  background-color: #333;
+  transform: scale(1.03);
 }
 
+.hidden {
+  display: none !important;
+}
+
+/* Game screen layout */
 #game-screen {
   display: flex;
-  height: 90vh;
-  padding: 10px;
+  width: 100%;
+  height: 100vh;
 }
 
 #left-panel,
 #right-panel {
-  width: 20%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  padding: 10px;
   gap: 10px;
 }
 
 #center-panel {
-  width: 60%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#main-readout {
-  border: 2px solid #0f0;
-  padding: 20px;
-  width: 90%;
-  height: 300px;
-  overflow-y: auto;
-  background-color: #111;
-}
-
-#movement-buttons {
+  flex-grow: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
-}
-
-.horiz {
-  display: flex;
-  justify-content: space-between;
-  width: 100px;
-}
-
-.hidden {
-  display: none;
-}
-
-#journal-screen,
-#guess-popup {
-  position: fixed;
-  top: 10%;
-  left: 20%;
-  width: 60%;
-  background: #111;
-  border: 2px solid #0f0;
-  padding: 20px;
-  z-index: 1000;
-}
-
-textarea {
-  width: 100%;
-  height: 150px;
-  background-color: #000;
-  color: #0f0;
-  border: 1px solid #0f0;
   padding: 10px;
 }
 
-#mini-map {
-  height: 200px;
-  width: 100%;
-  background-color: #222;
-  border: 1px solid #0f0;
-}/* Phasma-Phoney styles.css */
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #000;
-  color: #fff;
-}
-
-.game-title {
-  text-align: center;
-  font-size: 3em;
-  margin-top: 2em;
-}
-
-button {
-  margin: 5px;
-  padding: 10px 20px;
-  background-color: #222;
-  color: #0f0;
-  border: 1px solid #555;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #0f0;
-  color: #000;
-}
-
-#game-screen {
-  display: flex;
-  height: 90vh;
-  padding: 10px;
-}
-
-#left-panel,
-#right-panel {
-  width: 20%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
-}
-
-#center-panel {
-  width: 60%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-#main-readout {
-  border: 2px solid #0f0;
-  padding: 20px;
-  width: 90%;
-  height: 300px;
-  overflow-y: auto;
-  background-color: #111;
-}
-
-#movement-buttons {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-}
-
-.horiz {
-  display: flex;
-  justify-content: space-between;
-  width: 100px;
-}
-
-.hidden {
-  display: none;
-}
-
-#journal-screen,
-#guess-popup {
-  position: fixed;
-  top: 10%;
-  left: 20%;
-  width: 60%;
+/* Dialogue box */
+#narrator-box {
   background: #111;
-  border: 2px solid #0f0;
-  padding: 20px;
-  z-index: 1000;
-}
-
-textarea {
-  width: 100%;
-  height: 150px;
-  background-color: #000;
-  color: #0f0;
-  border: 1px solid #0f0;
-  padding: 10px;
-}
-
-#mini-map {
-  height: 200px;
-  width: 100%;
-  background-color: #222;
-  border: 1px solid #0f0;
-}body {
-  margin: 0;
-  background: black;
-  color: white;
-  font-family: 'Segoe UI', sans-serif;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  overflow: hidden;
-}
-
-.screen {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-
-.hidden {
-  display: none;
-}
-
-.fullscreen {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-}
-
-.black-bg {
-  background: black;
-  z-index: 999;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.fade-in {
-  animation: fadeIn 2.5s ease-in-out forwards;
-}
-
-.fade-out {
-  animation: fadeOut 2.5s ease-in-out forwards;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-
-.startup-image {
-  max-width: 80vw;
-  max-height: 80vh;
-}
-
-.glow-text {
-  font-size: 3rem;
-  color: white;
-  text-shadow: 0 0 5px #fff, 0 0 15px #f0f, 0 0 30px #f0f;
-  margin-bottom: 20px;
-}
-
-button {
-  background: #333;
-  color: white;
-  border: 1px solid #777;
-  border-radius: 5px;
-  padding: 10px 15px;
-  margin: 10px;
-  cursor: pointer;
-}
-
-button:hover {
-  background: #555;
-}
-
-.dialogue-box {
-  background: #111;
-  padding: 20px;
-  margin: 20px;
   border: 1px solid #444;
-  width: 80vw;
-  min-height: 120px;
-  border-radius: 8px;
+  padding: 10px;
+  width: 90%;
+  min-height: 60px;
+  color: #eee;
+  font-style: italic;
 }
 
-.button-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 20px;
+/* HUD info */
+#hud-status {
+  color: #ccc;
+  font-size: 14px;
+  margin-top: 5px;
+  padding: 4px;
 }
 
-#journal-entry {
-  width: 80%;
+/* Main Readout */
+#main-readout {
+  width: 90%;
   height: 200px;
+  background: #111;
+  color: #eee;
+  border: 2px solid #0f0;
+  overflow-y: auto;
+  padding: 10px;
+  font-family: monospace;
+  margin-top: 10px;
+  white-space: pre-wrap;
+}
+
+/* Mini-map area */
+#mini-map {
+  border: 2px solid green;
+  background: #111;
+  color: #0f0;
+  padding: 6px;
+  text-align: center;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+/* Movement button cluster */
+#movement-buttons {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.horiz {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Journal overlay */
+#journal-screen {
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 80%;
+  background: #111;
+  border: 2px solid #666;
+  padding: 12px;
+  color: white;
+  z-index: 999;
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+#journal-screen textarea {
+  width: 100%;
+  height: 100px;
   background: #222;
   color: white;
   border: 1px solid #555;
-  padding: 10px;
-  font-family: monospace;
+  padding: 8px;
+  resize: none;
 }
