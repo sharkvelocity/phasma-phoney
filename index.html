@@ -1,11 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <script>
-window.addEventListener('error', (e) => {
-  alert("JavaScript Error: " + e.message);
-});
-</script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma-Phoney</title>
@@ -137,55 +132,62 @@ window.addEventListener('error', (e) => {
   </div>
 
   <script type="module">
-    import { startGame } from './game.js';
-    import { updateNotes, initializeJournal } from './journal.js';
-    import { getCurrentRoom } from './map.js';
+    (async () => {
+      try {
+        const game = await import('./game.js');
+        const journal = await import('./journal.js');
+        const { getCurrentRoom } = await import('./map.js');
 
-    function appendReadout(text) {
-      const log = document.getElementById('main-readout');
-      log.innerText += `\n${text}`;
-      log.scrollTop = log.scrollHeight;
-    }
+        function appendReadout(text) {
+          const log = document.getElementById('main-readout');
+          log.innerText += `\n${text}`;
+          log.scrollTop = log.scrollHeight;
+        }
 
-    export function displayNarratorText(input) {
-      const narratorBox = document.getElementById('narrator-box');
-      narratorBox.innerText = input;
-      appendReadout(input);
-      const map = document.getElementById('mini-map');
-      if (map) map.innerText = 'Room: ' + getCurrentRoom();
-    }
+        function displayNarratorText(input) {
+          const narratorBox = document.getElementById('narrator-box');
+          narratorBox.innerText = input;
+          appendReadout(input);
+          const map = document.getElementById('mini-map');
+          if (map) map.innerText = 'Room: ' + getCurrentRoom();
+        }
 
-    window.displayNarratorText = displayNarratorText;
-    window.addToReadout = appendReadout;
+        window.displayNarratorText = displayNarratorText;
+        window.addToReadout = appendReadout;
 
-    window.addEventListener('DOMContentLoaded', () => {
-      const startBtn = document.getElementById('start-btn');
-      const title = document.getElementById('title-screen');
-      const screen = document.getElementById('game-screen');
-      const journal = document.getElementById('journal-screen');
+        window.addEventListener('DOMContentLoaded', () => {
+          const startBtn = document.getElementById('start-btn');
+          const title = document.getElementById('title-screen');
+          const screen = document.getElementById('game-screen');
+          const journalScreen = document.getElementById('journal-screen');
 
-      if (startBtn) {
-        startBtn.onclick = () => {
-          title.classList.add('hidden');
-          screen.classList.remove('hidden');
-          startGame();
-          initializeJournal();
-        };
+          if (startBtn) {
+            startBtn.onclick = () => {
+              title.classList.add('hidden');
+              screen.classList.remove('hidden');
+              game.startGame();
+              journal.initializeJournal();
+            };
+          }
+
+          document.getElementById('journal-btn').onclick = () => {
+            journalScreen.classList.toggle('hidden');
+          };
+
+          document.getElementById('close-journal').onclick = () => {
+            journalScreen.classList.add('hidden');
+          };
+
+          document.getElementById('save-journal').onclick = () => {
+            const note = document.getElementById('journal-entry').value;
+            journal.updateNotes(note);
+          };
+        });
+      } catch (err) {
+        alert('Module load error: ' + err.message);
+        console.error(err);
       }
-
-      document.getElementById('journal-btn').onclick = () => {
-        journal.classList.toggle('hidden');
-      };
-
-      document.getElementById('close-journal').onclick = () => {
-        journal.classList.add('hidden');
-      };
-
-      document.getElementById('save-journal').onclick = () => {
-        const note = document.getElementById('journal-entry').value;
-        updateNotes(note);
-      };
-    });
+    })();
   </script>
 </body>
 </html>
