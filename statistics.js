@@ -1,46 +1,77 @@
-// statistics.js – Player stat tracking and turn counter
+// statistics.js – Tracks all runtime game metrics and stores cumulative progression
 
 let stats = {
-  sanity: 100,
+  turnsTaken: 0,
   evidenceFound: 0,
+  investigations: 0,
+  wins: 0,
+  losses: 0,
   cursedItemsUsed: 0,
-  turnsTaken: 0
+  totalSanityLost: 0,
+  lastGuess: null,
+  lastGhost: null,
+  lastOutcome: null,
+  totalGuesses: 0
 };
 
-export function loadStats() {
-  const stored = localStorage.getItem('phasma_stats');
-  if (stored) stats = JSON.parse(stored);
-  return stats;
-}
-
-export function saveStats() {
-  localStorage.setItem('phasma_stats', JSON.stringify(stats));
+export function initializeStats() {
+  stats = {
+    turnsTaken: 0,
+    evidenceFound: 0,
+    investigations: 0,
+    wins: 0,
+    losses: 0,
+    cursedItemsUsed: 0,
+    totalSanityLost: 0,
+    lastGuess: null,
+    lastGhost: null,
+    lastOutcome: null,
+    totalGuesses: 0
+  };
 }
 
 export function getStats() {
   return stats;
 }
 
-export function updateStats(newStats) {
-  stats = { ...stats, ...newStats };
-  saveStats();
+export function updateStats(newData) {
+  for (const key in newData) {
+    if (stats.hasOwnProperty(key)) {
+      stats[key] += typeof newData[key] === 'number' ? newData[key] : 0;
+    }
+  }
 }
 
-export function clearStats() {
-  stats = {
-    sanity: 100,
-    evidenceFound: 0,
-    cursedItemsUsed: 0,
-    turnsTaken: 0
-  };
-  saveStats();
+export function setOutcome({ guess, ghost, correct }) {
+  stats.lastGuess = guess;
+  stats.lastGhost = ghost;
+  stats.lastOutcome = correct ? 'win' : 'loss';
+  stats.totalGuesses++;
+  stats.investigations++;
+  if (correct) stats.wins++;
+  else stats.losses++;
 }
 
 export function getTurnCount() {
   return stats.turnsTaken;
 }
 
-export function incrementTurnCount() {
-  stats.turnsTaken += 1;
-  saveStats();
+export function incrementTurn() {
+  stats.turnsTaken++;
+}
+
+export function recordSanityLoss(amount) {
+  stats.totalSanityLost += Math.abs(amount);
+}
+
+export function addEvidenceFound(count = 1) {
+  stats.evidenceFound += count;
+}
+
+export function incrementCursedItemUse() {
+  stats.cursedItemsUsed++;
+}
+
+export function clearStats() {
+  initializeStats();
 }
