@@ -14,7 +14,6 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      overflow: hidden;
     }
     h1 {
       margin-top: 40px;
@@ -22,71 +21,44 @@
       color: cyan;
       text-shadow: 0 0 10px cyan;
     }
-    #start-btn {
+    #start-btn, .action-btn {
       padding: 10px 20px;
       font-size: 16px;
-      margin-top: 20px;
+      margin: 5px;
       background: #333;
       color: white;
       border: 1px solid #666;
       cursor: pointer;
     }
     .hidden { display: none; }
-    .orb {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.8;
-      animation: float 10s linear infinite;
-    }
-    @keyframes float {
-      0% { transform: translateY(100vh); }
-      100% { transform: translateY(-10vh); }
-    }
     #game-screen {
       display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      width: 100vw;
-      height: 100vh;
+      width: 100%;
       padding: 10px;
     }
     #left-panel, #right-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      width: 20%;
       padding: 10px;
     }
     #center-panel {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      width: 60%;
       padding: 10px;
     }
-    #narrator-box, #hud-status, #main-readout {
-      width: 80%;
+    #narrator-box, #main-readout, #mini-map, #hud-status {
+      margin-bottom: 10px;
+      padding: 10px;
       background: #111;
       border: 1px solid #444;
-      padding: 8px;
-      margin-bottom: 8px;
     }
-    #movement-buttons button, #option-buttons button, #left-panel button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
-      padding: 8px;
-      cursor: pointer;
-      margin-bottom: 4px;
-    }
-    #mini-map {
-      height: 100px;
-      width: 100px;
-      border: 2px solid green;
-      text-align: center;
-      padding: 4px;
+    #journal-screen {
+      position: fixed;
+      top: 20%;
+      left: 10%;
+      width: 80%;
+      background: #111;
+      border: 2px solid #666;
+      padding: 12px;
+      z-index: 1000;
     }
   </style>
 </head>
@@ -97,180 +69,140 @@
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
-      <button id="journal-btn">Journal</button>
-      <button id="guess-btn">Guess Ghost</button>
-      <button id="item-btn">Use Item</button>
-      <button id="van-btn">Return to Van</button>
+      <button id="journal-btn" class="action-btn">Journal</button>
+      <button id="guess-btn" class="action-btn">Guess Ghost</button>
+      <button id="item-btn" class="action-btn">Use Item</button>
+      <button id="van-btn" class="action-btn">Return to Van</button>
     </div>
     <div id="center-panel">
       <div id="narrator-box">Narrator text will appear here.</div>
-      <div id="hud-status">Sanity: 100%    XP: 0    Inventory: none</div>
+      <div id="hud-status">Sanity: 100% | XP: 0 | Inventory: none</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
     <div id="right-panel">
-      <div id="mini-map">Room: Van</div>
-      <div id="movement-buttons">
-        <button onclick="handleMove('North')">⬆</button>
-        <div style="display: flex; gap: 4px;">
-          <button onclick="handleMove('West')">⬅</button>
-          <button onclick="handleMove('East')">➡</button>
-        </div>
-        <button onclick="handleMove('South')">⬇</button>
-      </div>
+      <div id="mini-map">Room: Unknown</div>
     </div>
   </div>
 
-  <div id="journal-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
-    <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
-    <br/>
-    <button onclick="saveJournal()">Save</button>
-    <button onclick="toggleJournal()">Close</button>
+  <div id="journal-screen" class="hidden">
+    <h2>Journal</h2>
+    <textarea id="journal-entry" style="width:100%;height:100px;"></textarea><br>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
   </div>
 
   <script>
-    let ghost = null;
-    let currentRoom = 'Van';
-    let inventory = ['EMF Reader', 'Candle'];
-    let sanity = 100;
-    let xp = 0;
-    let journalNotes = [];
-
-    const ghostTypes = ['Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee', 'Demon', 'Succubus'];
-
-    const ghostBehaviors = {
-      'Spirit': (room) => `A calming whisper passes through the ${room}.`,
-      'Demon': (room) => `You hear a growl echoing from the ${room}.`,
-      'Succubus': (room) => `You feel warmth press against you in the ${room}.`,
-      'default': (room) => `You feel watched in the ${room}...`
-    };
+    // Minimal ghost behavior engine with 26 types
+    const ghostTypes = [
+      'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
+      'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
+      'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo',
+      'Myling', 'Onryo', 'The Twins', 'Raiju', 'Obake',
+      'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
+    ];
+    let currentGhost = null;
 
     function getRandomGhost() {
       const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
       return { type };
     }
 
+    function generateBehavior(type) {
+      return (room) => `The ${type} stirs in the ${room}. You feel uneasy.`;
+    }
+
+    // Game state
+    let ghost;
+    let sanity = 100;
+    let inventory = ['EMF Reader'];
+    let room = 'Foyer';
+    let xp = 0;
+
     function startGame() {
       ghost = getRandomGhost();
-      currentRoom = 'Entrance';
-      inventory = ['EMF Reader', 'Candle'];
-      sanity = 100;
-      xp = 0;
-      journalNotes = [];
+      currentGhost = ghost;
+      currentGhost.behaviorMap = generateBehavior(ghost.type);
+      document.getElementById('start-btn').classList.add('hidden');
+      document.getElementById('game-screen').classList.remove('hidden');
       updateHUD();
-      narrate(`A new investigation begins. The ghost is among us...`);
+      displayNarratorText(`A new investigation begins... You feel watched.`);
       renderOptions();
     }
 
     function renderOptions() {
-      const btns = [
-        ['Investigate', investigate],
-        ['Use Item', handleItemUse],
-        ['Move', () => {}],
-        ['Guess Ghost', openGuessPopup],
-        ['Return to Van', endGame]
-      ];
-      const panel = document.getElementById('option-buttons');
-      panel.innerHTML = '';
-      btns.forEach(([text, fn]) => {
-        const btn = document.createElement('button');
-        btn.innerText = text;
-        btn.onclick = fn;
-        panel.appendChild(btn);
-      });
-    }
-
-    function investigate() {
-      const behavior = ghostBehaviors[ghost.type] || ghostBehaviors['default'];
-      const result = behavior(currentRoom);
-      journalNotes.push(result);
-      narrate(result);
-      updateHUD();
-    }
-
-    function handleItemUse() {
-      const msg = inventory.length ? `You use ${inventory[0]} in the ${currentRoom}.` : 'No items to use.';
-      narrate(msg);
-    }
-
-    function openGuessPopup() {
       const container = document.getElementById('option-buttons');
       container.innerHTML = '';
-      ghostTypes.forEach(type => {
+      ['Investigate', 'Use Item', 'Move', 'Guess', 'Van'].forEach((label, idx) => {
         const btn = document.createElement('button');
-        btn.innerText = type;
-        btn.onclick = () => handleGuess(type);
+        btn.className = 'action-btn';
+        btn.textContent = `${idx + 1}. ${label}`;
+        btn.onclick = () => handleAction(label);
         container.appendChild(btn);
       });
-      const back = document.createElement('button');
-      back.innerText = 'Back';
-      back.onclick = renderOptions;
-      container.appendChild(back);
     }
 
-    function handleGuess(guess) {
-      const correct = guess === ghost.type;
-      narrate(correct ? `Correct! It was a ${ghost.type}.` : `Wrong. It was a ${ghost.type}.`);
-      xp += correct ? 100 : 0;
-      renderOptions();
+    function handleAction(label) {
+      if (label === 'Investigate') {
+        const result = currentGhost.behaviorMap(room);
+        displayNarratorText(result);
+        sanity -= 5;
+        updateHUD();
+      } else if (label === 'Use Item') {
+        if (inventory.length === 0) {
+          displayNarratorText('You have no items to use.');
+          return;
+        }
+        displayNarratorText(`You use your ${inventory[0]}. Nothing happens.`);
+        sanity -= 2;
+        updateHUD();
+      } else if (label === 'Move') {
+        room = ['Foyer', 'Living Room', 'Basement', 'Garage'][Math.floor(Math.random() * 4)];
+        displayNarratorText(`You move into the ${room}. It's eerily quiet.`);
+        updateHUD();
+      } else if (label === 'Guess') {
+        const guess = prompt('What type of ghost is this?');
+        if (guess?.toLowerCase() === currentGhost.type.toLowerCase()) {
+          displayNarratorText(`Correct! It was a ${currentGhost.type}. You gain XP.`);
+          xp += 10;
+        } else {
+          displayNarratorText(`Wrong. It was a ${currentGhost.type}. You flee in terror.`);
+        }
+        updateHUD();
+      } else if (label === 'Van') {
+        displayNarratorText('You return to the van. Investigation ends.');
+        sanity = 100;
+        xp = 0;
+        updateHUD();
+      }
     }
 
-    function endGame() {
-      narrate("You return to the van. Case closed.");
-      currentRoom = 'Van';
-      updateHUD();
-      renderOptions();
-    }
-
-    function handleMove(direction) {
-      currentRoom = `${direction} Hallway`;
-      narrate(`You move to the ${currentRoom}.`);
-      updateHUD();
+    function displayNarratorText(text) {
+      const box = document.getElementById('narrator-box');
+      const log = document.getElementById('main-readout');
+      box.textContent = text;
+      log.textContent += '\n' + text;
+      log.scrollTop = log.scrollHeight;
     }
 
     function updateHUD() {
-      document.getElementById('hud-status').innerText =
-        `Sanity: ${sanity}%    XP: ${xp}    Inventory: ${inventory.join(', ')}`;
-      document.getElementById('mini-map').innerText = `Room: ${currentRoom}`;
+      document.getElementById('hud-status').textContent = `Sanity: ${sanity}% | XP: ${xp} | Inventory: ${inventory.join(', ') || 'none'}`;
+      document.getElementById('mini-map').textContent = `Room: ${room}`;
     }
 
-    function narrate(text) {
-      document.getElementById('narrator-box').innerText = text;
-      const readout = document.getElementById('main-readout');
-      readout.innerText += '\n' + text;
-      readout.scrollTop = readout.scrollHeight;
-    }
-
-    function toggleJournal() {
-      const j = document.getElementById('journal-screen');
-      j.classList.toggle('hidden');
-    }
-
-    function saveJournal() {
-      const entry = document.getElementById('journal-entry').value;
-      journalNotes.push(entry);
-      narrate("📝 Journal updated.");
-    }
-
-    window.onload = () => {
-      document.getElementById('start-btn').onclick = () => {
-        document.getElementById('start-btn').style.display = 'none';
-        document.getElementById('game-screen').classList.remove('hidden');
-        startGame();
-      };
-      document.getElementById('journal-btn').onclick = toggleJournal;
-      document.getElementById('guess-btn').onclick = openGuessPopup;
-      document.getElementById('item-btn').onclick = handleItemUse;
-      document.getElementById('van-btn').onclick = endGame;
+    // Journal
+    document.getElementById('journal-btn').onclick = () => {
+      document.getElementById('journal-screen').classList.remove('hidden');
+    };
+    document.getElementById('close-journal').onclick = () => {
+      document.getElementById('journal-screen').classList.add('hidden');
+    };
+    document.getElementById('save-journal').onclick = () => {
+      const notes = document.getElementById('journal-entry').value;
+      displayNarratorText(`Journal updated.`);
     };
 
-    for (let i = 0; i < 30; i++) {
-      const orb = document.createElement('div');
-      orb.className = 'orb';
-      orb.style.left = Math.random() * 100 + 'vw';
-      orb.style.animationDuration = 8 + Math.random() * 5 + 's';
-      document.body.appendChild(orb);
-    }
+    // Start
+    document.getElementById('start-btn').onclick = startGame;
   </script>
 </body>
 </html>
