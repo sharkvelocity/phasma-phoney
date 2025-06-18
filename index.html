@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="styles.css" />
-  <script type="module" src="game.js"></script>
 </head>
 <body>
   <div id="title-screen">
@@ -51,19 +50,32 @@
     <button id="close-guess">Close</button>
   </div>
 
-  <script>
-    document.getElementById('journal-btn').onclick = () => {
-      document.getElementById('journal-screen').classList.toggle('hidden');
-    };
-    document.getElementById('guess-btn').onclick = () => {
-      document.getElementById('guess-popup').classList.remove('hidden');
-    };
-    document.getElementById('close-guess').onclick = () => {
-      document.getElementById('guess-popup').classList.add('hidden');
-    };
-    document.getElementById('close-journal').onclick = () => {
-      document.getElementById('journal-screen').classList.add('hidden');
-    };
+  <script type="module">
+    import { startGame } from './game.js';
+
+    window.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('start-btn').onclick = () => {
+        document.getElementById('title-screen').classList.add('hidden');
+        document.getElementById('game-screen').classList.remove('hidden');
+        startGame();
+      };
+
+      document.getElementById('journal-btn').onclick = () => {
+        document.getElementById('journal-screen').classList.toggle('hidden');
+      };
+
+      document.getElementById('guess-btn').onclick = () => {
+        document.getElementById('guess-popup').classList.remove('hidden');
+      };
+
+      document.getElementById('close-guess').onclick = () => {
+        document.getElementById('guess-popup').classList.add('hidden');
+      };
+
+      document.getElementById('close-journal').onclick = () => {
+        document.getElementById('journal-screen').classList.add('hidden');
+      };
+    });
   </script>
 </body>
 </html>
