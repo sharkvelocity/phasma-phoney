@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasma-Phoney</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script type="module" src="game.js"></script>
+</head>
+<body>
+  <div id="title-screen">
+    <h1 class="game-title">Phasma-Phoney</h1>
+    <button id="start-btn">Start Investigation</button>
+  </div>
+
+  <div id="game-screen" class="hidden">
+    <div id="narrator-box" class="dialogue-box"></div>
+    <div id="left-panel">
+      <div id="option-buttons"></div>
+      <button id="journal-btn">Journal</button>
+      <button id="guess-btn">Guess Ghost</button>
+      <button id="item-btn">Use Item</button>
+      <button id="van-btn">Return to Van</button>
+    </div>
+    <div id="center-panel">
+      <div id="main-readout"></div>
+    </div>
+    <div id="right-panel">
+      <div id="mini-map"></div>
+      <div id="movement-buttons">
+        <button id="move-north">⬆</button>
+        <div class="horiz">
+          <button id="move-west">⬅</button>
+          <button id="move-east">➡</button>
+        </div>
+        <button id="move-south">⬇</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="journal-screen" class="screen hidden">
+    <h2>Investigation Journal</h2>
+    <textarea id="journal-entry" placeholder="Write your notes here..."></textarea>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
+  </div>
+
+  <div id="guess-popup" class="popup hidden">
+    <h2>Guess the Ghost</h2>
+    <div id="ghost-options"></div>
+    <button id="close-guess">Close</button>
+  </div>
+
+  <script>
+    document.getElementById('journal-btn').onclick = () => {
+      document.getElementById('journal-screen').classList.toggle('hidden');
+    };
+    document.getElementById('guess-btn').onclick = () => {
+      document.getElementById('guess-popup').classList.remove('hidden');
+    };
+    document.getElementById('close-guess').onclick = () => {
+      document.getElementById('guess-popup').classList.add('hidden');
+    };
+    document.getElementById('close-journal').onclick = () => {
+      document.getElementById('journal-screen').classList.add('hidden');
+    };
+  </script>
+</body>
+</html>
