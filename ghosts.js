@@ -1,4 +1,4 @@
-// ghosts.js – Ghost definition and random behavior engine
+// ghosts.js – Full Ghost System with 25 Behaviors + Selection Engine
 
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
@@ -10,6 +10,10 @@ const ghostTypes = [
 
 let currentGhost = null;
 
+export function getGhostTypes() {
+  return ghostTypes;
+}
+
 export function getRandomGhost() {
   const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
   return { type };
@@ -17,46 +21,8 @@ export function getRandomGhost() {
 
 export function initializeGhost(ghost) {
   currentGhost = {
-    ...ghost,
+    type: ghost.type,
     behaviorMap: generateBehavior(ghost.type)
-  };
-}
-
-function generateBehavior(type) {
-  const commonBehaviors = [
-    (room) => `You hear a whisper echoing through the ${room}...`,
-    (room) => `An object suddenly moves in the ${room}.`,
-    (room) => `You feel a chill creep down your spine in the ${room}.`,
-    (room) => `A distant humming sound vibrates the air in the ${room}.`,
-    (room) => `Nothing happens in the ${room}, but you can’t shake the feeling you’re not alone.`
-  ];
-
-  const specialBehaviors = {
-    'Succubus': [
-      (room) => `An alluring presence brushes past you in the ${room}. Your thoughts fog.`,
-      (room) => `You feel an unnatural warmth in the ${room}. A seductive whisper beckons.`,
-      (room) => `You resist a sudden compulsion to stay in the ${room} forever...`
-    ],
-    'Poltergeist': [
-      (room) => `A violent crash erupts in the ${room} as objects are hurled.`,
-      (room) => `Drawers fly open and slam shut in the ${room}.`,
-      (room) => `You’re nearly hit by flying debris in the ${room}!`
-    ],
-    'Demon': [
-      (room) => `You feel overwhelming dread in the ${room}. The lights cut out.`,
-      (room) => `A deep growl rumbles from the shadows of the ${room}.`,
-      (room) => `Blood spatters briefly onto the walls of the ${room}, then vanishes.`
-    ]
-    // Add other ghost-specific behaviors here if needed
-  };
-
-  return (room) => {
-    const pool = [...commonBehaviors];
-    if (specialBehaviors[type]) {
-      pool.push(...specialBehaviors[type]);
-    }
-    const action = pool[Math.floor(Math.random() * pool.length)];
-    return action(room);
   };
 }
 
@@ -64,10 +30,127 @@ export function getCurrentGhost() {
   return currentGhost;
 }
 
-// Used in game.js to simulate behavior
+export function getCurrentGhostType() {
+  return currentGhost?.type || null;
+}
+
 export function performBehavior(room) {
   if (!currentGhost || !currentGhost.behaviorMap) {
     return "You feel nothing... the ghost has yet to show itself.";
   }
   return currentGhost.behaviorMap(room);
+}
+
+function generateBehavior(type) {
+  const common = [
+    (room) => `You hear faint footsteps echoing through the ${room}.`,
+    (room) => `The temperature drops as you step into the ${room}.`,
+    (room) => `An uneasy silence fills the ${room}.`
+  ];
+
+  const unique = {
+    Spirit: [
+      (room) => `You sense calm but undeniable presence in the ${room}.`,
+      (room) => `A subtle whisper passes your ear in the ${room}.`
+    ],
+    Wraith: [
+      (room) => `The ${room} feels disconnected from reality.`,
+      (room) => `You hear footsteps, but see no trace.`
+    ],
+    Phantom: [
+      (room) => `You see a glimpse of a figure in the ${room}… then it vanishes.`,
+      (room) => `Your vision distorts slightly in the ${room}.`
+    ],
+    Poltergeist: [
+      (room) => `Loud crashes erupt as objects are flung across the ${room}.`,
+      (room) => `Drawers slam open and shut violently.`
+    ],
+    Banshee: [
+      (room) => `A distant, sorrowful wail fills the ${room}.`,
+      (room) => `You hear singing that turns to screams in the ${room}.`
+    ],
+    Jinn: [
+      (room) => `Electronics spark briefly as you enter the ${room}.`,
+      (room) => `An unnatural breeze circles you in the ${room}.`
+    ],
+    Mare: [
+      (room) => `The lights flicker and fail in the ${room}.`,
+      (room) => `Shadows crawl unnaturally across the walls.`
+    ],
+    Revenant: [
+      (room) => `You feel hunted. You shouldn't linger in the ${room}.`,
+      (room) => `Your breath shortens. It's fast.`
+    ],
+    Shade: [
+      (room) => `The ${room} feels empty and still.`,
+      (room) => `You sense something watching from the corner.`
+    ],
+    Demon: [
+      (room) => `A growl echoes from beneath the floor.`,
+      (room) => `Symbols flash on the wall and vanish in the ${room}.`
+    ],
+    Yurei: [
+      (room) => `You feel your energy being sapped.`,
+      (room) => `A misty figure lingers near you briefly.`
+    ],
+    Oni: [
+      (room) => `Heavy breathing fills the ${room}.`,
+      (room) => `Your muscles tense without reason.`
+    ],
+    Hantu: [
+      (room) => `Frost creeps across the floor.`,
+      (room) => `Breath fogs instantly in the ${room}.`
+    ],
+    Yokai: [
+      (room) => `Chattering voices erupt, then stop abruptly.`,
+      (room) => `A loud whisper hushes you aggressively.`
+    ],
+    Goryo: [
+      (room) => `A reflection moves without a source.`,
+      (room) => `You glimpse a ghost in your camera… but nothing’s there.`
+    ],
+    Myling: [
+      (room) => `A child’s humming echoes softly.`,
+      (room) => `Tiny handprints mark the wall.`
+    ],
+    Onryo: [
+      (room) => `Candlelight flickers in time with your breath.`,
+      (room) => `You feel a presence whenever fire burns.`
+    ],
+    'The Twins': [
+      (room) => `Two distinct footsteps echo in different corners.`,
+      (room) => `Conflicting cold spots confuse your senses.`
+    ],
+    Raiju: [
+      (room) => `Static bursts near your electronics.`,
+      (room) => `The lights buzz violently as you enter.`
+    ],
+    Obake: [
+      (room) => `Fingerprints shift and smear unnaturally.`,
+      (room) => `You catch a glimpse of something shifting shape.`
+    ],
+    'The Mimic': [
+      (room) => `You hear evidence of another ghost type.`,
+      (room) => `Familiar sounds play tricks on you.`
+    ],
+    Moroi: [
+      (room) => `You feel physically ill in the ${room}.`,
+      (room) => `Your vision blurs the longer you stay.`
+    ],
+    Deogen: [
+      (room) => `Heavy footsteps slowly approach.`,
+      (room) => `An immense pressure closes in on you.`
+    ],
+    Thaye: [
+      (room) => `Time feels strange here. You feel… older.`,
+      (room) => `The air grows heavier with each moment.`
+    ],
+    Succubus: [
+      (room) => `A sultry breath brushes your neck.`,
+      (room) => `Your mind fogs with strange desires.`
+    ]
+  };
+
+  const combined = unique[type] ? [...common, ...unique[type]] : [...common];
+  return (room) => combined[Math.floor(Math.random() * combined.length)](room);
 }
