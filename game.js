@@ -1,7 +1,7 @@
 // game.js – Core game flow logic for Phasma-Phoney
 
 import { initializeMap, movePlayer, getCurrentRoom } from './map.js';
-import { initializeJournal, updateJournal } from './journal.js';
+import { initializeJournal, updateJournal, updateNotes } from './journal.js';
 import {
   getGhostActivity, isHunting, triggerHunt, endHunt,
   getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem
@@ -9,10 +9,12 @@ import {
 import {
   getRandomGhost, initializeGhost, performBehavior
 } from './ghosts.js';
+import { displayNarratorText } from './dialogueEngine.js';
 import { addItemToInventory, getInventory, useItem } from './inventory.js';
 
 let ghost;
 let roundActive = false;
+let xp = 0;
 
 export function startGame() {
   roundActive = true;
@@ -20,7 +22,6 @@ export function startGame() {
   initializeGhost(ghost);
   initializeMap();
   initializeJournal();
-  setupButtonBindings();
   updateHUD();
   displayNarratorText(`🕵️ A new investigation begins... The ghost type is unknown. Stay alert.`);
   renderOptions();
@@ -29,8 +30,15 @@ export function startGame() {
 function updateHUD() {
   const narratorBox = document.getElementById('narrator-box');
   const mapBox = document.getElementById('mini-map');
+  const hudBar = document.getElementById('hud-status');
+
   if (narratorBox) narratorBox.innerText = `Sanity: ${getSanity()}% | Room: ${getCurrentRoom()}`;
   if (mapBox) mapBox.innerText = `Room: ${getCurrentRoom()}`;
+
+  if (hudBar) {
+    const inv = getInventory().join(', ') || 'none';
+    hudBar.innerText = `Sanity: ${getSanity()}%    XP: ${xp}    Inventory: ${inv}`;
+  }
 }
 
 function renderOptions() {
@@ -58,8 +66,13 @@ function investigate() {
   const result = performBehavior(getCurrentRoom());
   updateJournal(result);
   displayNarratorText(result);
+  gainXP(5);
   updateHUD();
   renderOptions();
+}
+
+function gainXP(amount) {
+  xp += amount;
 }
 
 function handleItemUse() {
@@ -78,8 +91,8 @@ function handleItemUse() {
     btn.innerText = `${i + 1}. Use ${item}`;
     btn.onclick = () => {
       const feedback = useItem(item, getCurrentRoom(), ghost.type);
-      updateJournal(feedback);
       displayNarratorText(feedback);
+      gainXP(2);
       updateHUD();
       renderOptions();
     };
@@ -102,7 +115,6 @@ function openMoveMenu() {
     btn.innerText = `Go ${dir}`;
     btn.onclick = () => {
       const result = movePlayer(dir);
-      updateJournal(result);
       displayNarratorText(result);
       updateHUD();
       renderOptions();
@@ -144,6 +156,7 @@ function openGuessPopup() {
 function handleGuess(guess) {
   if (guess === ghost.type) {
     displayNarratorText(`🎯 Correct! It was a ${ghost.type}. You survive and earn experience.`);
+    gainXP(50);
   } else {
     displayNarratorText(`💀 Wrong guess. It was a ${ghost.type}. The ghost claims you.`);
   }
@@ -156,20 +169,5 @@ function endGame() {
   displayNarratorText("📦 You return to the van. The investigation concludes.");
   const container = document.getElementById('option-buttons');
   if (container) container.innerHTML = '';
-}
-
-function setupButtonBindings() {
-  const journalBtn = document.getElementById('journal-btn');
-  const guessBtn = document.getElementById('guess-btn');
-  const itemBtn = document.getElementById('item-btn');
-  const vanBtn = document.getElementById('van-btn');
-
-  if (journalBtn) journalBtn.onclick = () => {
-    const jScreen = document.getElementById('journal-screen');
-    if (jScreen) jScreen.classList.toggle('hidden');
-  };
-
-  if (guessBtn) guessBtn.onclick = openGuessPopup;
-  if (itemBtn) itemBtn.onclick = handleItemUse;
-  if (vanBtn) vanBtn.onclick = endGame;
+  updateNotes(`XP Earned: ${xp}\nSanity Remaining: ${getSanity()}%`);
 }
