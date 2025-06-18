@@ -1,27 +1,36 @@
-// game.js – Core game flow logic
+// game.js – Core game flow logic for Phasma-Phoney
 
-import { getCurrentRoom, movePlayer } from './map.js';
-import { getSanity, adjustSanity } from './mechanics.js';
-import { updateJournal } from './journal.js';
-import { getRandomGhost, initializeGhost, performBehavior } from './ghosts.js';
-import { getInventory, useItem } from './inventory.js';
+import { initializeMap, movePlayer, getCurrentRoom } from './map.js';
+import { initializeJournal, updateJournal } from './journal.js';
+import {
+  getGhostActivity, isHunting, triggerHunt, endHunt,
+  getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem
+} from './mechanics.js';
+import {
+  getRandomGhost, initializeGhost, performBehavior
+} from './ghosts.js';
+import { addItemToInventory, getInventory, useItem } from './inventory.js';
 
-let ghost = null;
+let ghost;
 let roundActive = false;
 
 export function startGame() {
-  console.log('🚀 Game starting...');
+  roundActive = true;
   ghost = getRandomGhost();
   initializeGhost(ghost);
-  roundActive = true;
+  initializeMap();
+  initializeJournal();
+  setupButtonBindings();
   updateHUD();
-  displayNarratorText("🕵️ Investigation begins. Ghost type unknown. Stay alert.");
+  displayNarratorText(`🕵️ A new investigation begins... The ghost type is unknown. Stay alert.`);
   renderOptions();
 }
 
 function updateHUD() {
-  const narrator = document.getElementById('narrator-box');
-  if (narrator) narrator.innerText = `Sanity: ${getSanity()}% | Room: ${getCurrentRoom()}`;
+  const narratorBox = document.getElementById('narrator-box');
+  const mapBox = document.getElementById('mini-map');
+  if (narratorBox) narratorBox.innerText = `Sanity: ${getSanity()}% | Room: ${getCurrentRoom()}`;
+  if (mapBox) mapBox.innerText = `Room: ${getCurrentRoom()}`;
 }
 
 function renderOptions() {
@@ -29,15 +38,15 @@ function renderOptions() {
   if (!container) return;
   container.innerHTML = '';
 
-  const opts = [
+  const options = [
     { label: '1. Investigate', action: investigate },
-    { label: '2. Use Item', action: useItemMenu },
+    { label: '2. Use Item', action: handleItemUse },
     { label: '3. Move', action: openMoveMenu },
-    { label: '4. Guess Ghost', action: guessGhost },
+    { label: '4. Guess Ghost', action: openGuessPopup },
     { label: '5. Return to Van', action: endGame }
   ];
 
-  opts.forEach(opt => {
+  options.forEach((opt) => {
     const btn = document.createElement('button');
     btn.innerText = opt.label;
     btn.onclick = opt.action;
@@ -46,51 +55,54 @@ function renderOptions() {
 }
 
 function investigate() {
-  const msg = performBehavior(getCurrentRoom());
-  updateJournal(msg);
-  displayNarratorText(msg);
-  adjustSanity(-5);
+  const result = performBehavior(getCurrentRoom());
+  updateJournal(result);
+  displayNarratorText(result);
   updateHUD();
   renderOptions();
 }
 
-function useItemMenu() {
+function handleItemUse() {
+  const items = getInventory();
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
-  const items = getInventory();
 
   if (items.length === 0) {
-    displayNarratorText("🧳 You have no items.");
+    displayNarratorText('🧳 You have no items to use.');
     renderOptions();
     return;
   }
 
-  items.forEach((item, idx) => {
+  items.forEach((item, i) => {
     const btn = document.createElement('button');
-    btn.innerText = `${idx + 1}. Use ${item}`;
+    btn.innerText = `${i + 1}. Use ${item}`;
     btn.onclick = () => {
-      const result = useItem(item, getCurrentRoom(), ghost.type);
-      displayNarratorText(result);
+      const feedback = useItem(item, getCurrentRoom(), ghost.type);
+      updateJournal(feedback);
+      displayNarratorText(feedback);
       updateHUD();
       renderOptions();
     };
     container.appendChild(btn);
   });
 
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
 }
 
 function openMoveMenu() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
-  ['North', 'East', 'South', 'West'].forEach(dir => {
+  const directions = ['North', 'East', 'South', 'West'];
+
+  directions.forEach((dir) => {
     const btn = document.createElement('button');
     btn.innerText = `Go ${dir}`;
     btn.onclick = () => {
       const result = movePlayer(dir);
+      updateJournal(result);
       displayNarratorText(result);
       updateHUD();
       renderOptions();
@@ -98,13 +110,13 @@ function openMoveMenu() {
     container.appendChild(btn);
   });
 
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
 }
 
-function guessGhost() {
+function openGuessPopup() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
 
@@ -116,30 +128,48 @@ function guessGhost() {
     'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
   ];
 
-  guesses.forEach(g => {
+  guesses.forEach((ghostType) => {
     const btn = document.createElement('button');
-    btn.innerText = g;
-    btn.onclick = () => handleGuess(g);
+    btn.innerText = ghostType;
+    btn.onclick = () => handleGuess(ghostType);
     container.appendChild(btn);
   });
 
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
 }
 
 function handleGuess(guess) {
   if (guess === ghost.type) {
-    displayNarratorText(`✅ You guessed correctly! It was a ${ghost.type}.`);
+    displayNarratorText(`🎯 Correct! It was a ${ghost.type}. You survive and earn experience.`);
   } else {
-    displayNarratorText(`❌ Incorrect. The ghost was a ${ghost.type}.`);
+    displayNarratorText(`💀 Wrong guess. It was a ${ghost.type}. The ghost claims you.`);
   }
+  roundActive = false;
   endGame();
 }
 
 function endGame() {
   roundActive = false;
-  displayNarratorText("📦 You return to the van. Investigation complete.");
-  document.getElementById('option-buttons').innerHTML = '';
+  displayNarratorText("📦 You return to the van. The investigation concludes.");
+  const container = document.getElementById('option-buttons');
+  if (container) container.innerHTML = '';
+}
+
+function setupButtonBindings() {
+  const journalBtn = document.getElementById('journal-btn');
+  const guessBtn = document.getElementById('guess-btn');
+  const itemBtn = document.getElementById('item-btn');
+  const vanBtn = document.getElementById('van-btn');
+
+  if (journalBtn) journalBtn.onclick = () => {
+    const jScreen = document.getElementById('journal-screen');
+    if (jScreen) jScreen.classList.toggle('hidden');
+  };
+
+  if (guessBtn) guessBtn.onclick = openGuessPopup;
+  if (itemBtn) itemBtn.onclick = handleItemUse;
+  if (vanBtn) vanBtn.onclick = endGame;
 }
