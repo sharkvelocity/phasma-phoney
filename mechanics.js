@@ -1,19 +1,39 @@
-// mechanics.js – Handles ghost logic, sanity, evidence, and cursed items
+// mechanics.js – Ghost activity, sanity, evidence, cursed items, and investigation tracking
 
-import { updateStats, getStats, clearStats } from './statistics.js';
-
+let sanity = 100;
 let ghostActivityLevel = 0;
 let currentHunt = false;
 let evidenceDiscovered = [];
+let turnCount = 0;
+let cursedItemsUsed = 0;
+let evidenceFound = 0;
 
 export function initializeMechanics() {
+  sanity = 100;
   ghostActivityLevel = 0;
   currentHunt = false;
   evidenceDiscovered = [];
+  turnCount = 0;
+  cursedItemsUsed = 0;
+  evidenceFound = 0;
 }
 
+// 🧠 Sanity System
+export function getSanity() {
+  return sanity;
+}
+
+export function adjustSanity(amount) {
+  sanity = Math.max(0, Math.min(100, sanity + amount));
+}
+
+// 👻 Ghost Activity
 export function getGhostActivity() {
   return ghostActivityLevel;
+}
+
+export function isHunting() {
+  return currentHunt;
 }
 
 export function triggerHunt() {
@@ -27,25 +47,11 @@ export function endHunt() {
   ghostActivityLevel = 0;
 }
 
-export function isHunting() {
-  return currentHunt;
-}
-
-export function getSanity() {
-  const stats = getStats();
-  return stats.sanity ?? 100;
-}
-
-export function adjustSanity(amount) {
-  const stats = getStats();
-  stats.sanity = Math.max(0, Math.min(100, (stats.sanity ?? 100) + amount));
-  updateStats(stats);
-}
-
+// 🔍 Evidence Tracking
 export function discoverEvidence(evidenceType) {
   if (!evidenceDiscovered.includes(evidenceType)) {
     evidenceDiscovered.push(evidenceType);
-    updateStats({ evidenceFound: (getStats().evidenceFound || 0) + 1 });
+    evidenceFound++;
   }
 }
 
@@ -57,10 +63,12 @@ export function resetEvidence() {
   evidenceDiscovered = [];
 }
 
+// 🎭 Ghost Event Simulation
 export function performGhostAction() {
   const roll = Math.random();
+  turnCount++;
+
   if (roll < 0.1) {
-    ghostActivityLevel = 10;
     triggerHunt();
     return 'The air turns ice cold. You hear rapid footsteps. The hunt has begun!';
   } else if (roll < 0.3) {
@@ -76,8 +84,31 @@ export function performGhostAction() {
   }
 }
 
+// 🔮 Cursed Items
 export function useCursedItem(itemName) {
   adjustSanity(-20);
-  updateStats({ cursedItemsUsed: (getStats().cursedItemsUsed || 0) + 1 });
+  cursedItemsUsed++;
   return `You use the ${itemName}. Reality warps momentarily around you.`;
+}
+
+// 📊 Investigation Statistics
+export function getTurnCount() {
+  return turnCount;
+}
+
+export function incrementTurnCount() {
+  turnCount++;
+}
+
+export function getStats() {
+  return {
+    sanity,
+    turnCount,
+    evidenceFound,
+    cursedItemsUsed
+  };
+}
+
+export function resetStats() {
+  initializeMechanics();
 }
