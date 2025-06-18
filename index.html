@@ -5,104 +5,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma-Phoney</title>
   <link rel="stylesheet" href="styles.css" />
-  <style>
-    body {
-      background: black;
-      color: white;
-      font-family: sans-serif;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    .hidden { display: none; }
-    button {
-      background: #222;
-      color: white;
-      border: 1px solid #555;
-      padding: 10px 16px;
-      margin: 4px;
-      cursor: pointer;
-    }
-    #title-screen, #van-loadout {
-      margin-top: 40px;
-      text-align: center;
-    }
-    #item-selection {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 8px;
-      margin: 12px 0;
-    }
-    #game-screen {
-      display: flex;
-      flex-direction: row;
-      justify-content: space-between;
-      padding: 10px;
-      width: 100vw;
-      height: 100vh;
-    }
-    #left-panel, #right-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-    }
-    #center-panel {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-    }
-    #narrator-box {
-      background: #111;
-      padding: 10px;
-      border: 1px solid #444;
-      width: 90%;
-      min-height: 60px;
-    }
-    #main-readout {
-      background: #111;
-      border: 2px solid green;
-      color: #eee;
-      width: 90%;
-      height: 200px;
-      margin-top: 10px;
-      padding: 10px;
-      overflow-y: auto;
-    }
-    #mini-map {
-      height: 100px;
-      width: 100px;
-      border: 2px solid green;
-      text-align: center;
-      padding: 4px;
-      font-size: 12px;
-    }
-    #movement-buttons {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 4px;
-    }
-    .horiz {
-      display: flex;
-      gap: 8px;
-    }
-  </style>
 </head>
 <body>
-
-  <!-- Title -->
+  <!-- TITLE SCREEN -->
   <div id="title-screen">
     <h1>Phasma-Phoney</h1>
     <button id="start-btn">Start Investigation</button>
   </div>
 
-  <!-- Van Loadout -->
+  <!-- VAN LOADOUT -->
   <div id="van-loadout" class="hidden">
     <h2>🎒 Choose 3 Items</h2>
     <div id="item-selection"></div>
@@ -110,7 +21,7 @@
     <button id="confirm-loadout">Confirm Loadout</button>
   </div>
 
-  <!-- Game UI -->
+  <!-- GAME SCREEN -->
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
@@ -124,10 +35,10 @@
       <div id="main-readout">Awaiting interaction...</div>
     </div>
     <div id="right-panel">
-      <div id="mini-map">Room: Unknown</div>
+      <div id="mini-map">Room: Entry</div>
       <div id="movement-buttons">
         <button id="move-north">⬆</button>
-        <div class="horiz">
+        <div>
           <button id="move-west">⬅</button>
           <button id="move-east">➡</button>
         </div>
@@ -136,100 +47,75 @@
     </div>
   </div>
 
-  <!-- Journal Modal -->
-  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+  <!-- JOURNAL -->
+  <div id="journal-screen" class="screen hidden">
     <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
+    <textarea id="journal-entry" placeholder="Write your notes here..."></textarea>
     <br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
 
   <script type="module">
-    import {
-      addItemToInventory, clearInventory, getInventory, loadInventory
-    } from './inventory.js';
+    import { addItemToInventory, clearInventory, getInventory, loadInventory } from './inventory.js';
     import { startGame } from './game.js';
     import { updateNotes, initializeJournal } from './journal.js';
     import { getCurrentRoom } from './map.js';
 
     const ITEMS = [
       'EMF Reader', 'Spirit Box', 'UV Light', 'Thermometer',
-      'Camera', 'Candle', 'Crucifix', 'Salt', 'Cursed Mirror', 'Music Box'
+      'Camera', 'Candle', 'Crucifix', 'Salt'
     ];
 
-    function showVanLoadout() {
-      document.getElementById('title-screen').classList.add('hidden');
-      document.getElementById('van-loadout').classList.remove('hidden');
+    const displayNarratorText = (text) => {
+      document.getElementById('narrator-box').innerText = text;
+      const log = document.getElementById('main-readout');
+      log.innerText += `\n${text}`;
+      log.scrollTop = log.scrollHeight;
+      document.getElementById('mini-map').innerText = 'Room: ' + getCurrentRoom();
+    };
+    window.displayNarratorText = displayNarratorText;
+
+    const title = document.getElementById('title-screen');
+    const van = document.getElementById('van-loadout');
+    const game = document.getElementById('game-screen');
+    const journalScreen = document.getElementById('journal-screen');
+
+    document.getElementById('start-btn').onclick = () => {
+      title.classList.add('hidden');
+      van.classList.remove('hidden');
       clearInventory();
-
       const selection = document.getElementById('item-selection');
-      const countText = document.getElementById('selected-count');
+      const count = document.getElementById('selected-count');
       selection.innerHTML = '';
-      countText.innerText = `Selected: 0 / 3`;
-
+      count.innerText = 'Selected: 0 / 3';
       ITEMS.forEach(item => {
         const btn = document.createElement('button');
         btn.innerText = item;
         btn.onclick = () => {
-          const result = addItemToInventory(item);
-          const count = getInventory().length;
-          countText.innerText = `Selected: ${count} / 3`;
-          btn.disabled = true;
-          if (count === 3) {
-            selection.querySelectorAll('button').forEach(b => b.disabled = true);
+          if (getInventory().length < 3) {
+            addItemToInventory(item);
+            btn.disabled = true;
+            count.innerText = `Selected: ${getInventory().length} / 3`;
           }
         };
         selection.appendChild(btn);
       });
-    }
+    };
 
-    function appendReadout(text) {
-      const log = document.getElementById('main-readout');
-      log.innerText += `\n${text}`;
-      log.scrollTop = log.scrollHeight;
-    }
+    document.getElementById('confirm-loadout').onclick = () => {
+      van.classList.add('hidden');
+      game.classList.remove('hidden');
+      initializeJournal();
+      loadInventory();
+      startGame();
+    };
 
-    function displayNarratorText(text) {
-      document.getElementById('narrator-box').innerText = text;
-      appendReadout(text);
-      const map = document.getElementById('mini-map');
-      map.innerText = 'Room: ' + getCurrentRoom();
-    }
-
-    window.displayNarratorText = displayNarratorText;
-    window.addToReadout = appendReadout;
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const startBtn = document.getElementById('start-btn');
-      const confirmBtn = document.getElementById('confirm-loadout');
-      const journalBox = document.getElementById('journal-screen');
-
-      if (startBtn) {
-        startBtn.onclick = showVanLoadout;
-      }
-
-      if (confirmBtn) {
-        confirmBtn.onclick = () => {
-          document.getElementById('van-loadout').classList.add('hidden');
-          document.getElementById('game-screen').classList.remove('hidden');
-          loadInventory();
-          startGame();
-          initializeJournal();
-        };
-      }
-
-      document.getElementById('journal-btn').onclick = () => {
-        journalBox.classList.toggle('hidden');
-      };
-      document.getElementById('close-journal').onclick = () => {
-        journalBox.classList.add('hidden');
-      };
-      document.getElementById('save-journal').onclick = () => {
-        const text = document.getElementById('journal-entry').value;
-        updateNotes(text);
-      };
-    });
+    document.getElementById('journal-btn').onclick = () => journalScreen.classList.toggle('hidden');
+    document.getElementById('close-journal').onclick = () => journalScreen.classList.add('hidden');
+    document.getElementById('save-journal').onclick = () => {
+      updateNotes(document.getElementById('journal-entry').value);
+    };
   </script>
 </body>
 </html>
