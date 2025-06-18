@@ -163,6 +163,9 @@
 
           if (startBtn) {
             startBtn.onclick = () => {
+              console.log('Start button clicked');
+              console.log('Game module:', game);
+              console.log('Calling game.startGame()...');
               title.classList.add('hidden');
               screen.classList.remove('hidden');
               game.startGame();
