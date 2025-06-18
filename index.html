@@ -42,12 +42,8 @@
       animation: float 10s linear infinite;
     }
     @keyframes float {
-      0% {
-        transform: translateY(100vh) translateX(0);
-      }
-      100% {
-        transform: translateY(-10vh) translateX(0);
-      }
+      0% { transform: translateY(100vh) translateX(0); }
+      100% { transform: translateY(-10vh) translateX(0); }
     }
   </style>
 </head>
@@ -94,11 +90,6 @@
     import { initializeJournal, updateNotes } from './journal.js';
     import { getCurrentRoom } from './map.js';
 
-    window.addEventListener("error", e => {
-      alert("🔥 Script Error: " + e.message);
-      console.error("Global error:", e);
-    });
-
     function appendReadout(text) {
       const log = document.getElementById('main-readout');
       log.innerText += `\n${text}`;
@@ -122,11 +113,6 @@
       const screen = document.getElementById('game-screen');
       const journalScreen = document.getElementById('journal-screen');
 
-      if (!startBtn) {
-        alert("🚨 start-btn not found");
-        return;
-      }
-
       startBtn.onclick = () => {
         title.classList.add('hidden');
         screen.classList.remove('hidden');
@@ -144,6 +130,11 @@
         const note = document.getElementById('journal-entry').value;
         updateNotes(note);
       };
+    });
+
+    window.addEventListener("error", e => {
+      alert("🔥 Script Error: " + e.message);
+      console.error("Global error:", e);
     });
   </script>
 
