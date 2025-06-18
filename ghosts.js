@@ -1,40 +1,73 @@
-// ghosts.js – Full ghost roster and logic engine
-
-import { succubus } from './succubus.js';
+// ghosts.js – Ghost definition and random behavior engine
 
 const ghostTypes = [
-  succubus,
-  { type: 'Spirit', performBehavior: () => 'You feel a calming breeze, then sudden dread.' },
-  { type: 'Wraith', performBehavior: () => 'A soft static crackle erupts nearby... then silence.' },
-  { type: 'Phantom', performBehavior: () => 'A figure flashes in the corner of your eye and vanishes.' },
-  { type: 'Poltergeist', performBehavior: () => 'A book slams shut violently behind you.' },
-  { type: 'Banshee', performBehavior: () => 'A high-pitched wail sends shivers down your spine.' },
-  { type: 'Jinn', performBehavior: () => 'You feel an unnatural gust pushing you back.' },
-  { type: 'Mare', performBehavior: () => 'Darkness deepens. You can barely see your hands.' },
-  { type: 'Revenant', performBehavior: () => 'You feel watched. Something is hunting.' },
-  { type: 'Shade', performBehavior: () => 'Everything falls unnaturally quiet... too quiet.' },
-  { type: 'Demon', performBehavior: () => 'The lights burst and a guttural growl echoes from nowhere.' },
-  { type: 'Yurei', performBehavior: () => 'Your limbs feel heavy. The ghost drains your energy.' },
-  { type: 'Oni', performBehavior: () => 'The air shifts violently. Heavy steps echo nearby.' },
-  { type: 'Hantu', performBehavior: () => 'The room chills instantly. Your breath fogs heavily.' },
-  { type: 'Yokai', performBehavior: () => 'You hear whispers that grow louder the more you speak.' },
-  { type: 'Goryo', performBehavior: () => 'A shadow glides past a laser grid silently.' },
-  { type: 'Myling', performBehavior: () => 'A child’s humming grows louder... then abruptly stops.' },
-  { type: 'Onryo', performBehavior: () => 'A candle snuffs itself out. The room grows tense.' },
-  { type: 'The Twins', performBehavior: () => 'Two distinct sounds echo in different directions.' },
-  { type: 'Raiju', performBehavior: () => 'Electronics glitch violently. Your devices spike in static.' },
-  { type: 'Obake', performBehavior: () => 'A fingerprint smears and shifts shape unnaturally.' },
-  { type: 'The Mimic', performBehavior: () => 'You hear ghostly evidence that doesn’t match... beware.' },
-  { type: 'Moroi', performBehavior: () => 'You cough involuntarily. Your breath shortens in fear.' },
-  { type: 'Deogen', performBehavior: () => 'You feel targeted. A presence charges directly at you.' },
-  { type: 'Thaye', performBehavior: () => 'An old energy surrounds you... but weakens over time.' }
+  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
+  'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
+  'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo',
+  'Myling', 'Onryo', 'The Twins', 'Raiju', 'Obake',
+  'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
 ];
 
+let currentGhost = null;
+
 export function getRandomGhost() {
-  const index = Math.floor(Math.random() * ghostTypes.length);
-  return ghostTypes[index];
+  const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
+  return { type };
 }
 
 export function initializeGhost(ghost) {
-  if (ghost && ghost.initialize) ghost.initialize();
+  currentGhost = {
+    ...ghost,
+    behaviorMap: generateBehavior(ghost.type)
+  };
+}
+
+function generateBehavior(type) {
+  const commonBehaviors = [
+    (room) => `You hear a whisper echoing through the ${room}...`,
+    (room) => `An object suddenly moves in the ${room}.`,
+    (room) => `You feel a chill creep down your spine in the ${room}.`,
+    (room) => `A distant humming sound vibrates the air in the ${room}.`,
+    (room) => `Nothing happens in the ${room}, but you can’t shake the feeling you’re not alone.`
+  ];
+
+  const specialBehaviors = {
+    'Succubus': [
+      (room) => `An alluring presence brushes past you in the ${room}. Your thoughts fog.`,
+      (room) => `You feel an unnatural warmth in the ${room}. A seductive whisper beckons.`,
+      (room) => `You resist a sudden compulsion to stay in the ${room} forever...`
+    ],
+    'Poltergeist': [
+      (room) => `A violent crash erupts in the ${room} as objects are hurled.`,
+      (room) => `Drawers fly open and slam shut in the ${room}.`,
+      (room) => `You’re nearly hit by flying debris in the ${room}!`
+    ],
+    'Demon': [
+      (room) => `You feel overwhelming dread in the ${room}. The lights cut out.`,
+      (room) => `A deep growl rumbles from the shadows of the ${room}.`,
+      (room) => `Blood spatters briefly onto the walls of the ${room}, then vanishes.`
+    ]
+    // Add other ghost-specific behaviors here if needed
+  };
+
+  return (room) => {
+    const pool = [...commonBehaviors];
+    if (specialBehaviors[type]) {
+      pool.push(...specialBehaviors[type]);
+    }
+    const action = pool[Math.floor(Math.random() * pool.length)];
+    return action(room);
+  };
+}
+
+export function getCurrentGhost() {
+  return currentGhost;
+}
+
+// Used in game.js to simulate behavior
+export function performBehavior(room) {
+  if (!currentGhost || !currentGhost.behaviorMap) {
+    return "You feel nothing... the ghost has yet to show itself.";
+  }
+  return currentGhost.behaviorMap(room);
 }
