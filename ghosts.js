@@ -1,156 +1,254 @@
-// ghosts.js – Full Ghost System with 25 Behaviors + Selection Engine
+// ghosts.js – Canonical ghost engine with behaviors, evidence, and preferred items
 
-const ghostTypes = [
-  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
-  'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
-  'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo',
-  'Myling', 'Onryo', 'The Twins', 'Raiju', 'Obake',
-  'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
+const ghostDataList = [
+  {
+    type: 'Spirit',
+    evidence: ['EMF Level 5', 'Ghost Writing', 'Spirit Box'],
+    preferredItems: ['Smudge Stick', 'Spirit Box'],
+    behaviors: [
+      (room) => `You sense a calm but watchful energy in the ${room}.`,
+      (room) => `The ${room} remains eerily neutral, but presence is strong.`
+    ]
+  },
+  {
+    type: 'Wraith',
+    evidence: ['DOTS', 'EMF Level 5', 'Spirit Box'],
+    preferredItems: ['Salt', 'UV Light'],
+    behaviors: [
+      (room) => `Footsteps pass through salt in the ${room}... but leave no prints.`,
+      (room) => `You feel the air warp—like something passed through you in the ${room}.`
+    ]
+  },
+  {
+    type: 'Phantom',
+    evidence: ['DOTS', 'Fingerprints', 'Spirit Box'],
+    preferredItems: ['Photo Camera'],
+    behaviors: [
+      (room) => `A shadowy figure appears, then vanishes in the ${room}.`,
+      (room) => `Looking at the ghost drains your sanity in the ${room}.`
+    ]
+  },
+  {
+    type: 'Poltergeist',
+    evidence: ['Ghost Writing', 'Spirit Box', 'Fingerprints'],
+    preferredItems: ['Sound Sensor', 'Video Camera'],
+    behaviors: [
+      (room) => `Drawers slam shut in the ${room}.`,
+      (room) => `Objects fly across the ${room}.`
+    ]
+  },
+  {
+    type: 'Banshee',
+    evidence: ['DOTS', 'Fingerprints', 'Ghost Orb'],
+    preferredItems: ['Parabolic Mic', 'Crucifix'],
+    behaviors: [
+      (room) => `A haunting song whispers in your ear in the ${room}.`,
+      (room) => `You feel personally targeted in the ${room}.`
+    ]
+  },
+  {
+    type: 'Jinn',
+    evidence: ['EMF Level 5', 'Fingerprints', 'Freezing Temps'],
+    preferredItems: ['Breaker Off', 'EMF Reader'],
+    behaviors: [
+      (room) => `Electronics surge near the ${room}.`,
+      (room) => `You move too fast—something reacts violently in the ${room}.`
+    ]
+  },
+  {
+    type: 'Mare',
+    evidence: ['Ghost Orb', 'Ghost Writing', 'Spirit Box'],
+    preferredItems: ['Light Source', 'Candle'],
+    behaviors: [
+      (room) => `Darkness deepens unnaturally in the ${room}.`,
+      (room) => `The lights go out on their own in the ${room}.`
+    ]
+  },
+  {
+    type: 'Revenant',
+    evidence: ['Ghost Orb', 'Ghost Writing', 'Freezing Temps'],
+    preferredItems: ['Smudge Stick', 'Crucifix'],
+    behaviors: [
+      (room) => `You sense you're being hunted in the ${room}.`,
+      (room) => `Heavy footsteps echo behind you in the ${room}.`
+    ]
+  },
+  {
+    type: 'Shade',
+    evidence: ['EMF Level 5', 'Ghost Writing', 'Freezing Temps'],
+    preferredItems: ['Thermometer', 'Book'],
+    behaviors: [
+      (room) => `No activity... until you're alone in the ${room}.`,
+      (room) => `You feel like something is withholding its power in the ${room}.`
+    ]
+  },
+  {
+    type: 'Demon',
+    evidence: ['Ghost Writing', 'Freezing Temps', 'Fingerprints'],
+    preferredItems: ['Crucifix', 'Smudge Stick'],
+    behaviors: [
+      (room) => `A deep growl rumbles in the ${room}.`,
+      (room) => `Overwhelming dread fills the ${room}.`
+    ]
+  },
+  {
+    type: 'Yurei',
+    evidence: ['DOTS', 'Ghost Orb', 'Freezing Temps'],
+    preferredItems: ['Smudge Stick', 'Motion Sensor'],
+    behaviors: [
+      (room) => `The temperature drops rapidly in the ${room}.`,
+      (room) => `You feel mentally exhausted just by being in the ${room}.`
+    ]
+  },
+  {
+    type: 'Oni',
+    evidence: ['DOTS', 'EMF Level 5', 'Freezing Temps'],
+    preferredItems: ['Video Camera', 'EMF Reader'],
+    behaviors: [
+      (room) => `Sudden burst of strength—you hear a loud crash in the ${room}.`,
+      (room) => `Something barrels into furniture in the ${room}.`
+    ]
+  },
+  {
+    type: 'Hantu',
+    evidence: ['Fingerprints', 'Ghost Orb', 'Freezing Temps'],
+    preferredItems: ['Thermometer'],
+    behaviors: [
+      (room) => `Your breath fogs over... The ${room} is freezing.`,
+      (room) => `The ghost is faster in this cold ${room}.`
+    ]
+  },
+  {
+    type: 'Yokai',
+    evidence: ['DOTS', 'Ghost Orb', 'Spirit Box'],
+    preferredItems: ['Sound Sensor', 'Candle'],
+    behaviors: [
+      (room) => `You hear incomprehensible whispers reacting to your voice in the ${room}.`,
+      (room) => `The ghost seems agitated by talking in the ${room}.`
+    ]
+  },
+  {
+    type: 'Goryo',
+    evidence: ['DOTS', 'EMF Level 5', 'Fingerprints'],
+    preferredItems: ['Video Camera'],
+    behaviors: [
+      (room) => `A figure briefly appears only on the DOTS projector in the ${room}.`,
+      (room) => `You sense something watching—but only when you're alone.`
+    ]
+  },
+  {
+    type: 'Myling',
+    evidence: ['EMF Level 5', 'Ghost Writing', 'Fingerprints'],
+    preferredItems: ['Parabolic Mic'],
+    behaviors: [
+      (room) => `You hear footsteps more clearly in the ${room}.`,
+      (room) => `The ghost’s sounds are loud—but its presence is hard to detect.`
+    ]
+  },
+  {
+    type: 'Onryo',
+    evidence: ['Ghost Orb', 'Freezing Temps', 'Spirit Box'],
+    preferredItems: ['Candle', 'Thermometer'],
+    behaviors: [
+      (room) => `A lit candle extinguishes suddenly in the ${room}.`,
+      (room) => `You feel the spirit is drawn to fire in the ${room}.`
+    ]
+  },
+  {
+    type: 'The Twins',
+    evidence: ['EMF Level 5', 'Freezing Temps', 'Spirit Box'],
+    preferredItems: ['EMF Reader', 'Motion Sensor'],
+    behaviors: [
+      (room) => `Activity seems duplicated in the ${room}.`,
+      (room) => `You feel like two entities are nearby in the ${room}.`
+    ]
+  },
+  {
+    type: 'Raiju',
+    evidence: ['DOTS', 'EMF Level 5', 'Ghost Orb'],
+    preferredItems: ['Electronics'],
+    behaviors: [
+      (room) => `Tech shorts out violently in the ${room}.`,
+      (room) => `The ghost surges near active equipment in the ${room}.`
+    ]
+  },
+  {
+    type: 'Obake',
+    evidence: ['EMF Level 5', 'Ghost Orb', 'Fingerprints'],
+    preferredItems: ['UV Light'],
+    behaviors: [
+      (room) => `You find fingerprints that disappear quickly in the ${room}.`,
+      (room) => `A distorted form flickers briefly in the ${room}.`
+    ]
+  },
+  {
+    type: 'The Mimic',
+    evidence: ['Freezing Temps', 'Fingerprints', 'Spirit Box'],
+    preferredItems: ['Salt', 'Camera'],
+    behaviors: [
+      (room) => `A familiar ghostly event repeats in the ${room}.`,
+      (room) => `You sense a deception is occurring nearby...`
+    ]
+  },
+  {
+    type: 'Moroi',
+    evidence: ['Freezing Temps', 'Ghost Writing', 'Spirit Box'],
+    preferredItems: ['Smudge Stick', 'Voice'],
+    behaviors: [
+      (room) => `A thick sense of dread and fatigue settles in the ${room}.`,
+      (room) => `You cough. Something is draining your will to fight.`
+    ]
+  },
+  {
+    type: 'Deogen',
+    evidence: ['DOTS', 'Ghost Writing', 'Spirit Box'],
+    preferredItems: ['Crucifix', 'Proximity Sensor'],
+    behaviors: [
+      (room) => `You sense a presence that knows exactly where you are.`,
+      (room) => `The ghost approaches slowly, deliberately, never fooled.`
+    ]
+  },
+  {
+    type: 'Thaye',
+    evidence: ['DOTS', 'Ghost Orb', 'Ghost Writing'],
+    preferredItems: ['Timer', 'Smudge Stick'],
+    behaviors: [
+      (room) => `The ghost seems powerful... but slows as time passes.`,
+      (room) => `You feel less threatened in the ${room} than before.`
+    ]
+  },
+  {
+    type: 'Succubus',
+    evidence: ['Spirit Box', 'Ghost Orb', 'Freezing Temps'],
+    preferredItems: ['Mirror', 'Candle'],
+    behaviors: [
+      (room) => `A sultry voice calls to you from the shadows in the ${room}.`,
+      (room) => `Your heart races in the ${room}. The air feels charged with desire.`,
+      (room) => `The presence here is both terrifying and intoxicating...`
+    ]
+  }
 ];
 
+// Active ghost
 let currentGhost = null;
 
-export function getGhostTypes() {
-  return ghostTypes;
-}
-
 export function getRandomGhost() {
-  const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
-  return { type };
+  const ghost = ghostDataList[Math.floor(Math.random() * ghostDataList.length)];
+  return { ...ghost };
 }
 
 export function initializeGhost(ghost) {
   currentGhost = {
-    type: ghost.type,
-    behaviorMap: generateBehavior(ghost.type)
+    ...ghost,
+    perform: () => ghost.behaviors[Math.floor(Math.random() * ghost.behaviors.length)]
   };
+}
+
+export function performBehavior(room) {
+  if (!currentGhost || !currentGhost.perform) return "You feel watched, but nothing happens.";
+  return currentGhost.perform()(room);
 }
 
 export function getCurrentGhost() {
   return currentGhost;
-}
-
-export function getCurrentGhostType() {
-  return currentGhost?.type || null;
-}
-
-export function performBehavior(room) {
-  if (!currentGhost || !currentGhost.behaviorMap) {
-    return "You feel nothing... the ghost has yet to show itself.";
-  }
-  return currentGhost.behaviorMap(room);
-}
-
-function generateBehavior(type) {
-  const common = [
-    (room) => `You hear faint footsteps echoing through the ${room}.`,
-    (room) => `The temperature drops as you step into the ${room}.`,
-    (room) => `An uneasy silence fills the ${room}.`
-  ];
-
-  const unique = {
-    Spirit: [
-      (room) => `You sense calm but undeniable presence in the ${room}.`,
-      (room) => `A subtle whisper passes your ear in the ${room}.`
-    ],
-    Wraith: [
-      (room) => `The ${room} feels disconnected from reality.`,
-      (room) => `You hear footsteps, but see no trace.`
-    ],
-    Phantom: [
-      (room) => `You see a glimpse of a figure in the ${room}… then it vanishes.`,
-      (room) => `Your vision distorts slightly in the ${room}.`
-    ],
-    Poltergeist: [
-      (room) => `Loud crashes erupt as objects are flung across the ${room}.`,
-      (room) => `Drawers slam open and shut violently.`
-    ],
-    Banshee: [
-      (room) => `A distant, sorrowful wail fills the ${room}.`,
-      (room) => `You hear singing that turns to screams in the ${room}.`
-    ],
-    Jinn: [
-      (room) => `Electronics spark briefly as you enter the ${room}.`,
-      (room) => `An unnatural breeze circles you in the ${room}.`
-    ],
-    Mare: [
-      (room) => `The lights flicker and fail in the ${room}.`,
-      (room) => `Shadows crawl unnaturally across the walls.`
-    ],
-    Revenant: [
-      (room) => `You feel hunted. You shouldn't linger in the ${room}.`,
-      (room) => `Your breath shortens. It's fast.`
-    ],
-    Shade: [
-      (room) => `The ${room} feels empty and still.`,
-      (room) => `You sense something watching from the corner.`
-    ],
-    Demon: [
-      (room) => `A growl echoes from beneath the floor.`,
-      (room) => `Symbols flash on the wall and vanish in the ${room}.`
-    ],
-    Yurei: [
-      (room) => `You feel your energy being sapped.`,
-      (room) => `A misty figure lingers near you briefly.`
-    ],
-    Oni: [
-      (room) => `Heavy breathing fills the ${room}.`,
-      (room) => `Your muscles tense without reason.`
-    ],
-    Hantu: [
-      (room) => `Frost creeps across the floor.`,
-      (room) => `Breath fogs instantly in the ${room}.`
-    ],
-    Yokai: [
-      (room) => `Chattering voices erupt, then stop abruptly.`,
-      (room) => `A loud whisper hushes you aggressively.`
-    ],
-    Goryo: [
-      (room) => `A reflection moves without a source.`,
-      (room) => `You glimpse a ghost in your camera… but nothing’s there.`
-    ],
-    Myling: [
-      (room) => `A child’s humming echoes softly.`,
-      (room) => `Tiny handprints mark the wall.`
-    ],
-    Onryo: [
-      (room) => `Candlelight flickers in time with your breath.`,
-      (room) => `You feel a presence whenever fire burns.`
-    ],
-    'The Twins': [
-      (room) => `Two distinct footsteps echo in different corners.`,
-      (room) => `Conflicting cold spots confuse your senses.`
-    ],
-    Raiju: [
-      (room) => `Static bursts near your electronics.`,
-      (room) => `The lights buzz violently as you enter.`
-    ],
-    Obake: [
-      (room) => `Fingerprints shift and smear unnaturally.`,
-      (room) => `You catch a glimpse of something shifting shape.`
-    ],
-    'The Mimic': [
-      (room) => `You hear evidence of another ghost type.`,
-      (room) => `Familiar sounds play tricks on you.`
-    ],
-    Moroi: [
-      (room) => `You feel physically ill in the ${room}.`,
-      (room) => `Your vision blurs the longer you stay.`
-    ],
-    Deogen: [
-      (room) => `Heavy footsteps slowly approach.`,
-      (room) => `An immense pressure closes in on you.`
-    ],
-    Thaye: [
-      (room) => `Time feels strange here. You feel… older.`,
-      (room) => `The air grows heavier with each moment.`
-    ],
-    Succubus: [
-      (room) => `A sultry breath brushes your neck.`,
-      (room) => `Your mind fogs with strange desires.`
-    ]
-  };
-
-  const combined = unique[type] ? [...common, ...unique[type]] : [...common];
-  return (room) => combined[Math.floor(Math.random() * combined.length)](room);
 }
