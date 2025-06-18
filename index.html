@@ -334,10 +334,7 @@ export function useItemUI() {
   back.onclick = renderOptions;
   container.appendChild(back);
 }
-</script>
-<script type="module">
-// Continued game logic...
-
+  
 function renderMoveButtons() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
@@ -837,6 +834,8 @@ function rollTarotCard() {
 }
 
 window.useCursedItem = useCursedItem;
+</script>
+  <script>
 // --- Game Start + Action Panel Wiring ---
 window.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
