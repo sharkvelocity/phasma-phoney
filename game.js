@@ -1,12 +1,13 @@
-// game.js – Stable startGame integration for Phasma-Phoney
+// game.js – Core game flow logic for Phasma-Phoney
 
 import { initializeMap, movePlayer, getCurrentRoom } from './map.js';
 import { initializeJournal, updateJournal } from './journal.js';
-import { getSanity } from './mechanics.js';
+import { getGhostActivity, isHunting, triggerHunt, endHunt, getSanity, adjustSanity, getEvidence, discoverEvidence, useCursedItem } from './mechanics.js';
 import { getRandomGhost, initializeGhost } from './ghosts.js';
+import { displayNarratorText } from './dialogueEngine.js';
 import { addItemToInventory, getInventory, useItem } from './inventory.js';
 
-let ghost = null;
+let ghost;
 let roundActive = false;
 
 export function startGame() {
@@ -15,8 +16,16 @@ export function startGame() {
   initializeGhost(ghost);
   initializeMap();
   initializeJournal();
-  displayNarratorText("A new investigation begins. The ghost is unknown. Stay alert.");
+  updateHUD();
+  displayNarratorText(`🕵️ A new investigation begins... The ghost type is unknown. Stay alert.`);
   renderOptions();
+}
+
+function updateHUD() {
+  const narratorBox = document.getElementById('narrator-box');
+  const mapBox = document.getElementById('mini-map');
+  if (narratorBox) narratorBox.innerText = `Sanity: ${getSanity()}% | Room: ${getCurrentRoom()}`;
+  if (mapBox) mapBox.innerText = `Room: ${getCurrentRoom()}`;
 }
 
 function renderOptions() {
@@ -26,13 +35,13 @@ function renderOptions() {
 
   const options = [
     { label: '1. Investigate', action: investigate },
-    { label: '2. Use Item', action: useInventoryItem },
+    { label: '2. Use Item', action: handleItemUse },
     { label: '3. Move', action: openMoveMenu },
-    { label: '4. Guess Ghost', action: guessGhost },
-    { label: '5. Return to Van', action: returnToVan }
+    { label: '4. Guess Ghost', action: openGuessPopup },
+    { label: '5. Return to Van', action: endGame }
   ];
 
-  options.forEach(opt => {
+  options.forEach((opt) => {
     const btn = document.createElement('button');
     btn.innerText = opt.label;
     btn.onclick = opt.action;
@@ -41,64 +50,103 @@ function renderOptions() {
 }
 
 function investigate() {
-  updateJournal("You search the room. It's eerily quiet...");
-  displayNarratorText("You hear faint footsteps echoing nearby...");
+  const result = ghost.performBehavior(getCurrentRoom());
+  updateJournal(result);
+  displayNarratorText(result);
+  updateHUD();
   renderOptions();
 }
 
-function useInventoryItem() {
-  const inv = getInventory();
-  if (!inv.length) {
-    displayNarratorText("You have no items.");
+function handleItemUse() {
+  const items = getInventory();
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  if (items.length === 0) {
+    displayNarratorText('🧳 You have no items to use.');
     renderOptions();
     return;
   }
 
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-  inv.forEach((item, i) => {
+  items.forEach((item, i) => {
     const btn = document.createElement('button');
     btn.innerText = `${i + 1}. Use ${item}`;
     btn.onclick = () => {
-      const result = useItem(item, getCurrentRoom(), ghost?.type || '');
-      displayNarratorText(result || "Nothing happened.");
+      const feedback = useItem(item, getCurrentRoom(), ghost.type);
+      displayNarratorText(feedback);
+      updateHUD();
       renderOptions();
     };
     container.appendChild(btn);
   });
 
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
 }
 
 function openMoveMenu() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
+  const directions = ['North', 'East', 'South', 'West'];
 
-  ['North', 'East', 'South', 'West'].forEach(dir => {
+  directions.forEach((dir) => {
     const btn = document.createElement('button');
     btn.innerText = `Go ${dir}`;
     btn.onclick = () => {
-      const moveText = movePlayer(dir);
-      displayNarratorText(moveText);
+      const result = movePlayer(dir);
+      displayNarratorText(result);
+      updateHUD();
       renderOptions();
     };
     container.appendChild(btn);
   });
 
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
 }
 
-function guessGhost() {
-  displayNarratorText("Guessing is not implemented yet.");
-  renderOptions();
+function openGuessPopup() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  const guesses = [
+    'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
+    'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
+    'Yurei', 'Oni', 'Hantu', 'Yokai', 'Goryo',
+    'Myling', 'Onryo', 'The Twins', 'Raiju', 'Obake',
+    'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
+  ];
+
+  guesses.forEach((ghostType) => {
+    const btn = document.createElement('button');
+    btn.innerText = ghostType;
+    btn.onclick = () => handleGuess(ghostType);
+    container.appendChild(btn);
+  });
+
+  const backBtn = document.createElement('button');
+  backBtn.innerText = 'Back';
+  backBtn.onclick = renderOptions;
+  container.appendChild(backBtn);
 }
 
-function returnToVan() {
-  displayNarratorText("You return to the van. Investigation ends.");
+function handleGuess(guess) {
+  if (guess === ghost.type) {
+    displayNarratorText(`🎯 Correct! It was a ${ghost.type}. You survive and earn experience.`);
+  } else {
+    displayNarratorText(`💀 Wrong guess. It was a ${ghost.type}. The ghost claims you.`);
+  }
+  roundActive = false;
+  endGame();
+}
+
+function endGame() {
+  roundActive = false;
+  displayNarratorText("📦 You return to the van. The investigation concludes.");
+  const container = document.getElementById('option-buttons');
+  if (container) container.innerHTML = '';
 }
