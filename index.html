@@ -72,19 +72,32 @@
       text-align: center;
       font-size: 12px;
     }
-    .orb {
-      position: absolute;
-      width: 4px;
-      height: 4px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.8;
-      animation: float 10s linear infinite;
-    }
-    @keyframes float {
-      0% { transform: translateY(100vh); }
-      100% { transform: translateY(-10vh); }
-    }
+.orb {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: white;
+  border-radius: 50%;
+  opacity: 0;
+  animation-name: drift, fade;
+  animation-timing-function: linear, ease-in-out;
+  animation-iteration-count: infinite;
+  pointer-events: none;
+}
+
+@keyframes drift {
+  0% {
+    transform: translate(0, 0);
+  }
+  100% {
+    transform: translate(var(--dx), var(--dy));
+  }
+}
+
+@keyframes fade {
+  0%, 100% { opacity: 0; }
+  50% { opacity: 0.8; }
+}
   </style>
 </head>
 <body>
@@ -123,19 +136,32 @@
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
-
+  
+</body>
   <script>
-    // Floating orbs generator
-    for (let i = 0; i < 30; i++) {
-      const orb = document.createElement('div');
-      orb.classList.add('orb');
-      orb.style.left = Math.random() * 100 + 'vw';
-      orb.style.animationDuration = (8 + Math.random() * 4) + 's';
-      orb.style.opacity = Math.random();
-      document.body.appendChild(orb);
-    }
-  </script>
+  // Create 10 orbs that float in random directions and fade in/out
+  for (let i = 0; i < 10; i++) {
+    const orb = document.createElement('div');
+    orb.className = 'orb';
 
+    // Random start position
+    orb.style.left = Math.random() * 100 + 'vw';
+    orb.style.top = Math.random() * 100 + 'vh';
+
+    // Random drift direction
+    const dx = (Math.random() - 0.5) * 200 + 'px';
+    const dy = (Math.random() - 0.5) * 200 + 'px';
+    orb.style.setProperty('--dx', dx);
+    orb.style.setProperty('--dy', dy);
+
+    // Random animation duration and delay
+    const duration = 8 + Math.random() * 5;
+    orb.style.animationDuration = `${duration}s, ${duration}s`;
+    orb.style.animationDelay = `${Math.random() * 5}s, ${Math.random() * 5}s`;
+
+    document.body.appendChild(orb);
+  }
+</script>
   <script>
     // Utility functions
     function appendReadout(text) {
@@ -972,5 +998,4 @@ window.addEventListener('DOMContentLoaded', () => {
   };
 });
 </script>
-</body>
 </html>
