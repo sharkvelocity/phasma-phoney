@@ -1,4 +1,56 @@
-// mechanics.js – Ghost activity, sanity, evidence, cursed items
+// mechanics.js – Ghost activity, sanity, evidence, cursed items with stats tracking
+
+import { updateStats, recordSanityLoss, incrementCursedItemUse, addEvidenceFound } from './statistics.js';
+
+let sanity = 100;
+let ghostActivityLevel = 0;
+let currentHunt = false;
+let evidenceDiscovered = [];
+
+export function getSanity() {
+  return sanity;
+}
+
+export function adjustSanity(amount) {
+  sanity = Math.max(0, Math.min(100, sanity + amount));
+  recordSanityLoss(amount);
+}
+
+export function isHunting() {
+  return currentHunt;
+}
+
+export function triggerHunt() {
+  currentHunt = true;
+  ghostActivityLevel = 10;
+  adjustSanity(-25);
+}
+
+export function endHunt() {
+  currentHunt = false;
+  ghostActivityLevel = 0;
+}
+
+export function getGhostActivity() {
+  return ghostActivityLevel;
+}
+
+export function discoverEvidence(evidence) {
+  if (!evidenceDiscovered.includes(evidence)) {
+    evidenceDiscovered.push(evidence);
+    addEvidenceFound(1);
+  }
+}
+
+export function getEvidence() {
+  return evidenceDiscovered;
+}
+
+export function useCursedItem(itemName) {
+  adjustSanity(-20);
+  incrementCursedItemUse();
+  return `You use the ${itemName}. Reality warps briefly around you.`;
+}// mechanics.js – Ghost activity, sanity, evidence, cursed items
 
 let sanity = 100;
 let ghostActivityLevel = 0;
