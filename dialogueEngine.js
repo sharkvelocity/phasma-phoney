@@ -1,11 +1,10 @@
-// dialogueEngine.js – Controls structured dialogue sequences
+// dialogueEngine.js – Narration delivery system
 
 import { dialogue } from './dialogue.js';
 
-export function getDialogue(key) {
-  return dialogue[key] || '...';
-}
-
-export function listDialogueKeys() {
-  return Object.keys(dialogue);
+export function displayNarratorText(keyOrText) {
+  const box = document.getElementById('narrator-box');
+  if (!box) return;
+  const text = dialogue[keyOrText] || keyOrText;
+  box.innerText = text;
 }
