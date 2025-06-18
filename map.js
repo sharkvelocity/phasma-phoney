@@ -1,19 +1,15 @@
-// map.js – Expanded house layout with 3x3 grid navigation
+// map.js – Handles room layout and player movement
 
 let currentRoom = 'Entrance';
 
-const roomMap = {
-  'Entrance': { North: 'Hallway' },
-  'Hallway': { South: 'Entrance', East: 'Living Room', West: 'Bathroom', North: 'Garage' },
-  'Living Room': { West: 'Hallway', North: 'Kitchen' },
-  'Kitchen': { South: 'Living Room', East: 'Dining Room' },
-  'Dining Room': { West: 'Kitchen' },
-  'Bathroom': { East: 'Hallway', North: 'Bedroom' },
-  'Bedroom': { South: 'Bathroom', East: 'Closet' },
-  'Closet': { West: 'Bedroom' },
-  'Garage': { South: 'Hallway', East: 'Workshop' },
-  'Workshop': { West: 'Garage', South: 'Basement' },
-  'Basement': { North: 'Workshop' }
+const rooms = {
+  Entrance: { North: 'Hallway' },
+  Hallway: { South: 'Entrance', East: 'Living Room', West: 'Bathroom', North: 'Master Bedroom' },
+  Bathroom: { East: 'Hallway' },
+  Living Room: { West: 'Hallway', North: 'Kitchen' },
+  Kitchen: { South: 'Living Room' },
+  'Master Bedroom': { South: 'Hallway', East: 'Closet' },
+  Closet: { West: 'Master Bedroom' }
 };
 
 export function initializeMap() {
@@ -21,12 +17,12 @@ export function initializeMap() {
 }
 
 export function movePlayer(direction) {
-  const room = roomMap[currentRoom];
-  if (room && room[direction]) {
-    currentRoom = room[direction];
-    return `You move ${direction} into the ${currentRoom}.`;
+  const options = rooms[currentRoom];
+  if (options && options[direction]) {
+    currentRoom = options[direction];
+    return `🚶 You move ${direction} to the ${currentRoom}.`;
   } else {
-    return `You can't go ${direction} from here.`;
+    return `⛔ You can't go ${direction} from the ${currentRoom}.`;
   }
 }
 
