@@ -188,5 +188,63 @@
       }
     });
   </script>
+<script>
+  const canvas = document.getElementById('orb-canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  function createOrb() {
+    return {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+      radius: Math.random() * 3 + 2,
+      opacity: 0,
+      fadeIn: true
+    };
+  }
+
+  let orbs = Array.from({ length: 20 }, createOrb);
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    orbs.forEach((orb, index) => {
+      if (orb.fadeIn) {
+        orb.opacity += 0.005;
+        if (orb.opacity >= 0.6) orb.fadeIn = false;
+      } else {
+        orb.opacity -= 0.002;
+        if (orb.opacity <= 0) {
+          orbs[index] = createOrb();
+          return;
+        }
+      }
+
+      orb.x += orb.vx;
+      orb.y += orb.vy;
+
+      if (orb.x < 0 || orb.x > canvas.width) orb.vx *= -1;
+      if (orb.y < 0 || orb.y > canvas.height) orb.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, orb.radius, 0, 2 * Math.PI);
+      ctx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
+      ctx.shadowColor = `rgba(255, 255, 255, ${orb.opacity * 0.5})`;
+      ctx.shadowBlur = 15;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
+
+  window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  });
+</script>
 </body>
 </html>
