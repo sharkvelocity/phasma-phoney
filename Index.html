@@ -567,36 +567,7 @@ function tickTurn() {
     updateHUD();
   }
 
-  // Patch actions to include turn
-  
-    function tickTurn() {
-    const activity = performGhostAction();
-    displayNarratorText(activity);
-      
-  const oldInvestigate = investigate;
-  investigate = function () {
-    oldInvestigate();
-    tickTurn();
-  };
-
-  const oldMovePlayer = movePlayer;
-  movePlayer = function (dir) {
-    const result = oldMovePlayer(dir);
-    tickTurn();
-    return result;
-  };
-
-  const oldUseItem = useItem;
-  useItem = function (item, room, ghostType) {
-    const result = oldUseItem(item, room, ghostType);
-    tickTurn();
-    return result;
-  };
-
-  window.tickTurn = tickTurn;
-</script>
-<!-- 8. DOM Ready Hook -->
-
+  // Dom Ready hooks  
   
 <script>
 window.addEventListener('DOMContentLoaded', () => {
