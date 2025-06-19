@@ -162,9 +162,12 @@ body {
     <button id="confirm-loadout">Confirm</button>
     <button id="back-btn">Back</button>  
   </div>
-  
-  <!-- 1. Utility + Floating Orbs -->
-<script>
+  <script>
+
+    
+  //-- Utility + Floating Orbs --\\
+
+    
 for (let i = 0; i < 10; i++) {
   const orb = document.createElement('div');
   orb.className = 'orb';
@@ -192,9 +195,12 @@ function displayNarratorText(text) {
   readout.scrollTop = readout.scrollHeight;
 }
 </script>
-<!-- 2. Mechanics System -->
-  
 <script>
+
+  
+//-- Mechanics System --\\
+
+  
 let sanity = 100, xp = 0, currentHunt = false, ghostActivityLevel = 0, cursedItemsUsed = 0;
 let evidenceDiscovered = [], turn = 0, lastAction = '';
 
@@ -320,13 +326,13 @@ function guessMenu() {
   container.appendChild(submitBtn);
   container.appendChild(backBtn);
 }
-</script>
-<!-- 3. Inventory System -->
+</style>
 
-      <script>
         
-// --- VAN SYSTEM ---
+// --- INVENTORY + VAN SYSTEM --- \\
 
+  
+<style> 
 const vanInventory = {
   'Smudge Stick': 4,
   'Salt': 3,
@@ -349,7 +355,9 @@ function openVanMenu() {
   container.innerHTML = '';
   const inv = getInventory();
 
-  // --- Return Items ---
+  // --- Return Items ---\\
+
+  
   inv.forEach(item => {
     if (consumables.includes(item)) return; // Used consumables can't be returned
     const btn = document.createElement('button');
@@ -364,7 +372,9 @@ function openVanMenu() {
     container.appendChild(btn);
   });
 
-  // --- Take Items ---
+  // --- Take Items --- \\
+
+  
   Object.entries(vanInventory).forEach(([item, qty]) => {
     if (qty <= 0) return;
     const total = Object.values(inventory).reduce((a, b) => a + b, 0);
@@ -387,7 +397,9 @@ function openVanMenu() {
   container.appendChild(back);
 }
 
-// --- Always include lighter but not in inventory count ---
+// --- Always include lighter but not in inventory count --- \\
+
+        
 function getInventory() {
   return Object.keys(inventory).concat(alwaysWithYou);
 }
@@ -458,9 +470,11 @@ function useItem(item, room, ghostType) {
   let result = `🧪 You used the ${item} in the ${room}.`;
 
   if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
-    result += `\n🌀 The ${ghostType} reacts violently!`;
+    result += `\n🌀 The ${ghostType} becomes angry!`;
   }
-
+    
+    //--  Evidence Tool Map  --\\
+  
   const evidence = evidenceToolMap[item];
   if (evidence) {
     const success = Math.random() < 0.6;
@@ -547,7 +561,7 @@ function pickupMenu() {
   container.innerHTML = '';
 
   if (!itemsHere.length) {
-    displayNarratorText("📭 There's nothing here to pick up.");
+    displayNarratorText("😅 There's nothing here to pick up.");
     renderOptions();
     return;
   }
