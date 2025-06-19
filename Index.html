@@ -357,7 +357,7 @@ const ghostTypes = [
   'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
   'Yurei', 'Oni', 'Hantu', 'Goryo', 'Myling',
   'Onryo', 'The Twins', 'Raiju', 'Obake', 'The Mimic',
-  'Moroi', 'Deogen', 'Thaye', 'Shogun', 'Succubus'
+  'Moroi', 'Deogen', 'Thaye', 'Succubus'
 ];
 
 function getRandomGhost() {
@@ -394,8 +394,7 @@ function generateGhostBehavior(type) {
     'The Mimic': [room => `You hear a sound that doesn’t match your evidence in the ${room}.`],
     'Moroi': [room => `Your breath fogs up as you speak in the ${room}.`],
     'Deogen': [room => `You feel eyes watching your every move in the ${room}.`],
-    'Thaye': [room => `An ancient aura ages the air in the ${room}.`],
-    'Shogun': [room => `An authoritative voice mutters commands in the ${room}.`],
+    'Thaye': [room => `An ancient aura ages the air in the ${room}.`]
     'Succubus': [room => `A sultry whisper beckons in the ${room}.`]
   };
 
