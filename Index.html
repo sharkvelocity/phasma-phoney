@@ -153,7 +153,26 @@ button {
         <div id="narrator-box">
           <div id="system-text">System: Ready.</div>
           <div id="narrator-thought">🧠 Your Thoughts...</div>
+        <div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">
+  Minimap loading...
+</div>
+  <script>function renderMinimap() {
+  const mapDisplay = document.getElementById('minimap');
+  const room = getCurrentRoom();
+  const connections = roomMap[room];
+  
+  let output = `📍 <strong>${room}</strong><br/>`;
+  output += `You can go: `;
+
+  const exits = ['North', 'East', 'South', 'West']
+    .filter(dir => connections?.[dir])
+    .map(dir => `<span style="color:cyan">${dir} → ${connections[dir]}</span>`);
+
+  output += exits.length ? exits.join(', ') : '<em>nowhere</em>';
+  mapDisplay.innerHTML = output;
+}
         </div>
+          </script>
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting The start of the Investigation...</div>
       </div></div>
@@ -349,11 +368,12 @@ function guessMenu() {
 }
 </style>
 
-        
-// --- INVENTORY + VAN SYSTEM --- \\
+        <script>
+// --- INVENTORY & VAN SYSTEM --- //
 
-  
-<style> 
+const consumables = ['Smudge Stick', 'Candle', 'Salt'];
+const alwaysWithYou = ['Lighter'];
+const inventory = {};
 const vanInventory = {
   'Smudge Stick': 4,
   'Salt': 3,
@@ -369,68 +389,10 @@ const vanInventory = {
   'Ghost Writing Book': 1
 };
 
-const alwaysWithYou = ['Lighter'];
-
-function openVanMenu() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-  const inv = getInventory();
-
-  // --- Return Items ---\\
-
-  
-  inv.forEach(item => {
-    if (consumables.includes(item)) return; // Used consumables can't be returned
-    const btn = document.createElement('button');
-    btn.innerText = `Return ${item} to Van`;
-    btn.onclick = () => {
-      delete inventory[item];
-      vanInventory[item] = (vanInventory[item] || 0) + 1;
-      displayNarratorText(`🔁 You return the ${item} to the van.`);
-      updateHUD();
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  // --- Take Items --- \\
-
-  
-  Object.entries(vanInventory).forEach(([item, qty]) => {
-    if (qty <= 0) return;
-    const total = Object.values(inventory).reduce((a, b) => a + b, 0);
-    if (total >= 3) return; // Max 3 carry limit
-    const btn = document.createElement('button');
-    btn.innerText = `Take ${item} (${qty} left)`;
-    btn.onclick = () => {
-      inventory[item] = 1;
-      vanInventory[item]--;
-      displayNarratorText(`🎒 You take a ${item} from the van.`);
-      updateHUD();
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
-}
-
-// --- Always include lighter but not in inventory count --- \\
-
-        
-function getInventory() {
-  return Object.keys(inventory).concat(alwaysWithYou);
-}
-</script>  
-  <script>
-const consumables = ['Smudge Stick', 'Candle', 'Salt'];
-const inventory = {};
 let isVanAccess = false;
 let selectedLoadout = [];
 const roomItems = {};
+
 const evidenceToolMap = {
   'EMF Reader': 'EMF 5',
   'Spirit Box': 'Spirit Box',
@@ -442,31 +404,15 @@ const evidenceToolMap = {
   'Salt': 'Footprints'
 };
 
-const allItems = [
-  'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
-  'Crucifix', 'UV Light', 'Thermometer', 'Parabolic Mic',
-  'Proximity Sensor', 'Camera', 'Salt'
-];
+const allItems = Object.keys(vanInventory);
 
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  container.innerHTML = '';
-  selectedLoadout = [];
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.onclick = () => {
-      if (selectedLoadout.includes(item)) {
-        selectedLoadout = selectedLoadout.filter(i => i !== item);
-        btn.style.backgroundColor = '';
-      } else if (selectedLoadout.length < 3) {
-        selectedLoadout.push(item);
-        btn.style.backgroundColor = 'green';
-      }
-      document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
-    };
-    container.appendChild(btn);
-  });
+function getInventory() {
+  return Object.keys(inventory).concat(alwaysWithYou);
+}
+
+function updateHUD() {
+  const status = document.getElementById('hud-status');
+  status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
 }
 
 function addItemToInventory(item) {
@@ -474,15 +420,6 @@ function addItemToInventory(item) {
   if (total >= 3) return displayNarratorText('❌ You can only carry 3 items.');
   inventory[item] = 1;
   updateHUD();
-}
-
-function getInventory() {
-  return Object.keys(inventory);
-}
-
-function updateHUD() {
-  const status = document.getElementById('hud-status');
-  status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
 }
 
 function useItem(item, room, ghostType) {
@@ -493,9 +430,7 @@ function useItem(item, room, ghostType) {
   if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
     result += `\n🌀 The ${ghostType} becomes angry!`;
   }
-    
-    //--  Evidence Tool Map  --\\
-  
+
   const evidence = evidenceToolMap[item];
   if (evidence) {
     const success = Math.random() < 0.6;
@@ -510,7 +445,7 @@ function useItem(item, room, ghostType) {
   }
 
   if (consumables.includes(item)) {
-    delete inventory[item];
+    delete inventory[item]; // Consumed
     updateHUD();
   }
 
@@ -548,7 +483,7 @@ function showRoomItems() {
 }
 
 function dropItemMenu() {
-  const items = getInventory();
+  const items = Object.keys(inventory);
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
 
@@ -603,35 +538,102 @@ function pickupMenu() {
   back.onclick = renderOptions;
   container.appendChild(back);
 }
+
+function showLoadoutMenu() {
+  const container = document.getElementById('loadout-options');
+  container.innerHTML = '';
+  selectedLoadout = [];
+
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = item;
+    btn.onclick = () => {
+      if (selectedLoadout.includes(item)) {
+        selectedLoadout = selectedLoadout.filter(i => i !== item);
+        btn.style.backgroundColor = '';
+      } else if (selectedLoadout.length < 3) {
+        selectedLoadout.push(item);
+        btn.style.backgroundColor = 'green';
+      }
+      document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
+    };
+    container.appendChild(btn);
+  });
+}
+
+function openVanMenu() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+  const inv = Object.keys(inventory);
+
+  // Return items (non-consumables only)
+  inv.forEach(item => {
+    if (consumables.includes(item)) return;
+    const btn = document.createElement('button');
+    btn.innerText = `Return ${item} to Van`;
+    btn.onclick = () => {
+      delete inventory[item];
+      vanInventory[item] = (vanInventory[item] || 0) + 1;
+      displayNarratorText(`🔁 You return the ${item} to the van.`);
+      updateHUD();
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  // Take items from van
+  Object.entries(vanInventory).forEach(([item, qty]) => {
+    if (qty <= 0) return;
+    const total = Object.values(inventory).reduce((a, b) => a + b, 0);
+    if (total >= 3) return;
+    const btn = document.createElement('button');
+    btn.innerText = `Take ${item} (${qty} left)`;
+    btn.onclick = () => {
+      inventory[item] = 1;
+      vanInventory[item]--;
+      displayNarratorText(`🎒 You take a ${item} from the van.`);
+      updateHUD();
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
 </script>
 
-
-      
 <!-- 4. Map System -->
 
-      
-  
 <script>
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
 let currentRoom = 'Foyer';
+
 const roomMap = {
-  'Foyer': { North: 'Living Room', East: 'Garage', South: 'Basement' },
-  'Living Room': { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
-  'Kitchen': { West: 'Living Room' },
-  'Dining Room': { East: 'Living Room' },
-  'Bathroom': { North: 'Bedroom' },
-  'Bedroom': { South: 'Bathroom' },
-  'Garage': { West: 'Foyer' },
-  'Basement': { North: 'Foyer' }
+  'Foyer':        { North: 'Living Room', East: 'Garage', South: 'Basement' },
+  'Living Room':  { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
+  'Kitchen':      { West: 'Living Room' },
+  'Dining Room':  { East: 'Living Room' },
+  'Bathroom':     { North: 'Bedroom' },
+  'Bedroom':      { South: 'Bathroom' },
+  'Garage':       { West: 'Foyer' },
+  'Basement':     { North: 'Foyer' }
 };
-function movePlayer(dir) {
-  const dest = roomMap[currentRoom]?.[dir];
-  if (!dest) return `❌ Can't go ${dir}.`;
-  currentRoom = dest;
+
+function movePlayer(direction) {
+  const destination = roomMap[currentRoom]?.[direction];
+  if (!destination) return `❌ Can't go ${direction}.`;
+  currentRoom = destination;
   adjustSanity(-2);
-  return `🚪 You move ${dir} into the ${dest}.`;
+  return `🚪 You move ${direction} into the ${destination}.`;
 }
-function getCurrentRoom() { return currentRoom; }
+
+function getCurrentRoom() {
+  return currentRoom;
+}
+
 window.movePlayer = movePlayer;
 window.getCurrentRoom = getCurrentRoom;
 </script>
@@ -712,7 +714,7 @@ window.getCurrentGhost = getCurrentGhost;
       
 <!-- 6. Journal System -->
 
-<!-- 6. Journal System -->
+    
 <script>
 let journalNotes = '';
 
@@ -806,6 +808,10 @@ window.initializeJournal = initializeJournal;
 </script>
     
     <script>
+
+      
+
+
 //-- Game Logic + Button Rendering --\\
 
     
@@ -844,7 +850,29 @@ function renderOptions() {
     b.onclick = handler;
     container.appendChild(b);
   };
+btn('Move', () => {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
 
+  const directions = ['North', 'East', 'South', 'West'];
+  directions.forEach(dir => {
+    const btn = document.createElement('button');
+    btn.innerText = `Go ${dir}`;
+    btn.onclick = () => {
+      const result = movePlayer(dir);
+      displayNarratorText(result);
+      narrateAmbience();
+      tickTurn();
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+});
   btn('Investigate', () => {
     const msg = performBehavior(getCurrentRoom());
     adjustSanity(-5);
@@ -861,6 +889,7 @@ function renderOptions() {
       renderOptions();
       return;
     }
+    
 
     items.forEach(item => {
       const btn = document.createElement('button');
