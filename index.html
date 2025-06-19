@@ -483,51 +483,6 @@
   window.getCurrentRoom = getCurrentRoom;
   window.updateMiniMap = updateMiniMap;
 </script>
-  <!-- 🗺️ MAP SYSTEM -->
-<script>
-  const rooms = [
-    'Foyer', 'Living Room', 'Kitchen', 'Dining Room',
-    'Bathroom', 'Basement', 'Bedroom', 'Garage'
-  ];
-
-  let currentRoom = 'Foyer';
-
-  const roomMap = {
-    'Foyer': { North: 'Living Room', East: 'Garage', South: 'Basement', West: null },
-    'Living Room': { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
-    'Kitchen': { West: 'Living Room' },
-    'Dining Room': { East: 'Living Room' },
-    'Bathroom': { North: 'Bedroom' },
-    'Bedroom': { South: 'Bathroom' },
-    'Garage': { West: 'Foyer' },
-    'Basement': { North: 'Foyer' }
-  };
-
-  function initializeMap() {
-    currentRoom = 'Foyer';
-    displayNarratorText(`📍 You are in the ${currentRoom}.`);
-  }
-
-  function movePlayer(direction) {
-    const available = roomMap[currentRoom] || {};
-    const destination = available[direction];
-    if (destination) {
-      currentRoom = destination;
-      return `🚪 You move ${direction} to the ${destination}.`;
-    } else {
-      return `❌ You can't move ${direction} from the ${currentRoom}.`;
-    }
-  }
-
-  function getCurrentRoom() {
-    return currentRoom;
-  }
-
-  // Global bindings
-  window.initializeMap = initializeMap;
-  window.movePlayer = movePlayer;
-  window.getCurrentRoom = getCurrentRoom;
-</script>
   <!-- 👻 GHOSTS SYSTEM -->
 <script>
   const ghostList = [
@@ -679,7 +634,7 @@
   window.useCursedItem = useCursedItem;
   window.drawTarotCard = drawTarotCard;
 </script>
-  <!-- 👻 GHOSTS SYSTEM -->
+<!-- 👻 GHOST LOGIC DISPATCHER (Final Version) -->
 <script>
   const ghostList = [
     { type: 'Spirit', evidence: ['EMF 5', 'Ghost Writing', 'Spirit Box'], preferred: ['Smudge Stick', 'Book'] },
@@ -712,8 +667,8 @@
   let currentGhost = null;
 
   function getRandomGhost() {
-    const index = Math.floor(Math.random() * ghostList.length);
-    return ghostList[index];
+    const g = ghostList[Math.floor(Math.random() * ghostList.length)];
+    return { ...g };
   }
 
   function initializeGhost(ghost) {
@@ -721,6 +676,10 @@
       ...ghost,
       behavior: generateGhostBehavior(ghost.type)
     };
+  }
+
+  function getCurrentGhost() {
+    return currentGhost;
   }
 
   function performBehavior(room) {
@@ -755,8 +714,8 @@
         (room) => `Two presences are sensed in the ${room}.`
       ],
       'The Mimic': [
-        (room) => `The behavior mimics another ghost in the ${room}.`,
-        (room) => `You feel like you've seen this before in the ${room}...`
+        (room) => `The behavior mimics something you've seen before in the ${room}.`,
+        (room) => `Unusual activity—could be a decoy in the ${room}.`
       ]
     };
 
@@ -767,10 +726,11 @@
     };
   }
 
-  // Expose to global
+  // Expose all
   window.getRandomGhost = getRandomGhost;
   window.initializeGhost = initializeGhost;
   window.performBehavior = performBehavior;
+  window.getCurrentGhost = getCurrentGhost;
 </script>
   <!-- 📓 JOURNAL SYSTEM -->
 <script>
@@ -778,7 +738,9 @@
 
   function initializeJournal() {
     const journalInput = document.getElementById('journal-entry');
-    if (journalInput) journalInput.value = journalNotes;
+    if (journalInput) {
+      journalInput.value = journalNotes;
+    }
   }
 
   function updateNotes(text) {
@@ -786,7 +748,7 @@
     displayNarratorText("📝 Notes updated in your journal.");
   }
 
-  // Expose functions globally
+  // Global exposure
   window.initializeJournal = initializeJournal;
   window.updateNotes = updateNotes;
 </script>
