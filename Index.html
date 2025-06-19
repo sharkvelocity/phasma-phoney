@@ -557,12 +557,13 @@ function guessMenu() {
 function tickTurn() {
   const event = performGhostAction();
   displayNarratorText(event);
-  if (Math.random() < 0.15) {
-    const clues = ['Ghost Writing', 'Spirit Box', 'EMF 5'];
-    const found = clues[Math.floor(Math.random() * clues.length)];
-    displayNarratorText(`👻 Passive clue found: ${found}`);
-    discoverEvidence(found);
+
+  // Optional hunt trigger at low sanity
+  if (getSanity() <= 15 && Math.random() < 0.3) {
+    const huntMsg = triggerHunt();
+    displayNarratorText(huntMsg);
   }
+
   updateHUD();
 }
 </script>
