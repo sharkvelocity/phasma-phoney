@@ -801,8 +801,10 @@ function endInvestigation() {
     const itemBtn = document.getElementById('item-btn');
     const vanBtn = document.getElementById('van-btn');
     const journalScreen = document.getElementById('journal-screen');
-
-    // 🛠️ FIX: Show loadout only *after* start is clicked
+    document.getElementById('back-btn').onclick = () => {
+    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('start-btn').style.display = 'inline-block';
+};
     startBtn.onclick = () => {
       document.getElementById('start-btn').style.display = 'none';
       gameScreen.classList.add('hidden');               // Ensure game UI is hidden
@@ -880,13 +882,13 @@ function endInvestigation() {
 </script>
   <!-- This setup is clean and ready -->
 
-    <div id="loadout-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+<div id="loadout-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
   <h2>Select Your Loadout (Max 3 items)</h2>
   <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;">
   </div>
   <p id="loadout-selected">Selected: 0</p>
   <button id="confirm-loadout">Confirm</button>
-  };
+  <button id="back-btn">Back</button>  
     </div>
 </body>
 </html>
