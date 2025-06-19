@@ -110,15 +110,6 @@
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
-    <div id="right-panel">
-      <div id="mini-map">Room: Unknown</div>
-      <div id="movement-buttons">
-          <button onclick="move('North')">Up</button>
-          <button onclick="move('West')">Left</button>
-          <button onclick="move('East')">Right</button>
-          <button onclick="move('South')">Down</button>
-      </div>
-    </div>
     </div>
   </div>
   <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
@@ -331,12 +322,56 @@
 <script>
   const inventory = {}; // Tracks items and counts
 
-  const allItems = [
-    'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
-    'Crucifix', 'UV Light', 'Thermometer', 'Parabolic Mic',
-    'Proximity Sensor', 'Camera', 'Salt' // ⚠️ Mirror & Tarot excluded
-  ];
+ const allItems = [
+  'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
+  'Crucifix', 'UV Light', 'Thermometer',
+  'Parabolic Mic', 'Proximity Sensor', 'Camera', 'Salt'
+];
 
+let selectedLoadout = [];
+
+function showLoadoutMenu() {
+  const container = document.getElementById('loadout-options');
+  if (!container) return;
+
+  container.innerHTML = '';
+  selectedLoadout = [];
+
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = item;
+    btn.style.margin = '4px';
+    btn.onclick = () => toggleLoadoutItem(item, btn);
+    container.appendChild(btn);
+  });
+
+  document.getElementById('loadout-selected').innerText = `Selected: 0`;
+}
+
+function toggleLoadoutItem(item, btn) {
+  if (selectedLoadout.includes(item)) {
+    selectedLoadout = selectedLoadout.filter(i => i !== item);
+    btn.style.backgroundColor = '';
+  } else if (selectedLoadout.length < 3) {
+    selectedLoadout.push(item);
+    btn.style.backgroundColor = 'green';
+  }
+  document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('confirm-loadout').onclick = () => {
+    if (selectedLoadout.length === 0) {
+      alert("Select at least one item.");
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('game-screen').classList.remove('hidden');
+    startGame();
+  };
+});
   const itemData = {
     'Smudge Stick': { consumable: true },
     'Candle': { consumable: false },
@@ -865,13 +900,12 @@
 </script>
   <!-- This setup is clean and ready -->
 
-<div id="loadout-screen" class="hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+<div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
   <h2>Select Your Loadout (Max 3 items)</h2>
-  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;">
-  </div>
+  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
   <p id="loadout-selected">Selected: 0</p>
   <button id="confirm-loadout">Confirm</button>
   <button id="back-btn">Back</button>  
-    </div>
+</div>
 </body>
 </html>
