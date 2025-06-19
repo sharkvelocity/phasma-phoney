@@ -571,6 +571,12 @@ function renderOptions() {
   const btn = (label, handler) => {
     const b = document.createElement('button');
     b.innerText = label;
+    btn.onclick = () => {
+  const msg = useItem(item, getCurrentRoom(), ghost.type);
+  displayNarratorText(msg); // ← static feedback
+  narrateItemThought(item); // ← ambient thought hook
+  renderOptions();
+};
     b.onclick = handler;
     container.appendChild(b);
   };
@@ -663,6 +669,85 @@ function tickTurn() {
 
   updateHUD();
 }
+<script>
+// 1. System response logger
+function showSystemMessage(msg) {
+  const log = document.getElementById('main-readout');
+  log.innerText += `\n${msg}`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// 2. Updated displayNarratorText for ambient/character thoughts
+function displayNarratorThought(text) {
+  const box = document.getElementById('narrator-box');
+  box.innerText = text;
+  const log = document.getElementById('main-readout');
+  log.innerText += `\n🧠 ${text}`;
+  log.scrollTop = log.scrollHeight;
+}
+
+// 3. Ambient thoughts from using items
+function narrateItemThought(item) {
+  const thoughts = {
+    'Candle': [
+      "I feel a little safer with a flame nearby.",
+      "The candle flickers… is that wind or something else?",
+      "This light might be all that stands between me and the dark."
+    ],
+    'Smudge Stick': [
+      "Hope this keeps whatever it is at bay.",
+      "The smoke curls like fingers. Protective… maybe.",
+      "Old rituals for older things."
+    ],
+    'EMF Reader': [
+      "This thing better beep at the right time.",
+      "Still quiet… but that doesn’t mean safe.",
+      "Waiting for the spike. Dreading it, too."
+    ],
+    'Spirit Box': [
+      "I hate the sound it makes. Static and whispers.",
+      "Every time it turns on, I brace myself.",
+      "It’s talking. Or it’s trying to."
+    ],
+    'UV Light': [
+      "Let’s see what hides in the dark.",
+      "Invisible stains glow back at me. I shiver.",
+      "Something touched that. Not long ago."
+    ],
+    'Thermometer': [
+      "Come on, give me a drop.",
+      "If it’s freezing in here, I’ll know soon.",
+      "Cold spots mean company."
+    ],
+    'Parabolic Mic': [
+      "What are you saying in silence?",
+      "Just wind… or whispers?",
+      "I’m listening. Maybe I shouldn’t be."
+    ],
+    'Camera': [
+      "One flash might reveal too much.",
+      "Say cheese, ghost.",
+      "Click. Now to check what I caught."
+    ],
+    'Salt': [
+      "Let’s see what steps through this.",
+      "Hope this slows it down.",
+      "Footprints would confirm I’m not alone."
+    ]
+  };
+
+  if (thoughts[item]) {
+    const line = thoughts[item][Math.floor(Math.random() * thoughts[item].length)];
+    displayNarratorThought(line);
+  }
+}
+
+// 4. Call this in useItemMenu right after item use
+// Example usage in your existing useItemMenu logic:
+// const msg = useItem(item, getCurrentRoom(), ghost.type);
+// displayNarratorText(msg); ← system message
+// narrateItemThought(item); ← ambient thought
+  
 function getAmbientByRoom(room) {
   const ambientByRoom = {
     'Foyer': [
@@ -822,7 +907,125 @@ window.addEventListener('DOMContentLoaded', () => {
     const text = document.getElementById('journal-entry').value;
     updateNotes(text);
   };
-});
+});<script>
+function renderOptions() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  const btn = (label, handler) => {
+    const b = document.createElement('button');
+    b.innerText = label;
+    b.onclick = handler;
+    container.appendChild(b);
+  };
+
+  btn('Investigate', () => {
+    const msg = performBehavior(getCurrentRoom());
+    adjustSanity(-5);
+    displayNarratorText(msg);
+    tickTurn();
+  });
+
+  btn('Use Item', () => {
+    const items = getInventory();
+    container.innerHTML = '';
+
+    if (!items.length) {
+      displayNarratorText("🧳 You have no items.");
+      renderOptions();
+      return;
+    }
+
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.innerText = `Use ${item}`;
+      btn.onclick = () => {
+        const msg = useItem(item, getCurrentRoom(), ghost.type);
+        displayNarratorText(msg);          // Static game result
+        narrateItemThought(item);          // Immersive narrator thought
+        tickTurn();
+        renderOptions();
+      };
+      container.appendChild(btn);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    container.appendChild(back);
+  });
+
+  btn('Drop Item', dropItemMenu);
+  btn('Pick Up Item', pickupMenu);
+
+  btn('Move', moveMenu);
+  btn('Guess Ghost', guessMenu);
+}
+</script><script>
+function displayNarratorThought(text) {
+  const box = document.getElementById('narrator-box');
+  box.innerText = text;
+  const log = document.getElementById('main-readout');
+  log.innerText += `\n🧠 ${text}`;
+  log.scrollTop = log.scrollHeight;
+}
+
+function narrateItemThought(item) {
+  const thoughts = {
+    'Candle': [
+      "I feel a little safer with a flame nearby.",
+      "The candle flickers… is that wind or something else?",
+      "This light might be all that stands between me and the dark."
+    ],
+    'Smudge Stick': [
+      "Hope this keeps whatever it is at bay.",
+      "The smoke curls like fingers. Protective… maybe.",
+      "Old rituals for older things."
+    ],
+    'EMF Reader': [
+      "This thing better beep at the right time.",
+      "Still quiet… but that doesn’t mean safe.",
+      "Waiting for the spike. Dreading it, too."
+    ],
+    'Spirit Box': [
+      "I hate the sound it makes. Static and whispers.",
+      "Every time it turns on, I brace myself.",
+      "It’s talking. Or it’s trying to."
+    ],
+    'UV Light': [
+      "Let’s see what hides in the dark.",
+      "Invisible stains glow back at me. I shiver.",
+      "Something touched that. Not long ago."
+    ],
+    'Thermometer': [
+      "Come on, give me a drop.",
+      "If it’s freezing in here, I’ll know soon.",
+      "Cold spots mean company."
+    ],
+    'Parabolic Mic': [
+      "What are you saying in silence?",
+      "Just wind… or whispers?",
+      "I’m listening. Maybe I shouldn’t be."
+    ],
+    'Camera': [
+      "One flash might reveal too much.",
+      "Say cheese, ghost.",
+      "Click. Now to check what I caught."
+    ],
+    'Salt': [
+      "Let’s see what steps through this.",
+      "Hope this slows it down.",
+      "Footprints would confirm I’m not alone."
+    ]
+  };
+
+  if (thoughts[item]) {
+    const line = thoughts[item][Math.floor(Math.random() * thoughts[item].length)];
+    displayNarratorThought(line);
+  }
+}
+</script>
+      
 </script>
   </body>
 </html>
