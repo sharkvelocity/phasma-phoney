@@ -435,21 +435,21 @@
 
   let selectedLoadout = [];
 
-  function showLoadoutMenu() {
-    const container = document.getElementById('loadout-options');
-    container.innerHTML = '';
-    selectedLoadout = [];
+function showLoadoutMenu() {
+  const container = document.getElementById('loadout-options');
+  container.innerHTML = '';
+  selectedLoadout = [];
 
-    allItems.forEach(item => {
-      const btn = document.createElement('button');
-      btn.innerText = item;
-      btn.onclick = () => toggleLoadoutItem(item, btn);
-      container.appendChild(btn);
-    });
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = item;
+    btn.onclick = () => toggleLoadoutItem(item, btn);
+    container.appendChild(btn);
+  });
 
-    document.getElementById('loadout-screen').style.display = 'none';
-    document.getElementById('loadout-selected').innerText = `Selected: 0`;
-  }
+  document.getElementById('loadout-screen').style.display = 'block';
+  document.getElementById('loadout-selected').innerText = `Selected: 0`;
+}
 
   function toggleLoadoutItem(item, btn) {
     if (selectedLoadout.includes(item)) {
@@ -459,22 +459,18 @@
       selectedLoadout.push(item);
       btn.style.backgroundColor = 'green';
     }
-document.getElementById('confirm-loadout').onclick = () => {
+      
+  document.getElementById('confirm-loadout').onclick = () => {
   if (selectedLoadout.length === 0) {
     alert("Select at least one item.");
     return;
-  }
-      
-  startBtn.onclick = () => {
-  document.getElementById('start-btn').style.display = 'none';
-  document.getElementById('loadout-screen').style.display = 'block';
-  showLoadoutMenu(); // ✅ Trigger the loadout UI population
   }
 
   selectedLoadout.forEach(item => addItemToInventory(item));
   document.getElementById('loadout-screen').style.display = 'none';
   document.getElementById('game-screen').classList.remove('hidden');
   startGame();
+};
 </script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
