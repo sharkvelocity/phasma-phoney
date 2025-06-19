@@ -437,6 +437,8 @@
 
   function showLoadoutMenu() {
     const container = document.getElementById('loadout-options');
+    if (!container) return;
+
     container.innerHTML = '';
     selectedLoadout = [];
 
@@ -447,9 +449,7 @@
       container.appendChild(btn);
     });
 
-    // Ensure game screen is hidden during loadout
     document.getElementById('game-screen').classList.add('hidden');
-    document.getElementById('loadout-screen').style.display = 'block';
     document.getElementById('loadout-selected').innerText = `Selected: 0`;
   }
 
@@ -461,13 +461,12 @@
       selectedLoadout.push(item);
       btn.style.backgroundColor = 'green';
     }
+
     document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
   }
 
-  // Confirm loadout and begin game
-  window.addEventListener('DOMContentLoaded', () => {
-    const confirmBtn = document.getElementById('confirm-loadout');
-    confirmBtn.onclick = () => {
+  document.addEventListener('DOMContentLoaded', () => {
+    document.getElementById('confirm-loadout').onclick = () => {
       if (selectedLoadout.length === 0) {
         alert("Select at least one item.");
         return;
@@ -950,6 +949,7 @@ function endInvestigation() {
   window.startGame = startGame;
 </script>
   <!-- ⚙️ DOMContentLoaded Wiring -->
+<!-- ⚙️ DOMContentLoaded Wiring -->
 <script>
   window.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
@@ -960,11 +960,13 @@ function endInvestigation() {
     const vanBtn = document.getElementById('van-btn');
     const journalScreen = document.getElementById('journal-screen');
 
-    // Hide title screen and show game screen
-startBtn.onclick = () => {
-  document.getElementById('start-btn').style.display = 'none';
-  showLoadoutMenu();
-};
+    // 🛠️ FIX: Show loadout only *after* start is clicked
+    startBtn.onclick = () => {
+      document.getElementById('start-btn').style.display = 'none';
+      gameScreen.classList.add('hidden');               // Ensure game UI is hidden
+      document.getElementById('loadout-screen').style.display = 'block';
+      showLoadoutMenu();                                // ✅ Populate buttons now
+    };
 
     // Journal buttons
     journalBtn.onclick = () => {
@@ -980,7 +982,7 @@ startBtn.onclick = () => {
       updateNotes(note);
     };
 
-    // Redundant UI buttons as backup (optional if renderOptions already does this)
+    // UI action buttons
     guessBtn.onclick = () => guessMenu();
     itemBtn.onclick = () => useItemMenu();
     vanBtn.onclick = () => endInvestigation();
