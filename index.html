@@ -452,6 +452,32 @@ function showLoadoutMenu() {
   document.getElementById('loadout-selected').innerText = `Selected: 0`;
 }
 </script>
+  <script>
+function toggleLoadoutItem(item, btn) {
+  if (selectedLoadout.includes(item)) {
+    selectedLoadout = selectedLoadout.filter(i => i !== item);
+    btn.style.backgroundColor = '';
+  } else if (selectedLoadout.length < 3) {
+    selectedLoadout.push(item);
+    btn.style.backgroundColor = 'green';
+  }
+  document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('confirm-loadout').onclick = () => {
+    if (selectedLoadout.length === 0) {
+      alert("Select at least one item.");
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('game-screen').classList.remove('hidden');
+    startGame();
+  };
+});
+</script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
   const rooms = [
