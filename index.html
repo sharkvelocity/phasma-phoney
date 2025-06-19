@@ -119,7 +119,13 @@
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
-
+<div id="van-loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
+  <h2>Van Inventory</h2>
+  <p>Select items to add/swap (max 3 total carried)</p>
+  <div id="van-items" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+  <p id="van-warning" style="color: red;"></p>
+  <button id="close-van">Back to Investigation</button>
+</div>
   <!-- INSERTED GAME LOGIC SCRIPTS START -->
 <!-- 1. Utility + DOM setup -->
 <script>
