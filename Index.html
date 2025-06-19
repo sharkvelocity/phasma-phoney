@@ -151,7 +151,11 @@
     <p id="van-warning" style="color: red;"></p>
     <button id="close-van">Back to Investigation</button>
   </div>
-<!-- 1. Utility + Floating Orbs -->
+
+  
+  <!-- 1. Utility + Floating Orbs -->
+
+  
 <script>
 for (let i = 0; i < 10; i++) {
   const orb = document.createElement('div');
@@ -181,6 +185,7 @@ window.addToReadout = appendReadout;
 </script>
 
 <!-- 2. Mechanics System -->
+  
 <script>
 let sanity = 100, xp = 0, currentHunt = false, ghostActivityLevel = 0, cursedItemsUsed = 0;
 let evidenceDiscovered = [], turn = 0, lastAction = '';
@@ -276,10 +281,10 @@ window.resetStats = resetStats;
 window.getStats = getStats;
 </script>
 
-<!-- 3. Inventory, Map, and Journal scripts will be in Part 3 -->
-
 <!-- 3. Inventory System -->
-<script>
+
+  
+  <script>
 const inventory = {};
 let selectedLoadout = [];
 const allItems = [
@@ -337,6 +342,8 @@ window.updateHUD = updateHUD;
 </script>
 
 <!-- 4. Map System -->
+
+  
 <script>
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
 let currentRoom = 'Foyer';
@@ -363,6 +370,8 @@ window.getCurrentRoom = getCurrentRoom;
 </script>
 
 <!-- 5. Ghost System -->
+
+  
 <script>
 const ghostTypes = ['Spirit', 'Wraith', 'Phantom', 'Demon', 'Succubus', 'Poltergeist'];
 function getRandomGhost() {
@@ -397,6 +406,8 @@ window.getCurrentGhost = getCurrentGhost;
 </script>
 
 <!-- 6. Journal System -->
+
+  
 <script>
 let journalNotes = '';
 function updateNotes(txt) {
@@ -411,6 +422,8 @@ window.initializeJournal = initializeJournal;
 </script>
 
 <!-- 7. Game Logic + Button Rendering -->
+
+  
 <script>
 function startGame() {
   resetStats();
@@ -516,8 +529,63 @@ function tickTurn() {
   updateHUD();
 }
 </script>
+<script>
+  function updateHUD() {
+    const status = document.getElementById('hud-status');
+    const inventoryList = getInventory().join(', ') || 'none';
+    status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${inventoryList}`;
+  }
 
+
+
+    // Passive evidence reveal
+    if (Math.random() < 0.15) {
+      const passive = ['Ghost Orbs', 'Fingerprints', 'Ghost Writing'];
+      const revealed = passive[Math.floor(Math.random() * passive.length)];
+      displayNarratorText(`👻 You notice a clue: ${revealed}.`);
+      discoverEvidence(revealed);
+    }
+
+    // Optional hunt trigger if sanity is very low
+    if (getSanity() <= 15 && Math.random() < 0.3) {
+      const huntMsg = triggerHunt();
+      displayNarratorText(huntMsg);
+    }
+
+    updateHUD();
+  }
+
+  // Patch actions to include turn
+  
+    function tickTurn() {
+    const activity = performGhostAction();
+    displayNarratorText(activity);
+      
+  const oldInvestigate = investigate;
+  investigate = function () {
+    oldInvestigate();
+    tickTurn();
+  };
+
+  const oldMovePlayer = movePlayer;
+  movePlayer = function (dir) {
+    const result = oldMovePlayer(dir);
+    tickTurn();
+    return result;
+  };
+
+  const oldUseItem = useItem;
+  useItem = function (item, room, ghostType) {
+    const result = oldUseItem(item, room, ghostType);
+    tickTurn();
+    return result;
+  };
+
+  window.tickTurn = tickTurn;
+</script>
 <!-- 8. DOM Ready Hook -->
+
+  
 <script>
 window.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
