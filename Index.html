@@ -263,9 +263,12 @@ window.getStats = getStats;
 
 <!-- 3. Inventory System -->
 
-  
   <script>
-    const evidenceToolMap = {
+const consumables = ['Smudge Stick', 'Candle', 'Salt'];
+const inventory = {};
+let selectedLoadout = [];
+const roomItems = {};
+const evidenceToolMap = {
   'EMF Reader': 'EMF 5',
   'Spirit Box': 'Spirit Box',
   'UV Light': 'Fingerprints',
@@ -275,13 +278,13 @@ window.getStats = getStats;
   'Parabolic Mic': 'Whispers',
   'Salt': 'Footprints'
 };
-const inventory = {};
-let selectedLoadout = [];
+
 const allItems = [
   'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
   'Crucifix', 'UV Light', 'Thermometer', 'Parabolic Mic',
   'Proximity Sensor', 'Camera', 'Salt'
 ];
+
 function showLoadoutMenu() {
   const container = document.getElementById('loadout-options');
   container.innerHTML = '';
@@ -302,50 +305,141 @@ function showLoadoutMenu() {
     container.appendChild(btn);
   });
 }
+
 function addItemToInventory(item) {
   const total = Object.values(inventory).reduce((a, b) => a + b, 0);
   if (total >= 3) return displayNarratorText('❌ You can only carry 3 items.');
   inventory[item] = 1;
   updateHUD();
 }
+
 function getInventory() {
   return Object.keys(inventory);
 }
+
 function updateHUD() {
   const status = document.getElementById('hud-status');
-  status.innerText = `Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
+  status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
 }
+
 function useItem(item, room, ghostType) {
   if (!inventory[item]) return `❌ You don’t have a ${item}.`;
 
   let result = `🧪 You used the ${item} in the ${room}.`;
 
-  // Only remove if item is consumable
+  if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
+    result += `\n🌀 The ${ghostType} reacts violently!`;
+  }
+
+  const evidence = evidenceToolMap[item];
+  if (evidence) {
+    const success = Math.random() < 0.6;
+    if (success) {
+      result += `\n🔍 You detect something...`;
+      result += `\n${discoverEvidence(evidence)}`;
+      lastAction = 'evidence';
+    } else {
+      result += `\n🕯️ It’s quiet. Maybe try again later.`;
+      lastAction = 'idle';
+    }
+  }
+
   if (consumables.includes(item)) {
     delete inventory[item];
     updateHUD();
   }
 
-  // Ghost reaction (e.g., to Smudge Stick)
-  if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
-    result += `\n🌀 The ${ghostType} reacts violently!`;
-  }
-
-  // Evidence discovery
-  const evidence = evidenceToolMap[item];
-  if (evidence) {
-    result += `\n🔍 Evidence found: ${evidence}`;
-    result += `\n${discoverEvidence(evidence)}`;
-  }
-
   return result;
 }
-window.getInventory = getInventory;
-window.addItemToInventory = addItemToInventory;
-window.useItem = useItem;
-window.updateHUD = updateHUD;
-</script>
 
+function dropItem(item) {
+  const room = getCurrentRoom();
+  if (!inventory[item]) return `❌ You don’t have a ${item} to drop.`;
+
+  if (!roomItems[room]) roomItems[room] = [];
+  roomItems[room].push(item);
+  delete inventory[item];
+  updateHUD();
+  return `📦 You placed the ${item} in the ${room}.`;
+}
+
+function pickUpItem(item) {
+  const room = getCurrentRoom();
+  if (!roomItems[room] || !roomItems[room].includes(item)) return `❌ No ${item} found here.`;
+
+  const total = Object.values(inventory).reduce((a, b) => a + b, 0);
+  if (total >= 3) return `❌ Your hands are full.`;
+
+  inventory[item] = 1;
+  roomItems[room] = roomItems[room].filter(i => i !== item);
+  updateHUD();
+  return `🎒 You picked up the ${item}.`;
+}
+
+function showRoomItems() {
+  const room = getCurrentRoom();
+  const items = roomItems[room] || [];
+  return items.length ? `🗂️ Items here: ${items.join(', ')}` : '📭 The room is empty.';
+}
+
+function dropItemMenu() {
+  const items = getInventory();
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  if (!items.length) {
+    displayNarratorText("🎒 You have nothing to drop.");
+    renderOptions();
+    return;
+  }
+
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = `Drop ${item}`;
+    btn.onclick = () => {
+      const msg = dropItem(item);
+      displayNarratorText(msg);
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+
+function pickupMenu() {
+  const room = getCurrentRoom();
+  const itemsHere = roomItems[room] || [];
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  if (!itemsHere.length) {
+    displayNarratorText("📭 There's nothing here to pick up.");
+    renderOptions();
+    return;
+  }
+
+  itemsHere.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = `Pick up ${item}`;
+    btn.onclick = () => {
+      const msg = pickUpItem(item);
+      displayNarratorText(msg);
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+</script>
+      
 <!-- 4. Map System -->
 
   
@@ -489,6 +583,9 @@ function renderOptions() {
   btn('Use Item', useItemMenu);
   btn('Move', moveMenu);
   btn('Guess Ghost', guessMenu);
+  btn('Use Item', useItemMenu);
+  btn('Drop Item', dropItemMenu);
+  btn('Pick Up Item', pickupMenu);
 }
 function useItemMenu() {
   const items = getInventory();
@@ -557,7 +654,7 @@ function guessMenu() {
 function tickTurn() {
   const event = performGhostAction();
   displayNarratorText(event);
-
+  narrateAmbience();
   // Optional hunt trigger at low sanity
   if (getSanity() <= 15 && Math.random() < 0.3) {
     const huntMsg = triggerHunt();
@@ -565,6 +662,130 @@ function tickTurn() {
   }
 
   updateHUD();
+}
+function getAmbientByRoom(room) {
+  const ambientByRoom = {
+    'Foyer': [
+      "The entryway feels colder than the outside air.",
+      "Shoes are lined up neatly — untouched.",
+      "Something waits beyond this welcome mat."
+    ],
+    'Living Room': [
+      "Couch cushions sag, like they expect company.",
+      "The TV screen reflects only shadows.",
+      "A remote clicks on the table... by itself?"
+    ],
+    'Kitchen': [
+      "Old dishes remain in the sink — freshly cold.",
+      "The fridge hums, too steady for comfort.",
+      "There’s a faint smell of something burned."
+    ],
+    'Dining Room': [
+      "Chairs are pulled out — as if a meal was interrupted.",
+      "Dust clings to the silverware like guilt.",
+      "One place setting is disturbingly clean."
+    ],
+    'Bathroom': [
+      "A faucet drips, despite being turned off.",
+      "Your reflection wavers in the mirror slightly.",
+      "The shower curtain sways with no breeze."
+    ],
+    'Bedroom': [
+      "The bed is made... but the pillow’s indented.",
+      "Something feels possessive about this room.",
+      "Perfume still lingers in the air — faint and wrong."
+    ],
+    'Basement': [
+      "The lightbulb flickers without pattern.",
+      "Concrete sweats. Or bleeds.",
+      "You hear something breathing behind the boiler."
+    ],
+    'Garage': [
+      "Tools hang neatly. Some have moved.",
+      "The smell of oil blends with something older.",
+      "A workbench drawer is slightly ajar now."
+    ]
+  };
+  return ambientByRoom[room] || ["You feel watched from the corners of the room."];
+}
+
+function updateEnvironmentVisuals(room, action) {
+  // Hook point for visual effects — these classNames can trigger animations in CSS
+  document.body.classList.remove('lights-flicker', 'basement-fog', 'raining');
+
+  if (room === 'Living Room' && action === 'major activity') {
+    document.body.classList.add('lights-flicker');
+    setTimeout(() => document.body.classList.remove('lights-flicker'), 2000);
+  }
+
+  if (room === 'Basement' && ghostActivityLevel > 5) {
+    document.body.classList.add('basement-fog');
+  }
+
+  // Example: attach this later when weather is added
+  // if (globalWeather === 'rain') {
+  //   document.body.classList.add('raining');
+  // }
+}
+
+function narrateAmbience() {
+  const room = getCurrentRoom();
+  updateEnvironmentVisuals(room, lastAction); // visual hook
+  let lines = [];
+
+  switch (lastAction) {
+    case 'idle':
+      lines = getAmbientByRoom(room);
+      break;
+    case 'minor activity':
+      lines = [
+        "You freeze — listening for something more.",
+        "It wasn’t just the wind. Was it?",
+        "You glance toward the noise but see nothing.",
+        "Your mind replays the sound again and again."
+      ];
+      break;
+    case 'major activity':
+      lines = [
+        "Your pulse rises — the room feels smaller now.",
+        "You tense, waiting for the next sound to follow.",
+        "You can’t help but scan the shadows twice.",
+        "It’s close. You know it’s close."
+      ];
+      break;
+    case 'hunt':
+      lines = [
+        "Your instincts scream: run, now.",
+        "You feel your body move before your mind catches up.",
+        "Every sound is too loud. Every breath is too short.",
+        "You pray it didn’t see you. You’re not sure to whom."
+      ];
+      break;
+    case 'cursed item':
+      lines = [
+        "Reality swims — colors wrong and wronger.",
+        "You grip something familiar to stay grounded.",
+        "It worked. Or it failed. You’re not sure.",
+        "Your hand tingles where the object rested."
+      ];
+      break;
+    case 'evidence':
+      lines = [
+        "You jot the detail quickly, heart racing.",
+        "That confirms something. But what?",
+        "You fumble to log the clue before it fades.",
+        "Another piece... but is it a truth, or a trick?"
+      ];
+      break;
+    default:
+      lines = getAmbientByRoom(room);
+      break;
+  }
+
+  if (Math.random() < 0.4) {
+    const line = lines[Math.floor(Math.random() * lines.length)];
+    displayNarratorText(`🧠 ${line}`);
+  }
 }
 </script>
 <script>
