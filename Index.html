@@ -391,11 +391,11 @@ function openVanMenu() {
 function getInventory() {
   return Object.keys(inventory).concat(alwaysWithYou);
 }
-</script>
-      
+</script>  
   <script>
 const consumables = ['Smudge Stick', 'Candle', 'Salt'];
 const inventory = {};
+let isVanAccess = false;
 let selectedLoadout = [];
 const roomItems = {};
 const evidenceToolMap = {
@@ -569,9 +569,12 @@ function pickupMenu() {
   container.appendChild(back);
 }
 </script>
+
+
       
 <!-- 4. Map System -->
 
+      
   
 <script>
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
@@ -598,7 +601,12 @@ window.movePlayer = movePlayer;
 window.getCurrentRoom = getCurrentRoom;
 </script>
 
+
+      
 <!-- 5. Ghost System -->
+
+
+      
 <script>
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
@@ -664,9 +672,13 @@ window.initializeGhost = initializeGhost;
 window.performBehavior = performBehavior;
 window.getCurrentGhost = getCurrentGhost;
 </script>
+
+
+      
 <!-- 6. Journal System -->
 
-  
+
+      
 <script>
 let journalNotes = '';
 function updateNotes(txt) {
@@ -680,10 +692,10 @@ window.updateNotes = updateNotes;
 window.initializeJournal = initializeJournal;
 </script>
 
+      
 <!-- 7. Game Logic + Button Rendering -->
 
-  
-<!-- 7. Game Logic -->
+      
 <script>
 function startGame() {
   resetStats();
@@ -691,7 +703,7 @@ function startGame() {
   initializeGhost(ghost);
   initializeJournal();
   updateHUD();
-  displayNarratorText("🕵️ Investigation started.");
+  displayNarratorText("So it begins...");
   renderOptions();
 }
 </script>
@@ -705,7 +717,9 @@ function tickTurn() {
 }
 </script>
 
-<!-- 8. Render Buttons -->
+<!--RENDER BUTTONS-->
+
+      
 <script>
 function renderOptions() {
   const container = document.getElementById('option-buttons');
@@ -758,13 +772,14 @@ function renderOptions() {
   btn('Pick Up Item', pickupMenu);
   btn('Move', moveMenu);
   btn('Guess Ghost', guessMenu);
-  btn('Return to Van', openVanMenu);
+  btn('Return to Van', showVanLoadout);
 }
 </script>
   <script>
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
   const gameScreen = document.getElementById('game-screen');
+  const 
   const loadoutScreen = document.getElementById('loadout-screen');
   const confirmBtn = document.getElementById('confirm-loadout');
   const backBtn = document.getElementById('back-btn');
@@ -785,20 +800,32 @@ document.addEventListener('DOMContentLoaded', () => {
       startGame();
     }
   };
+confirmBtn.onclick = () => {
+  document.getElementById('loadout-screen').style.display = 'none';
 
-  confirmBtn.onclick = () => {
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    loadoutScreen.style.display = 'none';
-    gameScreen.classList.remove('hidden');
-    startGame();
-  };
+  if (isVanAccess) {
+    isVanAccess = false; // reset flag
+    renderOptions();
+    return;
+  }
 
-  backBtn.onclick = () => {
-    loadoutScreen.style.display = 'none';
-    startBtn.style.display = 'inline-block';
-  };
+  selectedLoadout.forEach(item => addItemToInventory(item));
+  document.getElementById('game-screen').classList.remove('hidden');
+  startGame();
+};
 
-  journalBtn.onclick = () => {
+backBtn.onclick = () => {
+  document.getElementById('loadout-screen').style.display = 'none';
+
+  if (isVanAccess) {
+    isVanAccess = false;
+    renderOptions(); // just go back to game
+  } else {
+    document.getElementById('start-btn').style.display = 'inline-block';
+  }
+};
+
+journalBtn.onclick = () => {
     initializeJournal();
     journalScreen.classList.remove('hidden');
   };
