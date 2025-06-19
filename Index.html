@@ -553,6 +553,7 @@ window.initializeJournal = initializeJournal;
 <!-- 7. Game Logic + Button Rendering -->
 
   
+<!-- 7. Game Logic -->
 <script>
 function startGame() {
   resetStats();
@@ -562,6 +563,62 @@ function startGame() {
   updateHUD();
   displayNarratorText("🕵️ Investigation started.");
   renderOptions();
+}
+</script>
+
+<!-- 8. Render Buttons -->
+<script>
+function renderOptions() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  const btn = (label, handler) => {
+    const b = document.createElement('button');
+    b.innerText = label;
+    b.onclick = handler;
+    container.appendChild(b);
+  };
+
+  btn('Investigate', () => {
+    const msg = performBehavior(getCurrentRoom());
+    adjustSanity(-5);
+    displayNarratorText(msg);
+    tickTurn();
+  });
+
+  btn('Use Item', () => {
+    const items = getInventory();
+    container.innerHTML = '';
+
+    if (!items.length) {
+      displayNarratorText("🧳 You have no items.");
+      renderOptions();
+      return;
+    }
+
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.innerText = `Use ${item}`;
+      btn.onclick = () => {
+        const msg = useItem(item, getCurrentRoom(), ghost.type);
+        displayNarratorText(msg);
+        narrateItemThought(item);
+        tickTurn();
+        renderOptions();
+      };
+      container.appendChild(btn);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    container.appendChild(back);
+  });
+
+  btn('Drop Item', dropItemMenu);
+  btn('Pick Up Item', pickupMenu);
+  btn('Move', moveMenu);
+  btn('Guess Ghost', guessMenu);
 }
 </script>
   <script>
