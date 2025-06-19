@@ -973,5 +973,100 @@ document.getElementById('close-van').onclick = () => {
   <button id="confirm-loadout">Confirm</button>
   <button id="back-btn">Back</button>  
 </div>
+<script>
+window.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-btn');
+  const gameScreen = document.getElementById('game-screen');
+  const journalBtn = document.getElementById('journal-btn');
+  const guessBtn = document.getElementById('guess-btn');
+  const itemBtn = document.getElementById('item-btn');
+  const vanBtn = document.getElementById('van-btn');
+  const journalScreen = document.getElementById('journal-screen');
+  const loadoutScreen = document.getElementById('loadout-screen');
+  const confirmLoadoutBtn = document.getElementById('confirm-loadout');
+  const backBtn = document.getElementById('back-btn');
+  const vanScreen = document.getElementById('van-loadout-screen');
+  const vanItemsContainer = document.getElementById('van-items');
+  const vanWarning = document.getElementById('van-warning');
+  const closeVanBtn = document.getElementById('close-van');
+
+  // START GAME: Show loadout
+  startBtn.onclick = () => {
+    startBtn.style.display = 'none';
+    gameScreen.classList.add('hidden');
+    loadoutScreen.style.display = 'block';
+    showLoadoutMenu();
+  };
+
+  // BACK from loadout to start screen
+  backBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+    startBtn.style.display = 'inline-block';
+  };
+
+  // CONFIRM LOADOUT
+  confirmLoadoutBtn.onclick = () => {
+    if (selectedLoadout.length === 0) {
+      alert("Select at least one item.");
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    loadoutScreen.style.display = 'none';
+    gameScreen.classList.remove('hidden');
+    startGame(); // critical hook
+  };
+
+  // JOURNAL
+  journalBtn.onclick = () => {
+    journalScreen.classList.toggle('hidden');
+  };
+  document.getElementById('close-journal').onclick = () => {
+    journalScreen.classList.add('hidden');
+  };
+  document.getElementById('save-journal').onclick = () => {
+    const note = document.getElementById('journal-entry').value;
+    updateNotes(note);
+  };
+
+  // VAN BUTTON – opens van inventory
+  vanBtn.onclick = () => {
+    vanItemsContainer.innerHTML = '';
+    vanWarning.innerText = '';
+
+    const totalItems = Object.values(inventory).reduce((sum, count) => sum + count, 0);
+
+    allItems.forEach(item => {
+      const btn = document.createElement('button');
+      btn.innerText = item;
+      btn.onclick = () => {
+        if (inventory[item]) {
+          delete inventory[item];
+          displayNarratorText(`❌ Removed ${item} from your loadout.`);
+        } else if (totalItems < 3) {
+          addItemToInventory(item);
+        } else {
+          vanWarning.innerText = '⚠️ You can only carry 3 items total.';
+          return;
+        }
+
+        updateHUD();
+        vanBtn.click(); // refresh view
+      };
+      vanItemsContainer.appendChild(btn);
+    });
+
+    vanScreen.style.display = 'block';
+  };
+
+  closeVanBtn.onclick = () => {
+    vanScreen.style.display = 'none';
+  };
+
+  // Additional core buttons
+  guessBtn.onclick = () => guessMenu();
+  itemBtn.onclick = () => useItemMenu();
+});
+</script>
 </body>
 </html>
