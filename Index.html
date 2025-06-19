@@ -655,6 +655,15 @@ function startGame() {
   renderOptions();
 }
 </script>
+      <script>
+function tickTurn() {
+  turn++;
+  updateHUD();
+  const ghostResult = performGhostAction();
+  displayNarratorText(ghostResult);
+  narrateAmbience();
+}
+</script>
 
 <!-- 8. Render Buttons -->
 <script>
