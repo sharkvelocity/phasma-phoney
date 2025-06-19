@@ -630,9 +630,10 @@
   let ghost = null;
 
   function startGame() {
-    ghost = getRandomGhost();
     resetStats();
-    currentRoom(van);
+    const selected = getRandomGhost();
+    ghost = selected;                     // Keep local reference
+    initializeGhost(selected);            // Initializes internal logic
     initializeMap();
     updateHUD();
     initializeJournal();
@@ -679,10 +680,10 @@
     }
 
     items.forEach((item, i) => {
-      const btn = document.createElement('link');
+      const btn = document.createElement('button');
       btn.innerText = `${i + 1}. Use ${item}`;
       btn.onclick = () => {
-        const result = useItem(item, getCurrentRoom(), ghost.type);
+        const result = useItem(item, getCurrentRoom(), ghost?.type || "Unknown");
         displayNarratorText(result);
         updateHUD();
         renderOptions();
@@ -730,15 +731,18 @@
       'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
     ];
 
+    const actualGhost = getCurrentGhost();
+    const ghostType = actualGhost?.type || "Unknown";
+
     guesses.forEach((type) => {
       const btn = document.createElement('button');
       btn.innerText = type;
       btn.onclick = () => {
-        if (ghost && ghost.type === type) {
+        if (ghostType === type) {
           displayNarratorText(`✅ Correct! It was a ${type}. You gain 200 XP.`);
           addXP(200);
         } else {
-          displayNarratorText(`💀 Wrong! It was a ${ghost?.type}.`);
+          displayNarratorText(`💀 Wrong! It was a ${ghostType}.`);
           adjustSanity(-50);
         }
         updateHUD();
@@ -752,17 +756,21 @@
     back.onclick = renderOptions;
     container.appendChild(back);
   }
-function endInvestigation() {
-  const remaining = getInventory();
-  const used = selectedLoadout.filter(item => !remaining.includes(item));
 
-  displayNarratorText(
-    `🚐 You return to the van.\n\n📦 Remaining Items: ${remaining.length ? remaining.join(', ') : 'None'}\n🗑️ Used Items: ${used.length ? used.join(', ') : 'None'}\n\nFinal Sanity: ${getSanity()}% | XP: ${getXP()}`
-  );
+  function endInvestigation() {
+    const remaining = getInventory();
+    const used = selectedLoadout.filter(item => !remaining.includes(item));
 
-  document.getElementById('option-buttons').innerHTML = '';
-}
+    displayNarratorText(
+      `🚐 You return to the van.\n\n📦 Remaining Items: ${remaining.length ? remaining.join(', ') : 'None'}\n🗑️ Used Items: ${used.length ? used.join(', ') : 'None'}\n\nFinal Sanity: ${getSanity()}% | XP: ${getXP()}`
+    );
 
+    document.getElementById('option-buttons').innerHTML = '';
+  }
+
+  // Global bind
+  window.startGame = startGame;
+</script>
   // Global bind
   window.startGame = startGame;
 </script>
