@@ -317,11 +317,9 @@
   window.getStats = getStats;
   window.resetStats = resetStats;
 </script>
-  // --- Inventory System  
 <!-- 📦 INVENTORY SYSTEM -->
 <script>
   const inventory = {}; // Tracks items and counts
-
  const allItems = [
   'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
   'Crucifix', 'UV Light', 'Thermometer',
@@ -664,17 +662,17 @@ document.addEventListener('DOMContentLoaded', () => {
 <script>
   let ghost = null;
 
-  function startGame() {
-    resetStats();
-    const selected = getRandomGhost();
-    ghost = selected;                     // Keep local reference
-    initializeGhost(selected);            // Initializes internal logic
-    initializeMap();
-    updateHUD();
-    initializeJournal();
-    displayNarratorText(`🕵️ Investigation started...`);
-    renderOptions();
-  }
+function startGame() {
+  resetStats();
+  const selected = getRandomGhost();
+  ghost = selected;
+  initializeGhost(selected);
+  initializeMap(); // ✅ THIS sets currentRoom = 'Foyer' and displays it
+  updateHUD();
+  initializeJournal();
+  displayNarratorText(`🕵️ Investigation started...`);
+  renderOptions();
+}
 
   function renderOptions() {
     const container = document.getElementById('option-buttons');
