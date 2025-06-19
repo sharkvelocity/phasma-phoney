@@ -625,6 +625,99 @@
   window.useCursedItem = useCursedItem;
   window.drawTarotCard = drawTarotCard;
 </script>
+  <!-- 👻 GHOSTS SYSTEM -->
+<script>
+  const ghostList = [
+    { type: 'Spirit', evidence: ['EMF 5', 'Ghost Writing', 'Spirit Box'], preferred: ['Smudge Stick', 'Book'] },
+    { type: 'Wraith', evidence: ['DOTS', 'EMF 5', 'Spirit Box'], preferred: ['Salt', 'UV Light'] },
+    { type: 'Phantom', evidence: ['DOTS', 'Fingerprints', 'Spirit Box'], preferred: ['Camera'] },
+    { type: 'Poltergeist', evidence: ['Ghost Writing', 'Spirit Box', 'Fingerprints'], preferred: ['Sound Sensor'] },
+    { type: 'Banshee', evidence: ['DOTS', 'Fingerprints', 'Orb'], preferred: ['Parabolic Mic', 'Crucifix'] },
+    { type: 'Jinn', evidence: ['EMF 5', 'Fingerprints', 'Freezing'], preferred: ['Breaker Off', 'EMF Reader'] },
+    { type: 'Mare', evidence: ['Orb', 'Ghost Writing', 'Spirit Box'], preferred: ['Candle', 'Dark'] },
+    { type: 'Revenant', evidence: ['Orb', 'Ghost Writing', 'Freezing'], preferred: ['Smudge Stick', 'Crucifix'] },
+    { type: 'Shade', evidence: ['EMF 5', 'Ghost Writing', 'Freezing'], preferred: ['Thermometer'] },
+    { type: 'Demon', evidence: ['Ghost Writing', 'Freezing', 'Fingerprints'], preferred: ['Crucifix'] },
+    { type: 'Yurei', evidence: ['DOTS', 'Orb', 'Freezing'], preferred: ['Smudge Stick'] },
+    { type: 'Oni', evidence: ['DOTS', 'EMF 5', 'Freezing'], preferred: ['EMF Reader'] },
+    { type: 'Hantu', evidence: ['Fingerprints', 'Orb', 'Freezing'], preferred: ['Thermometer'] },
+    { type: 'Yokai', evidence: ['DOTS', 'Orb', 'Spirit Box'], preferred: ['Voice'] },
+    { type: 'Goryo', evidence: ['DOTS', 'EMF 5', 'Fingerprints'], preferred: ['Video Camera'] },
+    { type: 'Myling', evidence: ['EMF 5', 'Ghost Writing', 'Fingerprints'], preferred: ['Parabolic Mic'] },
+    { type: 'Onryo', evidence: ['Orb', 'Freezing', 'Spirit Box'], preferred: ['Candle'] },
+    { type: 'The Twins', evidence: ['EMF 5', 'Freezing', 'Spirit Box'], preferred: ['Motion Sensor'] },
+    { type: 'Raiju', evidence: ['DOTS', 'EMF 5', 'Orb'], preferred: ['Electronics'] },
+    { type: 'Obake', evidence: ['EMF 5', 'Orb', 'Fingerprints'], preferred: ['UV Light'] },
+    { type: 'The Mimic', evidence: ['Freezing', 'Fingerprints', 'Spirit Box'], preferred: ['Salt'] },
+    { type: 'Moroi', evidence: ['Freezing', 'Ghost Writing', 'Spirit Box'], preferred: ['Smudge Stick'] },
+    { type: 'Deogen', evidence: ['DOTS', 'Ghost Writing', 'Spirit Box'], preferred: ['Proximity Sensor'] },
+    { type: 'Thaye', evidence: ['DOTS', 'Orb', 'Ghost Writing'], preferred: ['Timer'] },
+    { type: 'Succubus', evidence: ['Spirit Box', 'Orb', 'Freezing'], preferred: ['Mirror', 'Candle'] }
+  ];
+
+  let currentGhost = null;
+
+  function getRandomGhost() {
+    const index = Math.floor(Math.random() * ghostList.length);
+    return ghostList[index];
+  }
+
+  function initializeGhost(ghost) {
+    currentGhost = {
+      ...ghost,
+      behavior: generateGhostBehavior(ghost.type)
+    };
+  }
+
+  function performBehavior(room) {
+    if (!currentGhost || !currentGhost.behavior) return "Nothing happens.";
+    return currentGhost.behavior(room);
+  }
+
+  function generateGhostBehavior(type) {
+    const base = [
+      (room) => `You feel watched in the ${room}.`,
+      (room) => `A faint breeze brushes past in the ${room}.`,
+      (room) => `The lights flicker slightly in the ${room}.`,
+      (room) => `You hear a soft whisper in the ${room}.`,
+      (room) => `A sense of unease fills the ${room}.`
+    ];
+
+    const special = {
+      'Poltergeist': [
+        (room) => `Objects rattle violently in the ${room}.`,
+        (room) => `Drawers slam in the ${room}.`
+      ],
+      'Demon': [
+        (room) => `A growl echoes from the shadows of the ${room}.`,
+        (room) => `You feel dread pressing down in the ${room}.`
+      ],
+      'Succubus': [
+        (room) => `A sultry voice whispers in the ${room}.`,
+        (room) => `The air feels heated and heavy in the ${room}.`
+      ],
+      'The Twins': [
+        (room) => `You hear double footsteps in the ${room}.`,
+        (room) => `Two presences are sensed in the ${room}.`
+      ],
+      'The Mimic': [
+        (room) => `The behavior mimics another ghost in the ${room}.`,
+        (room) => `You feel like you've seen this before in the ${room}...`
+      ]
+    };
+
+    const behaviorSet = [...base, ...(special[type] || [])];
+    return (room) => {
+      const act = behaviorSet[Math.floor(Math.random() * behaviorSet.length)];
+      return act(room);
+    };
+  }
+
+  // Expose to global
+  window.getRandomGhost = getRandomGhost;
+  window.initializeGhost = initializeGhost;
+  window.performBehavior = performBehavior;
+</script>
   <!-- 📓 JOURNAL SYSTEM -->
 <script>
   let journalNotes = '';
