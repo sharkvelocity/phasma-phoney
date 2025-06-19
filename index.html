@@ -428,6 +428,56 @@
   window.getInventory = getInventory;
   window.useItem = useItem;
 </script>
+  <script>
+  const allItems = [
+    'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
+    'Crucifix', 'Mirror', 'Tarot Cards', 'UV Light',
+    'Thermometer', 'Parabolic Mic', 'Proximity Sensor', 'Camera', 'Salt'
+  ];
+
+  let selectedLoadout = [];
+
+  function showLoadoutMenu() {
+    const container = document.getElementById('loadout-options');
+    container.innerHTML = '';
+    selectedLoadout = [];
+
+    allItems.forEach(item => {
+      const btn = document.createElement('button');
+      btn.innerText = item;
+      btn.onclick = () => toggleLoadoutItem(item, btn);
+      container.appendChild(btn);
+    });
+
+    document.getElementById('loadout-screen').style.display = 'block';
+    document.getElementById('loadout-selected').innerText = `Selected: 0`;
+  }
+
+  function toggleLoadoutItem(item, btn) {
+    if (selectedLoadout.includes(item)) {
+      selectedLoadout = selectedLoadout.filter(i => i !== item);
+      btn.style.backgroundColor = '';
+    } else if (selectedLoadout.length < 3) {
+      selectedLoadout.push(item);
+      btn.style.backgroundColor = 'green';
+    }
+
+    document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
+  }
+
+  document.getElementById('confirm-loadout').onclick = () => {
+    if (selectedLoadout.length === 0) {
+      alert("Select at least one item.");
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('start-btn').style.display = 'none';
+    document.getElementById('game-screen').classList.remove('hidden');
+    startGame();
+  };
+</script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
   const rooms = [
@@ -766,7 +816,7 @@
     addItemToInventory('EMF Reader');
     updateHUD();
     initializeJournal();
-    displayNarratorText(`🕵️ Investigation started. A ${ghost.type} may be present...`);
+    displayNarratorText(`🕵️ Investigation started...`);
     renderOptions();
   }
 
@@ -883,10 +933,16 @@
     container.appendChild(back);
   }
 
-  function endInvestigation() {
-    displayNarratorText(`🚐 You return to the van. Final Sanity: ${getSanity()}%. XP: ${getXP()}.`);
-    document.getElementById('option-buttons').innerHTML = '';
-  }
+function endInvestigation() {
+  const used = allItems.filter(item => !inventory.includes(item));
+  const remaining = getInventory();
+
+  displayNarratorText(
+    `🚐 You return to the van.\n\n📦 Remaining Items: ${remaining.length ? remaining.join(', ') : 'None'}\n🗑️ Used Items: ${used.length ? used.join(', ') : 'None'}\n\nFinal Sanity: ${getSanity()}% | XP: ${getXP()}`
+  );
+
+  document.getElementById('option-buttons').innerHTML = '';
+}
 
   // Global bind
   window.startGame = startGame;
@@ -978,5 +1034,11 @@
   window.tickTurn = tickTurn;
 </script>
   <!-- This setup is clean and ready -->
+  <div id="loadout-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+  <h2>Select Your Loadout (Max 3 items)</h2>
+  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+  <p id="loadout-selected">Selected: 0</p>
+  <button id="confirm-loadout">Confirm</button>
+</div>
 </body>
 </html>
