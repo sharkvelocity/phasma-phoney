@@ -705,12 +705,11 @@ function initializeJournal() {
 window.updateNotes = updateNotes;
 window.initializeJournal = initializeJournal;
 </script>
-
-      
-<!-- 7. Game Logic + Button Rendering -->
-
-      
 <script>
+      
+//-- Game Logic + Button Rendering --\\
+
+    
 function startGame() {
   resetStats();
   ghost = getRandomGhost();
@@ -730,11 +729,12 @@ function tickTurn() {
   narrateAmbience();
 }
 </script>
-
-<!--RENDER BUTTONS-->
-
-      
 <script>
+
+  
+//-- BUTTONS --\\
+
+    
 function renderOptions() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
@@ -793,7 +793,6 @@ function renderOptions() {
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
   const gameScreen = document.getElementById('game-screen');
-  const 
   const loadoutScreen = document.getElementById('loadout-screen');
   const confirmBtn = document.getElementById('confirm-loadout');
   const backBtn = document.getElementById('back-btn');
