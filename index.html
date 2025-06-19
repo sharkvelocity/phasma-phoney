@@ -467,7 +467,6 @@ function toggleLoadoutItem(item, btn) {
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('confirm-loadout').onclick = () => {
     if (selectedLoadout.length === 0) {
-      alert("Select at least one item.");
       return;
     }
 
@@ -887,6 +886,7 @@ function endInvestigation() {
   </div>
   <p id="loadout-selected">Selected: 0</p>
   <button id="confirm-loadout">Confirm</button>
+  };
     </div>
 </body>
 </html>
