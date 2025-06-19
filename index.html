@@ -101,8 +101,6 @@
     <div id="left-panel">
       <div id="option-buttons">
       <button id="journal-btn">Journal</button>
-      <button id="guess-btn">Guess Ghost</button>
-      <button id="item-btn">Use Item</button>
       <button id="van-btn">Return to Van</button>
     </div>
     <div id="center-panel">
@@ -680,19 +678,34 @@ function startGame() {
   renderOptions();
 }
 <script>
+  let ghost = null;
+
+  function startGame() {
+    resetStats();
+    const selected = getRandomGhost();
+    ghost = selected;
+    initializeGhost(selected);
+    initializeMap();
+    initializeJournal();
+    updateHUD();
+    displayNarratorText("🕵️ Investigation started...");
+    document.getElementById('game-screen').classList.remove('hidden');
+    renderOptions();
+  }
+
   function renderOptions() {
     const container = document.getElementById('option-buttons');
     container.innerHTML = '';
 
-    const buttons = [
+    const actions = [
       { label: '1. Investigate', action: investigate },
       { label: '2. Use Item', action: useItemMenu },
       { label: '3. Move', action: moveMenu },
       { label: '4. Guess Ghost', action: guessMenu },
-      { label: '5. Return to Van', action: showVanInventory } // ✅ Re-added
+      { label: '5. Return to Van', action: showVanScreen }
     ];
 
-    buttons.forEach(({ label, action }) => {
+    actions.forEach(({ label, action }) => {
       const btn = document.createElement('button');
       btn.innerText = label;
       btn.onclick = action;
@@ -705,6 +718,7 @@ function startGame() {
     adjustSanity(-5);
     displayNarratorText(text);
     updateHUD();
+    tickTurn();
   }
 
   function useItemMenu() {
@@ -725,6 +739,7 @@ function startGame() {
         const result = useItem(item, getCurrentRoom(), ghost?.type || "Unknown");
         displayNarratorText(result);
         updateHUD();
+        tickTurn();
         renderOptions();
       };
       container.appendChild(btn);
@@ -747,6 +762,7 @@ function startGame() {
         const result = movePlayer(dir);
         displayNarratorText(result);
         updateHUD();
+        tickTurn();
         renderOptions();
       };
       container.appendChild(btn);
@@ -770,14 +786,13 @@ function startGame() {
       'The Mimic', 'Moroi', 'Deogen', 'Thaye', 'Succubus'
     ];
 
-    const actualGhost = getCurrentGhost();
-    const ghostType = actualGhost?.type || "Unknown";
+    const ghostType = getCurrentGhost()?.type || "Unknown";
 
-    guesses.forEach((type) => {
+    guesses.forEach(type => {
       const btn = document.createElement('button');
       btn.innerText = type;
       btn.onclick = () => {
-        if (ghostType === type) {
+        if (type === ghostType) {
           displayNarratorText(`✅ Correct! It was a ${type}. You gain 200 XP.`);
           addXP(200);
         } else {
@@ -796,42 +811,12 @@ function startGame() {
     container.appendChild(back);
   }
 
-  function showVanInventory() {
-    const vanScreen = document.getElementById('van-loadout-screen');
-    const vanItemsContainer = document.getElementById('van-items');
-    const vanWarning = document.getElementById('van-warning');
-
-    vanItemsContainer.innerHTML = '';
-    vanWarning.innerText = '';
-    const totalItems = Object.values(inventory).reduce((sum, count) => sum + count, 0);
-
-    allItems.forEach(item => {
-      const btn = document.createElement('button');
-      btn.innerText = item;
-      btn.onclick = () => {
-        if (inventory[item]) {
-          delete inventory[item];
-          displayNarratorText(`❌ Removed ${item} from your loadout.`);
-        } else if (totalItems < 3) {
-          addItemToInventory(item);
-        } else {
-          vanWarning.innerText = '⚠️ You can only carry 3 items total.';
-          return;
-        }
-
-        updateHUD();
-        showVanInventory(); // Re-render menu
-      };
-      vanItemsContainer.appendChild(btn);
-    });
-
-    vanScreen.style.display = 'block';
+  function showVanScreen() {
+    document.getElementById('van-loadout-screen').style.display = 'block';
   }
 
-  // Close van screen button
-  document.getElementById('close-van').onclick = () => {
-    document.getElementById('van-loadout-screen').style.display = 'none';
-  };
+  window.startGame = startGame;
+  window.renderOptions = renderOptions;
 </script>
 <!-- ⚙️ DOMContentLoaded Wiring -->
 <script>
