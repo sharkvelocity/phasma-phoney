@@ -808,11 +808,8 @@
   function startGame() {
     ghost = getRandomGhost();
     resetStats();
-    currentRoom = 'Foyer';
+    currentRoom(van);
     initializeMap();
-    addItemToInventory('Smudge Stick');
-    addItemToInventory('Candle');
-    addItemToInventory('EMF Reader');
     updateHUD();
     initializeJournal();
     displayNarratorText(`🕵️ Investigation started...`);
@@ -858,7 +855,7 @@
     }
 
     items.forEach((item, i) => {
-      const btn = document.createElement('button');
+      const btn = document.createElement('link');
       btn.innerText = `${i + 1}. Use ${item}`;
       btn.onclick = () => {
         const result = useItem(item, getCurrentRoom(), ghost.type);
@@ -945,7 +942,6 @@ function endInvestigation() {
   // Global bind
   window.startGame = startGame;
 </script>
-  <!-- ⚙️ DOMContentLoaded Wiring -->
 <!-- ⚙️ DOMContentLoaded Wiring -->
 <script>
   window.addEventListener('DOMContentLoaded', () => {
@@ -1037,7 +1033,8 @@ function endInvestigation() {
 
     <div id="loadout-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
   <h2>Select Your Loadout (Max 3 items)</h2>
-  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;">
+  </div>
   <p id="loadout-selected">Selected: 0</p>
   <button id="confirm-loadout">Confirm</button>
     </div>
