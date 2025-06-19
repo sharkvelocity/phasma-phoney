@@ -426,7 +426,7 @@
   window.getInventory = getInventory;
   window.useItem = useItem;
 </script>
-  <script>
+<script>
   const allItems = [
     'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
     'Crucifix', 'Mirror', 'Tarot Cards', 'UV Light',
@@ -435,21 +435,23 @@
 
   let selectedLoadout = [];
 
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  container.innerHTML = '';
-  selectedLoadout = [];
+  function showLoadoutMenu() {
+    const container = document.getElementById('loadout-options');
+    container.innerHTML = '';
+    selectedLoadout = [];
 
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.onclick = () => toggleLoadoutItem(item, btn);
-    container.appendChild(btn);
-  });
+    allItems.forEach(item => {
+      const btn = document.createElement('button');
+      btn.innerText = item;
+      btn.onclick = () => toggleLoadoutItem(item, btn);
+      container.appendChild(btn);
+    });
 
-  document.getElementById('loadout-screen').style.display = 'block';
-  document.getElementById('loadout-selected').innerText = `Selected: 0`;
-}
+    // Ensure game screen is hidden during loadout
+    document.getElementById('game-screen').classList.add('hidden');
+    document.getElementById('loadout-screen').style.display = 'block';
+    document.getElementById('loadout-selected').innerText = `Selected: 0`;
+  }
 
   function toggleLoadoutItem(item, btn) {
     if (selectedLoadout.includes(item)) {
@@ -459,18 +461,24 @@ function showLoadoutMenu() {
       selectedLoadout.push(item);
       btn.style.backgroundColor = 'green';
     }
-      
-  document.getElementById('confirm-loadout').onclick = () => {
-  if (selectedLoadout.length === 0) {
-    alert("Select at least one item.");
-    return;
+    document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
   }
 
-  selectedLoadout.forEach(item => addItemToInventory(item));
-  document.getElementById('loadout-screen').style.display = 'none';
-  document.getElementById('game-screen').classList.remove('hidden');
-  startGame();
-};
+  // Confirm loadout and begin game
+  window.addEventListener('DOMContentLoaded', () => {
+    const confirmBtn = document.getElementById('confirm-loadout');
+    confirmBtn.onclick = () => {
+      if (selectedLoadout.length === 0) {
+        alert("Select at least one item.");
+        return;
+      }
+
+      selectedLoadout.forEach(item => addItemToInventory(item));
+      document.getElementById('loadout-screen').style.display = 'none';
+      document.getElementById('game-screen').classList.remove('hidden');
+      startGame();
+    };
+  });
 </script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
