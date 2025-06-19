@@ -263,6 +263,75 @@ window.getStats = getStats;
 
 <!-- 3. Inventory System -->
 
+      <script>
+// --- VAN SYSTEM ---
+
+const vanInventory = {
+  'Smudge Stick': 4,
+  'Salt': 3,
+  'Candle': 2,
+  'EMF Reader': 1,
+  'Spirit Box': 1,
+  'Crucifix': 1,
+  'UV Light': 1,
+  'Thermometer': 1,
+  'Parabolic Mic': 1,
+  'Proximity Sensor': 1,
+  'Camera': 1,
+  'Ghost Writing Book': 1
+};
+
+const alwaysWithYou = ['Lighter'];
+
+function openVanMenu() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+  const inv = getInventory();
+
+  // --- Return Items ---
+  inv.forEach(item => {
+    if (consumables.includes(item)) return; // Used consumables can't be returned
+    const btn = document.createElement('button');
+    btn.innerText = `Return ${item} to Van`;
+    btn.onclick = () => {
+      delete inventory[item];
+      vanInventory[item] = (vanInventory[item] || 0) + 1;
+      displayNarratorText(`🔁 You return the ${item} to the van.`);
+      updateHUD();
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  // --- Take Items ---
+  Object.entries(vanInventory).forEach(([item, qty]) => {
+    if (qty <= 0) return;
+    const total = Object.values(inventory).reduce((a, b) => a + b, 0);
+    if (total >= 3) return; // Max 3 carry limit
+    const btn = document.createElement('button');
+    btn.innerText = `Take ${item} (${qty} left)`;
+    btn.onclick = () => {
+      inventory[item] = 1;
+      vanInventory[item]--;
+      displayNarratorText(`🎒 You take a ${item} from the van.`);
+      updateHUD();
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+
+// --- Always include lighter but not in inventory count ---
+function getInventory() {
+  return Object.keys(inventory).concat(alwaysWithYou);
+}
+</script>
+      
   <script>
 const consumables = ['Smudge Stick', 'Candle', 'Salt'];
 const inventory = {};
@@ -619,6 +688,7 @@ function renderOptions() {
   btn('Pick Up Item', pickupMenu);
   btn('Move', moveMenu);
   btn('Guess Ghost', guessMenu);
+  btn('Return to Van', openVanMenu);
 }
 </script>
   <script>
