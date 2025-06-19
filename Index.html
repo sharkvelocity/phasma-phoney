@@ -873,7 +873,7 @@ function narrateAmbience() {
   }
 }
 </script>
-      <script>
+<script>
 function renderOptions() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
@@ -926,40 +926,6 @@ function renderOptions() {
   btn('Move', moveMenu);
   btn('Guess Ghost', guessMenu);
 }
-
-window.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.getElementById('start-btn');
-  const gameScreen = document.getElementById('game-screen');
-  const loadoutScreen = document.getElementById('loadout-screen');
-  const journalBtn = document.getElementById('journal-btn');
-  const journalScreen = document.getElementById('journal-screen');
-
-  document.getElementById('confirm-loadout').onclick = () => {
-    if (selectedLoadout.length === 0) return alert('Pick at least 1 item.');
-    selectedLoadout.forEach(addItemToInventory);
-    loadoutScreen.style.display = 'none';
-    gameScreen.classList.remove('hidden');
-    startGame();  // <-- starts game properly
-  };
-
-  document.getElementById('back-btn').onclick = () => {
-    loadoutScreen.style.display = 'none';
-    startBtn.style.display = 'inline-block';
-  };
-
-  startBtn.onclick = () => {
-    startBtn.style.display = 'none';
-    loadoutScreen.style.display = 'block';
-    showLoadoutMenu();
-  };
-
-  journalBtn.onclick = () => journalScreen.classList.toggle('hidden');
-  document.getElementById('close-journal').onclick = () => journalScreen.classList.add('hidden');
-  document.getElementById('save-journal').onclick = () => {
-    const text = document.getElementById('journal-entry').value;
-    updateNotes(text);
-  };
-});
 </script>
   </body>
 </html>
