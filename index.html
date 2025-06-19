@@ -120,10 +120,9 @@
           <button onclick="move('East')">Right</button>
         </div>
         <button onclick="move('South')">Down</button>
-      </div>
+</div>
     </div>
   </div>
-
   <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
     <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
@@ -449,7 +448,7 @@
       container.appendChild(btn);
     });
 
-    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('loadout-screen').style.display = 'hidden';
     document.getElementById('loadout-selected').innerText = `Selected: 0`;
   }
 
