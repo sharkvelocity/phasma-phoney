@@ -178,13 +178,13 @@ function appendReadout(text) {
   log.scrollTop = log.scrollHeight;
 }
 function displayNarratorText(text) {
-  document.getElementById('narrator-box').innerText = text;
-  appendReadout(text);
+  const systemDiv = document.getElementById('system-text');
+  const readout = document.getElementById('main-readout');
+  systemDiv.innerText = text;
+  readout.innerText += `\n${text}`;
+  readout.scrollTop = readout.scrollHeight;
 }
-window.displayNarratorText = displayNarratorText;
-window.addToReadout = appendReadout;
 </script>
-
 <!-- 2. Mechanics System -->
   
 <script>
@@ -767,10 +767,11 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
       <script>
 function displayNarratorThought(text) {
-  document.getElementById('narrator-box').innerText = text;
-  const log = document.getElementById('main-readout');
-  log.innerText += `\n🧠 ${text}`;
-  log.scrollTop = log.scrollHeight;
+  const thoughtDiv = document.getElementById('narrator-thought');
+  const readout = document.getElementById('main-readout');
+  thoughtDiv.innerText = text;
+  readout.innerText += `\n🧠 ${text}`;
+  readout.scrollTop = readout.scrollHeight;
 }
 
 function narrateItemThought(item) {
