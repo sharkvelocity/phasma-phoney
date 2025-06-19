@@ -461,21 +461,22 @@
       selectedLoadout.push(item);
       btn.style.backgroundColor = 'green';
     }
-
-    document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
+document.getElementById('confirm-loadout').onclick = () => {
+  if (selectedLoadout.length === 0) {
+    alert("Select at least one item.");
+    return;
   }
-
-  document.getElementById('confirm-loadout').onclick = () => {
-    if (selectedLoadout.length === 0) {
-      alert("Select at least one item.");
-      return;
-    }
-
-startBtn.onclick = () => {
+      
+  startBtn.onclick = () => {
   document.getElementById('start-btn').style.display = 'none';
   document.getElementById('loadout-screen').style.display = 'block';
   showLoadoutMenu(); // ✅ Trigger the loadout UI population
-}
+  }
+
+  selectedLoadout.forEach(item => addItemToInventory(item));
+  document.getElementById('loadout-screen').style.display = 'none';
+  document.getElementById('game-screen').classList.remove('hidden');
+  startGame();
 </script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
