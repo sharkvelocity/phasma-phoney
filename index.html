@@ -428,7 +428,61 @@
   window.getInventory = getInventory;
   window.useItem = useItem;
 </script>
+<!-- 🗺️ MAP SYSTEM -->
+<script>
+  const rooms = [
+    'Foyer', 'Living Room', 'Kitchen', 'Dining Room',
+    'Bathroom', 'Basement', 'Bedroom', 'Garage'
+  ];
 
+  let currentRoom = 'Foyer';
+
+  const roomMap = {
+    'Foyer':        { North: 'Living Room', East: 'Garage', South: 'Basement', West: null },
+    'Living Room':  { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
+    'Kitchen':      { West: 'Living Room' },
+    'Dining Room':  { East: 'Living Room' },
+    'Bathroom':     { North: 'Bedroom' },
+    'Bedroom':      { South: 'Bathroom' },
+    'Garage':       { West: 'Foyer' },
+    'Basement':     { North: 'Foyer' }
+  };
+
+  function initializeMap() {
+    currentRoom = 'Foyer';
+    displayNarratorText(`📍 You are in the ${currentRoom}.`);
+    updateMiniMap();
+  }
+
+  function movePlayer(direction) {
+    const available = roomMap[currentRoom] || {};
+    const destination = available[direction];
+
+    if (destination) {
+      currentRoom = destination;
+      adjustSanity(-2); // Lose sanity when moving
+      updateMiniMap();
+      return `🚪 You move ${direction} to the ${destination}.`;
+    } else {
+      return `❌ You can't move ${direction} from the ${currentRoom}.`;
+    }
+  }
+
+  function getCurrentRoom() {
+    return currentRoom;
+  }
+
+  function updateMiniMap() {
+    const mapDisplay = document.getElementById('mini-map');
+    if (mapDisplay) mapDisplay.innerText = `Room: ${currentRoom}`;
+  }
+
+  // Global bindings
+  window.initializeMap = initializeMap;
+  window.movePlayer = movePlayer;
+  window.getCurrentRoom = getCurrentRoom;
+  window.updateMiniMap = updateMiniMap;
+</script>
   <!-- 🗺️ MAP SYSTEM -->
 <script>
   const rooms = [
