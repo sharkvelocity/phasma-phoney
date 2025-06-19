@@ -960,13 +960,16 @@ function initializeJournal() {
   renderEvidenceChecklist();
 }
 
-const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
+<script>
+// --- JOURNAL SYSTEM: Evidence Checklist + Matching Ghosts -- //
 
 function renderEvidenceChecklist() {
   const container = document.getElementById('evidence-checklist');
   container.innerHTML = '';
 
-  allEvidence.forEach(ev => {
+  const evidenceTypes = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
+
+  evidenceTypes.forEach(ev => {
     const label = document.createElement('label');
     label.style.display = 'inline-flex';
     label.style.alignItems = 'center';
@@ -984,6 +987,31 @@ function renderEvidenceChecklist() {
 }
 
 function updatePossibleGhosts() {
+  const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
+  const list = document.getElementById('possible-ghosts');
+  list.innerHTML = '';
+
+  if (selected.length === 0) {
+    list.innerHTML = '<li>All ghosts are possible</li>';
+    return;
+  }
+
+  const possible = ghostTypes.filter(type => {
+    const evidenceSet = getGhostEvidence(type);
+    return selected.every(ev => evidenceSet.includes(ev));
+  });
+
+  if (possible.length) {
+    possible.forEach(type => {
+      const li = document.createElement('li');
+      li.textContent = type;
+      list.appendChild(li);
+    });
+  } else {
+    list.innerHTML = '<li>No ghosts match this combination</li>';
+  }
+}
+  function updatePossibleGhosts() {
   const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
   const list = document.getElementById('possible-ghosts');
   list.innerHTML = '';
