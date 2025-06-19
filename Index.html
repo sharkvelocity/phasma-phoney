@@ -287,7 +287,39 @@ window.useCursedItem = useCursedItem;
 window.resetStats = resetStats;
 window.getStats = getStats;
 </script>
+<script>
+function guessMenu() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
 
+  const guessInput = document.createElement('input');
+  guessInput.placeholder = "Enter ghost type";
+  guessInput.style.marginBottom = '10px';
+
+  const submitBtn = document.createElement('button');
+  submitBtn.innerText = "Submit Guess";
+  submitBtn.onclick = () => {
+    const guess = guessInput.value.trim();
+    const actual = getCurrentGhost().type;
+    if (guess.toLowerCase() === actual.toLowerCase()) {
+      displayNarratorText(`🎯 Correct! It was a ${actual}. You've solved the mystery.`);
+      addXP(50);
+    } else {
+      displayNarratorText(`❌ Incorrect. It was a ${actual}. Better luck next time.`);
+      adjustSanity(-20);
+    }
+    renderOptions();
+  };
+
+  const backBtn = document.createElement('button');
+  backBtn.innerText = "Back";
+  backBtn.onclick = renderOptions;
+
+  container.appendChild(guessInput);
+  container.appendChild(submitBtn);
+  container.appendChild(backBtn);
+}
+</script>
 <!-- 3. Inventory System -->
 
       <script>
