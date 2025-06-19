@@ -109,25 +109,30 @@ body {
       width: 90%;
     }
     .orb {
-      position: absolute;
-      width: 6px;
-      height: 6px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0;
-      animation-name: drift, fade;
-      animation-timing-function: linear, ease-in-out;
-      animation-iteration-count: infinite;
-      pointer-events: none;
-    }
-    @keyframes drift {
-      0% { transform: translate(0, 0); }
-      100% { transform: translate(var(--dx), var(--dy)); }
-    }
-    @keyframes fade {
-      0%, 100% { opacity: 0; }
-      50% { opacity: 0.8; }
-    }
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.4);
+  border-radius: 50%;
+  box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.15);
+  opacity: 0;
+  animation-name: drift, fadeGlow;
+  animation-timing-function: ease-in-out, ease-in-out;
+  animation-iteration-count: 1, 1;
+  pointer-events: none;
+}
+
+@keyframes drift {
+  from { transform: translate(0, 0); }
+  to { transform: translate(var(--dx), var(--dy)); }
+}
+
+@keyframes fadeGlow {
+  0% { opacity: 0; }
+  30% { opacity: 0.5; }
+  60% { opacity: 0.8; }
+  100% { opacity: 0.2; }
+}
   </style>
 </head>
     <body>
@@ -162,38 +167,42 @@ body {
     <button id="confirm-loadout">Confirm</button>
     <button id="back-btn">Back</button>  
   </div>
-  <script>
+<script>
+function spawnOrbs(count = 6) {
+  for (let i = 0; i < count; i++) {
+    const orb = document.createElement('div');
+    orb.className = 'orb';
 
-    
-  //-- Utility + Floating Orbs --\\
+    // Set random start position
+    orb.style.left = Math.random() * 100 + 'vw';
+    orb.style.top = Math.random() * 100 + 'vh';
 
-    
-for (let i = 0; i < 10; i++) {
-  const orb = document.createElement('div');
-  orb.className = 'orb';
-  orb.style.left = Math.random() * 100 + 'vw';
-  orb.style.top = Math.random() * 100 + 'vh';
-  const dx = (Math.random() - 0.5) * 200 + 'px';
-  const dy = (Math.random() - 0.5) * 200 + 'px';
-  orb.style.setProperty('--dx', dx);
-  orb.style.setProperty('--dy', dy);
-  const duration = 8 + Math.random() * 5;
-  orb.style.animationDuration = `${duration}s, ${duration}s`;
-  orb.style.animationDelay = `${Math.random() * 5}s, ${Math.random() * 5}s`;
-  document.body.appendChild(orb);
+    // Random drift direction and distance
+    const dx = (Math.random() - 0.5) * 150 + 'px';
+    const dy = (Math.random() - 0.5) * 150 + 'px';
+    orb.style.setProperty('--dx', dx);
+    orb.style.setProperty('--dy', dy);
+
+    // Duration and delay for animation
+    const duration = 10 + Math.random() * 10;
+    orb.style.animationDuration = `${duration}s, ${duration}s`;
+    orb.style.animationDelay = `0s, ${Math.random() * 4}s`;
+
+    document.body.appendChild(orb);
+
+    // Fade out and remove the orb after it completes
+    setTimeout(() => {
+      orb.style.transition = 'opacity 2s ease-out';
+      orb.style.opacity = 0;
+      setTimeout(() => orb.remove(), 3000);
+    }, duration * 1000);
+  }
 }
-function appendReadout(text) {
-  const log = document.getElementById('main-readout');
-  log.innerText += `\n${text}`;
-  log.scrollTop = log.scrollHeight;
-}
-function displayNarratorText(text) {
-  const systemDiv = document.getElementById('system-text');
-  const readout = document.getElementById('main-readout');
-  systemDiv.innerText = text;
-  readout.innerText += `\n${text}`;
-  readout.scrollTop = readout.scrollHeight;
-}
+
+// Keep spawning orbs periodically
+setInterval(() => {
+  if (document.hasFocus()) spawnOrbs(Math.floor(Math.random() * 2) + 1);
+}, 5000);
 </script>
 <script>
 
