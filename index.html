@@ -953,11 +953,10 @@ function endInvestigation() {
     const journalScreen = document.getElementById('journal-screen');
 
     // Hide title screen and show game screen
-    startBtn.onclick = () => {
-      document.getElementById('start-btn').style.display = 'none';
-      gameScreen.classList.remove('hidden');
-      startGame();
-    };
+startBtn.onclick = () => {
+  document.getElementById('start-btn').style.display = 'none';
+  showLoadoutMenu();
+};
 
     // Journal buttons
     journalBtn.onclick = () => {
