@@ -153,24 +153,6 @@ button {
         <div id="narrator-box">
           <div id="system-text">System: Ready.</div>
           <div id="narrator-thought">🧠 Your Thoughts...</div>
-        <div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">
-  Minimap loading...
-</div>
-  <script>function renderMinimap() {
-  const mapDisplay = document.getElementById('minimap');
-  const room = getCurrentRoom();
-  const connections = roomMap[room];
-  
-  let output = `📍 <strong>${room}</strong><br/>`;
-  output += `You can go: `;
-
-  const exits = ['North', 'East', 'South', 'West']
-    .filter(dir => connections?.[dir])
-    .map(dir => `<span style="color:cyan">${dir} → ${connections[dir]}</span>`);
-
-  output += exits.length ? exits.join(', ') : '<em>nowhere</em>';
-  mapDisplay.innerHTML = output;
-}
         </div>
           </script>
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
@@ -606,7 +588,26 @@ function openVanMenu() {
 </script>
 
 <!-- 4. Map System -->
+<div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">
+  Minimap loading...
+</div>
+  <script>
+  function renderMinimap() {
+  const mapDisplay = document.getElementById('minimap');
+  const room = getCurrentRoom();
+  const connections = roomMap[room];
+  
+  let output = `📍 <strong>${room}</strong><br/>`;
+  output += `You can go: `;
 
+  const exits = ['North', 'East', 'South', 'West']
+    .filter(dir => connections?.[dir])
+    .map(dir => `<span style="color:cyan">${dir} → ${connections[dir]}</span>`);
+
+  output += exits.length ? exits.join(', ') : '<em>nowhere</em>';
+  mapDisplay.innerHTML = output;
+}
+  </script>
 <script>
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
 let currentRoom = 'Foyer';
@@ -836,7 +837,97 @@ function tickTurn() {
 </script>
 <script>
 
-  
+ <script>
+function renderOptions() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  const btn = (label, handler) => {
+    const b = document.createElement('button');
+    b.innerText = label;
+    b.onclick = handler;
+    container.appendChild(b);
+  };
+
+  // Move Button (inline sub-menu)
+  btn('Move', () => {
+    container.innerHTML = '';
+    const directions = ['North', 'East', 'South', 'West'];
+
+    directions.forEach(dir => {
+      const dirBtn = document.createElement('button');
+      dirBtn.innerText = `Go ${dir}`;
+      dirBtn.onclick = () => {
+        const result = movePlayer(dir);
+        displayNarratorText(result);
+        tickTurn();
+        renderMinimap(); // update map
+        renderOptions();
+      };
+      container.appendChild(dirBtn);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    container.appendChild(back);
+  });
+
+  // Investigate
+  btn('Investigate', () => {
+    const msg = performBehavior(getCurrentRoom());
+    adjustSanity(-5);
+    displayNarratorText(msg);
+    tickTurn();
+    renderMinimap();
+  });
+
+  // Use Item Menu
+  btn('Use Item', () => {
+    const items = getInventory();
+    container.innerHTML = '';
+
+    if (!items.length) {
+      displayNarratorText("🧳 You have no items.");
+      renderOptions();
+      return;
+    }
+
+    items.forEach(item => {
+      const itemBtn = document.createElement('button');
+      itemBtn.innerText = `Use ${item}`;
+      itemBtn.onclick = () => {
+        const msg = useItem(item, getCurrentRoom(), getCurrentGhost().type);
+        displayNarratorText(msg);
+        narrateItemThought(item);
+        tickTurn();
+        renderMinimap();
+        renderOptions();
+      };
+      container.appendChild(itemBtn);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    container.appendChild(back);
+  });
+
+  // Drop, Pickup, Guess
+  btn('Drop Item', dropItemMenu);
+  btn('Pick Up Item', pickupMenu);
+  btn('Guess Ghost', guessMenu);
+
+  // Return to Van → reuse loadout screen
+  btn('Return to Van', () => {
+    isVanAccess = true;
+    showLoadoutMenu();
+    document.getElementById('loadout-screen').style.display = 'block';
+  });
+
+  renderMinimap(); // always update minimap after options render
+}
+</script> 
 //-- BUTTONS --\\
 
     
