@@ -23,6 +23,7 @@
       color: cyan;
       text-shadow: 0 0 10px cyan;
     }
+    
     button {
       background: #222;
       color: white;
@@ -64,53 +65,6 @@
       overflow-y: auto;
     }
 
-    #main-readout {
-      background: #111;
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #444;
-      width: 90%;
-      max-height: 300px;  /* Added scrollability */
-      overflow-y: auto;
-      white-space: pre-wrap;
-      flex-shrink: 0;
-    }
-
-    #narrator-box,
-    #hud-status {
-      background: #111;
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #444;
-      width: 90%;
-    }
-  </style>
-</head>
-
-<body>
-  <h1>Phasma‑Phoney</h1>
-  <button id="start-btn">Start Investigation</button>
-  <div id="game-screen" class="hidden">
-    <div id="left-panel">
-      <div id="option-buttons"></div>
-      <button id="journal-btn">Journal</button>
-    </div>
-    <div id="center-panel">
-      <div id="narrator-box">Welcome!</div>
-      <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
-      <div id="main-readout">Awaiting interaction...</div>
-    </div>
-  </div>
-
-  <script>
-    document.getElementById('start-btn').onclick = () => {
-      document.getElementById('start-btn').style.display = 'none';
-      document.getElementById('game-screen').classList.remove('hidden');
-    };
-  </script>
-<script>
-            /* Allow vertical scrolling if needed */
-
       #main-readout {
   background: #111;
   padding: 10px;
@@ -148,7 +102,8 @@
     @keyframes fade {
       0%, 100% { opacity: 0; }
       50% { opacity: 0.8; }
-    }</style>
+    }</style></head>
+  <body>
   <h1>Phasma-Phoney</h1>
   <button id="start-btn">Start Investigation</button>
   <div id="game-screen" class="hidden">
