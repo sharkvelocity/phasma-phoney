@@ -307,12 +307,19 @@ function updateHUD() {
 }
 function useItem(item, room, ghostType) {
   if (!inventory[item]) return `❌ You don’t have a ${item}.`;
-  delete inventory[item];
-  updateHUD();
+
   let result = `🧪 You used the ${item} in the ${room}.`;
+
+  // Only remove if item is consumable
+  if (consumables.includes(item)) {
+    delete inventory[item];
+    updateHUD();
+  }
+
   if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
     result += `\n🌀 The ${ghostType} reacts violently!`;
   }
+
   return result;
 }
 window.getInventory = getInventory;
