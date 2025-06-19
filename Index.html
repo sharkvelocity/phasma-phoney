@@ -565,60 +565,58 @@ function startGame() {
   displayNarratorText("🕵️ Investigation started.");
   renderOptions();
 }
-<script>
-function renderOptions() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
+  <script>
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-btn');
+  const gameScreen = document.getElementById('game-screen');
+  const loadoutScreen = document.getElementById('loadout-screen');
+  const confirmBtn = document.getElementById('confirm-loadout');
+  const backBtn = document.getElementById('back-btn');
+  const journalBtn = document.getElementById('journal-btn');
+  const saveJournalBtn = document.getElementById('save-journal');
+  const closeJournalBtn = document.getElementById('close-journal');
+  const journalScreen = document.getElementById('journal-screen');
 
-  const btn = (label, handler) => {
-    const b = document.createElement('button');
-    b.innerText = label;
-    b.onclick = handler;
-    container.appendChild(b);
+  startBtn.onclick = () => {
+    const wantsLoadout = confirm("Do you want to select a loadout?");
+    if (wantsLoadout) {
+      showLoadoutMenu();
+      loadoutScreen.style.display = 'block';
+      startBtn.style.display = 'none';
+    } else {
+      gameScreen.classList.remove('hidden');
+      startBtn.style.display = 'none';
+      startGame();
+    }
   };
 
-  btn('Investigate', () => {
-    const msg = performBehavior(getCurrentRoom());
-    adjustSanity(-5);
-    displayNarratorText(msg);
-    tickTurn();
-  });
+  confirmBtn.onclick = () => {
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    loadoutScreen.style.display = 'none';
+    gameScreen.classList.remove('hidden');
+    startGame();
+  };
 
-  btn('Use Item', () => {
-    const items = getInventory();
-    container.innerHTML = '';
+  backBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+    startBtn.style.display = 'inline-block';
+  };
 
-    if (!items.length) {
-      displayNarratorText("🧳 You have no items.");
-      renderOptions();
-      return;
-    }
+  journalBtn.onclick = () => {
+    initializeJournal();
+    journalScreen.classList.remove('hidden');
+  };
 
-    items.forEach(item => {
-      const btn = document.createElement('button');
-      btn.innerText = `Use ${item}`;
-      btn.onclick = () => {
-        const msg = useItem(item, getCurrentRoom(), ghost.type);
-        displayNarratorText(msg);
-        narrateItemThought(item);
-        tickTurn();
-        renderOptions();
-      };
-      container.appendChild(btn);
-    });
+  saveJournalBtn.onclick = () => {
+    const text = document.getElementById('journal-entry').value;
+    updateNotes(text);
+    journalScreen.classList.add('hidden');
+  };
 
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
-  });
-
-  btn('Drop Item', dropItemMenu);
-  btn('Pick Up Item', pickupMenu);
-  btn('Move', moveMenu);
-  btn('Guess Ghost', guessMenu);
-}
-
+  closeJournalBtn.onclick = () => {
+    journalScreen.classList.add('hidden');
+  };
+});
 </script>
       <script>
 function displayNarratorThought(text) {
