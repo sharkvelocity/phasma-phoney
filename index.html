@@ -351,14 +351,14 @@
 
   function addItemToInventory(item) {
     if (inventory.length >= 3) {
-      displayNarratorText(`❌ You can only carry 3 items at a time.`);
+      displayNarratorText(`❌ You can only carry 3 items.`);
       return false;
     }
     if (!inventory.includes(item)) {
       inventory.push(item);
-      displayNarratorText(`🎒 Added ${item} to your inventory.`);
+      displayNarratorText(`🎒 Added ${item}.`);
     } else {
-      displayNarratorText(`🧳 You already have a ${item}.`);
+      displayNarratorText(`🧳 Already carrying a ${item}.`);
     }
     updateHUD();
     return true;
@@ -370,15 +370,16 @@
 
   function useItem(item, room, ghostType) {
     const index = inventory.indexOf(item);
-    if (index === -1) return `❌ You don't have a ${item}.`;
+    if (index === -1) return `❌ You don’t have a ${item}.`;
 
     inventory.splice(index, 1);
     updateHUD();
 
     let result = '';
+
     switch (item.toLowerCase()) {
       case 'candle':
-        result = `🕯️ You light the candle. The ${room} glows softly.`;
+        result = `🕯️ You light the candle. A gentle glow fills the ${room}.`;
         break;
       case 'emf reader':
         const emf = Math.random() < 0.4 ? 5 : 2;
@@ -386,23 +387,23 @@
         if (emf === 5) result += '\n' + discoverEvidence('EMF Level 5');
         break;
       case 'spirit box':
-        const heard = Math.random() < 0.3;
-        result = heard
-          ? `📻 A distorted voice replies through the Spirit Box.\n` + discoverEvidence('Spirit Box')
-          : `📻 Only static. The spirit is silent.`;
+        const reply = Math.random() < 0.3;
+        result = reply
+          ? `📻 A static-laced voice whispers back.\n` + discoverEvidence('Spirit Box')
+          : `📻 Static only. No response.`;
         break;
       case 'smudge stick':
-        result = `💨 You burn the smudge stick. The air in the ${room} feels lighter.`;
+        result = `💨 You burn the smudge stick. The air clears in the ${room}.`;
         adjustSanity(+10);
         break;
       case 'crucifix':
-        const protected = Math.random() < 0.5;
-        result = protected
-          ? `✝️ The Crucifix glows faintly. You feel protected.`
-          : `✝️ The Crucifix does nothing this time.`;
+        const safe = Math.random() < 0.5;
+        result = safe
+          ? `✝️ The Crucifix warms faintly in your hand.`
+          : `✝️ Nothing happens.`;
         break;
       case 'mirror':
-        result = `🪞 You gaze into the mirror. A fleeting image of a ${ghostType} appears.`;
+        result = `🪞 You glimpse a shadowy ${ghostType} figure.`;
         adjustSanity(-15);
         break;
       case 'tarot cards':
@@ -412,21 +413,22 @@
         result = `🛠️ You try to use the ${item}, but nothing happens.`;
     }
 
-    // Ghost-specific interaction feedback
+    // Ghost interaction response
     if (ghostReactions[item]) {
       if (ghostReactions[item].includes(ghostType)) {
-        result += `\n🌀 The ${item} reacts to the presence of a ${ghostType}.`;
+        result += `\n🌀 The ${item} reacts strongly to the ${ghostType}!`;
       }
     }
 
     return result;
   }
 
-  // Expose functions globally
+  // Expose globally
   window.addItemToInventory = addItemToInventory;
   window.getInventory = getInventory;
   window.useItem = useItem;
 </script>
+
   <!-- 🗺️ MAP SYSTEM -->
 <script>
   const rooms = [
@@ -562,7 +564,6 @@
   }
 
   window.generateGhostBehavior = generateGhostBehavior;
-</script>
       ]
     };
 
