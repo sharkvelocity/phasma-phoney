@@ -108,7 +108,7 @@ body {
 </head>
     <body>
   <h1>Phasma-Phoney</h1>
-  <button id="start-btn">Start Investigation</button>
+      <button id="start-btn">Start Investigation</button>
   <div id="game-screen" class="hidden">
     <div id="left-panel">
       <div id="option-buttons"></div>
@@ -395,7 +395,7 @@ function generateGhostBehavior(type) {
     'The Mimic': [room => `You hear a sound that doesn’t match your evidence in the ${room}.`],
     'Moroi': [room => `Your breath fogs up as you speak in the ${room}.`],
     'Deogen': [room => `You feel eyes watching your every move in the ${room}.`],
-    'Thaye': [room => `An ancient aura ages the air in the ${room}.`]
+    'Thaye': [room => `An ancient aura ages the air in the ${room}.`],
     'Succubus': [room => `A sultry whisper beckons in the ${room}.`]
   };
 
@@ -558,7 +558,6 @@ function tickTurn() {
   }
 
   // Dom Ready hooks  
-  
 <script>
 window.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
