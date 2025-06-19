@@ -548,16 +548,6 @@ function tickTurn() {
     status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${inventoryList}`;
   }
 
-
-
-    // Passive evidence reveal
-    if (Math.random() < 0.15) {
-      const passive = ['Ghost Orbs', 'Fingerprints', 'Ghost Writing'];
-      const revealed = passive[Math.floor(Math.random() * passive.length)];
-      displayNarratorText(`👻 You notice a clue: ${revealed}.`);
-      discoverEvidence(revealed);
-    }
-
     // Optional hunt trigger if sanity is very low
     if (getSanity() <= 15 && Math.random() < 0.3) {
       const huntMsg = triggerHunt();
