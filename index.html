@@ -120,12 +120,12 @@
     <div id="right-panel">
       <div id="mini-map">Room: Unknown</div>
       <div id="movement-buttons">
-        <button onclick="move('North')">⬆</button>
+        <button onclick="move('North')">Up</button>
         <div>
-          <button onclick="move('West')">⬅</button>
-          <button onclick="move('East')">➡</button>
+          <button onclick="move('West')">Left</button>
+          <button onclick="move('East')">Right</button>
         </div>
-        <button onclick="move('South')">⬇</button>
+        <button onclick="move('South')">Down</button>
       </div>
     </div>
   </div>
@@ -447,7 +447,7 @@ function renderOptions() {
   const buttons = [
     { label: '1. Investigate', action: investigate },
     { label: '2. Use Item', action: useItemUI },
-    { label: '3. Move', action: () => renderMoveButtons() },
+    { label: '3. Move', action: renderMoveButtons },
     { label: '4. Guess Ghost', action: guessGhostUI },
     { label: '5. Return to Van', action: returnToVan }
   ];
