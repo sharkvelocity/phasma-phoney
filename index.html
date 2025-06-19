@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let ghost = null;
 
 function startGame() {
-  resetStats();
+  resetStats(false);
   const selected = getRandomGhost();
   ghost = selected;
   initializeGhost(selected);
@@ -673,7 +673,7 @@ function startGame() {
   displayNarratorText(`🕵️ Investigation started...`);
   renderOptions();
 }
-
+<script>
   function renderOptions() {
     const container = document.getElementById('option-buttons');
     container.innerHTML = '';
@@ -683,6 +683,7 @@ function startGame() {
       { label: '2. Use Item', action: useItemMenu },
       { label: '3. Move', action: moveMenu },
       { label: '4. Guess Ghost', action: guessMenu },
+      { label: '5. Return to Van', action: showVanInventory } // ✅ Re-added
     ];
 
     buttons.forEach(({ label, action }) => {
@@ -789,19 +790,42 @@ function startGame() {
     container.appendChild(back);
   }
 
-  function endInvestigation() {
-    const remaining = getInventory();
-    const used = selectedLoadout.filter(item => !remaining.includes(item));
+  function showVanInventory() {
+    const vanScreen = document.getElementById('van-loadout-screen');
+    const vanItemsContainer = document.getElementById('van-items');
+    const vanWarning = document.getElementById('van-warning');
 
-    displayNarratorText(
-      `🚐 You return to the van.\n\n📦 Remaining Items: ${remaining.length ? remaining.join(', ') : 'None'}\n🗑️ Used Items: ${used.length ? used.join(', ') : 'None'}\n\nFinal Sanity: ${getSanity()}% | XP: ${getXP()}`
-    );
+    vanItemsContainer.innerHTML = '';
+    vanWarning.innerText = '';
+    const totalItems = Object.values(inventory).reduce((sum, count) => sum + count, 0);
 
-    document.getElementById('option-buttons').innerHTML = '';
+    allItems.forEach(item => {
+      const btn = document.createElement('button');
+      btn.innerText = item;
+      btn.onclick = () => {
+        if (inventory[item]) {
+          delete inventory[item];
+          displayNarratorText(`❌ Removed ${item} from your loadout.`);
+        } else if (totalItems < 3) {
+          addItemToInventory(item);
+        } else {
+          vanWarning.innerText = '⚠️ You can only carry 3 items total.';
+          return;
+        }
+
+        updateHUD();
+        showVanInventory(); // Re-render menu
+      };
+      vanItemsContainer.appendChild(btn);
+    });
+
+    vanScreen.style.display = 'block';
   }
 
-  // Global bind
-  window.startGame = startGame;
+  // Close van screen button
+  document.getElementById('close-van').onclick = () => {
+    document.getElementById('van-loadout-screen').style.display = 'none';
+  };
 </script>
 <!-- ⚙️ DOMContentLoaded Wiring -->
 <script>
