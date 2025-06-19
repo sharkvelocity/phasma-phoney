@@ -265,6 +265,16 @@ window.getStats = getStats;
 
   
   <script>
+    const evidenceToolMap = {
+  'EMF Reader': 'EMF 5',
+  'Spirit Box': 'Spirit Box',
+  'UV Light': 'Fingerprints',
+  'Thermometer': 'Freezing Temps',
+  'Camera': 'Ghost Orbs',
+  'Ghost Writing Book': 'Ghost Writing',
+  'Parabolic Mic': 'Whispers',
+  'Salt': 'Footprints'
+};
 const inventory = {};
 let selectedLoadout = [];
 const allItems = [
@@ -316,8 +326,16 @@ function useItem(item, room, ghostType) {
     updateHUD();
   }
 
+  // Ghost reaction (e.g., to Smudge Stick)
   if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
     result += `\n🌀 The ${ghostType} reacts violently!`;
+  }
+
+  // Evidence discovery
+  const evidence = evidenceToolMap[item];
+  if (evidence) {
+    result += `\n🔍 Evidence found: ${evidence}`;
+    result += `\n${discoverEvidence(evidence)}`;
   }
 
   return result;
