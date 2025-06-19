@@ -48,7 +48,25 @@ body {
       justify-content: space-between;
       padding: 10px;
     }
+#narrator-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 90%;
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+}
 
+#system-text, #narrator-thought {
+  flex: 1;
+  background: #222;
+  padding: 8px;
+  border: 1px solid #333;
+  min-height: 60px;
+  overflow-wrap: break-word;
+}
     #left-panel,
     #right-panel {
       display: flex;
@@ -115,7 +133,10 @@ body {
       <button id="journal-btn">Journal</button>
     </div>
     <div id="center-panel">
-      <div id="narrator-box">Welcome!</div>
+    <div id="narrator-box">
+  <div id="system-text">System: Ready.</div>
+  <div id="narrator-thought">🧠 Waiting for impressions...</div>
+</div>
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting interaction...</div>
     </div>
