@@ -449,7 +449,7 @@
       container.appendChild(btn);
     });
 
-    document.getElementById('loadout-screen').style.display = 'block';
+    document.getElementById('loadout-screen').style.display = 'none';
     document.getElementById('loadout-selected').innerText = `Selected: 0`;
   }
 
@@ -471,12 +471,11 @@
       return;
     }
 
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    document.getElementById('loadout-screen').style.display = 'none';
-    document.getElementById('start-btn').style.display = 'none';
-    document.getElementById('game-screen').classList.remove('hidden');
-    startGame();
-  };
+startBtn.onclick = () => {
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('loadout-screen').style.display = 'block';
+  showLoadoutMenu(); // ✅ Trigger the loadout UI population
+}
 </script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
