@@ -1,58 +1,108 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phasma-Phoney</title>
-<style>
-  body {
-    background: black;
-    color: white;
-    font-family: sans-serif;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow: hidden;
-  }
-  h1 {
-    margin-top: 40px;
-    font-size: 2.5em;
-    color: cyan;
-    text-shadow: 0 0 10px cyan;
-  }
-  button {
-    background: #222;
-    color: white;
-    border: 1px solid #666;
-    padding: 10px;
-    margin: 5px;
-    cursor: pointer;
-  }
-  #game-screen {
-    display: flex;
-    width: 100vw;
-    height: 100vh;
-    justify-content: space-between;
-    padding: 10px;
-  }
-  #left-panel, #right-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-  }
-  #center-panel {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    overflow-y: auto;
-  }
-</style>
+  <title>Phasma‑Phoney</title>
+  <style>
+    body {
+      background: black;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-top: 40px;
+      font-size: 2.5em;
+      color: cyan;
+      text-shadow: 0 0 10px cyan;
+    }
+
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+
+    #game-screen {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      justify-content: space-between;
+      padding: 10px;
+    }
+
+    #left-panel,
+    #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+    }
+
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    #main-readout {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+      max-height: 300px;  /* Added scrollability */
+      overflow-y: auto;
+      white-space: pre-wrap;
+      flex-shrink: 0;
+    }
+
+    #narrator-box,
+    #hud-status {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+    }
+  </style>
 </head>
+
+<body>
+  <h1>Phasma‑Phoney</h1>
+  <button id="start-btn">Start Investigation</button>
+  <div id="game-screen" class="hidden">
+    <div id="left-panel">
+      <div id="option-buttons"></div>
+      <button id="journal-btn">Journal</button>
+    </div>
+    <div id="center-panel">
+      <div id="narrator-box">Welcome!</div>
+      <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
+      <div id="main-readout">Awaiting interaction...</div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('start-btn').onclick = () => {
+      document.getElementById('start-btn').style.display = 'none';
+      document.getElementById('game-screen').classList.remove('hidden');
+    };
+  </script>
 <script>
             /* Allow vertical scrolling if needed */
 
@@ -121,49 +171,6 @@
     <button id="confirm-loadout">Confirm</button>
     <button id="back-btn">Back</button>  
   </div>
-<body>
-  <h1>Phasma-Phoney</h1>
-  <button id="start-btn">Start Investigation</button>
-
-  <div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
-    <h2>Select Your Loadout (Max 3 items)</h2>
-    <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-    <p id="loadout-selected">Selected: 0</p>
-    <button id="confirm-loadout">Confirm</button>
-    <button id="back-btn">Back</button>  
-  </div>
-
-  <div id="game-screen" class="hidden">
-    <div id="left-panel">
-      <div id="option-buttons">
-        <button id="journal-btn">Journal</button>
-        <button id="guess-btn">Guess Ghost</button>
-        <button id="item-btn">Use Item</button>
-        <button id="van-btn">Return to Van</button>
-      </div>
-    </div>
-   <div id="center-panel">
-  <div id="narrator-box">Welcome!</div>
-  <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
-  <div id="main-readout">Awaiting interaction...</div>
- </div>
-  </div>
-  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
-    <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="Write your notes here..." style="width:100%;height:120px;"></textarea>
-    <br/>
-    <button id="save-journal">Save</button>
-    <button id="close-journal">Close</button>
-  </div>
-
-  <div id="van-loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
-    <h2>Van Inventory</h2>
-    <p>Select items to add/swap (max 3 total carried)</p>
-    <div id="van-items" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-    <p id="van-warning" style="color: red;"></p>
-    <button id="close-van">Back to Investigation</button>
-  </div>
-
   
   <!-- 1. Utility + Floating Orbs -->
 
