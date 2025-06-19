@@ -326,131 +326,131 @@
   window.getStats = getStats;
   window.resetStats = resetStats;
 </script>
-  <scrip>
-  // --- Inventory System ---
+  // --- Inventory System  
+<!-- 📦 INVENTORY SYSTEM -->
 <script>
-let selectedLoadout = [];
+  const inventory = {}; // Tracks items and counts
 
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  if (!container) return;
+  const allItems = [
+    'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
+    'Crucifix', 'UV Light', 'Thermometer', 'Parabolic Mic',
+    'Proximity Sensor', 'Camera', 'Salt' // ⚠️ Mirror & Tarot excluded
+  ];
 
-  container.innerHTML = '';
-  selectedLoadout = [];
+  const itemData = {
+    'Smudge Stick': { consumable: true },
+    'Candle': { consumable: false },
+    'EMF Reader': { consumable: false },
+    'Spirit Box': { consumable: false },
+    'Crucifix': { consumable: false },
+    'UV Light': { consumable: false },
+    'Thermometer': { consumable: false },
+    'Parabolic Mic': { consumable: false },
+    'Proximity Sensor': { consumable: false },
+    'Camera': { consumable: true },
+    'Salt': { consumable: true }
+  };
 
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.style.margin = '4px';
-    btn.onclick = () => toggleLoadoutItem(item, btn);
-    container.appendChild(btn);
-  });
+  const ghostReactions = {
+    'Smudge Stick': ['Spirit', 'Revenant', 'Yurei', 'Demon', 'Moroi'],
+    'Salt': ['Wraith', 'The Mimic'],
+    'Candle': ['Mare', 'Onryo', 'Succubus'],
+    'Crucifix': ['Demon', 'Revenant', 'Deogen'],
+    'Parabolic Mic': ['Myling', 'Banshee'],
+    'UV Light': ['Obake', 'Hantu'],
+    'EMF Reader': ['Jinn', 'Oni', 'The Twins'],
+    'Thermometer': ['Hantu', 'Shade', 'Onryo'],
+    'Proximity Sensor': ['Deogen'],
+    'Voice': ['Yokai', 'Moroi'],
+    'Camera': ['Phantom', 'Banshee']
+  };
 
-  document.getElementById('game-screen').classList.add('hidden');
-  document.getElementById('loadout-selected').innerText = `Selected: 0`;
-}
-
-function toggleLoadoutItem(item, btn) {
-  if (selectedLoadout.includes(item)) {
-    selectedLoadout = selectedLoadout.filter(i => i !== item);
-    btn.style.backgroundColor = '';
-  } else if (selectedLoadout.length < 3) {
-    selectedLoadout.push(item);
-    btn.style.backgroundColor = 'green';
+  function addItemToInventory(item) {
+    const total = Object.values(inventory).reduce((sum, count) => sum + count, 0);
+    if (total >= 3) {
+      displayNarratorText(`❌ You can only carry 3 items.`);
+      return false;
+    }
+    if (!inventory[item]) {
+      inventory[item] = 1;
+      displayNarratorText(`🎒 Added ${item}.`);
+    } else {
+      displayNarratorText(`🧳 Already carrying a ${item}.`);
+    }
+    updateHUD();
+    return true;
   }
-  document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
-}
 
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('confirm-loadout').onclick = () => {
-    if (selectedLoadout.length === 0) {
-      alert("Please select at least one item.");
-      return;
+  function getInventory() {
+    return Object.entries(inventory)
+      .map(([item, count]) => count > 1 ? `${item} x${count}` : item);
+  }
+
+  function useItem(item, room, ghostType) {
+    if (!inventory[item]) return `❌ You don’t have a ${item}.`;
+
+    if (itemData[item]?.consumable) {
+      inventory[item]--;
+      if (inventory[item] <= 0) delete inventory[item];
     }
 
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    document.getElementById('loadout-screen').style.display = 'none';
-    document.getElementById('game-screen').classList.remove('hidden');
-    startGame();
-  };
-});
-</script><script>
-const allItems = [
-  'Smudge Stick', 'Candle', 'EMF Reader', 'Spirit Box',
-  'Crucifix', 'UV Light', 'Thermometer',
-  'Parabolic Mic', 'Proximity Sensor', 'Camera', 'Salt'
-]; // Mirror and Tarot Cards removed
+    updateHUD();
 
-let selectedLoadout = [];
-
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  if (!container) return;
-
-  container.innerHTML = '';
-  selectedLoadout = [];
-
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.style.margin = '4px';
-    btn.onclick = () => toggleLoadoutItem(item, btn);
-    container.appendChild(btn);
-  });
-
-  document.getElementById('game-screen').classList.add('hidden');
-  document.getElementById('loadout-selected').innerText = `Selected: 0`;
-}
-
-function toggleLoadoutItem(item, btn) {
-  if (selectedLoadout.includes(item)) {
-    selectedLoadout = selectedLoadout.filter(i => i !== item);
-    btn.style.backgroundColor = '';
-  } else if (selectedLoadout.length < 3) {
-    selectedLoadout.push(item);
-    btn.style.backgroundColor = 'green';
-  }
-  document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('confirm-loadout').onclick = () => {
-    if (selectedLoadout.length === 0) {
-      alert("Please select at least one item.");
-      return;
+    let result = '';
+    switch (item.toLowerCase()) {
+      case 'candle':
+        result = `🕯️ You light the candle. A gentle glow fills the ${room}.`;
+        break;
+      case 'emf reader':
+        const emf = Math.random() < 0.4 ? 5 : 2;
+        result = `📟 EMF Reader shows a level ${emf} reading.`;
+        if (emf === 5) result += '\n' + discoverEvidence('EMF Level 5');
+        break;
+      case 'spirit box':
+        const reply = Math.random() < 0.3;
+        result = reply
+          ? `📻 A static-laced voice whispers back.\n${discoverEvidence('Spirit Box')}`
+          : `📻 Static only. No response.`;
+        break;
+      case 'smudge stick':
+        result = `💨 You burn the smudge stick. The air clears in the ${room}.`;
+        adjustSanity(+10);
+        break;
+      case 'crucifix':
+        const safe = Math.random() < 0.5;
+        result = safe
+          ? `✝️ The Crucifix warms faintly in your hand.`
+          : `✝️ Nothing happens.`;
+        break;
+      case 'mirror':
+        result = `🪞 You glimpse a shadowy ${ghostType} figure.`;
+        adjustSanity(-15);
+        break;
+      case 'tarot cards':
+        result = useCursedItem('Tarot Cards');
+        break;
+      default:
+        result = `🛠️ You try to use the ${item}, but nothing happens.`;
     }
 
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    document.getElementById('loadout-screen').style.display = 'none';
-    document.getElementById('game-screen').classList.remove('hidden');
-    startGame();
-  };
-});
-</script>
-  <script>
-function toggleLoadoutItem(item, btn) {
-  if (selectedLoadout.includes(item)) {
-    selectedLoadout = selectedLoadout.filter(i => i !== item);
-    btn.style.backgroundColor = '';
-  } else if (selectedLoadout.length < 3) {
-    selectedLoadout.push(item);
-    btn.style.backgroundColor = 'green';
-  }
-  document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('confirm-loadout').onclick = () => {
-    if (selectedLoadout.length === 0) {
-      return;
+    if (ghostReactions[item]?.includes(ghostType)) {
+      result += `\n🌀 The ${item} reacts strongly to the ${ghostType}!`;
     }
 
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    document.getElementById('loadout-screen').style.display = 'none';
-    document.getElementById('game-screen').classList.remove('hidden');
-    startGame();
-  };
-});
+    return result;
+  }
+
+  function updateHUD() {
+    const status = document.getElementById('hud-status');
+    const inventoryList = getInventory().join(', ') || 'none';
+    status.innerText = `Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${inventoryList}`;
+  }
+
+  // Expose globally
+  window.addItemToInventory = addItemToInventory;
+  window.getInventory = getInventory;
+  window.useItem = useItem;
+  window.updateHUD = updateHUD;
 </script>
 <!-- 🗺️ MAP SYSTEM -->
 <script>
