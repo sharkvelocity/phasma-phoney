@@ -685,7 +685,6 @@ document.addEventListener('DOMContentLoaded', () => {
       { label: '2. Use Item', action: useItemMenu },
       { label: '3. Move', action: moveMenu },
       { label: '4. Guess Ghost', action: guessMenu },
-      { label: '5. Return to Van', action: endInvestigation }
     ];
 
     buttons.forEach(({ label, action }) => {
@@ -806,11 +805,44 @@ document.addEventListener('DOMContentLoaded', () => {
   // Global bind
   window.startGame = startGame;
 </script>
-  // Global bind
-  window.startGame = startGame;
-</script>
 <!-- ⚙️ DOMContentLoaded Wiring -->
 <script>
+const vanScreen = document.getElementById('van-loadout-screen');
+const vanItemsContainer = document.getElementById('van-items');
+const vanWarning = document.getElementById('van-warning');
+
+vanBtn.onclick = () => {
+  vanItemsContainer.innerHTML = '';
+  vanWarning.innerText = '';
+  const totalItems = Object.values(inventory).reduce((sum, count) => sum + count, 0);
+
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = item;
+    btn.onclick = () => {
+      if (inventory[item]) {
+        delete inventory[item];
+        displayNarratorText(`❌ Removed ${item} from your loadout.`);
+      } else if (totalItems < 3) {
+        addItemToInventory(item);
+      } else {
+        vanWarning.innerText = '⚠️ You can only carry 3 items total.';
+        return;
+      }
+
+      updateHUD();
+      vanBtn.click(); // re-render van menu
+    };
+    vanItemsContainer.appendChild(btn);
+  });
+
+  vanScreen.style.display = 'block';
+};
+
+document.getElementById('close-van').onclick = () => {
+  vanScreen.style.display = 'none';
+};
+  <script>
   window.addEventListener('DOMContentLoaded', () => {
     const startBtn = document.getElementById('start-btn');
     const gameScreen = document.getElementById('game-screen');
@@ -899,7 +931,13 @@ document.addEventListener('DOMContentLoaded', () => {
   window.tickTurn = tickTurn;
 </script>
   <!-- This setup is clean and ready -->
-
+<div id="van-loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
+  <h2>Van Inventory</h2>
+  <p>Select items to add/swap (max 3 total carried)</p>
+  <div id="van-items" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+  <p id="van-warning" style="color: red;"></p>
+  <button id="close-van">Back to Investigation</button>
+</div>
 <div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
   <h2>Select Your Loadout (Max 3 items)</h2>
   <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
