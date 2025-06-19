@@ -520,9 +520,9 @@
     if (!currentGhost || !currentGhost.behavior) return "Nothing happens.";
     return currentGhost.behavior(room);
   }
-
+  
   function generateGhostBehavior(type) {
-    const base = [
+    const baseBehaviors = [
       (room) => `You feel watched in the ${room}.`,
       (room) => `A faint breeze brushes past in the ${room}.`,
       (room) => `The lights flicker slightly in the ${room}.`,
@@ -530,26 +530,39 @@
       (room) => `A sense of unease fills the ${room}.`
     ];
 
-    const special = {
+    const specialBehaviors = {
       'Poltergeist': [
-        (room) => `Objects rattle violently in the ${room}.`,
-        (room) => `Drawers slam in the ${room}.`
+        (room) => `🪑 Objects rattle violently in the ${room}.`,
+        (room) => `🚪 Drawers slam shut in the ${room}.`
       ],
       'Demon': [
-        (room) => `A growl echoes from the shadows of the ${room}.`,
-        (room) => `You feel dread pressing down in the ${room}.`
+        (room) => `👹 A low growl rumbles from the ${room}.`,
+        (room) => `🔥 Oppressive dread fills the ${room}.`
       ],
       'Succubus': [
-        (room) => `A sultry voice whispers in the ${room}.`,
-        (room) => `The air feels heated and heavy in the ${room}.`
+        (room) => `💋 A sultry voice whispers in your ear in the ${room}.`,
+        (room) => `💓 The air turns warm and intoxicating in the ${room}.`
       ],
       'The Twins': [
-        (room) => `You hear double footsteps in the ${room}.`,
-        (room) => `Two presences are sensed in the ${room}.`
+        (room) => `👥 You hear duplicated footsteps in the ${room}.`,
+        (room) => `🔊 Simultaneous sounds echo from two directions in the ${room}.`
       ],
       'The Mimic': [
-        (room) => `The behavior seems copied from another ghost in the ${room}.`,
-        (room) => `Something feels oddly familiar in the ${room}.`
+        (room) => `🌀 Mimicked behavior — this feels like a different ghost in the ${room}.`,
+        (room) => `📣 Unfamiliar echoes mimic earlier activity in the ${room}.`
+      ]
+    };
+
+    const combined = [...baseBehaviors, ...(specialBehaviors[type] || [])];
+
+    return (room) => {
+      const act = combined[Math.floor(Math.random() * combined.length)];
+      return act(room);
+    };
+  }
+
+  window.generateGhostBehavior = generateGhostBehavior;
+</script>
       ]
     };
 
@@ -805,6 +818,54 @@
     itemBtn.onclick = () => useItemMenu();
     vanBtn.onclick = () => endInvestigation();
   });
+</script>
+  <!-- 🔁 Turn System + Behavior Triggers -->
+<script>
+  function tickTurn() {
+    const activity = performGhostAction();
+    displayNarratorText(activity);
+
+    // Passive evidence reveal
+    if (Math.random() < 0.15) {
+      const passive = ['Ghost Orbs', 'Fingerprints', 'Ghost Writing'];
+      const revealed = passive[Math.floor(Math.random() * passive.length)];
+      displayNarratorText(`👻 You notice a clue: ${revealed}.`);
+      discoverEvidence(revealed);
+    }
+
+    // Optional hunt trigger if sanity is very low
+    if (getSanity() <= 15 && Math.random() < 0.3) {
+      const huntMsg = triggerHunt();
+      displayNarratorText(huntMsg);
+    }
+
+    updateHUD();
+  }
+
+  // Modify investigate to include turn tick
+  const oldInvestigate = investigate;
+  investigate = function () {
+    oldInvestigate();
+    tickTurn();
+  };
+
+  // Modify movement to include turn tick
+  const oldMovePlayer = movePlayer;
+  movePlayer = function (dir) {
+    const result = oldMovePlayer(dir);
+    tickTurn();
+    return result;
+  };
+
+  // Modify useItemMenu to include tick after usage
+  const oldUseItem = useItem;
+  useItem = function (item, room, ghostType) {
+    const result = oldUseItem(item, room, ghostType);
+    tickTurn();
+    return result;
+  };
+
+  window.tickTurn = tickTurn;
 </script>
   <!-- This setup is clean and ready -->
 </body>
