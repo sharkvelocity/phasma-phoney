@@ -542,23 +542,7 @@ function tickTurn() {
 }
 </script>
 <script>
-  function updateHUD() {
-    const status = document.getElementById('hud-status');
-    const inventoryList = getInventory().join(', ') || 'none';
-    status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${inventoryList}`;
-  }
-
-    // Optional hunt trigger if sanity is very low
-    if (getSanity() <= 15 && Math.random() < 0.3) {
-      const huntMsg = triggerHunt();
-      displayNarratorText(huntMsg);
-    }
-
-    updateHUD();
-  }
-
-  // Dom Ready hooks  
-<script>
+  //Dom Ready hooks
 window.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
   const gameScreen = document.getElementById('game-screen');
