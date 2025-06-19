@@ -99,7 +99,7 @@
   <button id="start-btn">Start Investigation</button>
   <div id="game-screen" class="hidden">
     <div id="left-panel">
-      <div id="option-buttons"></div>
+      <div id="option-buttons">
       <button id="journal-btn">Journal</button>
       <button id="guess-btn">Guess Ghost</button>
       <button id="item-btn">Use Item</button>
@@ -113,13 +113,12 @@
     <div id="right-panel">
       <div id="mini-map">Room: Unknown</div>
       <div id="movement-buttons">
-        <button onclick="move('North')">Up</button>
-        <div>
+          <button onclick="move('North')">Up</button>
           <button onclick="move('West')">Left</button>
           <button onclick="move('East')">Right</button>
-        </div>
-        <button onclick="move('South')">Down</button>
-</div>
+          <button onclick="move('South')">Down</button>
+      </div>
+    </div>
     </div>
   </div>
   <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
@@ -166,7 +165,6 @@
 </script>
   <!-- 🧠 MECHANICS SYSTEM (Full: Sanity, XP, Hunts, Cursed Items, Tarot) -->
 <script>
-  // --- Mechanics System ---
 
   let sanity = 100;
   let ghostActivityLevel = 0;
@@ -933,10 +931,9 @@
     back.onclick = renderOptions;
     container.appendChild(back);
   }
-
 function endInvestigation() {
-  const used = allItems.filter(item => !inventory.includes(item));
   const remaining = getInventory();
+  const used = selectedLoadout.filter(item => !remaining.includes(item));
 
   displayNarratorText(
     `🚐 You return to the van.\n\n📦 Remaining Items: ${remaining.length ? remaining.join(', ') : 'None'}\n🗑️ Used Items: ${used.length ? used.join(', ') : 'None'}\n\nFinal Sanity: ${getSanity()}% | XP: ${getXP()}`
@@ -1037,11 +1034,12 @@ function endInvestigation() {
   window.tickTurn = tickTurn;
 </script>
   <!-- This setup is clean and ready -->
-  <div id="loadout-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+
+    <div id="loadout-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
   <h2>Select Your Loadout (Max 3 items)</h2>
   <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
   <p id="loadout-selected">Selected: 0</p>
   <button id="confirm-loadout">Confirm</button>
-</div>
+    </div>
 </body>
 </html>
