@@ -18,97 +18,31 @@ body {
   align-items: center;
   overflow: hidden;
 }
-    h1 {
-      margin-top: 40px;
-      font-size: 2.5em;
-      color: cyan;
-      text-shadow: 0 0 10px cyan;
-    }
+h1 {
+  margin-top: 40px;
+  font-size: 2.5em;
+  color: cyan;
+  text-shadow: 0 0 10px cyan;
+}
     
-    button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
-      padding: 10px;
-      margin: 5px;
-      cursor: pointer;
-    }
-    #start-btn {
-      font-size: 16px;
-      margin-top: 20px;
-    }
-    .hidden {
-      display: none;
-    }
-
-    #game-screen {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      justify-content: space-between;
-      padding: 10px;
-    }
-#narrator-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  width: 90%;
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-}
-
-#system-text, #narrator-thought {
-  flex: 1;
+button {
   background: #222;
-  padding: 8px;
-  border: 1px solid #333;
-  min-height: 60px;
-  overflow-wrap: break-word;
-}
-    #left-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  height: 100%;
-}
-    #right-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-    }
-
-    #center-panel {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-      overflow-y: auto;
-    }
-
-      #main-readout {
-  background: #111;
+  color: white;
+  border: 1px solid #666;
   padding: 10px;
   margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
-  max-height: 300px; /* Limit height */
-  overflow-y: auto;  /* Scroll within box */
-  white-space: pre-wrap;
-  flex-shrink: 0;
+  cursor: pointer;
 }
-    #narrator-box, #main-readout, #hud-status {
-      background: #111;
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #444;
-      width: 90%;
-    }
-    .orb {
+#start-btn {
+  font-size: 16px;
+  margin-top: 20px;
+}
+
+.hidden {
+  display: none;
+}
+ 
+.orb {
   position: absolute;
   width: 8px;
   height: 8px;
@@ -133,33 +67,104 @@ body {
   60% { opacity: 0.8; }
   100% { opacity: 0.2; }
 }
+
+#game-screen {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+  justify-content: space-between;
+  padding: 10px; 
+}
+
+#narrator-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 90%;
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+}
+
+#system-text, #narrator-thought {
+  flex: 1;
+  background: #222;
+  padding: 8px;
+  border: 1px solid #333;
+  min-height: 60px;
+  overflow-wrap: break-word;
+}
+
+#left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  height: 100%;
+}
+
+#right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+}
+
+#center-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  overflow-y: auto;
+}
+
+#main-readout {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+  max-height: 300px; /* Limit height */
+  overflow-y: auto;  /* Scroll within box */
+  white-space: pre-wrap;
+  flex-shrink: 0;
+}
+    
+#hud-status {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+}    
   </style>
 </head>
-    <body>
-  <h1>Phasma-Phoney</h1>
+  <body>
+    <h1>Phasma-Phoney</h1> 
       <button id="start-btn">Start Investigation</button>
-  <div id="game-screen" class="hidden">
+    <div id="game-screen" class="hidden">
     <div id="left-panel">
-      <div id="option-buttons"></div>
+    <div id="option-buttons"></div>
       <button id="journal-btn">Journal</button>
     </div>
-    <div id="center-panel">
-    <div id="narrator-box">
-  <div id="system-text">System: Ready.</div>
-  <div id="narrator-thought">🧠 Your Thoughts...</div>
-</div>
+      <div id="center-panel">
+        <div id="narrator-box">
+          <div id="system-text">System: Ready.</div>
+          <div id="narrator-thought">🧠 Your Thoughts...</div>
+        </div>
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting The start of the Investigation...</div>
-    </div>
-  </div>
-  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+      </div></div>
+    <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
     <textarea id="journal-entry" placeholder="For notes...Or to remember evidence" style="width:100%;height:120px;"></textarea>
     <br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
-      
+    
   <div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
     <h2>Select Your Loadout (Max 3 items)</h2>
     <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
@@ -167,6 +172,8 @@ body {
     <button id="confirm-loadout">Confirm</button>
     <button id="back-btn">Back</button>  
   </div>
+
+    
 <script>
 function spawnOrbs(count = 6) {
   for (let i = 0; i < count; i++) {
