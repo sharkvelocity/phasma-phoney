@@ -122,7 +122,8 @@
   </style>
 </head>
 <body>
-  <h1>Phasma‑Phoney</h1>
+
+<h1>Phasma‑Phoney</h1>
 <button id="start-btn">Start Investigation</button>
 
 <div id="loadout-screen" class="hidden">
@@ -161,8 +162,7 @@
   <button id="save-journal">Save</button>
   <button id="close-journal">Close</button>
 </div>
-
-<!-- Logic Block: 5_ghost_system -->
+<!-- Logic Block: _ghost_system -->
 <script>
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
@@ -227,7 +227,7 @@ window.performBehavior = performBehavior;
 window.getCurrentGhost = getCurrentGhost;
 </script>
 
-<!-- Logic Block: 6_journal_system -->
+<!-- Logic Block: _journal_system -->
 <script>
 let journalNotes = '';
 
@@ -866,10 +866,6 @@ document.addEventListener('DOMContentLoaded', () => {
 </script>
 
 
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    initJane();
-  });
-</script>
+
 </body>
 </html>
