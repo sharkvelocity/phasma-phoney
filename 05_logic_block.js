@@ -59,30 +59,3 @@ window.getRandomGhost = getRandomGhost;
 window.initializeGhost = initializeGhost;
 window.performBehavior = performBehavior;
 window.getCurrentGhost = getCurrentGhost;
-
-function startGame() {
-  resetStats();
-  ghost = getRandomGhost();
-  initializeGhost(ghost);
-  initializeJournal();
-  updateHUD();
-  displayNarratorText("So it begins...");
-  renderOptions();
-}
-
-function tickTurn() {
-  turn++;
-  updateHUD();
-  const ghostResult = performGhostAction();
-  displayNarratorText(ghostResult);
-  narrateAmbience();
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    initJane();
-  });
-
-  async function ghostNarrationFromJane(context) {
-    const line = await askJane(context);
-    displayNarratorText("🧠 " + line);
-  }
