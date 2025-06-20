@@ -782,6 +782,7 @@ function renderOptions() {
 </script>
 
 <!-- Logic Block: 10_dom_content_loaded -->
+
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
@@ -797,9 +798,9 @@ document.addEventListener('DOMContentLoaded', () => {
   startBtn.onclick = () => {
     const wantsLoadout = confirm("Do you want to select a loadout?");
     if (wantsLoadout) {
-      startBtn.style.display = 'none';
-      showLoadoutMenu();
+      showLoadoutMenu(); // Fix: ensure this runs before showing screen
       loadoutScreen.style.display = 'block';
+      startBtn.style.display = 'none';
     } else {
       gameScreen.classList.remove('hidden');
       startBtn.style.display = 'none';
@@ -823,7 +824,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
   backBtn.onclick = () => {
     loadoutScreen.style.display = 'none';
-
     if (isVanAccess) {
       isVanAccess = false;
       renderOptions();
@@ -848,6 +848,14 @@ document.addEventListener('DOMContentLoaded', () => {
   };
 });
 </script>
+
+<script>
+function guessMenu() {
+  displayNarratorText("🕵️ Who do you think the ghost is?");
+  // Implement ghost selection UI if needed
+}
+</script>
+
 
 <!-- Logic Block: 11_webllm_jane -->
 <script>
