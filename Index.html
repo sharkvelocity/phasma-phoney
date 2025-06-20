@@ -797,9 +797,9 @@ document.addEventListener('DOMContentLoaded', () => {
   startBtn.onclick = () => {
     const wantsLoadout = confirm("Do you want to select a loadout?");
     if (wantsLoadout) {
+      startBtn.style.display = 'none';
       showLoadoutMenu();
       loadoutScreen.style.display = 'block';
-      startBtn.style.display = 'none';
     } else {
       gameScreen.classList.remove('hidden');
       startBtn.style.display = 'none';
@@ -865,25 +865,3 @@ document.addEventListener('DOMContentLoaded', () => {
 
 </body>
 </html>
-<script>
-function guessMenu() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-  const guessInput = document.createElement('input');
-  guessInput.placeholder = 'Enter ghost name';
-  const guessButton = document.createElement('button');
-  guessButton.innerText = 'Submit Guess';
-  guessButton.onclick = () => {
-    const guess = guessInput.value.trim();
-    const actual = getCurrentGhost()?.type || '';
-    if (guess.toLowerCase() === actual.toLowerCase()) {
-      displayNarratorText(`✅ Correct! It was a ${actual}. Well done.`);
-    } else {
-      displayNarratorText(`❌ Incorrect. It was actually a ${actual}.`);
-    }
-    renderOptions();
-  };
-  container.appendChild(guessInput);
-  container.appendChild(guessButton);
-}
-</script>
