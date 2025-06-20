@@ -122,46 +122,43 @@
   </style>
 </head>
 <body>
+  <h1>Phasma‑Phoney</h1>
+  <button id="start-btn">Start Investigation</button>
 
-<h1>Phasma‑Phoney</h1>
-<button id="start-btn">Start Investigation</button>
-
-<div id="loadout-screen" class="hidden">
-  <h2>Select Your Loadout</h2>
-  <div id="loadout-options"></div>
-  <button id="confirm-loadout">Confirm</button>
-  <button id="back-btn">Back</button>
-</div>
-
-<div id="game-screen" class="hidden">
-  <div id="left-panel">
-    <button id="journal-btn">📓 Open Journal</button>
-    <div id="option-buttons"></div>
+  <div id="loadout-screen" class="hidden">
+    <h2>Select Your Loadout</h2>
+    <div id="loadout-options"></div>
+    <button id="confirm-loadout">Confirm</button>
+    <button id="back-btn">Back</button>
   </div>
 
-  <div id="center-panel">
-    <div id="narrator-box">
-      <div id="system-text"></div>
-      <div id="narrator-thought"></div>
+  <div id="game-screen" class="hidden">
+    <div id="left-panel">
+      <button id="journal-btn">📓 Open Journal</button>
+      <div id="option-buttons"></div>
     </div>
-    <div id="main-readout">🕯️ You enter the house...</div>
-    <div id="hud-status"></div>
-    <div id="minimap"></div>
+    <div id="center-panel">
+      <div id="narrator-box">
+        <div id="system-text"></div>
+        <div id="narrator-thought"></div>
+      </div>
+      <div id="main-readout">🕯️ You enter the house...</div>
+      <div id="hud-status"></div>
+      <div id="minimap"></div>
+    </div>
+    <div id="right-panel">
+      <h3>Evidence Checklist</h3>
+      <div id="evidence-checklist"></div>
+      <ul id="possible-ghosts"></ul>
+    </div>
   </div>
 
-  <div id="right-panel">
-    <h3>Evidence Checklist</h3>
-    <div id="evidence-checklist"></div>
-    <ul id="possible-ghosts"></ul>
+  <div id="journal-screen" class="hidden">
+    <h2>Investigation Journal</h2>
+    <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
   </div>
-</div>
-
-<div id="journal-screen" class="hidden">
-  <h2>Investigation Journal</h2>
-  <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
-  <button id="save-journal">Save</button>
-  <button id="close-journal">Close</button>
-</div>
 <!-- Logic Block: _ghost_system -->
 <script>
 const ghostTypes = [
