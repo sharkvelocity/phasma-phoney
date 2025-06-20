@@ -140,34 +140,15 @@
   </div>
 </div>
 
-<div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
-  <h2>Investigation Journal</h2>
-  <textarea id="journal-entry" placeholder="For notes...Or to remember evidence" style="width:100%;height:120px;"></textarea>
-  <h3>Evidence Checklist</h3>
-  <div id="evidence-checklist" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;"></div>
-  <p><strong>Possible Ghosts:</strong></p>
-  <ul id="possible-ghosts"></ul>
-  <button id="save-journal">Save</button>
-  <button id="close-journal">Close</button>
-</div>
-
-<div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
-  <h2>Select Your Loadout (Max 3 items)</h2>
-  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-  <p id="loadout-selected">Selected: 0</p>
-  <button id="confirm-loadout">Confirm</button>
-  <button id="back-btn">Back</button>  
-</div>
-
 <!-- 🔹 Script Includes for Modular Game Logic Blocks -->
-<script src="js/01_map_system.js"></script>
-<script src="js/02_inventory_system.js"></script>
-<script src="js/03_cursed_items.js"></script>
-<script src="js/04_ghost_system.js"></script>
-<script src="js/05_journal_system.js"></script>
-<script src="js/06_narrator_hud.js"></script>
-<script src="js/07_game_loop.js"></script>
-<script src="js/09_dom_wiring.js"></script>
+<script src="./js/01_map_system.js"></script>
+<script src="./js/02_inventory_system.js"></script>
+<script src="./js/03_cursed_items.js"></script>
+<script src="./js/04_ghost_system.js"></script>
+<script src="./js/05_journal_system.js"></script>
+<script src="./js/06_narrator_hud.js"></script>
+<script src="./js/07_game_loop.js"></script>
+<script src="./js/09_dom_wiring.js"></script>
 
 <!-- 🔹 Initialize Jane LLM -->
 <script>
