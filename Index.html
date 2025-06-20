@@ -703,87 +703,6 @@ function renderOptions() {
     container.appendChild(b);
   };
 
-  // Movement Options
-  btn('Move', () => {
-    container.innerHTML = '';
-    ['North', 'East', 'South', 'West'].forEach(dir => {
-      const dirBtn = document.createElement('button');
-      dirBtn.innerText = `Go ${dir}`;
-      dirBtn.onclick = () => {
-        const result = movePlayer(dir);
-        displayNarratorText(result);
-        tickTurn();
-        renderMinimap();
-        renderOptions();
-      };
-      container.appendChild(dirBtn);
-    });
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
-  });
-
-  // Investigate
-  btn('Investigate', () => {
-    const msg = performBehavior(getCurrentRoom());
-    adjustSanity(-5);
-    displayNarratorText(msg);
-    tickTurn();
-    renderMinimap();
-  });
-
-  // Use Item
-  btn('Use Item', () => {
-    const items = getInventory();
-    container.innerHTML = '';
-
-    if (!items.length) {
-      displayNarratorText("🧳 You have no items.");
-      renderOptions();
-      return;
-    }
-
-    items.forEach(item => {
-      const itemBtn = document.createElement('button');
-      itemBtn.innerText = `Use ${item}`;
-      itemBtn.onclick = () => {
-        const msg = useItem(item, getCurrentRoom(), getCurrentGhost().type);
-        displayNarratorText(msg);
-        narrateItemThought(item);
-        tickTurn();
-        renderMinimap();
-        renderOptions();
-      };
-      container.appendChild(itemBtn);
-    });
-
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
-  });
-
-  // Item Interactions
-  btn('Drop Item', dropItemMenu);
-  btn('Pick Up Item', pickupMenu);
-
-  // Guessing System
-  btn('Guess Ghost', guessMenu);
-
-  // Return to Van
-  btn('Return to Van', () => {
-    isVanAccess = true;
-    showLoadoutMenu();
-    document.getElementById('loadout-screen').style.display = 'block';
-  });
-
-  // Always update minimap
-  renderMinimap();
-}
-</script>
-
-<script>
   // Move Button (submenu)
   btn('Move', () => {
     container.innerHTML = '';
@@ -875,7 +794,96 @@ document.addEventListener('DOMContentLoaded', () => {
   const closeJournalBtn = document.getElementById('close-journal');
   const journalScreen = document.getElementById('journal-screen');
 
+  startBtn.onclick = () => {
+    const wantsLoadout = confirm("Do you want to select a loadout?");
+    if (wantsLoadout) {
+      showLoadoutMenu();
+      loadoutScreen.style.display = 'block';
+      startBtn.style.display = 'none';
+    } else {
+      gameScreen.classList.remove('hidden');
+      startBtn.style.display = 'none';
+      startGame();
+    }
+  };
+
+  confirmBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    gameScreen.classList.remove('hidden');
+    startGame();
+  };
+
+  backBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+    } else {
+      startBtn.style.display = 'inline-block';
+    }
+  };
+
+  journalBtn.onclick = () => {
+    initializeJournal();
+    journalScreen.classList.remove('hidden');
+  };
+
+  saveJournalBtn.onclick = () => {
+    const text = document.getElementById('journal-entry').value;
+    updateNotes(text);
+    journalScreen.classList.add('hidden');
+  };
+
+  closeJournalBtn.onclick = () => {
+    journalScreen.classList.add('hidden');
+  };
+});
+</script>
+
+<!-- Logic Block: 11_webllm_jane -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    initJane();
+  });
+
+  async function ghostNarrationFromJane(context) {
+    const line = await askJane(context);
+    displayNarratorText("🧠 " + line);
+  }
+</script>
+
 
 
 </body>
 </html>
+<script>
+function guessMenu() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+  const guessInput = document.createElement('input');
+  guessInput.placeholder = 'Enter ghost name';
+  const guessButton = document.createElement('button');
+  guessButton.innerText = 'Submit Guess';
+  guessButton.onclick = () => {
+    const guess = guessInput.value.trim();
+    const actual = getCurrentGhost()?.type || '';
+    if (guess.toLowerCase() === actual.toLowerCase()) {
+      displayNarratorText(`✅ Correct! It was a ${actual}. Well done.`);
+    } else {
+      displayNarratorText(`❌ Incorrect. It was actually a ${actual}.`);
+    }
+    renderOptions();
+  };
+  container.appendChild(guessInput);
+  container.appendChild(guessButton);
+}
+</script>
