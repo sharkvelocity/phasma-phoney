@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phasma‑Phoney</title>
+<style>
+    body {
+      background: url('./House.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 2.5em;
+      color: cyan;
+      text-shadow: 0 0 10px cyan;
+    }
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    #start-btn {
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    #game-screen {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      justify-content: space-between;
+      padding: 10px;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      height: 100%;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #narrator-box {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      width: 90%;
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+    }
+    #system-text, #narrator-thought {
+      flex: 1;
+      background: #222;
+      padding: 8px;
+      border: 1px solid #333;
+      min-height: 60px;
+      overflow-wrap: break-word;
+    }
+    #main-readout {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      flex-shrink: 0;
+    }
+    #hud-status {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+    }
+    .orb {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.15);
+      opacity: 0;
+      animation-name: drift, fadeGlow;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: 1;
+      pointer-events: none;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(var(--dx), var(--dy)); }
+    }
+    @keyframes fadeGlow {
+      0% { opacity: 0; }
+      30% { opacity: 0.5; }
+      60% { opacity: 0.8; }
+      100% { opacity: 0.2; }
+    }
+  </style>
+</head>
+<body>
+<h1>Phasma-Phoney</h1>
+<button id="start-btn">Start Investigation</button>
+<div class="hidden" id="game-screen">
+<div id="left-panel">
+<div id="option-buttons"></div>
+<button id="journal-btn">Journal</button>
+</div>
+<div id="center-panel">
+<div id="narrator-box">
+<div id="system-text">System: Ready.</div>
+<div id="narrator-thought">🧠 Your Thoughts...</div>
+</div>
+<div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
+<div id="main-readout">Awaiting The start of the Investigation...</div>
+<div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">Minimap loading...</div>
+</div>
+</div>
+<div class="screen hidden" id="journal-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+<h2>Investigation Journal</h2>
+<textarea id="journal-entry" placeholder="For notes...Or to remember evidence" style="width:100%;height:120px;"></textarea>
+<h3>Evidence Checklist</h3>
+<div id="evidence-checklist" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;"></div>
+<p><strong>Possible Ghosts:</strong></p>
+<ul id="possible-ghosts"></ul>
+<button id="save-journal">Save</button>
+<button id="close-journal">Close</button>
+</div>
+<div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
+<h2>Select Your Loadout (Max 3 items)</h2>
+<div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+<p id="loadout-selected">Selected: 0</p>
+<button id="confirm-loadout">Confirm</button>
+<button id="back-btn">Back</button>
+</div>
+
+<!-- 🔹 LOGIC BLOCK: MAP SYSTEM -->
+
+<!-- 🔹 LOGIC BLOCK: INVENTORY / VAN SYSTEM -->
+
+<!-- 🔹 LOGIC BLOCK: CURSED ITEMS & TAROT -->
+
+<!-- 🔹 LOGIC BLOCK: GHOST SYSTEM -->
+
+<!-- 6. Journal System -->
+
+<!-- 7. Ambient Narration & Visual Effects -->
+
+<!-- 8. Game Loop & Turn System -->
+
+<!-- 9. Button Rendering + Game Actions -->
+
+<!-- 10. DOMContentLoaded Hook -->
+
+
+
+
+
+
+
+
+
+</body>
+</html>
