@@ -887,27 +887,27 @@ document.addEventListener('DOMContentLoaded', () => {
       startGame();
     }
   };
-confirmBtn.onclick = () => {
-  loadoutScreen.style.display = 'none';
 
-  if (isVanAccess) {
-    isVanAccess = false;
+  confirmBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    gameScreen.classList.remove('hidden');
+
+    resetStats();
+    ghost = getRandomGhost();
+    initializeGhost(ghost);
+    initializeJournal();
+    updateHUD();
+    displayNarratorText("So it begins...");
     renderOptions();
-    return;
-  }
-
-  selectedLoadout.forEach(item => addItemToInventory(item));
-  gameScreen.classList.remove('hidden');
-
-  resetStats();
-  ghost = getRandomGhost();
-  initializeGhost(ghost);
-  initializeJournal();
-  updateHUD();
-  displayNarratorText("So it begins...");
-  renderOptions();
-};
-
+  };
 
   backBtn.onclick = () => {
     loadoutScreen.style.display = 'none';
@@ -918,6 +918,7 @@ confirmBtn.onclick = () => {
     } else {
       startBtn.style.display = 'inline-block';
     }
+  };
 
   journalBtn.onclick = () => {
     initializeJournal();
@@ -935,6 +936,7 @@ confirmBtn.onclick = () => {
   };
 });
 </script>
+
 
 <!-- Logic Block: 11_webllm_jane -->
 <script>
