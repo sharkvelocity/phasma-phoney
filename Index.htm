@@ -17,14 +17,12 @@
       align-items: center;
       overflow: hidden;
     }
-
     #title-img {
       margin-top: 40px;
       max-width: 80%;
       height: auto;
       filter: drop-shadow(0 0 10px cyan);
     }
-
     button {
       background: #222;
       color: white;
@@ -33,10 +31,8 @@
       margin: 5px;
       cursor: pointer;
     }
-
     .hidden { display: none; }
     #start-btn { font-size: 16px; margin-top: 20px; }
-
     #game-screen {
       display: flex;
       width: 100vw;
@@ -44,7 +40,6 @@
       justify-content: space-between;
       padding: 10px;
     }
-
     #left-panel, #right-panel {
       display: flex;
       flex-direction: column;
@@ -52,7 +47,6 @@
       padding: 10px;
       height: 100%;
     }
-
     #center-panel {
       flex-grow: 1;
       display: flex;
@@ -61,7 +55,6 @@
       padding: 10px;
       overflow-y: auto;
     }
-
     #narrator-box {
       display: flex;
       justify-content: space-between;
@@ -71,7 +64,6 @@
       padding: 10px;
       border: 1px solid #444;
     }
-
     #system-text, #narrator-thought {
       flex: 1;
       background: #222;
@@ -79,7 +71,6 @@
       border: 1px solid #333;
       min-height: 60px;
     }
-
     #main-readout {
       background: #111;
       padding: 10px;
@@ -90,7 +81,6 @@
       overflow-y: auto;
       white-space: pre-wrap;
     }
-
     #hud-status {
       background: #111;
       padding: 10px;
@@ -98,7 +88,6 @@
       border: 1px solid #444;
       width: 90%;
     }
-
     .orb {
       position: absolute;
       width: 8px;
@@ -112,12 +101,10 @@
       animation-iteration-count: 1;
       pointer-events: none;
     }
-
     @keyframes drift {
       from { transform: translate(0, 0); }
       to { transform: translate(var(--dx), var(--dy)); }
     }
-
     @keyframes fadeGlow {
       0% { opacity: 0; }
       30% { opacity: 0.5; }
@@ -143,17 +130,14 @@
       <button id="journal-btn">Journal</button>
       <div id="option-buttons"></div>
     </div>
-
     <div id="center-panel">
       <div id="narrator-box">
         <div id="system-text"></div>
         <div id="narrator-thought"></div>
       </div>
-
       <div id="main-readout">welcome...</div>
       <div id="hud-status"></div>
     </div>
-
     <div id="right-panel">
       <div id="minimap"></div>
       <h3>Evidence Checklist</h3>
@@ -167,9 +151,7 @@
     <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
-  </div>
-  <!-- Logic Scripts -->
-<script>
+  </div><script>
 let sanity = 100, xp = 0, turn = 1;
 let cursedItemsUsed = 0, ghostActivityLevel = 0;
 let lastAction = 'idle', ghost = null;
@@ -234,49 +216,9 @@ function pickUpItem(item) {
   updateHUD();
   return `🎒 You picked up the ${item}.`;
 }
-
 function showRoomItems() {
   const items = roomItems[currentRoom] || [];
   return items.length ? `🗂️ Items here: ${items.join(', ')}` : '📭 The room is empty.';
-}
-
-function useItem(item, room, ghostType) {
-  if (!inventory[item]) return `❌ You don’t have a ${item}.`;
-  let result = `🧪 You used the ${item} in the ${room}.`;
-
-  if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
-    result += `\n🌀 The ${ghostType} becomes angry!`;
-  }
-
-  const evidence = evidenceToolMap[item];
-  if (evidence) {
-    const success = Math.random() < 0.6;
-    if (success) {
-      result += `\n🔍 You detect something...`;
-      result += `\n${discoverEvidence(evidence)}`;
-      lastAction = 'evidence';
-    } else {
-      result += `\n🕯️ It’s quiet. Maybe try again later.`;
-      lastAction = 'idle';
-    }
-  }
-
-  if (consumables.includes(item)) {
-    delete inventory[item];
-    updateHUD();
-  }
-  return result;
-}
-
-function discoverEvidence(ev) {
-  const check = [...document.querySelectorAll('#evidence-checklist input')];
-  const box = check.find(c => c.value === ev);
-  if (box && !box.checked) {
-    box.checked = true;
-    box.dispatchEvent(new Event('change'));
-    return `Evidence marked: ${ev}`;
-  }
-  return `Nothing new was found.`;
 }
 
 function updateHUD() {
@@ -287,6 +229,14 @@ function updateHUD() {
 function adjustSanity(change) {
   sanity = Math.max(0, Math.min(100, sanity + change));
 }
+function resetStats() {
+  sanity = 100;
+  xp = 0;
+  turn = 1;
+  cursedItemsUsed = 0;
+  ghostActivityLevel = 0;
+  lastAction = 'idle';
+}
 
 function tickTurn() {
   turn++;
@@ -294,7 +244,6 @@ function tickTurn() {
   displayNarratorText(performGhostAction());
   narrateAmbience();
 }
-
 function triggerHunt() {
   lastAction = 'hunt';
   ghostActivityLevel = 10;
@@ -302,53 +251,26 @@ function triggerHunt() {
   displayNarratorText("💀 The ghost begins a hunt!");
 }
 
-// GHOST SYSTEM
-const ghostTypes = [
-  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
-  'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
-  'Yurei', 'Oni', 'Hantu', 'Goryo', 'Myling',
-  'Onryo', 'The Twins', 'Raiju', 'Obake', 'The Mimic',
-  'Moroi', 'Deogen', 'Thaye', 'Succubus'
-];
-
-function getRandomGhost() {
-  const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
-  return {
-    type,
-    behavior: room => {
-      const base = [
-        `You feel watched in the ${room}.`,
-        `A chill runs through the ${room}.`,
-        `The lights flicker in the ${room}.`
-      ];
-      const bonus = {
-        Poltergeist: [`Objects clatter violently in the ${room}.`],
-        Banshee: [`A piercing wail echoes through the ${room}.`],
-        Succubus: [`A sultry whisper beckons in the ${room}.`]
-      };
-      return [...base, ...(bonus[type] || [])][Math.floor(Math.random() * base.length)];
-    }
-  };
+function displayNarratorText(text) {
+  const systemBox = document.getElementById('system-text');
+  const readout = document.getElementById('main-readout');
+  systemBox.innerText = text;
+  readout.innerText += `\n${text}`;
+  readout.scrollTop = readout.scrollHeight;
 }
-
-function initializeGhost(g) { ghost = g; }
-function getCurrentGhost() { return ghost; }
-function performBehavior(room) {
-  return ghost?.behavior(room) || "Nothing happens.";
-}
-function performGhostAction() {
-  if (Math.random() < 0.3) {
-    ghostActivityLevel += 1;
-    return `🔊 You hear something shifting...`;
-  }
-  return `Nothing yet. Stay vigilant.`;
-}
-
-// EVIDENCE
-const allEvidence = [
-  'EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs',
-  'Ghost Writing', 'Freezing Temps', 'D.O.T.S'
-];
+</script><script>
+// Evidence system
+const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
+const evidenceToolMap = {
+  'EMF Reader': 'EMF 5',
+  'Spirit Box': 'Spirit Box',
+  'UV Light': 'Fingerprints',
+  'Thermometer': 'Freezing Temps',
+  'Camera': 'Ghost Orbs',
+  'Ghost Writing Book': 'Ghost Writing',
+  'Parabolic Mic': 'Whispers',
+  'Salt': 'Footprints'
+};
 
 const ghostEvidenceMap = {
   Spirit: ['EMF 5', 'Spirit Box', 'Ghost Writing'],
@@ -377,31 +299,16 @@ const ghostEvidenceMap = {
   Succubus: ['Spirit Box', 'Ghost Writing', 'EMF 5']
 };
 
-const evidenceToolMap = {
-  'EMF Reader': 'EMF 5',
-  'Spirit Box': 'Spirit Box',
-  'UV Light': 'Fingerprints',
-  'Thermometer': 'Freezing Temps',
-  'Camera': 'Ghost Orbs',
-  'Ghost Writing Book': 'Ghost Writing',
-  'Parabolic Mic': 'Whispers',
-  'Salt': 'Footprints'
-};
-
-// CONTINUES: renderEvidenceChecklist, Journal, Guess Menu, Weather, Tarot, Ambient Narration, and DOM setup…
-  // Evidence rendering
 function renderEvidenceChecklist() {
   const container = document.getElementById('evidence-checklist');
   container.innerHTML = '';
   allEvidence.forEach(ev => {
     const label = document.createElement('label');
     label.style.display = 'block';
-
     const checkbox = document.createElement('input');
     checkbox.type = 'checkbox';
     checkbox.value = ev;
     checkbox.onchange = updatePossibleGhosts;
-
     label.appendChild(checkbox);
     label.appendChild(document.createTextNode(' ' + ev));
     container.appendChild(label);
@@ -412,169 +319,60 @@ function updatePossibleGhosts() {
   const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
   const list = document.getElementById('possible-ghosts');
   list.innerHTML = '';
-
   if (selected.length === 0) {
     list.innerHTML = '<li>All ghosts are possible</li>';
     return;
   }
-
   const matches = Object.entries(ghostEvidenceMap).filter(([ghost, evidence]) =>
     selected.every(sel => evidence.includes(sel))
   ).map(([ghost]) => ghost);
-
   list.innerHTML = matches.length
     ? matches.map(g => `<li>${g}</li>`).join('')
     : '<li>No ghosts match this combination</li>';
 }
 
-// Journal
-function initializeJournal() {
-  document.getElementById('journal-entry').value = journalNotes;
-  renderEvidenceChecklist();
-}
-function updateNotes(txt) {
-  journalNotes = txt;
-  displayNarratorText("📓 Notes saved.");
-}
-
-// Loadout
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  container.innerHTML = '';
-  selectedLoadout = [];
-
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.onclick = () => {
-      const idx = selectedLoadout.indexOf(item);
-      if (idx >= 0) {
-        selectedLoadout.splice(idx, 1);
-        btn.style.background = '';
-      } else {
-        if (selectedLoadout.length >= 3) {
-          alert("🎒 You can only carry 3 items.");
-          return;
-        }
-        selectedLoadout.push(item);
-        btn.style.background = 'darkgreen';
-      }
-    };
-    container.appendChild(btn);
-  });
-}
-
-// Guessing
-function guessMenu() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-  ghostTypes.forEach(ghost => {
-    const btn = document.createElement('button');
-    btn.innerText = ghost;
-    btn.onclick = () => {
-      const correct = ghost === getCurrentGhost().type;
-      const message = correct
-        ? `✅ Correct! The ghost was a ${ghost}. You've survived and earned XP!`
-        : `❌ Wrong. It was actually a ${getCurrentGhost().type}. Better luck next time.`;
-      if (correct) xp += 50;
-      displayNarratorText(message);
-      container.innerHTML = '';
-    };
-    container.appendChild(btn);
-  });
-
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
-}
-
-// Tarot
-const tarotCards = [
-  '🃏 The Fool – Nothing happens.',
-  '🪦 The Hanged Man – You feel your sanity drain rapidly.',
-  '☀️ The Sun – Sanity fully restored!',
-  '🌑 The Moon – Sanity drops to 0!',
-  '🧙 The Hermit – The ghost is temporarily trapped.',
-  '🎡 The Wheel of Fortune – Sanity shifts unpredictably.',
-  '💀 Death – A hunt begins instantly!',
-  '👹 The Devil – The ghost manifests nearby.',
-  '🗼 The Tower – A crash rings out. The ghost moves to your room.',
-  '👼 The High Priestess – You sense a protective spirit.'
-];
-
-function useCursedItem(name) {
-  cursedItemsUsed++;
-  adjustSanity(-20);
-  let result = `🔮 You use the ${name}. Reality ripples...`;
-  if (name.toLowerCase().includes('tarot')) result += '\n' + drawTarotCard();
-  lastAction = 'cursed item';
-  return result;
-}
-
-function drawTarotCard() {
-  const card = tarotCards[Math.floor(Math.random() * tarotCards.length)];
-  if (card.includes('sanity drain')) adjustSanity(-30);
-  if (card.includes('fully restored')) adjustSanity(100 - sanity);
-  if (card.includes('drops to 0')) sanity = 0;
-  if (card.includes('hunt')) triggerHunt();
-  if (card.includes('manifest')) ghostActivityLevel = 7;
-  if (card.includes('moves to your room')) ghostActivityLevel = 8;
-  return `🃏 Tarot card drawn: ${card}`;
-}
-
-// Ambient narration (simplified)
-function narrateAmbience() {
-  const room = getCurrentRoom();
-  const lines = {
-    'Foyer': ["Something waits beyond the welcome mat."],
-    'Basement': ["You hear something breathing behind the boiler."],
-    'Living Room': ["Couch cushions sag, like they expect company."],
-    'Bathroom': ["Your reflection wavers slightly..."],
-    'Garage': ["Tools hang neatly. Some have moved."]
+// Ghost system
+function getRandomGhost() {
+  const types = Object.keys(ghostEvidenceMap);
+  const type = types[Math.floor(Math.random() * types.length)];
+  return {
+    type,
+    behavior: room => {
+      const base = [
+        `You feel watched in the ${room}.`,
+        `A chill runs through the ${room}.`,
+        `The lights flicker briefly in the ${room}.`
+      ];
+      const extra = {
+        Poltergeist: [`Objects clatter in the ${room}.`],
+        Banshee: [`A shriek echoes in the ${room}.`],
+        Succubus: [`A sultry whisper brushes your ear in the ${room}.`]
+      };
+      return [...base, ...(extra[type] || [])][Math.floor(Math.random() * 3)];
+    }
   };
-  if (Math.random() < 0.4) {
-    const line = (lines[room] || ["You feel uneasy..."])[0];
-    displayNarratorText(`🧠 ${line}`);
+}
+function initializeGhost(g) { ghost = g; }
+function getCurrentGhost() { return ghost; }
+function performBehavior(room) { return ghost?.behavior(room) || "Nothing happens."; }
+function performGhostAction() {
+  if (Math.random() < 0.3) {
+    ghostActivityLevel++;
+    return "🔊 You hear something shifting...";
   }
+  return "Nothing yet. Stay vigilant.";
 }
 
-// Orbs
-function spawnOrbs(count = 4) {
-  for (let i = 0; i < count; i++) {
-    const orb = document.createElement('div');
-    orb.className = 'orb';
-    orb.style.left = Math.random() * 100 + 'vw';
-    orb.style.top = Math.random() * 100 + 'vh';
-    orb.style.setProperty('--dx', (Math.random() - 0.5) * 150 + 'px');
-    orb.style.setProperty('--dy', (Math.random() - 0.5) * 150 + 'px');
-    const duration = 8 + Math.random() * 10;
-    orb.style.animationDuration = `${duration}s, ${duration}s`;
-    orb.style.animationDelay = `0s, ${Math.random() * 3}s`;
-    document.body.appendChild(orb);
-    setTimeout(() => {
-      orb.style.transition = 'opacity 2s ease-out';
-      orb.style.opacity = 0;
-      setTimeout(() => orb.remove(), 3000);
-    }, duration * 1000);
-  }
-}
-setInterval(() => {
-  if (document.hasFocus()) spawnOrbs(Math.floor(Math.random() * 2) + 1);
-}, 5000);
-
-// UI Options
+// Game options
 function renderOptions() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
-
   const btn = (label, handler) => {
     const b = document.createElement('button');
     b.innerText = label;
     b.onclick = handler;
     container.appendChild(b);
   };
-
   btn('Move', () => {
     container.innerHTML = '';
     ['North', 'East', 'South', 'West'].forEach(dir => {
@@ -583,7 +381,6 @@ function renderOptions() {
       d.onclick = () => {
         displayNarratorText(movePlayer(dir));
         tickTurn();
-        renderMinimap();
         renderOptions();
       };
       container.appendChild(d);
@@ -593,14 +390,11 @@ function renderOptions() {
     back.onclick = renderOptions;
     container.appendChild(back);
   });
-
   btn('Investigate', () => {
     displayNarratorText(performBehavior(getCurrentRoom()));
     adjustSanity(-5);
     tickTurn();
-    renderMinimap();
   });
-
   btn('Use Item', () => {
     const items = getInventory();
     container.innerHTML = '';
@@ -615,7 +409,6 @@ function renderOptions() {
       i.onclick = () => {
         displayNarratorText(useItem(item, getCurrentRoom(), getCurrentGhost().type));
         tickTurn();
-        renderMinimap();
         renderOptions();
       };
       container.appendChild(i);
@@ -625,7 +418,6 @@ function renderOptions() {
     back.onclick = renderOptions;
     container.appendChild(back);
   });
-
   btn('Drop Item', () => {
     const items = getInventory().filter(i => !alwaysWithYou.includes(i));
     container.innerHTML = '';
@@ -643,12 +435,7 @@ function renderOptions() {
       };
       container.appendChild(b);
     });
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
   });
-
   btn('Pick Up Item', () => {
     const items = roomItems[getCurrentRoom()] || [];
     container.innerHTML = '';
@@ -666,24 +453,37 @@ function renderOptions() {
       };
       container.appendChild(b);
     });
+  });
+  btn('Guess Ghost', () => {
+    container.innerHTML = '';
+    Object.keys(ghostEvidenceMap).forEach(g => {
+      const b = document.createElement('button');
+      b.innerText = g;
+      b.onclick = () => {
+        const correct = g === getCurrentGhost().type;
+        if (correct) {
+          xp += 50;
+          displayNarratorText(`✅ Correct! The ghost was a ${g}. XP gained.`);
+        } else {
+          displayNarratorText(`❌ Incorrect. It was a ${getCurrentGhost().type}.`);
+        }
+        container.innerHTML = '';
+      };
+      container.appendChild(b);
+    });
     const back = document.createElement('button');
     back.innerText = 'Back';
     back.onclick = renderOptions;
     container.appendChild(back);
   });
-
-  btn('Guess Ghost', guessMenu);
-
   btn('Return to Van', () => {
     isVanAccess = true;
     showLoadoutMenu();
     document.getElementById('loadout-screen').classList.remove('hidden');
   });
-
-  renderMinimap();
 }
 
-// Game Start
+// Game start
 function startGame() {
   resetStats();
   ghost = getRandomGhost();
@@ -691,10 +491,11 @@ function startGame() {
   initializeJournal();
   updateHUD();
   displayNarratorText("So it begins...");
+  document.getElementById('game-screen').classList.remove('hidden'); // ✅ FIX
   renderOptions();
 }
 
-// DOMContentLoaded
+// DOM Content Loaded
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
   const gameScreen = document.getElementById('game-screen');
@@ -713,9 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
       loadoutScreen.classList.remove('hidden');
       startBtn.style.display = 'none';
     } else {
-      gameScreen.classList.remove('hidden');
-      startBtn.style.display = 'none';
       startGame();
+      startBtn.style.display = 'none';
     }
   };
 
@@ -727,7 +527,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     selectedLoadout.forEach(item => inventory[item] = 1);
-    gameScreen.classList.remove('hidden');
     startGame();
   };
 
@@ -748,8 +547,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
   saveJournalBtn.onclick = () => {
     const text = document.getElementById('journal-entry').value;
-    updateNotes(text);
+    journalNotes = text;
     journalScreen.classList.add('hidden');
+    displayNarratorText("📓 Notes saved.");
   };
 
   closeJournalBtn.onclick = () => {
