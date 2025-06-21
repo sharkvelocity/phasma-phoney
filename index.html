@@ -202,7 +202,16 @@
     <strong style="margin-top:10px;">Ghosts</strong>
     <ul id="possible-ghosts"></ul>
   </div>
-<script>
+  <script>
+  function speakNarration(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = speechSynthesis.getVoices().find(v => v.lang.includes('en') && v.name.includes('Female')) || null;
+    utterance.pitch = 1.05;
+    utterance.rate = 0.96;
+    speechSynthesis.speak(utterance);
+  }
+}
 
 let inventory = {};
 let selectedLoadout = [];
