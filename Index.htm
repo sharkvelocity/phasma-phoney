@@ -134,7 +134,7 @@
 
   <div id="game-screen" class="hidden">
     <div id="left-panel">
-      <button id="journal-btn">📓 Open Journal</button>
+      <button id="journal-btn">Journal</button>
       <div id="option-buttons"></div>
     </div>
     <div id="center-panel">
@@ -203,7 +203,7 @@
         const items = getInventory();
         container.innerHTML = '';
         if (!items.length) {
-          displayNarratorText("🧳 You have no items.");
+          displayNarratorText("No items.");
           renderOptions();
           return;
         }
@@ -228,56 +228,16 @@
       btn('Drop Item', dropItemMenu);
       btn('Pick Up Item', pickupMenu);
       btn('Guess Ghost', guessMenu);
-
       btn('Return to Van', () => {
         isVanAccess = true;
         showLoadoutMenu();
         document.getElementById('loadout-screen').style.display = 'block';
       });
 
-      renderMinimap();
     }
   </script>
-
-<body>
-  <h1>Phasma‑Phoney</h1>
-  <button id="start-btn">Start Investigation</button>
-
-  <div id="loadout-screen" class="hidden">
-    <h2>Select Your Loadout</h2>
-    <div id="loadout-options"></div>
-    <button id="confirm-loadout">Confirm</button>
-    <button id="back-btn">Back</button>
-  </div>
-
-  <div id="game-screen" class="hidden">
-    <div id="left-panel">
-      <button id="journal-btn">Journal</button>
-      <div id="option-buttons"></div>
-    </div>
-    <div id="center-panel">
-      <div id="narrator-box">
-        <div id="system-text"></div>
-        <div id="narrator-thought"></div>
-      </div>
-      <div id="main-readout">Welcome!</div>
-      <div id="hud-status"></div>
-      <div id="minimap"></div>
-    </div>
-    <div id="right-panel">
-      <h3>Evidence Checklist</h3>
-      <div id="evidence-checklist"></div>
-      <ul id="possible-ghosts"></ul>
-    </div>
-  </div>
-
-  <div id="journal-screen" class="hidden">
-    <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
-    <button id="save-journal">Save</button>
-    <button id="close-journal">Close</button>
-  </div>
-<!-- Logic Block: _ghost_system -->
+  
+      <!-- Logic Block: _ghost_system -->
 <script>
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
