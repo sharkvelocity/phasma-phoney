@@ -60,9 +60,43 @@
       box-sizing: border-box;
     }
 
-    #loadout-screen,
-    #journal-panel,
-    #van-panel,
+
+   #journal-panel {
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  max-width: 360px;
+  background: #111;
+  border: 1px solid #555;
+  padding: 12px;
+  z-index: 999;
+  display: none;
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.8);
+}
+
+#journal-panel textarea {
+  width: 100%;
+  height: 160px;
+  background: #222;
+  color: white;
+  border: 1px solid #444;
+  resize: vertical;
+  padding: 8px;
+  font-size: 14px;
+  box-sizing: border-box;
+  border-radius: 6px;
+}
+
+#journal-panel button {
+  margin-top: 8px;
+  width: 100%;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+}
     #item-swap-panel {
       position: absolute;
       top: 10%;
@@ -76,9 +110,13 @@
       border-radius: 10px;
       z-index: 999;
     }
-
+    #loadout-screen,
     #loadout-options,
-    #van-options,
+    #van-options button {
+      min-width: 45%;
+      font-size: 14px;
+}
+
     #item-swap-options {
       display: flex;
       flex-wrap: wrap;
@@ -136,7 +174,8 @@
     }
   </style>
 </head>
-<body><script>
+<body>
+  <script>
   // ==== Mobile-Optimized Game Logic ==== //
 
 function updateHUD() {
@@ -202,6 +241,41 @@ function resolveHunt() {
     updateHUD();
   }
 }
+document.getElementById('guess-btn').onclick = () => {
+  const container = document.getElementById('van-options');
+  container.innerHTML = '<h3>Select the Ghost</h3>';
+
+  const ghostGrid = document.createElement('div');
+  ghostGrid.style.display = 'flex';
+  ghostGrid.style.flexWrap = 'wrap';
+  ghostGrid.style.justifyContent = 'center';
+  ghostGrid.style.gap = '8px';
+  ghostGrid.style.maxHeight = '300px';
+  ghostGrid.style.overflowY = 'auto';
+  ghostGrid.style.padding = '10px';
+
+  ghostList.forEach(g => {
+    const b = document.createElement('button');
+    b.innerText = g;
+    b.style.flex = '1 1 40%';
+    b.style.minWidth = '45%';
+    b.style.fontSize = '14px';
+    b.onclick = () => {
+      if (!ghost) return;
+      if (g === ghost) {
+        log(`✅ Correct! It was a ${g}. You gain 50 XP.`);
+        gainXP(50);
+      } else {
+        log(`❌ Wrong! The ghost was a ${ghost}.`);
+      }
+      document.getElementById('van-panel').classList.add('hidden');
+    };
+    ghostGrid.appendChild(b);
+  });
+
+  container.appendChild(ghostGrid);
+  document.getElementById('van-panel').classList.remove('hidden');
+};
 
 function gainXP(amount) {
   xp += amount;
@@ -236,10 +310,12 @@ function restartGame() {
   document.getElementById('action-panel').classList.add('hidden');
   updateHUD();
 }
+  </script>
+  <script>
 
-let floorItems = {};
-let itemToPickUp = null;
-let itemToSwap = null;
+    let floorItems = {};
+    let itemToPickUp = null;
+    let itemToSwap = null;
 
 function renderNearbyItems() {
   const bar = document.getElementById('floor-items-bar');
