@@ -136,20 +136,7 @@
       background: rgba(0,0,0,0.7);
             border: 1px solid #444;
       margin: 10px;
-    }
-    @keyframes drift {
-      from { transform: translate(0, 0); }
-      to { transform: translate(var(--dx), var(--dy)); }
-    }
-
-    @keyframes fadeGlow {
-      0% { opacity: 0; }
-      30% { opacity: 0.5; }
-      60% { opacity: 0.8; }
-      100% { opacity: 0.2; }
-    }
-    @media (max-width: 480px) {
-  
+    }  
       #hud {
     font-size: 12px;
     flex-direction: column;
@@ -171,6 +158,19 @@
   #van-options {
     max-height: 240px;
   }
+    @keyframes drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(var(--dx), var(--dy)); }
+    }
+
+    @keyframes fadeGlow {
+      0% { opacity: 0; }
+      30% { opacity: 0.5; }
+      60% { opacity: 0.8; }
+      100% { opacity: 0.2; }
+    }
+    @media (max-width: 480px) {
+
 }
 
 
