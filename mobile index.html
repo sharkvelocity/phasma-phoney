@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Phasma‑Phoney HUD</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: url('./House.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #hud {
+      background: rgba(0, 0, 0, 0.7);
+      border: 1px solid #555;
+      padding: 10px;
+      font-size: 14px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 8px;
+      width: 95%;
+      box-sizing: border-box;
+    }
+
+    #hud button {
+      font-size: 14px;
+      padding: 5px 10px;
+      flex: 1 1 auto;
+    }
+
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 12px 10px;
+      font-size: 14px;
+      min-width: 40%;
+      max-width: 100%;
+      flex: 1 1 40%;
+      box-sizing: border-box;
+    }
+
+    #interface-buttons,
+    #action-panel,
+    #van-panel {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px;
+      justify-content: center;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    #loadout-screen,
+    #journal-panel,
+    #van-panel,
+    #item-swap-panel {
+      position: absolute;
+      top: 10%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 420px;
+      background: rgba(0, 0, 0, 0.85);
+      padding: 15px;
+      border: 1px solid #555;
+      border-radius: 10px;
+      z-index: 999;
+    }
+
+    #loadout-options,
+    #van-options,
+    #item-swap-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 10px 0;
+      justify-content: center;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    #log {
+      width: 95%;
+      max-height: 200px;
+      overflow-y: auto;
+      margin: 10px;
+      background: #111;
+      padding: 10px;
+      border: 1px solid #444;
+      white-space: pre-wrap;
+      box-sizing: border-box;
+    }
+
+    #evidence-panel {
+      width: 95%;
+      margin: 10px auto;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 10px;
+      border: 1px solid #444;
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 480px) {
+      #hud {
+        font-size: 12px;
+        flex-direction: column;
+        align-items: stretch;
+        padding: 10px;
+      }
+
+      button {
+        font-size: 13px;
+        padding: 10px;
+        min-width: 100px;
+        flex: 1 1 100%;
+      }
+
+      #log {
+        font-size: 12px;
+        max-height: 180px;
+      }
+
+      #evidence-panel {
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body><script>
+  // ==== Mobile-Optimized Game Logic ==== //
+
+function updateHUD() {
+  document.getElementById('turn-count').innerText = turn;
+  document.getElementById('sanity-count').innerText = sanity;
+  document.getElementById('xp-count').innerText = xp;
+  document.getElementById('level-count').innerText = level;
+  const items = Object.keys(inventory);
+  document.getElementById('inventory-list').innerText = items.length ? items.join(', ') : 'none';
+}
+
+function addItem(item) {
+  if (Object.keys(inventory).length >= 3) return log("❌ 3 item limit");
+  inventory[item] = true;
+  updateHUD();
+}
+
+function removeItem(item) {
+  delete inventory[item];
+  updateHUD();
+}
+
+function useItem(item) {
+  if (!inventory[item]) return log("You don’t have that.");
+  log(`Used ${item}`);
+  if (["Smudge Stick", "Candle", "Salt"].includes(item)) removeItem(item);
+  advanceTurn(true);
+}
+
+function advanceTurn(triggerGhost = false) {
+  turn++;
+  sanity = Math.max(0, sanity - 5);
+  updateHUD();
+  if (triggerGhost) {
+    const chance = currentRoom === favoriteRoom ? 0.6 : 0.2;
+    if (Math.random() < chance) {
+      log(`👻 Something moves near the ${currentRoom}`);
+    }
+  }
+  checkForHuntTrigger();
+}
+
+function assignGhost() {
+  ghost = ghostList[Math.floor(Math.random() * ghostList.length)];
+  favoriteRoom = roomList[Math.floor(Math.random() * roomList.length)];
+  log("👻 A ghost has been selected.");
+}
+
+function triggerHunt() {
+  huntActive = true;
+  log("💀 The ghost begins a hunt!");
+  setTimeout(() => resolveHunt(), 2000);
+}
+
+function resolveHunt() {
+  if (currentRoom === favoriteRoom || Math.random() < 0.5) {
+    log("☠️ The ghost found you.");
+    endGame(false);
+  } else {
+    log("🏃 You evaded the ghost.");
+    huntActive = false;
+    sanity = Math.max(0, sanity - 30);
+    updateHUD();
+  }
+}
+
+function gainXP(amount) {
+  xp += amount;
+  while (xp >= level * 100) {
+    xp -= level * 100;
+    level++;
+    log(`🔺 Leveled up! Now level ${level}`);
+  }
+  updateHUD();
+}
+
+function endGame(won) {
+  const msg = won ? `🎉 Survived! Earned ${xp} XP.` : `🪦 You died. Final XP: ${xp}`;
+  document.getElementById('game-over-message').innerText = msg;
+  document.getElementById('game-over-panel').style.display = 'block';
+}
+
+function restartGame() {
+  inventory = {};
+  selectedLoadout = [];
+  sanity = 100;
+  turn = 1;
+  xp = 0;
+  ghost = null;
+  journalNotes = '';
+  favoriteRoom = '';
+  huntActive = false;
+  document.getElementById('log').innerText = '🧠 Restarted';
+  document.getElementById('game-over-panel').style.display = 'none';
+  document.getElementById('loadout-screen').style.display = 'flex';
+  document.getElementById('van-panel').classList.add('hidden');
+  document.getElementById('action-panel').classList.add('hidden');
+  updateHUD();
+}
+
+let floorItems = {};
+let itemToPickUp = null;
+let itemToSwap = null;
+
+function renderNearbyItems() {
+  const bar = document.getElementById('floor-items-bar');
+  const items = floorItems[currentRoom] || [];
+  if (!items.length) {
+    bar.innerText = '';
+    return;
+  }
+  bar.innerHTML = '📦 Items nearby: ' + items.map(item =>
+    `<span style="text-decoration:underline;color:cyan;cursor:pointer;" onclick="tryPickUpItem('${item}')">${item}</span>`
+  ).join(', ') + ' <span style="font-size:12px;">(tap to pick up)</span>';
+}
+
+function dropItemToFloor(item) {
+  if (!floorItems[currentRoom]) floorItems[currentRoom] = [];
+  floorItems[currentRoom].push(item);
+  renderNearbyItems();
+}
+
+function tryPickUpItem(item) {
+  if (Object.keys(inventory).length < 3) {
+    addItem(item);
+    floorItems[currentRoom] = floorItems[currentRoom].filter(i => i !== item);
+    log(`🎒 Picked up ${item}.`);
+    advanceTurn(true);
+    renderNearbyItems();
+    return;
+  }
+
+  // Inventory full — prompt swap
+  itemToPickUp = item;
+  itemToSwap = null;
+  document.getElementById('swap-item-name').innerText = item;
+
+  const container = document.getElementById('item-swap-options');
+  container.innerHTML = '';
+  Object.keys(inventory).forEach(invItem => {
+    const b = document.createElement('button');
+    b.innerText = invItem;
+    b.onclick = () => {
+      itemToSwap = invItem;
+      [...container.children].forEach(btn => btn.style.background = '');
+      b.style.background = 'darkred';
+    };
+    container.appendChild(b);
+  });
+
+  document.getElementById('item-swap-panel').style.display = 'block';
+}
+
+function cancelItemSwap() {
+  itemToPickUp = null;
+  itemToSwap = null;
+  document.getElementById('item-swap-panel').style.display = 'none';
+}
+
+function confirmItemSwap() {
+  if (!itemToPickUp || !itemToSwap) return;
+
+  removeItem(itemToSwap);
+  dropItemToFloor(itemToSwap);
+  addItem(itemToPickUp);
+  floorItems[currentRoom] = floorItems[currentRoom].filter(i => i !== itemToPickUp);
+  log(`🔁 Swapped ${itemToSwap} for ${itemToPickUp}.`);
+  advanceTurn(true);
+  renderNearbyItems();
+
+  itemToPickUp = null;
+  itemToSwap = null;
+  document.getElementById('item-swap-panel').style.display = 'none';
+}
+    </script?</body></html>
