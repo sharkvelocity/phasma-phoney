@@ -142,24 +142,24 @@
       display: flex;
       flex-direction: column;
       background: rgba(0,0,0,0.7);
-      padding: 10px;
-      border: 1px solid #444;
+            border: 1px solid #444;
       margin: 10px;
     }
   </style>
 </head>
 <body>
-<div id="hud">
-  Turn: <span id="turn-count">1</span> |
-  Sanity: <span id="sanity-count">100</span>% |
-  Inventory: <span id="inventory-list">none</span> |
-  XP: <span id="xp-count">0</span> |
-  Level: <span id="level-count">1</span>
-  <button id="journal-btn">📓</button>
-</div>
+  <div id="hud">
+    Turn: <span id="turn-count">1</span> |
+    Sanity: <span id="sanity-count">100</span>% |
+    Inventory: <span id="inventory-list">none</span> |
+    XP: <span id="xp-count">0</span> |
+    Level: <span id="level-count">1</span>
+    <button id="journal-btn">📓</button>
+  </div>
 
+  <div id="floor-items-bar"></div>
   <div id="interface-buttons">
-<div id="movement-buttons" style="display: flex; gap: 10px; margin: 10px;">
+  <div id="movement-buttons" style="display: flex; gap: 10px; margin: 10px;">
   <button onclick="tryMove('North')">North</button>
   <button onclick="tryMove('East')">East</button>
   <button onclick="tryMove('South')">South</button>
@@ -679,7 +679,7 @@ function spawnOrbs(count = 4) {
     const duration = 8 + Math.random() * 10;
     orb.style.animationDuration = `${duration}s, ${duration}s`;
     orb.style.animationDelay = `0s, ${Math.random() * 3}s`;
-    document.body.appendChild(orb);
+    document..appendChild(orb);
     setTimeout(() => {
       orb.style.transition = 'opacity 2s ease-out';
       orb.style.opacity = 0;
@@ -756,7 +756,14 @@ function renderVanInterface() {
   container.appendChild(doneBtn);
 }
 
-
+<div id="item-swap-panel" style="display:none;position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#111;padding:10px;border:1px solid #555;z-index:30;width:300px;">
+  <div id="item-swap-header">What would you drop for <span id="swap-item-name"></span>?</div>
+  <div id="item-swap-options" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center;"></div>
+  <div style="margin-top:10px;text-align:center;">
+    <button onclick="cancelItemSwap()">Nevermind</button>
+    <button onclick="confirmItemSwap()">Confirm</button>
+  </div>
+</div>
 // ==== Updated Drop Item UI ====
 function showDropMenu() {
   const items = Object.keys(inventory);
