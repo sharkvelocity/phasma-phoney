@@ -436,6 +436,45 @@ function advanceTurn(trigger = false) {
   }
   if (sanity <= 0 && !huntActive) triggerHunt();
 }
+<body>
+  <div id="hud">
+    Turn: <span id="turn-count">1</span> |
+    Sanity: <span id="sanity-count">100</span>% |
+    Inventory: <span id="inventory-list">none</span> |
+    XP: <span id="xp-count">0</span> |
+    Level: <span id="level-count">1</span>
+    <button id="journal-btn">📓</button>
+  </div>
+
+  <div id="floor-items-bar"></div>
+
+  <div id="interface-buttons">
+    <button id="van-btn">Van</button>
+    <button id="action-btn">Action</button>
+    <button id="guess-btn">Guess Ghost</button>
+    <button onclick="showMoveMenu()">Move</button>
+  </div>
+
+  <div id="action-panel" class="hidden">
+    <button id="drop-btn">Drop Item</button>
+    <button id="pickup-btn">Pick Up Item</button>
+    <button id="use-btn">Use Item</button>
+    <button id="action-back-btn">Back</button>
+  </div>
+
+  <div id="van-panel" class="hidden" style="width: 100%; max-width: 480px; margin: auto; background: rgba(0, 0, 0, 0.85); border: 1px solid #555; padding: 10px; border-radius: 8px;">
+    <div style="text-align:center; font-weight:bold; margin-bottom: 10px;">Van Inventory</div>
+    <div id="van-options" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-height: 300px; overflow-y: auto;"></div>
+    <div style="margin-top:10px; text-align:center;">
+      <button id="van-back-btn" style="width: 45%;">Back</button>
+    </div>
+  </div>
+
+  <div id="loadout-screen">
+    <h2>Pick up to 3 Items</h2>
+    <div id="loadout-options"></div>
+    <button id="loadout-confirm">Begin Investigation</button>
+  </div>
 
 <script>
 // === Evidence Checklist ===
