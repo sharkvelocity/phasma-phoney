@@ -162,6 +162,11 @@
   <!-- Button Logic Rendering -->
   <script>
     function renderOptions() {
+  console.log('renderOptions() called'); // <-- debug log
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+    function renderOptions() {
       const container = document.getElementById('option-buttons');
       container.innerHTML = '';
 
