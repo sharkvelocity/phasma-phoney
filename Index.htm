@@ -889,25 +889,29 @@ document.addEventListener('DOMContentLoaded', () => {
       startGame();
     }
   };
+confirmBtn.onclick = () => {
+  loadoutScreen.style.display = 'none';
 
-  confirmBtn.onclick = () => {
-    loadoutScreen.style.display = 'none';
+  if (isVanAccess) {
+    isVanAccess = false;
+    renderOptions(); // <- VAN RETURN
+    return;
+  }
 
-    if (isVanAccess) {
-      isVanAccess = false;
-      renderOptions();
-      return;
-    }
+  selectedLoadout.forEach(item => addItemToInventory(item));
+  gameScreen.classList.remove('hidden');
 
-    resetStats();
-ghost = getRandomGhost();
-initializeGhost(ghost);
-initializeJournal();
-selectedLoadout.forEach(item => addItemToInventory(item));
-gameScreen.classList.remove('hidden');
-updateHUD();
-displayNarratorText("So it begins...");
-renderOptions();
+  // Init full game now
+  resetStats();
+  ghost = getRandomGhost();
+  initializeGhost(ghost);
+  initializeJournal();
+  updateHUD();
+  displayNarratorText("So it begins...");
+  renderOptions(); // ✅ forcefully re-render buttons
+};
+
+ 
 
   };
 
