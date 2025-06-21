@@ -892,22 +892,22 @@ confirmBtn.onclick = () => {
 
   if (isVanAccess) {
     isVanAccess = false;
-    renderOptions(); // <- VAN RETURN
+    renderOptions();
     return;
   }
 
   selectedLoadout.forEach(item => addItemToInventory(item));
   gameScreen.classList.remove('hidden');
 
-  // Init full game now
   resetStats();
   ghost = getRandomGhost();
   initializeGhost(ghost);
   initializeJournal();
   updateHUD();
   displayNarratorText("So it begins...");
-  renderOptions(); // ✅ forcefully re-render buttons
+  renderOptions();
 };
+
 
   backBtn.onclick = () => {
     loadoutScreen.style.display = 'none';
@@ -918,7 +918,6 @@ confirmBtn.onclick = () => {
     } else {
       startBtn.style.display = 'inline-block';
     }
-  };
 
   journalBtn.onclick = () => {
     initializeJournal();
