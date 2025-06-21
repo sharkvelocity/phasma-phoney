@@ -869,12 +869,10 @@ function narrateAction(type) {
   }
 }
 
-  <script>
 function tryMove(dir) {
-  const result = movePlayer(dir);
-  log(result);
-  narrateRoom();
+  movePlayer(dir);   // This already handles logging
+  narrateRoom();     // Add ambient flavor
 }
-</script>
 
-</body></html>
+
+</script></body></html>
