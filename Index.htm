@@ -895,9 +895,16 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    gameScreen.classList.remove('hidden');
-    startGame();
+    resetStats();
+ghost = getRandomGhost();
+initializeGhost(ghost);
+initializeJournal();
+selectedLoadout.forEach(item => addItemToInventory(item));
+gameScreen.classList.remove('hidden');
+updateHUD();
+displayNarratorText("So it begins...");
+renderOptions();
+
   };
 
   backBtn.onclick = () => {
