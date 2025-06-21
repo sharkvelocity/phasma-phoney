@@ -1249,33 +1249,6 @@ function guessMenu() {
   container.appendChild(back);
 }
 </script>
-<script>
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  container.innerHTML = '';
-  selectedLoadout = [];
-
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.onclick = () => {
-      const idx = selectedLoadout.indexOf(item);
-      if (idx >= 0) {
-        selectedLoadout.splice(idx, 1);
-        btn.style.background = '';
-      } else {
-        if (selectedLoadout.length >= 3) {
-          alert("🎒 You can only carry 3 items.");
-          return;
-        }
-        selectedLoadout.push(item);
-        btn.style.background = 'darkgreen';
-      }
-    };
-    container.appendChild(btn);
-  });
-}
-</script>
 
 
 </body>
