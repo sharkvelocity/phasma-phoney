@@ -264,27 +264,24 @@ let ghost = null;
 let journalNotes = '';
 let favoriteRoom = '';
 
-<div id="loadout-screen" class="hidden">
-  <h2>Select Your Loadout (max 3)</h2>
-  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 90%; margin-bottom: 10px;">
-    <button>EMF Reader</button>
-    <button>Spirit Box</button>
-    <button>Ghost Writing Book</button>
-    <button>Candle</button>
-    <button>Smudge Stick</button>
-    <button>Salt</button>
-    <button>UV Light</button>
-    <button>Thermometer</button>
-    <button>Camera</button>
-    <button>Parabolic Mic</button>
-    <button>Crucifix</button>
-    <button>Proximity Sensor</button>
-  </div>
-  <button id="loadout-confirm">OK</button>
-</div>
+
 
 
 const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
+const allItems = [
+  { name: 'EMF Reader', type: 'tool', permanent: true },
+  { name: 'Spirit Box', type: 'tool', permanent: true },
+  { name: 'Ghost Writing Book', type: 'tool', permanent: true },
+  { name: 'Candle', type: 'consumable', permanent: false },
+  { name: 'Smudge Stick', type: 'consumable', permanent: false },
+  { name: 'Salt', type: 'consumable', permanent: false },
+  { name: 'UV Light', type: 'tool', permanent: true },
+  { name: 'Thermometer', type: 'tool', permanent: true },
+  { name: 'Camera', type: 'tool', permanent: true },
+  { name: 'Parabolic Mic', type: 'tool', permanent: true },
+  { name: 'Crucifix', type: 'tool', permanent: true },
+  { name: 'Proximity Sensor', type: 'tool', permanent: true }
+];
 
 const ghostEvidenceMap = {
   Spirit: ['EMF 5', 'Spirit Box', 'Ghost Writing'],
@@ -324,12 +321,15 @@ function log(msg) {
 
 function updateHUD() {
   document.getElementById('turn-count').innerText = turn;
-  document.getElementById('sanity-count').innerText = sanity;
+  document.getElementById('sanity-count').innerText = `${sanity}%`;
   document.getElementById('xp-count').innerText = xp;
   document.getElementById('level-count').innerText = level;
+
   const items = Object.keys(inventory);
-  document.getElementById('inventory-list').innerText = items.length ? items.join(', ') : 'none';
+  const invText = items.length ? items.join(', ') : 'none';
+  document.getElementById('inventory-list').innerText = invText;
 }
+
 
 
 function addItem(item) {
@@ -405,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
   allItems.forEach(item => {
     const b = document.createElement('button');
     b.innerText = item;
+    b.style.minWidth = '120px';
     b.onclick = () => {
       const i = selectedLoadout.indexOf(item);
       if (i >= 0) {
@@ -423,13 +424,19 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   confirmBtn.onclick = () => {
-  selectedLoadout.forEach(item => inventory[item] = true);
-  assignGhost();
-  updateHUD();
-  renderEvidenceChecklist();
-  loadoutScreen.remove();
-  speakNarration("Welcome back. I've prepared some jobs for you.");
-};
+    if (selectedLoadout.length === 0) {
+      alert("You must pick at least one item.");
+      return;
+    }
+    selectedLoadout.forEach(item => inventory[item] = true);
+    updateHUD();
+    assignGhost();
+    renderEvidenceChecklist();
+    loadoutScreen.remove();
+    speakNarration("Welcome back. I've prepared some jobs for you.");
+  };
+});
+
 
 document.getElementById('van-btn').onclick = () => {
   document.getElementById('van-panel').classList.remove('hidden');
@@ -541,8 +548,8 @@ document.getElementById('van-btn').onclick = () => {
     log("Notes saved");
   };
 });
-</script></script>
-<script>
+  </script>
+  <script>
 // ==== Map System ====
 const roomMap = {
   'Foyer':        { North: 'Living Room', East: 'Garage', South: 'Basement' },
