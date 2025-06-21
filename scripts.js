@@ -1,5 +1,4 @@
-  <!-- Button Logic Rendering -->
-  <script>
+<script>
 
       const btn = (label, handler) => {
         const b = document.createElement('button');
