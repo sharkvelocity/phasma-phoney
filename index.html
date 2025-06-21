@@ -1,180 +1,182 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phasma‑Phoney HUD</title>
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: url('./House.png') no-repeat center center fixed;
-      background-size: cover;
-      color: white;
-      font-family: sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    #hud {
-      background: rgba(0, 0, 0, 0.7);
-      border: 1px solid #555;
-      padding: 5px 15px;
-      font-size: 14px;
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-top: 10px;
-    }
-
-    #hud button {
-      font-size: 12px;
-      padding: 5px 10px;
-      margin-left: auto;
-    }
-
-    #interface-buttons, #action-panel, #van-panel {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 10px;
-      justify-content: center;
-    }
-
-    button {
-  background: #222;
-  color: white;
-  border: 1px solid #666;
-  padding: 12px 10px;
-  font-size: 14px;
-  min-width: 40%;
-  max-width: 100%;
-  flex: 1 1 40%;
-  box-sizing: border-box;
-}
-
-
-    #loadout-screen {
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.85);
-      z-index: 10;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    #loadout-options {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 20px 0;
-      max-width: 80%;
-      justify-content: center;
-    }
-
-    #log {
-      width: 90%;
-      max-height: 200px;
-      overflow-y: auto;
-      margin: 10px;
-      background: #111;
-      padding: 10px;
-      border: 1px solid #444;
-      white-space: pre-wrap;
-    }
-
-    #journal-panel {
-      position: absolute;
-      top: 20%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 300px;
-      background: #111;
-      border: 1px solid #555;
-      padding: 10px;
-      z-index: 20;
-      display: none;
-    }
-
-    #journal-panel textarea {
-      width: 100%;
-      height: 150px;
-      background: #222;
-      color: white;
-      border: 1px solid #444;
-      resize: none;
-    }
-
-    #journal-panel button {
-      margin-top: 5px;
-      width: 100%;
-    }
-
-    .orb {
-      position: absolute;
-      width: 8px;
-      height: 8px;
-      background: rgba(255, 255, 255, 0.4);
-      border-radius: 50%;
-      box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.15);
-      opacity: 0;
-      animation-name: drift, fadeGlow;
-      animation-timing-function: ease-in-out;
-      animation-iteration-count: 1;
-      pointer-events: none;
-    }
-    
-    #evidence-panel {
-      display: flex;
-      flex-direction: column;
-      background: rgba(0,0,0,0.7);
-            border: 1px solid #444;
-      margin: 10px;
-    }  
-      #hud {
-    font-size: 12px;
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    background: url('./House.png') no-repeat center center fixed;
+    background-size: cover;
+    color: white;
+    font-family: sans-serif;
+    display: flex;
     flex-direction: column;
-    gap: 5px;
-    align-items: flex-start;
+    align-items: center;
+  }
+
+  #hud {
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #555;
+    padding: 5px 15px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-top: 10px;
+  }
+
+  #hud button {
+    font-size: 12px;
+    padding: 5px 10px;
+    margin-left: auto;
+  }
+
+  #interface-buttons,
+  #action-panel,
+  #van-panel {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 10px;
+    justify-content: center;
   }
 
   button {
-    font-size: 13px;
-    padding: 10px;
-    min-width: 80px;
-  }
-
-  #van-panel {
-    max-width: 95vw;
+    background: #222;
+    color: white;
+    border: 1px solid #666;
+    padding: 10px 14px;
     font-size: 14px;
+    min-width: 120px;
+    max-width: 100%;
+    flex: 0 1 auto;
+    box-sizing: border-box;
   }
 
-  #van-options {
-    max-height: 240px;
+  #loadout-screen {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
   }
-    @keyframes drift {
-      from { transform: translate(0, 0); }
-      to { transform: translate(var(--dx), var(--dy)); }
+
+  #loadout-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin: 20px 0;
+    max-width: 80%;
+    justify-content: center;
+  }
+
+  #log {
+    width: 90%;
+    max-height: 200px;
+    overflow-y: auto;
+    margin: 10px;
+    background: #111;
+    padding: 10px;
+    border: 1px solid #444;
+    white-space: pre-wrap;
+  }
+
+  #journal-panel {
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 300px;
+    background: #111;
+    border: 1px solid #555;
+    padding: 10px;
+    z-index: 20;
+    display: none;
+  }
+
+  #journal-panel textarea {
+    width: 100%;
+    height: 150px;
+    background: #222;
+    color: white;
+    border: 1px solid #444;
+    resize: none;
+  }
+
+  #journal-panel button {
+    margin-top: 5px;
+    width: 100%;
+  }
+
+  .orb {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 50%;
+    box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.15);
+    opacity: 0;
+    animation-name: drift, fadeGlow;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 1;
+    pointer-events: none;
+  }
+
+  #evidence-panel {
+    display: flex;
+    flex-direction: column;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid #444;
+    margin: 10px;
+    padding: 10px;
+    width: 90%;
+    max-width: 400px;
+  }
+
+  @keyframes drift {
+    from { transform: translate(0, 0); }
+    to   { transform: translate(var(--dx), var(--dy)); }
+  }
+
+  @keyframes fadeGlow {
+    0%   { opacity: 0; }
+    30%  { opacity: 0.5; }
+    60%  { opacity: 0.8; }
+    100% { opacity: 0.2; }
+  }
+
+  /* Mobile optimization */
+  @media (max-width: 480px) {
+    #hud {
+      flex-direction: column;
+      gap: 5px;
+      align-items: flex-start;
+      font-size: 12px;
     }
 
-    @keyframes fadeGlow {
-      0% { opacity: 0; }
-      30% { opacity: 0.5; }
-      60% { opacity: 0.8; }
-      100% { opacity: 0.2; }
+    button {
+      font-size: 13px;
+      padding: 10px;
+      min-width: 80px;
+      flex: 1 1 45%;
     }
-    @media (max-width: 480px) {
 
-}
+    #van-panel {
+      max-width: 95vw;
+      font-size: 14px;
+    }
 
+    #van-options {
+      max-height: 240px;
+      overflow-y: auto;
+    }
 
-  </style>
+    #evidence-panel {
+      width: 95%;
+    }
+  }
+</style>
+
 </head>
 <body>
   <div id="hud">
