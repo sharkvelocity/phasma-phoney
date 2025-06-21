@@ -202,11 +202,7 @@
 
   <div id="floor-items-bar"></div>
   <div id="interface-buttons">
-  <div id="movement-buttons" style="display: flex; gap: 10px; margin: 10px;">
-  <button onclick="tryMove('North')">North</button>
-  <button onclick="tryMove('East')">East</button>
-  <button onclick="tryMove('South')">South</button>
-  <button onclick="tryMove('West')">West</button>
+
 </div>
 
     <button id="van-btn">Van</button>
@@ -291,11 +287,20 @@ let journalNotes = '';
 let favoriteRoom = '';
 
 const allItems = [
-  'EMF Reader', 'Spirit Box', 'Ghost Writing Book',
-  'Candle', 'Smudge Stick', 'Salt', 'UV Light',
-  'Thermometer', 'Camera', 'Parabolic Mic', 'Crucifix',
-  'Proximity Sensor'
+  { name: 'EMF Reader', type: 'tool', permanent: true },
+  { name: 'Spirit Box', type: 'tool', permanent: true },
+  { name: 'Ghost Writing Book', type: 'tool', permanent: true },
+  { name: 'Candle', type: 'consumable', permanent: false },
+  { name: 'Smudge Stick', type: 'consumable', permanent: false },
+  { name: 'Salt', type: 'consumable', permanent: false },
+  { name: 'UV Light', type: 'tool', permanent: true },
+  { name: 'Thermometer', type: 'tool', permanent: true },
+  { name: 'Camera', type: 'tool', permanent: true },
+  { name: 'Parabolic Mic', type: 'tool', permanent: true },
+  { name: 'Crucifix', type: 'tool', permanent: true },
+  { name: 'Proximity Sensor', type: 'tool', permanent: true }
 ];
+
 
 const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
 
@@ -771,12 +776,13 @@ function renderVanInterface() {
         vanStock[item]--;
       }
       updateHUD();
-      renderVanInterface();
+      renderVanInterface(); // Refresh UI
     };
 
     container.appendChild(btn);
   });
 
+  // Add "Done" button at bottom
   const doneBtn = document.createElement('button');
   doneBtn.innerText = "Done";
   doneBtn.style.background = '#444';
@@ -784,6 +790,8 @@ function renderVanInterface() {
     document.getElementById('van-panel').classList.add('hidden');
   };
   container.appendChild(doneBtn);
+}
+
 }
 <div id="item-swap-panel" style="
   display: none;
