@@ -218,10 +218,11 @@
   </div>
 
   <div id="loadout-screen">
-    <h2>Select Your Loadout (max 3)</h2>
-    <div id="loadout-options"></div>
-    <button id="loadout-confirm">OK</button>
-  </div>
+  <h2 style="margin-bottom: 0;">Pick up to 3 Items</h2>
+  <p style="margin-top: 5px; font-size: 14px;">Your starting inventory</p>
+  <div id="loadout-options"></div>
+  <button id="loadout-confirm">Begin Investigation</button>
+</div>
 <script>
 // === Global State ===
 let level = 1, inventory = {}, selectedLoadout = [], sanity = 100, turn = 1, xp = 0;
@@ -674,8 +675,9 @@ function showMoveMenu() {
 <script>
 // === Final Button Bindings & Init ===
 document.addEventListener('DOMContentLoaded', () => {
-  renderLoadoutOptions(); // Activate loadout screen on game load
-  document.getElementById('loadout-screen').classList.remove('hidden');
+  renderLoadoutOptions(); // Shows buttons
+  document.getElementById('loadout-screen').classList.remove('hidden'); // Ensure it's visible
+});
 
   document.getElementById('van-btn').onclick = () => {
     renderVanInterface();
