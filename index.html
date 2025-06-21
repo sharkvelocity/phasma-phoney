@@ -408,6 +408,7 @@ function showDropMenu() {
 function renderVanInterface() {
   const container = document.getElementById('van-options');
   container.innerHTML = "<h3>Manage Van Loadout</h3>";
+
   allItems.forEach(({ name }) => {
     const inInventory = !!inventory[name];
     const stock = vanStock[name] ?? 0;
@@ -421,13 +422,13 @@ function renderVanInterface() {
         removeItem(name);
         vanStock[name] = (vanStock[name] || 0) + 1;
       } else {
-        if (Object.keys(inventory).length >= 3) return log("❌3 item limit❌");
-        if (stock <= 0) return log("❌Zero in stock❌");
+        if (Object.keys(inventory).length >= 3) return log("❌ 3 item limit ❌");
+        if (stock <= 0) return log("❌ Zero in stock ❌");
         inventory[name] = true;
         vanStock[name]--;
       }
       updateHUD();
-      renderVanInterface();
+      renderVanInterface(); // Refresh UI
     };
 
     container.appendChild(btn);
@@ -441,16 +442,17 @@ function renderVanInterface() {
   };
   container.appendChild(doneBtn);
 }
-
 function renderLoadoutOptions() {
   const loadoutDiv = document.getElementById('loadout-options');
   const confirmBtn = document.getElementById('loadout-confirm');
   const loadoutScreen = document.getElementById('loadout-screen');
+  loadoutDiv.innerHTML = '';
 
   allItems.forEach(({ name }) => {
     const b = document.createElement('button');
     b.innerText = name;
     b.style.minWidth = '120px';
+
     b.onclick = () => {
       const i = selectedLoadout.indexOf(name);
       if (i >= 0) {
@@ -465,6 +467,7 @@ function renderLoadoutOptions() {
         b.style.background = 'darkgreen';
       }
     };
+
     loadoutDiv.appendChild(b);
   });
 
@@ -481,7 +484,7 @@ function renderLoadoutOptions() {
     speakNarration("Welcome back. I've prepared some jobs for you.");
   };
 }
-</script>
+
 <script>
 // === Map Room Connections ===
 const roomMap = {
@@ -509,27 +512,6 @@ function movePlayer(direction) {
 
 function tryMove(dir) {
   movePlayer(dir);
-}
-</script>
-<script>
-// === Room-Based Ambient Narration ===
-const ambientText = {
-  'Foyer': ["The air feels colder than it should."],
-  'Living Room': ["A TV screen reflects something behind you."],
-  'Kitchen': ["Utensils rattle faintly in the drawer."],
-  'Dining Room': ["One chair has been pulled out recently."],
-  'Bathroom': ["The mirror fogs despite no steam."],
-  'Bedroom': ["The bed looks disturbed. You didn’t touch it."],
-  'Garage': ["You hear a faint metallic clang."],
-  'Basement': ["It smells like mildew and secrets down here."]
-};
-
-function narrateRoom() {
-  const lines = ambientText[currentRoom] || ["You feel watched from somewhere unseen."];
-  if (Math.random() < 0.4) {
-    const thought = lines[Math.floor(Math.random() * lines.length)];
-    log("🧠 " + thought);
-  }
 }
 </script>
 <script>
