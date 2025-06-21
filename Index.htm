@@ -142,14 +142,15 @@
         <div id="system-text"></div>
         <div id="narrator-thought"></div>
       </div>
+        
       <div id="main-readout">welcome...</div>
       <div id="hud-status"></div>
+    </div>
+    <div id="right-panel"> 
       <div id="minimap"></div>
     </div>
-    <div id="right-panel">
     </div>
-  </div>
-
+<button id="journal-btn">Journal</button>
   <div id="journal-screen" class="hidden">
     <h2>Investigation Journal</h2>
     <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
@@ -185,8 +186,10 @@
         back.onclick = renderOptions;
         container.appendChild(back);
       });
-
-      btn('Investigate', () => {
+      btn('Guess Ghost', guessMenu);
+      renderOptions(ghostTypes)
+    
+    btn('Investigate', () => {
         displayNarratorText(performBehavior(getCurrentRoom()));
         adjustSanity(-5);
         tickTurn();
@@ -222,6 +225,7 @@
       btn('Drop Item', dropItemMenu);
       btn('Pick Up Item', pickupMenu);
       btn('Guess Ghost', guessMenu);
+      btn('Journal', Journal);
       btn('Return to Van', () => {
         isVanAccess = true;
         showLoadoutMenu();
@@ -302,7 +306,7 @@ let journalNotes = '';
 
 function updateNotes(txt) {
   journalNotes = txt;
-  displayNarratorText('📝 Notes saved.');
+  displayNarratorText('Notes saved');
 }
 
 function initializeJournal() {
@@ -770,8 +774,6 @@ function tickTurn() {
   narrateAmbience();
 }
 </script>
-
-<!-- Logic Block: 9_button_rendering -->
 <script>
 function renderOptions() {
   const container = document.getElementById('option-buttons');
@@ -848,13 +850,12 @@ function renderOptions() {
   // Item Interactions
   btn('Drop Item', dropItemMenu);
   btn('Pick Up Item', pickupMenu);
-  btn('Guess Ghost', guessMenu);
 
   // Van Interaction
   btn('Return to Van', () => {
     isVanAccess = true;
     showLoadoutMenu();
-    document.getElementById('loadout-screen').style.display = 'block';
+    document.getElementById('loadout-screen').style.display = 'hidden';
   });
 
   // Always update minimap
