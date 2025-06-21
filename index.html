@@ -716,37 +716,36 @@ function renderVanInterface() {
   container.innerHTML = "<h3>Manage Van Loadout</h3>";
 
   allItems.forEach(item => {
-    const btn = document.createElement('button');
     const inInventory = !!inventory[item];
     const stock = vanStock[item] ?? 0;
 
+    const btn = document.createElement('button');
     btn.innerText = `${item} ${inInventory ? '[-]' : `[+${stock}]`}`;
     btn.style.background = inInventory ? '#800' : '#060';
 
     btn.onclick = () => {
       if (inInventory) {
-        delete inventory[item];
+        removeItem(item);
         vanStock[item] = (vanStock[item] || 0) + 1;
       } else {
         if (Object.keys(inventory).length >= 3) {
-          log("❌ Inventory full (3 items max)");
+          log("❌3 item limit❌");
           return;
         }
         if (stock <= 0) {
-          log("❌ No more of that item in the van.");
+          log("❌Zero in stock❌");
           return;
         }
         inventory[item] = true;
         vanStock[item]--;
       }
       updateHUD();
-      renderVanInterface(); // Refresh buttons
+      renderVanInterface();
     };
 
     container.appendChild(btn);
   });
 
-  // Add "Done" button at the end
   const doneBtn = document.createElement('button');
   doneBtn.innerText = "Done";
   doneBtn.style.background = '#444';
@@ -756,13 +755,14 @@ function renderVanInterface() {
   container.appendChild(doneBtn);
 }
 
+
 <div id="item-swap-panel" style="display:none;position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#111;padding:10px;border:1px solid #555;z-index:30;width:300px;">
   <div id="item-swap-header">What would you drop for <span id="swap-item-name"></span>?</div>
   <div id="item-swap-options" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center;"></div>
   <div style="margin-top:10px;text-align:center;">
     <button onclick="cancelItemSwap()">Nevermind</button>
     <button onclick="confirmItemSwap()">Confirm</button>
-  </div>
+  </div?
 </div>
 // ==== Updated Drop Item UI ====
 function showDropMenu() {
