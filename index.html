@@ -745,6 +745,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('journal-panel').style.display = 'none';
     log("Notes saved.");
   };
+  document.addEventListener('DOMContentLoaded', () => {
+  renderLoadoutOptions();
+  document.getElementById('loadout-screen').classList.remove('hidden');
+});
+
 });
 </script>
 <div style="
@@ -760,7 +765,7 @@ document.addEventListener('DOMContentLoaded', () => {
   font-family: monospace;
   pointer-events: none;
 ">
-  ✅ Phasma‑Phoney Build v1.0.15.2 — All Systems Integrated
+  ✅ Phasma‑Phoney Build v1.0.16.0 — All Systems Integrated
 </div>
 </body>
 </html>
