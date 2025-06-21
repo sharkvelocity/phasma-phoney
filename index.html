@@ -43,13 +43,17 @@
     }
 
     button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
-      padding: 10px;
-      cursor: pointer;
-      min-width: 100px;
-    }
+  background: #222;
+  color: white;
+  border: 1px solid #666;
+  padding: 12px 10px;
+  font-size: 14px;
+  min-width: 40%;
+  max-width: 100%;
+  flex: 1 1 40%;
+  box-sizing: border-box;
+}
+
 
     #loadout-screen {
       position: absolute;
@@ -125,7 +129,14 @@
       animation-iteration-count: 1;
       pointer-events: none;
     }
-
+    
+    #evidence-panel {
+      display: flex;
+      flex-direction: column;
+      background: rgba(0,0,0,0.7);
+            border: 1px solid #444;
+      margin: 10px;
+    }
     @keyframes drift {
       from { transform: translate(0, 0); }
       to { transform: translate(var(--dx), var(--dy)); }
@@ -137,14 +148,32 @@
       60% { opacity: 0.8; }
       100% { opacity: 0.2; }
     }
+    @media (max-width: 480px) {
+  
+      #hud {
+    font-size: 12px;
+    flex-direction: column;
+    gap: 5px;
+    align-items: flex-start;
+  }
 
-    #evidence-panel {
-      display: flex;
-      flex-direction: column;
-      background: rgba(0,0,0,0.7);
-            border: 1px solid #444;
-      margin: 10px;
-    }
+  button {
+    font-size: 13px;
+    padding: 10px;
+    min-width: 80px;
+  }
+
+  #van-panel {
+    max-width: 95vw;
+    font-size: 14px;
+  }
+
+  #van-options {
+    max-height: 240px;
+  }
+}
+
+
   </style>
 </head>
 <body>
@@ -179,11 +208,13 @@
     <button id="action-back-btn">Back</button>
   </div>
 
-  <div id="van-panel" class="hidden">
-  <div style="width:100%;text-align:center;"><strong>Van Inventory</strong></div>
-  <div id="van-options" style="display:flex;flex-wrap:wrap;gap:10px;margin:10px;justify-content:center;"></div>
-  <div style="margin-top:10px;text-align:center;">
-    <button id="van-back-btn">Back</button>
+  <div id="van-panel" class="hidden" style="width: 100%; max-width: 480px; margin: auto; background: rgba(0, 0, 0, 0.85); border: 1px solid #555; padding: 10px; border-radius: 8px;">
+  <div style="text-align:center; font-weight:bold; margin-bottom: 10px;">Van Inventory</div>
+  
+  <div id="van-options" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-height: 300px; overflow-y: auto;"></div>
+  
+  <div style="margin-top:10px; text-align:center;">
+    <button id="van-back-btn" style="width: 45%;">Back</button>
   </div>
 </div>
 
