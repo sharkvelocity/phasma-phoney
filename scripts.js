@@ -1,4 +1,4 @@
-<script>
+ 
 
       const btn = (label, handler) => {
         const b = document.createElement('button');
@@ -69,10 +69,10 @@
       });
 
     }
-  </script>
+   
   
       <!-- Logic Block: _ghost_system -->
-<script>
+ 
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
   'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
@@ -134,10 +134,10 @@ window.getRandomGhost = getRandomGhost;
 window.initializeGhost = initializeGhost;
 window.performBehavior = performBehavior;
 window.getCurrentGhost = getCurrentGhost;
-</script>
+ 
 
 <!-- Logic Block: _journal_system -->
-<script>
+ 
 let journalNotes = '';
 
 function updateNotes(txt) {
@@ -223,11 +223,11 @@ function updatePossibleGhosts() {
 
 window.updateNotes = updateNotes;
 window.initializeJournal = initializeJournal;
-</script>
+ 
 
 
 <!-- Logic Block: 1_weather_orbs -->
-<script>
+ 
 //=============================
 // 1. WEATHER & ORB EFFECTS
 //=============================
@@ -253,10 +253,10 @@ function spawnOrbs(count = 6) {
 setInterval(() => {
   if (document.hasFocus()) spawnOrbs(Math.floor(Math.random() * 2) + 1);
 }, 5000);
-</script>
+ 
 
 <!-- Logic Block: 2_map_system -->
-<script>
+ 
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
 let currentRoom = 'Foyer';
 
@@ -281,10 +281,10 @@ function movePlayer(direction) {
 function getCurrentRoom() { return currentRoom; }
 window.movePlayer = movePlayer;
 window.getCurrentRoom = getCurrentRoom;
-</script>
+ 
 
 <!-- Logic Block: 3_inventory_van -->
-<script>
+ 
 const consumables = ['Smudge Stick', 'Candle', 'Salt'];
 const alwaysWithYou = ['Lighter'];
 const inventory = {};
@@ -380,10 +380,10 @@ function showRoomItems() {
   const items = roomItems[room] || [];
   return items.length ? `🗂️ Items here: ${items.join(', ')}` : '📭 The room is empty.';
 }
-</script>
+ 
 
 <!-- Logic Block: 4_cursed_tarot -->
-<script>
+ 
 const tarotCards = [
   '🃏 The Fool – Nothing happens.', '🪦 The Hanged Man – You feel your sanity drain rapidly.',
   '☀️ The Sun – Sanity fully restored!', '🌑 The Moon – Sanity drops to 0!',
@@ -412,11 +412,11 @@ function drawTarotCard() {
   if (card.includes('moves to your room')) ghostActivityLevel = 8;
   return `🃏 Tarot card drawn: ${card}`;
 }
-</script>
+ 
 
 
 <!-- Logic Block: 7_narration_visuals -->
-<script>
+ 
 function displayNarratorThought(text) {
   const thoughtDiv = document.getElementById('narrator-thought');
   const readout = document.getElementById('main-readout');
@@ -582,10 +582,10 @@ function narrateAmbience() {
 function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
-</script>
+ 
 
 <!-- Logic Block: 8_game_loop -->
-<script>
+ 
 function startGame() {
   resetStats();
   ghost = getRandomGhost();
@@ -609,10 +609,10 @@ function tickTurn() {
   displayNarratorText(ghostResult);
   narrateAmbience();
 }
-</script>
+ 
 
 <!-- Logic Block: 9_button_rendering -->
-<script>
+ 
 function renderOptions() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
@@ -700,10 +700,10 @@ function renderOptions() {
   // Always update minimap
   renderMinimap();
 }
-</script>
+ 
 
 <!-- Logic Block: 10_dom_content_loaded -->
-<script>
+ 
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
   const gameScreen = document.getElementById('game-screen');
@@ -775,11 +775,11 @@ document.addEventListener('DOMContentLoaded', () => {
     journalScreen.classList.add('hidden');
   };
 });
-</script>
+ 
 
 
 <!-- Logic Block: 11_webllm_jane -->
-<script>
+ 
 document.addEventListener('DOMContentLoaded', () => {
     initJane();
   });
@@ -788,9 +788,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const line = await askJane(context);
     displayNarratorText("🧠 " + line);
   }
-</script>
+ 
 
-<script>
+ 
 function displayNarratorText(text) {
   const systemBox = document.getElementById('system-text');
   const readout = document.getElementById('main-readout');
@@ -798,8 +798,8 @@ function displayNarratorText(text) {
   readout.innerText += `\n${text}`;
   readout.scrollTop = readout.scrollHeight;
 }
-</script>
-<script>
+ 
+ 
 let sanity = 100;
 let xp = 0;
 let turn = 1;
@@ -834,8 +834,8 @@ function triggerHunt() {
   adjustSanity(-30);
   displayNarratorText("💀 The ghost begins a hunt!");
 }
-</script>
-<script>
+ 
+ 
 function dropItemMenu() {
   const items = getInventory().filter(i => !alwaysWithYou.includes(i));
   const container = document.getElementById('option-buttons');
@@ -890,8 +890,8 @@ function pickupMenu() {
   back.onclick = renderOptions;
   container.appendChild(back);
 }
-</script>
-<script>
+ 
+ 
 function showLoadoutMenu() {
   const container = document.getElementById('loadout-options');
   container.innerHTML = '';
@@ -917,8 +917,8 @@ function showLoadoutMenu() {
     container.appendChild(btn);
   });
 }
-</script>
-<script>
+ 
+ 
 function displayNarratorText(text) {
   const systemBox = document.getElementById('system-text');
   const readout = document.getElementById('main-readout');
@@ -926,8 +926,8 @@ function displayNarratorText(text) {
   readout.innerText += `\n${text}`;
   readout.scrollTop = readout.scrollHeight;
 }
-</script>
-<script>
+ 
+ 
 let sanity = 100;
 let xp = 0;
 let turn = 1;
@@ -962,8 +962,8 @@ function triggerHunt() {
   adjustSanity(-30);
   displayNarratorText("💀 The ghost begins a hunt!");
 }
-</script>
-<script>
+ 
+ 
 function renderMinimap() {
   const minimap = document.getElementById('minimap');
   if (!minimap) return;
@@ -981,8 +981,8 @@ function renderMinimap() {
     }
   });
 }
-</script>
-<script>
+ 
+ 
 function dropItemMenu() {
   const items = getInventory().filter(i => !alwaysWithYou.includes(i));
   const container = document.getElementById('option-buttons');
@@ -1037,8 +1037,8 @@ function pickupMenu() {
   back.onclick = renderOptions;
   container.appendChild(back);
 }
-</script>
-<script>
+ 
+ 
 function guessMenu() {
   const container = document.getElementById('option-buttons');
   container.innerHTML = '';
@@ -1064,4 +1064,4 @@ function guessMenu() {
   back.onclick = renderOptions;
   container.appendChild(back);
 }
-</script>
+ 
