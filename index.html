@@ -785,15 +785,26 @@ function renderVanInterface() {
   };
   container.appendChild(doneBtn);
 }
-
-
-<div id="item-swap-panel" style="display:none;position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#111;padding:10px;border:1px solid #555;z-index:30;width:300px;border-radius:6px;">
-  <div id="item-swap-header" style="text-align:center;font-weight:bold;margin-bottom:10px;">
-    What would you drop for <span id="swap-item-name" style="color:lightgreen;"></span>?
+<div id="item-swap-panel" style="
+  display: none;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  padding: 10px;
+  border: 1px solid #555;
+  z-index: 30;
+  width: 300px;
+  border-radius: 6px;
+  color: white;
+">
+  <div id="item-swap-header" style="margin-bottom: 10px; text-align: center;">
+    What would you drop for <span id="swap-item-name" style="font-weight:bold;"></span>?
   </div>
-  <div id="item-swap-options" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:10px;"></div>
-  <div style="text-align:center;">
-    <button onclick="cancelItemSwap()" style="margin-right:10px;">Nevermind</button>
+  <div id="item-swap-options" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;"></div>
+  <div style="margin-top: 10px; text-align: center;">
+    <button onclick="cancelItemSwap()">Nevermind</button>
     <button onclick="confirmItemSwap()">Confirm</button>
   </div>
 </div>
