@@ -374,21 +374,21 @@ document.addEventListener('DOMContentLoaded', () => {
   speakNarration("Welcome back. I've prepared some jobs for you.");
 };
 
-  document.getElementById('van-btn').onclick = () => {
-    document.getElementById('van-panel').classList.remove('hidden');
-    document.getElementById('van-options').innerHTML = '';
-    allItems.forEach(item => {
-      const b = document.createElement('button');
-      b.innerText = item;
-      b.onclick = () => addItem(item);
-      document.getElementById('van-options').appendChild(b);
-    });
-    advanceTurn(); // visiting van = 1 turn, no forced ghost event
-  };
+ document.getElementById('van-btn').onclick = () => {
+  document.getElementById('van-panel').classList.remove('hidden');
+  document.getElementById('van-options').innerHTML = '';
+  renderVanInterface(); // Instead of repeating allItems logic, use this
+  advanceTurn(); // Van visit = 1 turn
+};
+
 
   document.getElementById('van-back-btn').onclick = () => {
-    document.getElementById('van-panel').classList.add('hidden');
-  };
+  document.getElementById('van-panel').classList.add('hidden');
+  document.getElementById('action-panel').classList.add('hidden');
+  document.getElementById('interface-buttons').style.display = 'flex';
+  updateHUD();
+};
+
 
   document.getElementById('action-btn').onclick = () => {
     document.getElementById('action-panel').classList.remove('hidden');
