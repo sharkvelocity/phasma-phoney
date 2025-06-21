@@ -869,24 +869,6 @@ function narrateAction(type) {
   }
 }
 
-const ambientText = {
-  'Foyer': ["The air feels colder than it should."],
-  'Living Room': ["A TV screen reflects something behind you."],
-  'Kitchen': ["Utensils rattle faintly in the drawer."],
-  'Dining Room': ["One chair has been pulled out recently."],
-  'Bathroom': ["The mirror fogs despite no steam."],
-  'Bedroom': ["The bed looks disturbed. You didn’t touch it."],
-  'Garage': ["You hear a faint metallic clang."],
-  'Basement': ["It smells like mildew and secrets down here."]
-};
-
-function narrateRoom() {
-  const lines = ambientText[currentRoom] || ["You feel watched from somewhere."];
-  if (Math.random() < 0.4) {
-    log("🧠 " + lines[Math.floor(Math.random() * lines.length)]);
-  }
-}
-</script>
   <script>
 function tryMove(dir) {
   const result = movePlayer(dir);
