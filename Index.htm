@@ -134,6 +134,7 @@
 
   <div id="game-screen" class="hidden">
     <div id="left-panel">
+      <button id="journal-btn">Journal</button>
       <div id="option-buttons"></div>
     </div>
     <div id="center-panel">
@@ -154,9 +155,6 @@
     <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
- <h3>Evidence Checklist</h3>
-      <div id="evidence-checklist"></div>
-      <ul id="possible-ghosts"></ul>
   </div>
 
   <!-- Button Logic Rendering -->
@@ -759,6 +757,12 @@ function startGame() {
   displayNarratorText("So it begins...");
   renderOptions();
 }
+
+  <div id="right-panel">
+  <h3>Evidence Checklist</h3>
+  <div id="evidence-checklist"></div>
+  <ul id="possible-ghosts"></ul>
+</div>
 
 function tickTurn() {
   turn++;
