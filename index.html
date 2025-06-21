@@ -264,20 +264,24 @@ let ghost = null;
 let journalNotes = '';
 let favoriteRoom = '';
 
-const allItems = [
-  { name: 'EMF Reader', type: 'tool', permanent: true },
-  { name: 'Spirit Box', type: 'tool', permanent: true },
-  { name: 'Ghost Writing Book', type: 'tool', permanent: true },
-  { name: 'Candle', type: 'consumable', permanent: false },
-  { name: 'Smudge Stick', type: 'consumable', permanent: false },
-  { name: 'Salt', type: 'consumable', permanent: false },
-  { name: 'UV Light', type: 'tool', permanent: true },
-  { name: 'Thermometer', type: 'tool', permanent: true },
-  { name: 'Camera', type: 'tool', permanent: true },
-  { name: 'Parabolic Mic', type: 'tool', permanent: true },
-  { name: 'Crucifix', type: 'tool', permanent: true },
-  { name: 'Proximity Sensor', type: 'tool', permanent: true }
-];
+<div id="loadout-screen" class="hidden">
+  <h2>Select Your Loadout (max 3)</h2>
+  <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center; max-width: 90%; margin-bottom: 10px;">
+    <button>EMF Reader</button>
+    <button>Spirit Box</button>
+    <button>Ghost Writing Book</button>
+    <button>Candle</button>
+    <button>Smudge Stick</button>
+    <button>Salt</button>
+    <button>UV Light</button>
+    <button>Thermometer</button>
+    <button>Camera</button>
+    <button>Parabolic Mic</button>
+    <button>Crucifix</button>
+    <button>Proximity Sensor</button>
+  </div>
+  <button id="loadout-confirm">OK</button>
+</div>
 
 
 const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
