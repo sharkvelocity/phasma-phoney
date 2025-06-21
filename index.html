@@ -526,16 +526,41 @@ function gainXP(amount) {
   log(`✨ You gained ${amount} XP.`);
   updateHUD();
 }
-
+// ==== Restart System ====
 function endGame(won) {
-  if (won) {
-    log(`🎉 You survived and earned ${xp} XP.`);
-  } else {
-    log(`🪦 Game Over. You earned ${xp} XP before dying.`);
-  }
-  // Optional: disable buttons or restart
+  const msg = won
+    ? `🎉 You survived and earned ${xp} XP.`
+    : `🪦 You died. Final XP: ${xp}`;
+  document.getElementById('game-over-message').innerText = msg;
+  document.getElementById('game-over-panel').style.display = 'block';
 }
 
+function restartGame() {
+  inventory = {};
+  selectedLoadout = [];
+  sanity = 100;
+  turn = 1;
+  xp = 0;
+  ghost = null;
+  journalNotes = '';
+  favoriteRoom = '';
+  huntActive = false;
+  document.getElementById('log').innerText = '🧠 Restarted game.';
+  document.getElementById('game-over-panel').style.display = 'none';
+  document.getElementById('loadout-screen').style.display = 'flex';
+  document.getElementById('van-panel').classList.add('hidden');
+  document.getElementById('action-panel').classList.add('hidden');
+  updateHUD();
+}
+
+// ==== Add Restart Panel HTML ====
+document.addEventListener('DOMContentLoaded', () => {
+  const div = document.createElement('div');
+  div.id = 'game-over-panel';
+  div.style = 'display:none; position:fixed; top:30%; left:50%; transform:translateX(-50%); background:black; color:white; padding:20px; border:2px solid red; text-align:center; z-index:999;';
+  div.innerHTML = '<h2 id="game-over-message"></h2><button onclick="restartGame()">Restart</button>';
+  document.body.appendChild(div);
+});
 // ==== Movement UI Hook ====
 function showMoveMenu() {
   const container = document.getElementById('van-options');
@@ -675,7 +700,7 @@ function showDropMenu() {
   const container = document.getElementById('van-options');
   container.innerHTML = '';
   if (!items.length) {
-    log("📭 Nothing to drop.");
+    log("🍪 Nothing to drop.");
     return;
   }
   items.forEach(item => {
@@ -683,7 +708,7 @@ function showDropMenu() {
     btn.innerText = `Drop ${item}`;
     btn.onclick = () => {
       removeItem(item);
-      log(`📦 Dropped ${item}.`);
+      log(`🚩 Dropped ${item}.`);
       advanceTurn(true);
       document.getElementById('van-panel').classList.add('hidden');
     };
@@ -694,41 +719,6 @@ function showDropMenu() {
 </script>
 
 <script>
-// ==== Restart System ====
-function endGame(won) {
-  const msg = won
-    ? `🎉 You survived and earned ${xp} XP.`
-    : `🪦 You died. Final XP: ${xp}`;
-  document.getElementById('game-over-message').innerText = msg;
-  document.getElementById('game-over-panel').style.display = 'block';
-}
-
-function restartGame() {
-  inventory = {};
-  selectedLoadout = [];
-  sanity = 100;
-  turn = 1;
-  xp = 0;
-  ghost = null;
-  journalNotes = '';
-  favoriteRoom = '';
-  huntActive = false;
-  document.getElementById('log').innerText = '🧠 Restarted game.';
-  document.getElementById('game-over-panel').style.display = 'none';
-  document.getElementById('loadout-screen').style.display = 'flex';
-  document.getElementById('van-panel').classList.add('hidden');
-  document.getElementById('action-panel').classList.add('hidden');
-  updateHUD();
-}
-
-// ==== Add Restart Panel HTML ====
-document.addEventListener('DOMContentLoaded', () => {
-  const div = document.createElement('div');
-  div.id = 'game-over-panel';
-  div.style = 'display:none; position:fixed; top:30%; left:50%; transform:translateX(-50%); background:black; color:white; padding:20px; border:2px solid red; text-align:center; z-index:999;';
-  div.innerHTML = '<h2 id="game-over-message"></h2><button onclick="restartGame()">Restart</button>';
-  document.body.appendChild(div);
-});
 
 // ==== Ambient Narration Hooks ====
 const actionNarration = {
