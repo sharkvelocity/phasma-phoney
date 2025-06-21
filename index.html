@@ -183,7 +183,7 @@
     <button id="van-back-btn">Back</button>
   </div>
 
-  <div id="loadout-screen">
+  <div id="loadout-screen" class="hidden">>
     <h2>Select Your Loadout (max 3)</h2>
     <div id="loadout-options"></div>
     <button id="loadout-confirm">OK</button>
@@ -194,15 +194,14 @@
     <button id="journal-close-btn">Close</button>
   </div>
 
-  <div id="log">🧠 Welcome to Phasma‑Phoney (HUD Mode)</div>
+  <div id="log">Welcome to Phasma‑Phoney</div>
 
   <div id="evidence-panel">
-    <strong>Evidence Checklist</strong>
+    <strong>Evidence Analysis</strong>
     <div id="evidence-checklist"></div>
-    <strong style="margin-top:10px;">Possible Ghosts</strong>
+    <strong style="margin-top:10px;">Ghosts</strong>
     <ul id="possible-ghosts"></ul>
   </div>
-<script>
 <script>
 
 let inventory = {};
@@ -268,7 +267,7 @@ function updateHUD() {
 }
 
 function addItem(item) {
-  if (Object.keys(inventory).length >= 3) return log("❌ You can only carry 3 items.");
+  if (Object.keys(inventory).length >= 3) return log("❌🤬❌ 3 item limit ❌🤬❌");
   inventory[item] = true;
   updateHUD();
 }
@@ -279,7 +278,7 @@ function removeItem(item) {
 }
 
 function useItem(item) {
-  if (!inventory[item]) return log("❌ You don’t have " + item + ".");
+  if (!inventory[item]) return log("Currently have 0 " + item + ".");
   log(`🧪 You used ${item}.`);
   if (['Smudge Stick', 'Candle', 'Salt'].includes(item)) removeItem(item);
   advanceTurn(true);
@@ -292,7 +291,7 @@ function advanceTurn(triggerGhost = false) {
   if (triggerGhost) {
     const chance = currentRoom === favoriteRoom ? 0.6 : 0.2;
     if (Math.random() < chance) {
-      log(`👻 The ghost stirs in the ${currentRoom}...`);
+      log(`👻 may possibly might be here in the ${currentRoom}...`);
     }
   }
 }
@@ -300,7 +299,7 @@ function advanceTurn(triggerGhost = false) {
 function assignGhost() {
   ghost = ghostList[Math.floor(Math.random() * ghostList.length)];
   favoriteRoom = roomList[Math.floor(Math.random() * roomList.length)];
-  log(`👻 A ghost has been chosen...`);
+  log(`It seems the 👻 has been summoned with a cursed object.. be careful out there..`);
 }
 
 function renderEvidenceChecklist() {
@@ -394,7 +393,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const item = prompt("Drop which item?", items[0]);
     if (item && inventory[item]) {
       removeItem(item);
-      log(`📦 Dropped ${item}.`);
+      log(`🫳🏻 Dropped ${item}.`);
       advanceTurn(true);
     }
   };
@@ -448,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('journal-close-btn').onclick = () => {
     journalNotes = document.getElementById('journal-entry').value;
     document.getElementById('journal-panel').style.display = 'none';
-    log("📓 Notes updated.");
+    log("Notes saved");
   };
 });
 </script></script>
@@ -468,7 +467,7 @@ const roomMap = {
 function movePlayer(direction) {
   const dest = roomMap[currentRoom]?.[direction];
   if (!dest) {
-    log(`❌ You can't go ${direction} from the ${currentRoom}.`);
+    log(`❌🤬❌ You can't go ${direction} from the ${currentRoom}❌🤬❌`);
     return;
   }
   currentRoom = dest;
