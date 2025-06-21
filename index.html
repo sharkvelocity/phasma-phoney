@@ -149,12 +149,14 @@
   </style>
 </head>
 <body>
-  <div id="hud">
-    Turn: <span id="turn-count">1</span> |
-    Sanity: <span id="sanity-count">100</span>% |
-    Inventory: <span id="inventory-list">none</span>
-    <button id="journal-btn">📓</button>
-  </div>
+<div id="hud">
+  Turn: <span id="turn-count">1</span> |
+  Sanity: <span id="sanity-count">100</span>% |
+  Inventory: <span id="inventory-list">none</span> |
+  XP: <span id="xp-count">0</span> |
+  Level: <span id="level-count">1</span>
+  <button id="journal-btn">📓</button>
+</div>
 
   <div id="interface-buttons">
 <div id="movement-buttons" style="display: flex; gap: 10px; margin: 10px;">
@@ -212,7 +214,8 @@
     speechSynthesis.speak(utterance);
   }
 }
-
+    
+let level = 1;
 let inventory = {};
 let selectedLoadout = [];
 let sanity = 100;
@@ -271,9 +274,12 @@ function log(msg) {
 function updateHUD() {
   document.getElementById('turn-count').innerText = turn;
   document.getElementById('sanity-count').innerText = sanity;
+  document.getElementById('xp-count').innerText = xp;
+  document.getElementById('level-count').innerText = level;
   const items = Object.keys(inventory);
   document.getElementById('inventory-list').innerText = items.length ? items.join(', ') : 'none';
 }
+
 
 function addItem(item) {
   if (Object.keys(inventory).length >= 3) return log("❌🤬❌ 3 item limit ❌🤬❌");
@@ -377,8 +383,9 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('van-btn').onclick = () => {
   document.getElementById('van-panel').classList.remove('hidden');
   renderVanInterface();
-  advanceTurn();
+  advanceTurn(); // visiting van = 1 turn
 };
+
 
   document.getElementById('van-back-btn').onclick = () => {
   document.getElementById('van-panel').classList.add('hidden');
@@ -397,7 +404,7 @@ document.getElementById('van-btn').onclick = () => {
 
   document.getElementById('drop-btn').onclick = () => {
     const items = Object.keys(inventory);
-    if (!items.length) return log("📭 Nothing to drop.");
+    if (!items.length) return log("❌🤬❌Nothing to drop.❌🤬❌");
     const item = prompt("Drop which item?", items[0]);
     if (item && inventory[item]) {
       removeItem(item);
@@ -407,16 +414,41 @@ document.getElementById('van-btn').onclick = () => {
   };
 
   document.getElementById('pickup-btn').onclick = () => {
-    const item = prompt("Enter item name to pick up:");
-    if (item && allItems.includes(item)) {
+  const container = document.getElementById('van-options');
+  container.innerHTML = '';
+
+  const label = document.createElement('label');
+  label.innerText = 'Choose item to pick up:';
+  label.style.display = 'block';
+
+  const select = document.createElement('select');
+  allItems.forEach(item => {
+    const option = document.createElement('option');
+    option.value = item;
+    option.innerText = item;
+    select.appendChild(option);
+  });
+
+  const confirmBtn = document.createElement('button');
+  confirmBtn.innerText = 'Pick Up';
+  confirmBtn.onclick = () => {
+    const item = select.value;
+    if (Object.keys(inventory).length >= 3) {
+      log("❌🤬❌ Inventory full ❌🤬❌");
+    } else {
       addItem(item);
       log(`🎒 Picked up ${item}.`);
       advanceTurn(true);
-    } else {
-      log("❌ Invalid item.");
+      document.getElementById('van-panel').classList.add('hidden');
     }
   };
 
+  container.appendChild(label);
+  container.appendChild(select);
+  container.appendChild(confirmBtn);
+
+  document.getElementById('van-panel').classList.remove('hidden');
+};
   document.getElementById('use-btn').onclick = () => {
     const item = prompt("Enter item to use:");
     if (item && inventory[item]) {
@@ -531,9 +563,14 @@ function checkForHuntTrigger() {
 // ==== XP System ====
 function gainXP(amount) {
   xp += amount;
-  log(`✨ You gained ${amount} XP.`);
+  while (xp >= level * 100) {
+    xp -= level * 100;
+    level++;
+    log(`🔺 Level Up! You reached Level ${level}.`);
+  }
   updateHUD();
 }
+
 // ==== Restart System ====
 function endGame(won) {
   const msg = won
@@ -671,38 +708,47 @@ const vanStock = {
 
 function renderVanInterface() {
   const container = document.getElementById('van-options');
-  container.innerHTML = "<strong>Take from Van:</strong><br>";
-  Object.entries(vanStock).forEach(([item, count]) => {
-    if (count > 0) {
-      const btn = document.createElement('button');
-      btn.innerText = `${item} (${count})`;
-      btn.onclick = () => {
+  container.innerHTML = "<h3>Manage Van Loadout</h3>";
+
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    const inInventory = !!inventory[item];
+    const stock = vanStock[item] ?? 0;
+
+    btn.innerText = `${item} ${inInventory ? '[-]' : `[+${stock}]`}`;
+    btn.style.background = inInventory ? '#800' : '#060';
+
+    btn.onclick = () => {
+      if (inInventory) {
+        delete inventory[item];
+        vanStock[item] = (vanStock[item] || 0) + 1;
+      } else {
         if (Object.keys(inventory).length >= 3) {
-          log("❌ Inventory full. Return an item first.");
+          log("❌ Inventory full (3 items max)");
           return;
         }
-        vanStock[item]--;
+        if (stock <= 0) {
+          log("❌ No more of that item in the van.");
+          return;
+        }
         inventory[item] = true;
-        updateHUD();
-        renderVanInterface();
-      };
-      container.appendChild(btn);
-    }
-  });
-
-  container.innerHTML += "<hr><strong>Return to Van:</strong><br>";
-  Object.keys(inventory).forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = `Return ${item}`;
-    btn.onclick = () => {
-      if (!vanStock[item]) vanStock[item] = 0;
-      delete inventory[item];
-      vanStock[item]++;
+        vanStock[item]--;
+      }
       updateHUD();
-      renderVanInterface();
+      renderVanInterface(); // Refresh buttons
     };
+
     container.appendChild(btn);
   });
+
+  // Add "Done" button at the end
+  const doneBtn = document.createElement('button');
+  doneBtn.innerText = "Done";
+  doneBtn.style.background = '#444';
+  doneBtn.onclick = () => {
+    document.getElementById('van-panel').classList.add('hidden');
+  };
+  container.appendChild(doneBtn);
 }
 
 
