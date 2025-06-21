@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phasma-Phoney HUD</title>
+  <title>Phasma‑Phoney HUD</title>
   <style>
     body {
       margin: 0;
@@ -216,67 +216,50 @@
       <button id="van-back-btn" style="width: 45%;">Back</button>
     </div>
   </div>
-<script>
-// === Loadout + Inventory System (Wired) ===
-function renderLoadoutOptions() {
-  const loadoutDiv = document.getElementById('loadout-options');
-  const confirmBtn = document.getElementById('loadout-confirm');
-  const loadoutScreen = document.getElementById('loadout-screen');
 
-  loadoutDiv.innerHTML = ''; // Clear any previous buttons
+  <div id="loadout-screen" class="hidden">
+    <h2>Select Your Loadout (max 3)</h2>
+    <div id="loadout-options"></div>
+    <button id="loadout-confirm">OK</button>
+  </div>
 
-  allItems.forEach(({ name }) => {
-    const btn = document.createElement('button');
-    btn.innerText = name;
-    btn.style.minWidth = '120px';
+  <div id="journal-panel">
+    <textarea id="journal-entry" placeholder="Your investigation notes..."></textarea>
+    <button id="journal-close-btn">Close</button>
+  </div>
 
-    btn.onclick = () => {
-      const i = selectedLoadout.indexOf(name);
-      if (i >= 0) {
-        selectedLoadout.splice(i, 1);
-        btn.style.background = '';
-      } else {
-        if (selectedLoadout.length >= 3) {
-          alert("Choose up to 3 items.");
-          return;
-        }
-        selectedLoadout.push(name);
-        btn.style.background = 'darkgreen';
-      }
-    };
+  <div id="log">Welcome to Phasma‑Phoney</div>
 
-    loadoutDiv.appendChild(btn);
-  });
+  <div id="evidence-panel">
+    <strong>Evidence Analysis</strong>
+    <div id="evidence-checklist"></div>
+    <strong style="margin-top:10px;">Ghosts</strong>
+    <ul id="possible-ghosts"></ul>
+  </div>
 
-  confirmBtn.onclick = () => {
-    if (selectedLoadout.length === 0) {
-      alert("You must pick at least one item.");
-      return;
-    }
-    selectedLoadout.forEach(name => inventory[name] = true);
-    updateHUD();
-    assignGhost();
-    renderEvidenceChecklist();
-    loadoutScreen.remove();
-    speakNarration("Welcome back. I've prepared some jobs for you.");
-  };
-}
-
-// === Auto-run on DOM Load ===
-document.addEventListener('DOMContentLoaded', () => {
-  renderLoadoutOptions();
-  document.getElementById('loadout-screen').classList.remove('hidden');
-});
-</script>
-
-</div>
-<script>
-// === Global State ===
-let level = 1, inventory = {}, selectedLoadout = [], sanity = 100, turn = 1, xp = 0;
-let currentRoom = "Foyer", ghost = null, favoriteRoom = '', huntActive = false, journalNotes = '';
+  <div id="item-swap-panel" style="display:none;position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#111;padding:10px;border:1px solid #555;z-index:30;width:300px;border-radius:6px;color:white;">
+    <div id="item-swap-header" style="margin-bottom: 10px; text-align: center;">
+      What would you drop for <span id="swap-item-name" style="font-weight:bold;"></span>?
+    </div>
+    <div id="item-swap-options" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;"></div>
+    <div style="margin-top: 10px; text-align: center;">
+      <button onclick="cancelItemSwap()">Nevermind</button>
+      <button onclick="confirmItemSwap()">Confirm</button>
+    </div>
+  </div><script>
+// ==== Core Variables ====
+let level = 1;
+let inventory = {};
+let selectedLoadout = [];
+let sanity = 100;
+let turn = 1;
+let xp = 0;
+let currentRoom = "Foyer";
+let ghost = null;
+let journalNotes = '';
+let favoriteRoom = '';
 
 const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
-
 const allItems = [
   { name: 'EMF Reader', type: 'tool', permanent: true },
   { name: 'Spirit Box', type: 'tool', permanent: true },
@@ -292,7 +275,6 @@ const allItems = [
   { name: 'Proximity Sensor', type: 'tool', permanent: true }
 ];
 
-// === Ghost Evidence ===
 const ghostEvidenceMap = {
   Spirit: ['EMF 5', 'Spirit Box', 'Ghost Writing'],
   Wraith: ['EMF 5', 'Spirit Box', 'D.O.T.S'],
@@ -322,73 +304,148 @@ const ghostEvidenceMap = {
 
 const ghostList = Object.keys(ghostEvidenceMap);
 const roomList = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Garage', 'Basement'];
-const roomMap = {
-  'Foyer':        { North: 'Living Room', East: 'Garage', South: 'Basement' },
-  'Living Room':  { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
-  'Kitchen':      { West: 'Living Room' },
-  'Dining Room':  { East: 'Living Room' },
-  'Bathroom':     { North: 'Bedroom' },
-  'Bedroom':      { South: 'Bathroom' },
-  'Garage':       { West: 'Foyer' },
-  'Basement':     { North: 'Foyer' }
-};
 
-const ambientText = {
-  'Foyer': ["The air feels colder than it should."],
-  'Living Room': ["A TV screen reflects something behind you."],
-  'Kitchen': ["Utensils rattle faintly in the drawer."],
-  'Dining Room': ["One chair has been pulled out recently."],
-  'Bathroom': ["The mirror fogs despite no steam."],
-  'Bedroom': ["The bed looks disturbed. You didn’t touch it."],
-  'Garage': ["You hear a faint metallic clang."],
-  'Basement': ["It smells like mildew and secrets down here."]
-};
+function log(msg) {
+  const logBox = document.getElementById('log');
+  logBox.innerText += '\n' + msg;
+  logBox.scrollTop = logBox.scrollHeight;
+}
 
-// === Van Inventory ===
-const vanStock = {
-  'EMF Reader': 1, 'Spirit Box': 1, 'Ghost Writing Book': 1,
-  'Candle': 4, 'Smudge Stick': 4, 'Salt': 3,
-  'UV Light': 1, 'Thermometer': 1, 'Camera': 1,
-  'Parabolic Mic': 1, 'Crucifix': 1, 'Proximity Sensor': 1
-};
+function speakNarration(text) {
+  if ('speechSynthesis' in window) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = speechSynthesis.getVoices().find(v => v.lang.includes('en') && v.name.includes('Female')) || null;
+    utterance.pitch = 1.05;
+    utterance.rate = 0.96;
+    speechSynthesis.speak(utterance);
+  }
+}
 
-// === HUD ===
 function updateHUD() {
   document.getElementById('turn-count').innerText = turn;
   document.getElementById('sanity-count').innerText = `${sanity}%`;
   document.getElementById('xp-count').innerText = xp;
   document.getElementById('level-count').innerText = level;
   const items = Object.keys(inventory);
-  document.getElementById('inventory-list').innerText = items.length ? items.join(', ') : 'none';
+  const invText = items.length ? items.join(', ') : 'none';
+  document.getElementById('inventory-list').innerText = invText;
 }
 
-// === Narration ===
-function log(msg) {
-  const box = document.getElementById('log');
-  box.innerText += '\n' + msg;
-  box.scrollTop = box.scrollHeight;
+function getItemObject(name) {
+  return allItems.find(i => i.name === name);
 }
 
-function speakNarration(text) {
-  if ('speechSynthesis' in window) {
-    const u = new SpeechSynthesisUtterance(text);
-    u.voice = speechSynthesis.getVoices().find(v => v.lang.includes('en') && v.name.includes('Female')) || null;
-    u.pitch = 1.05;
-    u.rate = 0.96;
-    speechSynthesis.speak(u);
-  }
+function addItem(name) {
+  if (Object.keys(inventory).length >= 3) return log("❌🤬❌ 3 item limit ❌🤬❌");
+  inventory[name] = true;
+  updateHUD();
 }
 
-function narrateRoom() {
-  const lines = ambientText[currentRoom] || ["You feel watched from somewhere unseen."];
-  if (Math.random() < 0.4) log("🧠 " + lines[Math.floor(Math.random() * lines.length)]);
+function removeItem(name) {
+  delete inventory[name];
+  updateHUD();
 }
 
-// === Loadout ===
+function useItem(name) {
+  if (!inventory[name]) return log("Currently have 0 " + name + ".");
+  log(`🧪 You used ${name}.`);
+  const item = getItemObject(name);
+  if (item && !item.permanent) removeItem(name);
+  advanceTurn(true);
+}
+
+function assignGhost() {
+  ghost = ghostList[Math.floor(Math.random() * ghostList.length)];
+  favoriteRoom = roomList[Math.floor(Math.random() * roomList.length)];
+  log(`It seems the 👻 has been summoned with a cursed object.. be careful out there..`);
+}
+</script>
+<script>
+// ==== Loadout + Inventory System Refactored ====
+function getItemByName(name) {
+  return allItems.find(obj => obj.name === name);
+}
+
+function addItem(itemName) {
+  if (Object.keys(inventory).length >= 3) return log("❌🤬❌ 3 item limit ❌🤬❌");
+  inventory[itemName] = true;
+  updateHUD();
+}
+
+function removeItem(itemName) {
+  delete inventory[itemName];
+  updateHUD();
+}
+
+function useItem(itemName) {
+  if (!inventory[itemName]) return log("Currently have 0 " + itemName + ".");
+  const item = getItemByName(itemName);
+  log(`🧪 You used ${itemName}.`);
+  if (!item.permanent) removeItem(itemName);
+  advanceTurn(true);
+}
+
+function showDropMenu() {
+  const items = Object.keys(inventory);
+  const container = document.getElementById('van-options');
+  container.innerHTML = '';
+  if (!items.length) return log("🍪 Nothing to drop.");
+
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = `Drop ${item}`;
+    btn.onclick = () => {
+      removeItem(item);
+      log(`🚩 Dropped ${item}.`);
+      advanceTurn(true);
+      document.getElementById('van-panel').classList.add('hidden');
+    };
+    container.appendChild(btn);
+  });
+  document.getElementById('van-panel').classList.remove('hidden');
+}
+
+function renderVanInterface() {
+  const container = document.getElementById('van-options');
+  container.innerHTML = "<h3>Manage Van Loadout</h3>";
+  allItems.forEach(({ name }) => {
+    const inInventory = !!inventory[name];
+    const stock = vanStock[name] ?? 0;
+
+    const btn = document.createElement('button');
+    btn.innerText = `${name} ${inInventory ? '[-]' : `[+${stock}]`}`;
+    btn.style.background = inInventory ? '#800' : '#060';
+
+    btn.onclick = () => {
+      if (inInventory) {
+        removeItem(name);
+        vanStock[name] = (vanStock[name] || 0) + 1;
+      } else {
+        if (Object.keys(inventory).length >= 3) return log("❌3 item limit❌");
+        if (stock <= 0) return log("❌Zero in stock❌");
+        inventory[name] = true;
+        vanStock[name]--;
+      }
+      updateHUD();
+      renderVanInterface();
+    };
+
+    container.appendChild(btn);
+  });
+
+  const doneBtn = document.createElement('button');
+  doneBtn.innerText = "Done";
+  doneBtn.style.background = '#444';
+  doneBtn.onclick = () => {
+    document.getElementById('van-panel').classList.add('hidden');
+  };
+  container.appendChild(doneBtn);
+}
+
 function renderLoadoutOptions() {
   const loadoutDiv = document.getElementById('loadout-options');
   const confirmBtn = document.getElementById('loadout-confirm');
-  loadoutDiv.innerHTML = '';
+  const loadoutScreen = document.getElementById('loadout-screen');
 
   allItems.forEach(({ name }) => {
     const b = document.createElement('button');
@@ -411,143 +468,92 @@ function renderLoadoutOptions() {
     loadoutDiv.appendChild(b);
   });
 
- confirmBtn.onclick = () => {
-  if (selectedLoadout.length === 0) {
-    alert("You must pick at least one item.");
-    return;
-  }
-  selectedLoadout.forEach(name => inventory[name] = true);
-  updateHUD();
-  assignGhost();
-  renderEvidenceChecklist();
-  document.getElementById('loadout-screen').remove();
-  speakNarration("Welcome back. I've prepared some jobs for you.");
+  confirmBtn.onclick = () => {
+    if (selectedLoadout.length === 0) {
+      alert("You must pick at least one item.");
+      return;
+    }
+    selectedLoadout.forEach(name => inventory[name] = true);
+    updateHUD();
+    assignGhost();
+    renderEvidenceChecklist();
+    loadoutScreen.remove();
+    speakNarration("Welcome back. I've prepared some jobs for you.");
+  };
+}
+</script>
+<script>
+// === Map Room Connections ===
+const roomMap = {
+  'Foyer':        { North: 'Living Room', East: 'Garage', South: 'Basement' },
+  'Living Room':  { South: 'Foyer', East: 'Kitchen', West: 'Dining Room' },
+  'Kitchen':      { West: 'Living Room' },
+  'Dining Room':  { East: 'Living Room' },
+  'Bathroom':     { North: 'Bedroom' },
+  'Bedroom':      { South: 'Bathroom' },
+  'Garage':       { West: 'Foyer' },
+  'Basement':     { North: 'Foyer' }
 };
 
-}
-
-// === Turn System ===
-function advanceTurn(trigger = false) {
-  turn++;
-  sanity = Math.max(0, sanity - 5);
-  updateHUD();
-  if (trigger && (Math.random() < (currentRoom === favoriteRoom ? 0.5 : 0.2))) {
-    log(`👻 Something stirs in the ${currentRoom}...`);
-  }
-  if (sanity <= 0 && !huntActive) triggerHunt();
-}
-<body>
-  <div id="hud">
-    Turn: <span id="turn-count">1</span> |
-    Sanity: <span id="sanity-count">100</span>% |
-    Inventory: <span id="inventory-list">none</span> |
-    XP: <span id="xp-count">0</span> |
-    Level: <span id="level-count">1</span>
-    <button id="journal-btn">📓</button>
-  </div>
-
-  <div id="floor-items-bar"></div>
-
-  <div id="interface-buttons">
-    <button id="van-btn">Van</button>
-    <button id="action-btn">Action</button>
-    <button id="guess-btn">Guess Ghost</button>
-    <button onclick="showMoveMenu()">Move</button>
-  </div>
-
-  <div id="action-panel" class="hidden">
-    <button id="drop-btn">Drop Item</button>
-    <button id="pickup-btn">Pick Up Item</button>
-    <button id="use-btn">Use Item</button>
-    <button id="action-back-btn">Back</button>
-  </div>
-
-  <div id="van-panel" class="hidden" style="width: 100%; max-width: 480px; margin: auto; background: rgba(0, 0, 0, 0.85); border: 1px solid #555; padding: 10px; border-radius: 8px;">
-    <div style="text-align:center; font-weight:bold; margin-bottom: 10px;">Van Inventory</div>
-    <div id="van-options" style="display:flex; flex-wrap:wrap; gap:8px; justify-content:center; max-height: 300px; overflow-y: auto;"></div>
-    <div style="margin-top:10px; text-align:center;">
-      <button id="van-back-btn" style="width: 45%;">Back</button>
-    </div>
-  </div>
-
-  <div id="loadout-screen">
-    <h2>Pick up to 3 Items</h2>
-    <div id="loadout-options"></div>
-    <button id="loadout-confirm">Begin Investigation</button>
-  </div>
-
-<script>
-// === Evidence Checklist ===
-function renderEvidenceChecklist() {
-  const container = document.getElementById('evidence-checklist');
-  container.innerHTML = '';
-  allEvidence.forEach(ev => {
-    const label = document.createElement('label');
-    const box = document.createElement('input');
-    box.type = 'checkbox';
-    box.value = ev;
-    box.onchange = updatePossibleGhosts;
-    label.appendChild(box);
-    label.appendChild(document.createTextNode(' ' + ev));
-    container.appendChild(label);
-  });
-}
-
-function updatePossibleGhosts() {
-  const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
-  const list = document.getElementById('possible-ghosts');
-  list.innerHTML = '';
-
-  if (selected.length === 0) {
-    list.innerHTML = '<li>All ghosts possible</li>';
+function movePlayer(direction) {
+  const dest = roomMap[currentRoom]?.[direction];
+  if (!dest) {
+    log(`❌ You can't go ${direction} from the ${currentRoom}`);
     return;
   }
-
-  const matches = ghostList.filter(g => selected.every(e => ghostEvidenceMap[g].includes(e)));
-  list.innerHTML = matches.length
-    ? matches.map(g => `<li>${g}</li>`).join('')
-    : '<li>No matching ghost</li>';
-}
-</script>
-
-<script>
-// === Cursed Item Logic & Tarot ===
-const tarotDeck = [
-  "🃏 The Fool – Nothing happens.",
-  "💀 Death – A hunt begins immediately!",
-  "☀️ The Sun – Full sanity restored.",
-  "🌑 The Moon – Sanity drops to 0.",
-  "🎡 Wheel of Fortune – Random sanity shift.",
-  "🗼 The Tower – Loud noise, ghost moves to your room.",
-  "🧙 The Hermit – Ghost temporarily bound.",
-  "👼 High Priestess – Protective spirit surrounds you."
-];
-
-function useCursedItem(name) {
-  log(`🔮 You used the ${name}...`);
-  if (name.toLowerCase().includes('tarot')) drawTarotCard();
+  currentRoom = dest;
+  log(`🚪 You move ${direction} to the ${dest}.`);
   advanceTurn(true);
+  narrateRoom();
 }
 
-function drawTarotCard() {
-  const card = tarotDeck[Math.floor(Math.random() * tarotDeck.length)];
-  log("🃏 Tarot Card Drawn: " + card);
-
-  if (card.includes("hunt")) triggerHunt();
-  if (card.includes("Full sanity")) sanity = 100;
-  if (card.includes("drops to 0")) sanity = 0;
-  if (card.includes("Random sanity")) sanity = Math.floor(Math.random() * 100);
-  if (card.includes("moves to your room")) {
-    favoriteRoom = currentRoom;
-    log("👣 You hear footsteps approaching...");
-  }
-
-  updateHUD();
+function tryMove(dir) {
+  movePlayer(dir);
 }
 </script>
-
 <script>
-// === XP System ===
+// === Room-Based Ambient Narration ===
+const ambientText = {
+  'Foyer': ["The air feels colder than it should."],
+  'Living Room': ["A TV screen reflects something behind you."],
+  'Kitchen': ["Utensils rattle faintly in the drawer."],
+  'Dining Room': ["One chair has been pulled out recently."],
+  'Bathroom': ["The mirror fogs despite no steam."],
+  'Bedroom': ["The bed looks disturbed. You didn’t touch it."],
+  'Garage': ["You hear a faint metallic clang."],
+  'Basement': ["It smells like mildew and secrets down here."]
+};
+
+function narrateRoom() {
+  const lines = ambientText[currentRoom] || ["You feel watched from somewhere unseen."];
+  if (Math.random() < 0.4) {
+    const thought = lines[Math.floor(Math.random() * lines.length)];
+    log("🧠 " + thought);
+  }
+}
+</script>
+<script>
+// === Room-Based Ambient Narration ===
+const ambientText = {
+  'Foyer': ["The air feels colder than it should."],
+  'Living Room': ["A TV screen reflects something behind you."],
+  'Kitchen': ["Utensils rattle faintly in the drawer."],
+  'Dining Room': ["One chair has been pulled out recently."],
+  'Bathroom': ["The mirror fogs despite no steam."],
+  'Bedroom': ["The bed looks disturbed. You didn’t touch it."],
+  'Garage': ["You hear a faint metallic clang."],
+  'Basement': ["It smells like mildew and secrets down here."]
+};
+
+function narrateRoom() {
+  const lines = ambientText[currentRoom] || ["You feel watched from somewhere unseen."];
+  if (Math.random() < 0.4) {
+    const thought = lines[Math.floor(Math.random() * lines.length)];
+    log("🧠 " + thought);
+  }
+}
+</script>
+<script>
 function gainXP(amount) {
   xp += amount;
   while (xp >= level * 100) {
@@ -558,64 +564,7 @@ function gainXP(amount) {
   updateHUD();
 }
 </script>
-
 <script>
-// === Ghost Guessing ===
-document.getElementById('guess-btn').onclick = () => {
-  const container = document.getElementById('van-options');
-  container.innerHTML = '<h3>Guess the Ghost</h3>';
-
-  ghostList.forEach(g => {
-    const b = document.createElement('button');
-    b.innerText = g;
-    b.onclick = () => {
-      if (!ghost) return;
-      if (g === ghost) {
-        log(`✅ Correct! It was a ${g}. You gain 50 XP.`);
-        gainXP(50);
-      } else {
-        log(`❌ Wrong! The ghost was a ${ghost}.`);
-      }
-      endGame(g === ghost);
-      document.getElementById('van-panel').classList.add('hidden');
-    };
-    container.appendChild(b);
-  });
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.innerText = 'Cancel';
-  cancelBtn.onclick = () => {
-    document.getElementById('van-panel').classList.add('hidden');
-  };
-  container.appendChild(cancelBtn);
-
-  document.getElementById('van-panel').classList.remove('hidden');
-};
-</script>
-
-<script>
-// === Hunt & Death ===
-function triggerHunt() {
-  huntActive = true;
-  log("💀 The ghost has begun a hunt!");
-  setTimeout(() => resolveHunt(), 2000);
-}
-
-function resolveHunt() {
-  if (currentRoom === favoriteRoom || Math.random() < 0.5) {
-    log("☠️ The ghost found you. You died.");
-    endGame(false);
-  } else {
-    log("🏃 You evaded the ghost. It’s quiet… for now.");
-    huntActive = false;
-    sanity = Math.max(0, sanity - 30);
-    updateHUD();
-  }
-}
-</script>
-
-<script>
-// === End Game & Restart ===
 function endGame(won) {
   const msg = won
     ? `🎉 You survived and earned ${xp} XP.`
@@ -642,64 +591,66 @@ function restartGame() {
   document.getElementById('action-panel').classList.add('hidden');
   updateHUD();
 }
-
+</script>
+<script>
 document.addEventListener('DOMContentLoaded', () => {
-  const panel = document.createElement('div');
-  panel.id = 'game-over-panel';
-  panel.style = `
-    display: none;
-    position: fixed;
-    top: 30%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: black;
-    color: white;
-    padding: 20px;
-    border: 2px solid red;
-    text-align: center;
-    z-index: 999;
+  const div = document.createElement('div');
+  div.id = 'game-over-panel';
+  div.style = `
+    display:none;
+    position:fixed;
+    top:30%;
+    left:50%;
+    transform:translateX(-50%);
+    background:black;
+    color:white;
+    padding:20px;
+    border:2px solid red;
+    text-align:center;
+    z-index:999;
   `;
-  panel.innerHTML = '<h2 id="game-over-message"></h2><button onclick="restartGame()">Restart</button>';
-  document.body.appendChild(panel);
+  div.innerHTML = '<h2 id="game-over-message"></h2><button onclick="restartGame()">Restart</button>';
+  document.body.appendChild(div);
 });
 </script>
 <script>
-// === Ambient Narration Hooks ===
-const actionNarration = {
-  move: [
-    "Your footsteps echo in the silence.",
-    "You step carefully, every board creaking underfoot.",
-    "The shadows shift as you pass by."
-  ],
-  investigate: [
-    "You pause to listen. Something stirs.",
-    "A chill moves down your spine.",
-    "Goosebumps form as the air thickens."
-  ],
-  cursed: [
-    "Your fingers tingle from the cursed artifact.",
-    "A strange pressure builds in your skull.",
-    "Something unseen watches more intently now."
-  ],
-  evidence: [
-    "That confirms a suspicion...",
-    "You jot it down before you forget.",
-    "It might not be alone here..."
-  ]
-};
+const tarotDeck = [
+  "🃏 The Fool – Nothing happens.",
+  "💀 Death – A hunt begins immediately!",
+  "☀️ The Sun – Full sanity restored.",
+  "🌑 The Moon – Sanity drops to 0.",
+  "🎡 Wheel of Fortune – Random sanity shift.",
+  "🗼 The Tower – Loud noise, ghost moves to your room.",
+  "🧙 The Hermit – Ghost temporarily bound.",
+  "👼 High Priestess – Protective spirit surrounds you."
+];
 
-function narrateAction(type) {
-  const lines = actionNarration[type] || [];
-  if (lines.length && Math.random() < 0.5) {
-    const line = lines[Math.floor(Math.random() * lines.length)];
-    log("🧠 " + line);
+function useCursedItem(name) {
+  log(`🔮 You used the ${name}...`);
+  if (name.toLowerCase().includes('tarot')) {
+    drawTarotCard();
   }
+  advanceTurn(true);
+}
+
+function drawTarotCard() {
+  const card = tarotDeck[Math.floor(Math.random() * tarotDeck.length)];
+  log("🃏 Tarot Card Drawn: " + card);
+
+  if (card.includes("hunt")) triggerHunt();
+  if (card.includes("Full sanity")) sanity = 100;
+  if (card.includes("drops to 0")) sanity = 0;
+  if (card.includes("Random sanity")) sanity = Math.floor(Math.random() * 100);
+  if (card.includes("moves to your room")) {
+    favoriteRoom = currentRoom;
+    log("👣 You hear footsteps approaching...");
+  }
+
+  updateHUD();
 }
 </script>
-
 <script>
-// === Floating Orbs ===
-function spawnOrbs(count = 3) {
+function spawnOrbs(count = 4) {
   for (let i = 0; i < count; i++) {
     const orb = document.createElement('div');
     orb.className = 'orb';
@@ -722,123 +673,201 @@ function spawnOrbs(count = 3) {
   }
 }
 
+// spawn orbs every 6s while game is focused
 setInterval(() => {
   if (document.hasFocus()) {
     spawnOrbs(Math.floor(Math.random() * 2) + 1);
   }
 }, 6000);
 </script>
-
 <script>
-// === Movement UI ===
-function showMoveMenu() {
-  const container = document.getElementById('van-options');
-  container.innerHTML = '<h3>Move to Another Room</h3>';
+const vanStock = {
+  'EMF Reader': 1,
+  'Spirit Box': 1,
+  'Ghost Writing Book': 1,
+  'Candle': 4,
+  'Smudge Stick': 4,
+  'Salt': 3,
+  'UV Light': 1,
+  'Thermometer': 1,
+  'Camera': 1,
+  'Parabolic Mic': 1,
+  'Crucifix': 1,
+  'Proximity Sensor': 1
+};
 
-  const options = roomMap[currentRoom] || {};
-  Object.entries(options).forEach(([dir, room]) => {
+function renderVanInterface() {
+  const container = document.getElementById('van-options');
+  container.innerHTML = "<h3>Manage Van Loadout</h3>";
+
+  allItems.forEach(item => {
+    const name = item.name;
+    const inInventory = !!inventory[name];
+    const stock = vanStock[name] ?? 0;
+
     const btn = document.createElement('button');
-    btn.innerText = `Go ${dir} → ${room}`;
+    btn.innerText = `${name} ${inInventory ? '[-]' : `[+${stock}]`}`;
+    btn.style.background = inInventory ? '#800' : '#060';
+
     btn.onclick = () => {
-      movePlayer(dir);
-      narrateRoom();
-      narrateAction('move');
+      if (inInventory) {
+        removeItem(name);
+        vanStock[name] = (vanStock[name] || 0) + 1;
+      } else {
+        if (Object.keys(inventory).length >= 3) {
+          log("❌3 item limit❌");
+          return;
+        }
+        if (stock <= 0) {
+          log("❌Zero in stock❌");
+          return;
+        }
+        inventory[name] = true;
+        vanStock[name]--;
+      }
+      updateHUD();
+      renderVanInterface();
+    };
+
+    container.appendChild(btn);
+  });
+
+  const doneBtn = document.createElement('button');
+  doneBtn.innerText = "Done";
+  doneBtn.style.background = '#444';
+  doneBtn.onclick = () => {
+    document.getElementById('van-panel').classList.add('hidden');
+  };
+  container.appendChild(doneBtn);
+}
+</script>
+<div id="item-swap-panel" style="
+  display: none;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #111;
+  padding: 10px;
+  border: 1px solid #555;
+  z-index: 30;
+  width: 300px;
+  border-radius: 6px;
+  color: white;
+">
+  <div id="item-swap-header" style="margin-bottom: 10px; text-align: center;">
+    What would you drop for <span id="swap-item-name" style="font-weight:bold;"></span>?
+  </div>
+  <div id="item-swap-options" style="display: flex; flex-wrap: wrap; gap: 10px; justify-content: center;"></div>
+  <div style="margin-top: 10px; text-align: center;">
+    <button onclick="cancelItemSwap()">Nevermind</button>
+    <button onclick="confirmItemSwap()">Confirm</button>
+  </div>
+</div>
+<script>
+let swapTargetItem = null;
+
+function showDropMenu() {
+  const items = Object.keys(inventory);
+  const container = document.getElementById('van-options');
+  container.innerHTML = '';
+  if (!items.length) {
+    log("🍪 Nothing to drop.");
+    return;
+  }
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = `Drop ${item}`;
+    btn.onclick = () => {
+      removeItem(item);
+      log(`🚩 Dropped ${item}.`);
+      advanceTurn(true);
       document.getElementById('van-panel').classList.add('hidden');
     };
     container.appendChild(btn);
   });
-
-  const cancelBtn = document.createElement('button');
-  cancelBtn.innerText = 'Cancel';
-  cancelBtn.onclick = () => {
-    document.getElementById('van-panel').classList.add('hidden');
-  };
-  container.appendChild(cancelBtn);
-
   document.getElementById('van-panel').classList.remove('hidden');
 }
-</script>
 
+function promptItemSwap(newItemName) {
+  swapTargetItem = newItemName;
+  const container = document.getElementById('item-swap-options');
+  container.innerHTML = '';
+  Object.keys(inventory).forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = item;
+    btn.onclick = () => confirmItemSwap(item);
+    container.appendChild(btn);
+  });
+  document.getElementById('swap-item-name').innerText = newItemName;
+  document.getElementById('item-swap-panel').style.display = 'block';
+}
+
+function cancelItemSwap() {
+  document.getElementById('item-swap-panel').style.display = 'none';
+  swapTargetItem = null;
+}
+
+function confirmItemSwap(itemToDrop) {
+  if (!swapTargetItem) return;
+  removeItem(itemToDrop);
+  addItem(swapTargetItem);
+  log(`🔁 Swapped ${itemToDrop} for ${swapTargetItem}.`);
+  document.getElementById('item-swap-panel').style.display = 'none';
+  advanceTurn(true);
+  swapTargetItem = null;
+}
+</script>
 <script>
-// === Final Button Bindings & Init ===
+function endGame(won) {
+  const msg = won
+    ? `🎉 You survived and earned ${xp} XP.`
+    : `🪦 You died. Final XP: ${xp}`;
+  document.getElementById('game-over-message').innerText = msg;
+  document.getElementById('game-over-panel').style.display = 'block';
+}
+
+function restartGame() {
+  inventory = {};
+  selectedLoadout = [];
+  sanity = 100;
+  turn = 1;
+  xp = 0;
+  ghost = null;
+  journalNotes = '';
+  favoriteRoom = '';
+  huntActive = false;
+  document.getElementById('log').innerText = '🧠 Restarted game.';
+  document.getElementById('game-over-panel').style.display = 'none';
+  document.getElementById('loadout-screen').style.display = 'flex';
+  document.getElementById('van-panel').classList.add('hidden');
+  document.getElementById('action-panel').classList.add('hidden');
+  updateHUD();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
-  renderLoadoutOptions(); // Shows buttons
-  document.getElementById('loadout-screen').classList.remove('hidden'); // Ensure it's visible
-});
-
-  document.getElementById('van-btn').onclick = () => {
-    renderVanInterface();
-    document.getElementById('van-panel').classList.remove('hidden');
-    advanceTurn();
-  };
-
-  document.getElementById('action-btn').onclick = () => {
-    document.getElementById('action-panel').classList.remove('hidden');
-  };
-
-  document.getElementById('action-back-btn').onclick = () => {
-    document.getElementById('action-panel').classList.add('hidden');
-  };
-
-  document.getElementById('drop-btn').onclick = showDropMenu;
-
-  document.getElementById('pickup-btn').onclick = () => {
-    const container = document.getElementById('van-options');
-    container.innerHTML = '<h3>Pick Up Item</h3>';
-
-    allItems.forEach(({ name }) => {
-      const btn = document.createElement('button');
-      btn.innerText = name;
-      btn.onclick = () => {
-        if (Object.keys(inventory).length >= 3) {
-          promptItemSwap(name);
-        } else {
-          addItem(name);
-          log(`🎒 Picked up ${name}.`);
-          advanceTurn(true);
-          document.getElementById('van-panel').classList.add('hidden');
-        }
-      };
-      container.appendChild(btn);
-    });
-
-    const cancelBtn = document.createElement('button');
-    cancelBtn.innerText = 'Cancel';
-    cancelBtn.onclick = () => {
-      document.getElementById('van-panel').classList.add('hidden');
-    };
-    container.appendChild(cancelBtn);
-
-    document.getElementById('van-panel').classList.remove('hidden');
-  };
-
-  document.getElementById('use-btn').onclick = () => {
-    const item = prompt("Enter item to use:");
-    if (item && inventory[item]) {
-      useItem(item);
-      narrateAction('investigate');
-    } else {
-      log("❌ You don’t have that.");
-    }
-  };
-
-  document.getElementById('journal-btn').onclick = () => {
-    document.getElementById('journal-entry').value = journalNotes;
-    document.getElementById('journal-panel').style.display = 'block';
-  };
-
-  document.getElementById('journal-close-btn').onclick = () => {
-    journalNotes = document.getElementById('journal-entry').value;
-    document.getElementById('journal-panel').style.display = 'none';
-    log("Notes saved.");
-  };
-  document.addEventListener('DOMContentLoaded', () => {
-  renderLoadoutOptions();
-  document.getElementById('loadout-screen').classList.remove('hidden');
-});
-
+  const div = document.createElement('div');
+  div.id = 'game-over-panel';
+  div.style = `
+    display: none;
+    position: fixed;
+    top: 30%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: black;
+    color: white;
+    padding: 20px;
+    border: 2px solid red;
+    text-align: center;
+    z-index: 999;
+  `;
+  div.innerHTML = '<h2 id="game-over-message"></h2><button onclick="restartGame()">Restart</button>';
+  document.body.appendChild(div);
 });
 </script>
+
+</body>
+
 <div style="
   position: fixed;
   bottom: 0;
