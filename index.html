@@ -374,13 +374,11 @@ document.addEventListener('DOMContentLoaded', () => {
   speakNarration("Welcome back. I've prepared some jobs for you.");
 };
 
- document.getElementById('van-btn').onclick = () => {
+document.getElementById('van-btn').onclick = () => {
   document.getElementById('van-panel').classList.remove('hidden');
-  document.getElementById('van-options').innerHTML = '';
-  renderVanInterface(); // Instead of repeating allItems logic, use this
-  advanceTurn(); // Van visit = 1 turn
+  renderVanInterface();
+  advanceTurn();
 };
-
 
   document.getElementById('van-back-btn').onclick = () => {
   document.getElementById('van-panel').classList.add('hidden');
@@ -679,7 +677,10 @@ function renderVanInterface() {
       const btn = document.createElement('button');
       btn.innerText = `${item} (${count})`;
       btn.onclick = () => {
-        if (Object.keys(inventory).length >= 3) return log("❌ Inventory full.");
+        if (Object.keys(inventory).length >= 3) {
+          log("❌ Inventory full. Return an item first.");
+          return;
+        }
         vanStock[item]--;
         inventory[item] = true;
         updateHUD();
@@ -703,6 +704,7 @@ function renderVanInterface() {
     container.appendChild(btn);
   });
 }
+
 
 // ==== Updated Drop Item UI ====
 function showDropMenu() {
