@@ -341,41 +341,41 @@ function narrateRoom() {
 function renderLoadoutOptions() {
   const loadoutDiv = document.getElementById('loadout-options');
   const confirmBtn = document.getElementById('loadout-confirm');
-  const loadoutScreen = document.getElementById('loadout-screen');
   loadoutDiv.innerHTML = '';
 
   allItems.forEach(({ name }) => {
-    const btn = document.createElement('button');
-    btn.innerText = name;
-    btn.onclick = () => {
+    const b = document.createElement('button');
+    b.innerText = name;
+    b.style.minWidth = '120px';
+    b.onclick = () => {
       const i = selectedLoadout.indexOf(name);
       if (i >= 0) {
         selectedLoadout.splice(i, 1);
-        btn.style.background = '';
+        b.style.background = '';
       } else {
-        if (selectedLoadout.length >= 3) return alert("Max 3 items.");
+        if (selectedLoadout.length >= 3) {
+          alert("Choose up to 3 items.");
+          return;
+        }
         selectedLoadout.push(name);
-        btn.style.background = 'darkgreen';
+        b.style.background = 'darkgreen';
       }
     };
-    loadoutDiv.appendChild(btn);
+    loadoutDiv.appendChild(b);
   });
 
   confirmBtn.onclick = () => {
-    if (selectedLoadout.length === 0) return alert("Select at least one.");
+    if (selectedLoadout.length === 0) {
+      alert("You must pick at least one item.");
+      return;
+    }
     selectedLoadout.forEach(name => inventory[name] = true);
-    loadoutScreen.remove();
+    updateHUD();
     assignGhost();
     renderEvidenceChecklist();
-    updateHUD();
+    document.getElementById('loadout-screen').remove(); // Now hides it
     speakNarration("Welcome back. I've prepared some jobs for you.");
   };
-}
-
-function assignGhost() {
-  ghost = ghostList[Math.floor(Math.random() * ghostList.length)];
-  favoriteRoom = roomList[Math.floor(Math.random() * roomList.length)];
-  log(`It seems the 👻 has been summoned with a cursed object.. be careful out there..`);
 }
 
 // === Turn System ===
