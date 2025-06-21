@@ -366,12 +366,13 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   confirmBtn.onclick = () => {
-    selectedLoadout.forEach(item => inventory[item] = true);
-    assignGhost();
-    updateHUD();
-    renderEvidenceChecklist();
-    loadoutScreen.remove();
-  };
+  selectedLoadout.forEach(item => inventory[item] = true);
+  assignGhost();
+  updateHUD();
+  renderEvidenceChecklist();
+  loadoutScreen.remove();
+  speakNarration("Welcome back. I've prepared some jobs for you.");
+};
 
   document.getElementById('van-btn').onclick = () => {
     document.getElementById('van-panel').classList.remove('hidden');
