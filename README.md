@@ -39,11 +39,8 @@ Visit `http://localhost:8000` in your browser.
 ## 📁 Contents
 
 - `index.html` – main UI core with ADA visuals
-- `*.js` – complete gameplay engine and logic modules
-- `styles.css` – UI theming
-- `manifest.json` – PWA install metadata
-- `service-worker.js` – enables offline functionality
-
+- 'Title.png'
+- logo.png
 ---
 
 ## 📱 Install as App (PWA)
