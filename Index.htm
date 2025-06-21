@@ -159,6 +159,124 @@
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
+
+  <!-- Button Logic Rendering -->
+  <script>
+    function renderOptions() {
+      const container = document.getElementById('option-buttons');
+      container.innerHTML = '';
+
+      const btn = (label, handler) => {
+        const b = document.createElement('button');
+        b.innerText = label;
+        b.onclick = handler;
+        container.appendChild(b);
+      };
+
+      btn('Move', () => {
+        container.innerHTML = '';
+        ['North', 'East', 'South', 'West'].forEach(dir => {
+          const d = document.createElement('button');
+          d.innerText = `Go ${dir}`;
+          d.onclick = () => {
+            displayNarratorText(movePlayer(dir));
+            tickTurn();
+            renderMinimap();
+            renderOptions();
+          };
+          container.appendChild(d);
+        });
+        const back = document.createElement('button');
+        back.innerText = 'Back';
+        back.onclick = renderOptions;
+        container.appendChild(back);
+      });
+
+      btn('Investigate', () => {
+        displayNarratorText(performBehavior(getCurrentRoom()));
+        adjustSanity(-5);
+        tickTurn();
+        renderMinimap();
+      });
+
+      btn('Use Item', () => {
+        const items = getInventory();
+        container.innerHTML = '';
+        if (!items.length) {
+          displayNarratorText("🧳 You have no items.");
+          renderOptions();
+          return;
+        }
+        items.forEach(item => {
+          const i = document.createElement('button');
+          i.innerText = `Use ${item}`;
+          i.onclick = () => {
+            displayNarratorText(useItem(item, getCurrentRoom(), getCurrentGhost().type));
+            narrateItemThought(item);
+            tickTurn();
+            renderMinimap();
+            renderOptions();
+          };
+          container.appendChild(i);
+        });
+        const back = document.createElement('button');
+        back.innerText = 'Back';
+        back.onclick = renderOptions;
+        container.appendChild(back);
+      });
+
+      btn('Drop Item', dropItemMenu);
+      btn('Pick Up Item', pickupMenu);
+      btn('Guess Ghost', guessMenu);
+
+      btn('Return to Van', () => {
+        isVanAccess = true;
+        showLoadoutMenu();
+        document.getElementById('loadout-screen').style.display = 'block';
+      });
+
+      renderMinimap();
+    }
+  </script>
+
+<body>
+  <h1>Phasma‑Phoney</h1>
+  <button id="start-btn">Start Investigation</button>
+
+  <div id="loadout-screen" class="hidden">
+    <h2>Select Your Loadout</h2>
+    <div id="loadout-options"></div>
+    <button id="confirm-loadout">Confirm</button>
+    <button id="back-btn">Back</button>
+  </div>
+
+  <div id="game-screen" class="hidden">
+    <div id="left-panel">
+      <button id="journal-btn">📓 Open Journal</button>
+      <div id="option-buttons"></div>
+    </div>
+    <div id="center-panel">
+      <div id="narrator-box">
+        <div id="system-text"></div>
+        <div id="narrator-thought"></div>
+      </div>
+      <div id="main-readout">🕯️ You enter the house...</div>
+      <div id="hud-status"></div>
+      <div id="minimap"></div>
+    </div>
+    <div id="right-panel">
+      <h3>Evidence Checklist</h3>
+      <div id="evidence-checklist"></div>
+      <ul id="possible-ghosts"></ul>
+    </div>
+  </div>
+
+  <div id="journal-screen" class="hidden">
+    <h2>Investigation Journal</h2>
+    <textarea id="journal-entry" rows="8" cols="40"></textarea><br/>
+    <button id="save-journal">Save</button>
+    <button id="close-journal">Close</button>
+  </div>
 <!-- Logic Block: _ghost_system -->
 <script>
 const ghostTypes = [
