@@ -710,7 +710,7 @@ function spawnOrbs(count = 4) {
     const duration = 8 + Math.random() * 10;
     orb.style.animationDuration = `${duration}s, ${duration}s`;
     orb.style.animationDelay = `0s, ${Math.random() * 3}s`;
-    document..appendChild(orb);
+    document.appendChild(orb);
     setTimeout(() => {
       orb.style.transition = 'opacity 2s ease-out';
       orb.style.opacity = 0;
@@ -787,7 +787,7 @@ function renderVanInterface() {
 }
 
 
-<div id="item-swap-panel" style="display:none;position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#111;padding:10px;border:1px solid #555;z-index:30;width:300px;">
+<div id="item-swap-panel"style="display:none;position:absolute;top:20%;left:50%;transform:translateX(-50%);background:#111;padding:10px;border:1px solid #555;z-index:30;width:300px;">
   <div id="item-swap-header">What would you drop for <span id="swap-item-name"></span>?</div>
   <div id="item-swap-options" style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px;justify-content:center;"></div>
   <div style="margin-top:10px;text-align:center;">
