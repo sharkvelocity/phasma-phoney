@@ -216,12 +216,59 @@
       <button id="van-back-btn" style="width: 45%;">Back</button>
     </div>
   </div>
+<script>
+// === Loadout + Inventory System (Wired) ===
+function renderLoadoutOptions() {
+  const loadoutDiv = document.getElementById('loadout-options');
+  const confirmBtn = document.getElementById('loadout-confirm');
+  const loadoutScreen = document.getElementById('loadout-screen');
 
-  <div id="loadout-screen">
-  <h2 style="margin-bottom: 0;">Pick up to 3 Items</h2>
-  <p style="margin-top: 5px; font-size: 14px;">Your starting inventory</p>
-  <div id="loadout-options"></div>
-  <button id="loadout-confirm">Begin Investigation</button>
+  loadoutDiv.innerHTML = ''; // Clear any previous buttons
+
+  allItems.forEach(({ name }) => {
+    const btn = document.createElement('button');
+    btn.innerText = name;
+    btn.style.minWidth = '120px';
+
+    btn.onclick = () => {
+      const i = selectedLoadout.indexOf(name);
+      if (i >= 0) {
+        selectedLoadout.splice(i, 1);
+        btn.style.background = '';
+      } else {
+        if (selectedLoadout.length >= 3) {
+          alert("Choose up to 3 items.");
+          return;
+        }
+        selectedLoadout.push(name);
+        btn.style.background = 'darkgreen';
+      }
+    };
+
+    loadoutDiv.appendChild(btn);
+  });
+
+  confirmBtn.onclick = () => {
+    if (selectedLoadout.length === 0) {
+      alert("You must pick at least one item.");
+      return;
+    }
+    selectedLoadout.forEach(name => inventory[name] = true);
+    updateHUD();
+    assignGhost();
+    renderEvidenceChecklist();
+    loadoutScreen.remove();
+    speakNarration("Welcome back. I've prepared some jobs for you.");
+  };
+}
+
+// === Auto-run on DOM Load ===
+document.addEventListener('DOMContentLoaded', () => {
+  renderLoadoutOptions();
+  document.getElementById('loadout-screen').classList.remove('hidden');
+});
+</script>
+
 </div>
 <script>
 // === Global State ===
