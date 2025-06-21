@@ -1009,6 +1009,180 @@ function showLoadoutMenu() {
   });
 }
 </script>
+<script>
+function displayNarratorText(text) {
+  const systemBox = document.getElementById('system-text');
+  const readout = document.getElementById('main-readout');
+  systemBox.innerText = text;
+  readout.innerText += `\n${text}`;
+  readout.scrollTop = readout.scrollHeight;
+}
+</script>
+<script>
+let sanity = 100;
+let xp = 0;
+let turn = 1;
+let cursedItemsUsed = 0;
+let ghostActivityLevel = 0;
+let lastAction = 'idle';
+
+function resetStats() {
+  sanity = 100;
+  xp = 0;
+  turn = 1;
+  cursedItemsUsed = 0;
+  ghostActivityLevel = 0;
+  lastAction = 'idle';
+}
+
+function adjustSanity(change) {
+  sanity = Math.max(0, Math.min(100, sanity + change));
+}
+
+function getSanity() {
+  return sanity;
+}
+
+function getXP() {
+  return xp;
+}
+
+function triggerHunt() {
+  lastAction = 'hunt';
+  ghostActivityLevel = 10;
+  adjustSanity(-30);
+  displayNarratorText("💀 The ghost begins a hunt!");
+}
+</script>
+<script>
+function renderMinimap() {
+  const minimap = document.getElementById('minimap');
+  if (!minimap) return;
+
+  const neighbors = roomMap[getCurrentRoom()] || {};
+  const directions = ['North', 'East', 'South', 'West'];
+
+  minimap.innerHTML = `<h3>Minimap</h3><p>Current Room: <strong>${getCurrentRoom()}</strong></p>`;
+  directions.forEach(dir => {
+    const dest = neighbors[dir];
+    if (dest) {
+      const line = document.createElement('div');
+      line.innerText = `🧭 ${dir} → ${dest}`;
+      minimap.appendChild(line);
+    }
+  });
+}
+</script>
+<script>
+function dropItemMenu() {
+  const items = getInventory().filter(i => !alwaysWithYou.includes(i));
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  if (!items.length) {
+    displayNarratorText("📦 You have nothing to drop.");
+    renderOptions();
+    return;
+  }
+
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = `Drop ${item}`;
+    btn.onclick = () => {
+      displayNarratorText(dropItem(item));
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+
+function pickupMenu() {
+  const room = getCurrentRoom();
+  const items = roomItems[room] || [];
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  if (!items.length) {
+    displayNarratorText("📭 Nothing to pick up here.");
+    renderOptions();
+    return;
+  }
+
+  items.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = `Pick Up ${item}`;
+    btn.onclick = () => {
+      displayNarratorText(pickUpItem(item));
+      renderOptions();
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+</script>
+<script>
+function guessMenu() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+  const ghosts = Object.keys(ghostEvidenceMap);
+
+  ghosts.forEach(ghost => {
+    const btn = document.createElement('button');
+    btn.innerText = ghost;
+    btn.onclick = () => {
+      const correct = ghost === getCurrentGhost().type;
+      const message = correct
+        ? `✅ Correct! The ghost was a ${ghost}. You've survived and earned XP!`
+        : `❌ Wrong. It was actually a ${getCurrentGhost().type}. Better luck next time.`;
+      if (correct) xp += 50;
+      displayNarratorText(message);
+      document.getElementById('option-buttons').innerHTML = '';
+    };
+    container.appendChild(btn);
+  });
+
+  const back = document.createElement('button');
+  back.innerText = 'Back';
+  back.onclick = renderOptions;
+  container.appendChild(back);
+}
+</script>
+<script>
+function showLoadoutMenu() {
+  const container = document.getElementById('loadout-options');
+  container.innerHTML = '';
+  selectedLoadout = [];
+
+  allItems.forEach(item => {
+    const btn = document.createElement('button');
+    btn.innerText = item;
+    btn.onclick = () => {
+      const idx = selectedLoadout.indexOf(item);
+      if (idx >= 0) {
+        selectedLoadout.splice(idx, 1);
+        btn.style.background = '';
+      } else {
+        if (selectedLoadout.length >= 3) {
+          alert("🎒 You can only carry 3 items.");
+          return;
+        }
+        selectedLoadout.push(item);
+        btn.style.background = 'darkgreen';
+      }
+    };
+    container.appendChild(btn);
+  });
+}
+</script>
 
 
 </body>
