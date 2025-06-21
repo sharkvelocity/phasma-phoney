@@ -307,8 +307,10 @@ function updateNotes(txt) {
 
 function initializeJournal() {
   document.getElementById('journal-entry').value = journalNotes;
-  renderEvidenceChecklist();
+  const container = document.getElementById('evidence-checklist');
+  if (container) renderEvidenceChecklist();
 }
+
 
 const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
 
