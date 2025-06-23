@@ -4,96 +4,111 @@
   <meta charset="utf-8" />
   <title>PhasmaPhoney</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="author" content="Shark-Blades" />
-  <meta name="description" content="Turn-based ghost hunting strategy game based on Phasmophobia." />
-  <meta name="keywords" content="PhasmaPhoney, Phasmophobia, ghost, hunting, game, HTML" />
-
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
+      background: #000;
+      color: #0ff;
+      font-family: monospace;
       height: 100%;
-      width: 100%;
-      background-color: #000;
-      font-family: Helvetica, Arial, sans-serif;
+      overflow: hidden;
     }
 
     button {
       background: #000;
       color: #0ff;
       border: 1px solid #0ff;
-      font-family: monospace;
-      padding: 8px 16px;
+      padding: 8px 14px;
       margin: 4px;
-      cursor: pointer;
       border-radius: 4px;
-      transition: background 0.3s, color 0.3s;
+      cursor: pointer;
     }
     button:hover {
       background: #0ff;
       color: #000;
     }
 
-    #flash-overlay {
+    #orb-canvas, #background-logo, #background-image {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: white;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    #orb-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: 9999;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -2;
     }
 
     #background-logo {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url("./logo.png");
-      background-repeat: no-repeat;
-      background-position: center center;
-      background-size: contain;
+      background: url('./logo.png') center/contain no-repeat;
       opacity: 0.1;
-      z-index: -4;
-    }
-
-    #background-image {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url("./house.png");
-      background-size: cover;
-      background-position: center;
       z-index: -3;
     }
 
+    #background-image {
+      background: url('./house.png') center/cover no-repeat;
+      z-index: -2;
+    }
+
     #status-bar {
-      margin-top: 10px;
-      font-family: monospace;
-      color: #0ff;
+      padding: 10px;
+      background: #000;
     }
 
-    @keyframes typing-blink {
-      0%, 100% { opacity: 0; }
-      50% { opacity: 1; }
+    #game-ui {
+      margin: 20px;
+      padding: 10px;
+      border: 1px solid #0ff;
+      background: #000;
     }
 
-    #ada-typing {
-      font-family: monospace;
+    #ada-modal {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      border: 2px solid #0ff;
+      padding: 20px;
+      width: 90%;
+      max-width: 600px;
+      height: 80%;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+
+    #loadout-screen, #journal-screen, #item-popup, #van-panel, #guess-popup {
+      display: none;
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: #111;
+      border: 2px solid #0ff;
+      padding: 20px;
+      width: 90%;
+      max-width: 500px;
+      z-index: 9999;
+      box-shadow: 0 0 15px rgba(0,255,255,0.3);
+    }
+
+    #journal-text {
+      width: 100%;
+      height: 200px;
+      background: #000;
       color: #0ff;
-      display: inline-block;
-      margin-left: 4px;
-      animation: typing-blink 1s infinite;
+      border: 1px solid #0ff;
+      padding: 10px;
+    }
+
+    #evidence-panel {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      width: 240px;
+      background: #111;
+      border: 1px solid #0ff;
+      padding: 10px;
+      font-family: monospace;
+      z-index: 9999;
     }
 
     footer {
@@ -102,91 +117,192 @@
       left: 50%;
       transform: translateX(-50%);
       color: white;
-      font-size: 0.9em;
-      font-family: sans-serif;
+      font-size: 0.8em;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 4px 12px;
       z-index: 9999;
     }
   </style>
 </head>
 <body>
-  <div id="flash-overlay"></div>
+  <canvas id="orb-canvas"></canvas>
   <div id="background-logo"></div>
   <div id="background-image"></div>
-  <canvas id="orb-canvas"></canvas>
 
-  <!-- Main Menu -->
-  <div id="main-menu" style="text-align: center; color: white; margin-top: 40px;">
-    <ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
-      <button id="start-button-ada">Start</button>
-    </ul>
-    <p style="font-style: italic; font-size: 0.95em;">
-      Deo: “Welcome back, PhasmaPhoney. Let’s hope your deduction is better than your taste in candles.”
-    </p>
+  <div id="loadout-screen">
+    <h2>Select Your Loadout (Pick 3)</h2>
+    <div id="item-selection" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+    <button onclick="confirmLoadout()">Confirm Loadout</button>
+    <button onclick="randomLoadout()">Random Loadout</button>
   </div>
 
-  <!-- ADA Modal -->
-  <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
-    transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
-    border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
-    max-width:600px;height:80%;color:#0ff;font-family:monospace;">
-    <div id="ada-log" style="height:85%;overflow-y:auto;padding:10px;
-          background:#000;border:1px solid #333;margin-bottom:10px;">
-      ADA: I'm here to assist you. Tap a command or use an item.
-    </div>
-    <div id="command-buttons" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+  <div id="journal-screen">
+    <h3>Investigation Notes</h3>
+    <textarea id="journal-text" placeholder="Write your notes..."></textarea>
+    <br />
+    <button onclick="closeJournal()">Close</button>
+  </div>
+
+  <div id="status-bar">
+    Turn: <span id="turn-counter">0</span> |
+    Sanity: <span id="sanity-bar">100</span>%
+  </div>
+
+  <div id="evidence-panel">
+    <h3 style="margin-top:0;">Evidence</h3>
+    <div id="evidence-checklist" style="display:flex; flex-direction:column; gap:6px;"></div>
+    <p id="remaining-ghosts" style="margin-top:10px; font-size:0.85em; color:#0f0;"></p>
+  </div>
+
+  <div id="game-ui"></div>
+  <div id="ada-modal">
+    <div id="ada-log" style="height:85%;overflow-y:auto;background:#000;padding:10px;"></div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
       <button onclick="handleButtonCommand('start')">Start</button>
       <button onclick="handleButtonCommand('move')">Move</button>
       <button onclick="handleButtonCommand('map')">Map</button>
       <button onclick="handleButtonCommand('inventory')">Inventory</button>
       <button onclick="handleButtonCommand('guess')">Guess</button>
+      <button onclick="handleButtonCommand('van')">Visit Van</button>
       <button onclick="handleButtonCommand('end')">End</button>
       <button onclick="openItemPopup()">Use Items</button>
     </div>
   </div>
-<!-- Item Use Popup -->
-<div id="item-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-  background:#111; border:2px solid #0ff; padding:20px; z-index:9999; color:#0ff; font-family:monospace;
-  box-shadow:0 0 15px rgba(0,255,255,0.3); width:90%; max-width:400px;">
-  <h3 style="margin-top:0; text-align:center;">Choose Item to Use</h3>
-  <div id="item-button-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-  <button onclick="closeItemPopup()" style="margin-top:10px;">Cancel</button>
-</div>
-
-<!-- Guess Ghost Popup -->
-<div id="guess-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%);
-  background:#111; border:2px solid #0ff; padding:20px; z-index:9999; color:#0ff; font-family:monospace;
-  box-shadow:0 0 15px rgba(0,255,255,0.3); width:90%; max-width:400px;">
-  <h3 style="margin-top:0; text-align:center;">Who is the Ghost?</h3>
-  <div id="guess-button-list" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;"></div>
-  <button onclick="closeGuessPopup()" style="margin-top:10px;">Cancel</button>
-</div>
-
-<!-- Floor Items Panel -->
-<div id="floor-items-bar" style="display:none; background:#111; padding:10px; margin-top:10px; color:#0f0; font-family:monospace;">
-  <strong>Floor Items:</strong>
-  <div id="floor-item-buttons"></div>
-</div>
-
-<!-- Game Info HUD -->
-<div id="status-bar">Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%</div>
-<div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div>
-<div id="game-ui" style="display:none;margin-top:20px;border:1px solid #0ff;
-     padding:10px;color:#0ff;font-family:monospace;background:#000;"></div>
 <script>
-// === Item Use Popup ===
+let selectedLoadout = [];
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "UV", "Camera", "D.O.T.S",
+  "Book", "Thermometer", "Smudge", "Crucifix", "Salt", "Candle"
+];
+
+const evidenceTypes = [
+  "EMF Level 5", "Spirit Box", "Fingerprints", "Ghost Writing",
+  "Freezing Temps", "D.O.T.S", "Orbs"
+];
+
+const evidenceMap = {
+  spirit:        ["EMF Level 5", "Spirit Box", "Ghost Writing"],
+  wraith:        ["EMF Level 5", "D.O.T.S", "Spirit Box"],
+  poltergeist:   ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  demon:         ["Ghost Writing", "Freezing Temps", "Fingerprints"],
+  succubus:      ["Spirit Box", "Freezing Temps", "Orbs"]
+};
+
+const selectedEvidence = new Set();
+
+const game = {
+  started: false,
+  inventory: [],
+  vanStock: {
+    EMF: 1, "Spirit Box": 1, UV: 1, Camera: 1, "D.O.T.S": 1,
+    Book: 1, Thermometer: 1, Smudge: 4, Crucifix: 1, Salt: 3, Candle: 1
+  },
+  turn: 0,
+  sanity: 100,
+  ghost: null,
+  ghostRoom: null,
+  position: [0, 0],
+  roomNameMap: [["Van", "Foyer", "Kitchen"], ["Basement", "Living Room", "Bathroom"], ["Garage", "Bedroom", "Storage"]]
+};
+
+// === Loadout ===
+function showLoadoutScreen() {
+  const container = document.getElementById("item-selection");
+  container.innerHTML = "";
+  selectedLoadout = [];
+
+  allLoadoutItems.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.onclick = () => {
+      if (selectedLoadout.includes(item)) {
+        selectedLoadout = selectedLoadout.filter(i => i !== item);
+        btn.style.background = "#000";
+      } else if (selectedLoadout.length < 3) {
+        selectedLoadout.push(item);
+        btn.style.background = "#0ff";
+      } else {
+        alert("Max 3 items.");
+      }
+    };
+    container.appendChild(btn);
+  });
+}
+
+function confirmLoadout() {
+  game.inventory = ["Notebook", "Lighter", ...selectedLoadout];
+  document.getElementById("loadout-screen").style.display = "none";
+  document.getElementById("ada-modal").style.display = "block";
+  simulateTyping("Deo: Tools are loaded. Proceed.");
+  renderEvidenceChecklist();
+}
+
+function randomLoadout() {
+  const shuffled = [...allLoadoutItems].sort(() => 0.5 - Math.random());
+  selectedLoadout = shuffled.slice(0, 3);
+  confirmLoadout();
+}
+
+// === Evidence ===
+function renderEvidenceChecklist() {
+  const container = document.getElementById("evidence-checklist");
+  container.innerHTML = "";
+
+  evidenceTypes.forEach(evidence => {
+    const label = document.createElement("label");
+    label.style.display = "flex";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedEvidence.has(evidence);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedEvidence.add(evidence);
+      else selectedEvidence.delete(evidence);
+      updatePossibleGhosts();
+    };
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(evidence));
+    container.appendChild(label);
+  });
+
+  updatePossibleGhosts();
+}
+
+function updatePossibleGhosts() {
+  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
+    Array.from(selectedEvidence).every(e => evs.includes(e))
+  ).map(([ghost]) => ghost);
+
+  const out = document.getElementById("remaining-ghosts");
+  out.textContent = match.length ? `Possible: ${match.map(g => g.toUpperCase()).join(", ")}` : "No matches.";
+}
+</script>
+<script>
+// === Notebook / Journal ===
+function openJournal() {
+  document.getElementById("journal-screen").style.display = "block";
+}
+function closeJournal() {
+  document.getElementById("journal-screen").style.display = "none";
+}
+
+// === Item Popup ===
 function openItemPopup() {
-  const popup = document.getElementById('item-popup');
-  const list = document.getElementById('item-button-list');
+  const popup = document.getElementById("item-popup") || createItemPopup();
+  const list = document.getElementById("item-button-list");
   list.innerHTML = '';
 
   if (game.inventory.length === 0) {
-    list.innerHTML = "<p>No items to use.</p>";
+    list.innerHTML = "<p>No items available.</p>";
   } else {
     game.inventory.forEach(item => {
       const btn = document.createElement("button");
       btn.textContent = item;
       btn.onclick = () => {
-        handleButtonCommand("use " + item.toLowerCase());
+        if (item === "Notebook") {
+          openJournal();
+        } else {
+          simulateTyping("Used: " + item);
+        }
         closeItemPopup();
       };
       list.appendChild(btn);
@@ -195,298 +311,132 @@ function openItemPopup() {
 
   popup.style.display = 'block';
 }
+
 function closeItemPopup() {
-  document.getElementById('item-popup').style.display = 'none';
+  const popup = document.getElementById("item-popup");
+  if (popup) popup.style.display = 'none';
 }
 
-// === Guess Ghost Popup ===
-function openGuessPopup() {
-  const popup = document.getElementById("guess-popup");
-  const list = document.getElementById("guess-button-list");
-  list.innerHTML = "";
+function createItemPopup() {
+  const div = document.createElement("div");
+  div.id = "item-popup";
+  div.innerHTML = `
+    <h3>Choose Item to Use</h3>
+    <div id="item-button-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+    <button onclick="closeItemPopup()">Cancel</button>
+  `;
+  div.style = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; padding:20px; border:2px solid #0ff; z-index:9999;";
+  document.body.appendChild(div);
+  return div;
+}
 
-  Object.keys(ghostProfiles).forEach(ghost => {
+// === Van Panel ===
+function openVanPanel() {
+  const panel = document.getElementById("van-panel") || createVanPanel();
+  const list = document.getElementById("van-button-list");
+  list.innerHTML = '';
+
+  for (const [tool, count] of Object.entries(game.vanStock)) {
+    if (count > 0) {
+      const btn = document.createElement("button");
+      btn.textContent = `Take ${tool}`;
+      btn.onclick = () => {
+        if (game.inventory.length >= 5) {
+          simulateTyping("Inventory full. Drop something first.");
+        } else {
+          game.inventory.push(tool);
+          game.vanStock[tool]--;
+          simulateTyping(`Took ${tool} from van.`);
+          openVanPanel();
+        }
+      };
+      list.appendChild(btn);
+    }
+  }
+
+  const divider = document.createElement("hr");
+  list.appendChild(divider);
+  game.inventory.forEach((item, idx) => {
+    if (item === "Notebook" || item === "Lighter") return;
     const btn = document.createElement("button");
-    btn.textContent = ghost.charAt(0).toUpperCase() + ghost.slice(1);
+    btn.textContent = `Return ${item}`;
     btn.onclick = () => {
-      game.guessedGhost = ghost;
-      const correct = ghost === game.ghost;
-      simulateTyping("You guessed: " + ghost.toUpperCase());
-      simulateTyping(correct ? "✅ You were right!" : "❌ Wrong! It was " + game.ghost.toUpperCase());
-      closeGuessPopup();
+      game.inventory.splice(idx, 1);
+      game.vanStock[item] = (game.vanStock[item] || 0) + 1;
+      simulateTyping(`Returned ${item} to van.`);
+      openVanPanel();
     };
     list.appendChild(btn);
   });
 
-  popup.style.display = "block";
-}
-function closeGuessPopup() {
-  document.getElementById("guess-popup").style.display = "none";
+  panel.style.display = 'block';
 }
 
-// === Orb Animation ===
-const canvas = document.getElementById('orb-canvas');
-const ctx = canvas.getContext('2d');
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
-
-function createOrb() {
-  return {
-    x: Math.random() * width,
-    y: Math.random() * height,
-    vx: (Math.random() - 0.5),
-    vy: (Math.random() - 0.5),
-    radius: Math.random() * 2 + 1,
-    opacity: 0,
-    fadeIn: true,
-    tick: 0
-  };
+function closeVanPanel() {
+  const panel = document.getElementById("van-panel");
+  if (panel) panel.style.display = "none";
 }
 
-let orbs = Array.from({ length: 10 }, createOrb);
-
-function animateOrbs() {
-  ctx.clearRect(0, 0, width, height);
-  orbs.forEach((orb, i) => {
-    orb.tick++;
-    orb.opacity = Math.min(1, orb.opacity + 0.01);
-
-    orb.x += orb.vx;
-    orb.y += orb.vy;
-
-    if (orb.x < 0 || orb.x > width) orb.vx *= -1;
-    if (orb.y < 0 || orb.y > height) orb.vy *= -1;
-
-    ctx.beginPath();
-    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-    ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
-    ctx.shadowBlur = 10;
-    ctx.fill();
-  });
-
-  requestAnimationFrame(animateOrbs);
-}
-animateOrbs();
-window.addEventListener('resize', () => {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-});
-
-// === Lightning Flash Effect ===
-function lightningFlash() {
-  const flash = document.getElementById('flash-overlay');
-  if (!flash) return;
-  flash.style.opacity = '0.4';
-  setTimeout(() => { flash.style.opacity = '0'; }, 100);
-}
-setInterval(() => setTimeout(lightningFlash, Math.random() * 2000), 10000);
-
-// === Floor Items Logic ===
-const floorItems = {};
-function getCurrentRoomName() {
-  const [x, y] = game.position;
-  return game.roomNameMap?.[x]?.[y] || `Room-${x}-${y}`;
-}
-function renderFloorItems() {
-  const room = getCurrentRoomName();
-  const items = floorItems[room] || [];
-  const container = document.getElementById("floor-item-buttons");
-  container.innerHTML = '';
-  if (items.length === 0) {
-    document.getElementById("floor-items-bar").style.display = "none";
-    return;
-  }
-  items.forEach(item => {
-    const btn = document.createElement("button");
-    btn.textContent = `Pick up ${item}`;
-    btn.onclick = () => {
-      if (game.inventory.length >= 3) {
-        simulateTyping("Your hands are full. Drop something first.");
-        return;
-      }
-      game.inventory.push(item);
-      floorItems[room] = floorItems[room].filter(i => i !== item);
-      simulateTyping(`You picked up the ${item}.`);
-      renderFloorItems();
-    };
-    container.appendChild(btn);
-  });
-  document.getElementById("floor-items-bar").style.display = "block";
-}
-function dropItemOptions() {
-  const logBox = document.getElementById("ada-log");
+function createVanPanel() {
   const div = document.createElement("div");
-  game.inventory.forEach((item, idx) => {
-    const btn = document.createElement("button");
-    btn.textContent = `Drop ${item}`;
-    btn.onclick = () => {
-      const room = getCurrentRoomName();
-      floorItems[room] = floorItems[room] || [];
-      floorItems[room].push(item);
-      game.inventory.splice(idx, 1);
-      simulateTyping(`You dropped the ${item}.`);
-      renderFloorItems();
-      updateStatus();
-      div.remove();
-    };
-    div.appendChild(btn);
-  });
-  logBox.appendChild(div);
+  div.id = "van-panel";
+  div.innerHTML = `<h3>Van Inventory</h3><div id="van-button-list" style="display:flex; flex-direction:column; gap:6px;"></div><button onclick="closeVanPanel()">Done</button>`;
+  div.style = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; padding:20px; border:2px solid #0ff; z-index:9999;";
+  document.body.appendChild(div);
+  return div;
 }
-</script>
-<script>
-// === Game Setup ===
-const game = {
-  started: false,
-  active: false,
-  turn: 0,
-  sanity: 100,
-  xp: 0,
-  level: 1,
-  inventory: ["Notebook", "Lighter"],
-  position: [0, 0],
-  ghost: null,
-  ghostRoom: null,
-  guessedGhost: null,
-  evidence: [],
-  roomNameMap: [
-    ["Van", "Foyer", "Kitchen"],
-    ["Basement", "Living Room", "Bathroom"],
-    ["Garage", "Bedroom", "Storage"]
-  ],
-  protections: { smudgeCount: 2, crucifixPlaced: false },
-  crucifixUsed: false
-};
 
+// === Ghost Behavior Logic ===
 const ghostProfiles = {
-  spirit: { intro: "Spirits are common and offer minimal signs.", behavior: "You hear soft whispers echoing from nowhere..." },
-  wraith: { intro: "Wraiths float and leave no footprints.", behavior: "The air shifts, but the salt remains untouched." },
-  poltergeist: { intro: "Poltergeists manipulate objects aggressively.", behavior: "Crash! An item flies across the room!" },
-  demon: { intro: "Demons hunt early and often.", behavior: "Growl... the lights burst in your face!" },
-  mare: { intro: "Mares thrive in the darkness.", behavior: "The lights suddenly flicker out, plunging you into black." },
-  succubus: { intro: "The Succubus manipulates through seduction and fear.", behavior: "You feel drawn... a chill traces your spine." }
+  spirit:      { intro: "Common and basic", behavior: "Faint whispering echoes..." },
+  wraith:      { intro: "Avoids salt", behavior: "Air shifts... but salt untouched." },
+  poltergeist: { intro: "Throws objects", behavior: "Books fly off the shelves!" },
+  demon:       { intro: "Aggressive hunter", behavior: "You feel a dark presence..." },
+  succubus:    { intro: "Uses seduction and fear", behavior: "A chill... and a breath on your neck." }
 };
 
-const introDialogues = [
-  "Deo: I've got a bad feeling about this one...",
-  "Deo: Stay on your toes out there.",
-  "Deo: This isn’t a ghost story – it’s real.",
-  "Deo: Set your equipment. Then breathe. Slowly."
-];
+// === ADA Assistant Command Handler ===
+function handleButtonCommand(cmd) {
+  const c = cmd.toLowerCase();
+  game.turn = (game.turn || 0) + 1;
+  document.getElementById("turn-counter").textContent = game.turn;
 
-// === Command Parser ===
-function respondTo(cmd) {
-  const command = cmd.trim().toLowerCase();
-  game.turn++;
-  updateStatus();
-
-  if (command === "start") {
-    game.started = true;
-    game.active = true;
-    const keys = Object.keys(ghostProfiles);
-    game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  if (c === "start") {
+    const g = Object.keys(ghostProfiles);
+    game.ghost = g[Math.floor(Math.random() * g.length)];
     game.ghostRoom = "Living Room";
-    simulateTyping("Deo: Let's see what we're dealing with. Try your tools.");
-    return;
-  }
-
-  if (command === "map") return updateMapDisplay();
-
-  if (command === "move") {
-    game.position[1] = (game.position[1] + 1) % 3;
+    simulateTyping("Deo: Ghost confirmed. Start your sweep.");
+  } else if (c === "move") {
     game.sanity = Math.max(0, game.sanity - 5);
-    updateStatus();
-    return ghostProfiles[game.ghost].behavior;
+    document.getElementById("sanity-bar").textContent = game.sanity;
+    simulateTyping(ghostProfiles[game.ghost]?.behavior || "You move, but nothing reacts.");
+  } else if (c === "map") {
+    simulateTyping("You're in the " + (game.roomNameMap?.[0]?.[0] || "Unknown"));
+  } else if (c === "inventory") {
+    simulateTyping("Inventory: " + game.inventory.join(", "));
+  } else if (c === "van") {
+    openVanPanel();
+  } else if (c === "guess") {
+    simulateTyping("You suspect: " + (game.ghost?.toUpperCase() || "UNKNOWN"));
+  } else if (c === "end") {
+    simulateTyping("You end the hunt. The ghost was: " + (game.ghost?.toUpperCase() || "UNKNOWN"));
+  } else {
+    simulateTyping("ADA: Command not recognized.");
   }
-
-  if (command === "guess") {
-    openGuessPopup();
-    return "Choose your ghost.";
-  }
-
-  if (command.startsWith("use ")) {
-    const item = command.slice(4).trim().toLowerCase();
-    const inRoom = game.roomNameMap[game.position[0]][game.position[1]] === game.ghostRoom;
-    const hasItem = game.inventory.map(i => i.toLowerCase()).includes(item);
-
-    if (!hasItem) return "You don't have that item.";
-
-    switch (item) {
-      case "emf":
-        return inRoom && game.ghost === "spirit" ? "EMF 5 detected!" : "EMF silent.";
-      case "notebook":
-        return inRoom && game.ghost === "demon" ? "Ghost writing appears!" : "Notebook is empty.";
-      case "smudge":
-        if (game.protections.smudgeCount > 0) {
-          game.protections.smudgeCount--;
-          return "You burn a smudge. Air clears slightly.";
-        }
-        return "You're out of smudge sticks.";
-      case "crucifix":
-        if (!game.crucifixUsed) {
-          game.crucifixUsed = true;
-          game.protections.crucifixPlaced = true;
-          return "You placed a crucifix.";
-        }
-        return "You've already used the crucifix.";
-      default:
-        return "You try using it. Nothing happens.";
-    }
-  }
-
-  if (command === "inventory") {
-    return "Inventory: " + game.inventory.join(", ");
-  }
-
-  if (command === "end") {
-    return `Investigation complete. The ghost was a ${game.ghost.toUpperCase()}.`;
-  }
-
-  return "Unknown command.";
 }
 
-// === Utility Hooks ===
 function simulateTyping(text, from = "ADA") {
-  logMessage(text, from);
-}
-function logMessage(text, from = "ADA") {
-  const logBox = document.getElementById("ada-log");
+  const log = document.getElementById("ada-log");
   const line = document.createElement("div");
   line.innerHTML = `<strong>${from}:</strong> `;
   line.appendChild(document.createTextNode(text));
-  logBox.appendChild(line);
-  logBox.scrollTop = logBox.scrollHeight;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
 }
-function updateStatus() {
-  document.getElementById("turn-counter").textContent = game.turn;
-  document.getElementById("sanity-bar").textContent = game.sanity;
-}
-function updateMapDisplay() {
-  const [x, y] = game.position;
-  return `You're in: ${game.roomNameMap[x][y]}`;
-}
+
+document.addEventListener("DOMContentLoaded", showLoadoutScreen);
 </script>
 
-<!-- Startup Hook -->
-<script>
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("start-button-ada").onclick = startAda;
-});
-function startAda() {
-  document.getElementById("ada-modal").style.display = "block";
-  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
-}
-function handleButtonCommand(cmd) {
-  const result = respondTo(cmd);
-  if (result) simulateTyping(result);
-}
-</script>
-
-<!-- Footer -->
-<footer>
-  Shark‑Blades — Phasma‑Phoney | Build v1.2.4 — <span class="version-tag" onclick="alert('Ghost Guessing Added!')">Changelog</span>
-</footer>
+<footer>Phasma‑Phoney v1.3 — All Systems Integrated</footer>
 </body>
 </html>
-
