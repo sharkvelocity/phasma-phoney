@@ -1,366 +1,502 @@
---------IVE ADDED FIX NOTES THROUGHOUT THIS DOCUMENT THAT ARE FORMATTED LIKE THIS SENTENCE IS. DO WHAT EACH SAYS PLEASE ALSO THE INCLUDED LOGIC BLOCK FILE IS TO BE COMBINED ACCORDINGLY WHILE LEAVING THE DESIGN AND VISUAL ASPECT INTACT
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 <head>
-<title>PhasmaPhoney</title>
-<meta content="text/html; charset=utf-8" http-equiv="content-type"/>
-<meta content="Shark-Blades" name="authorhtml"/>
-<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
-<meta content="" property="og:title"/>
-<meta content="" property="og:site_name"/>
-<meta content="article" property="og:type"/>
-<meta content="" name="description"/>
-<meta content="" property="og:description"/>
-<meta content="Phasmaphobia Turn based ghost hunter" name="keywords"/>
-<style media="all" type="text/css">
-html,
-body {
-    margin: 0;
-    padding: 0;
-}
+  <meta charset="utf-8" />
+  <title>PhasmaPhoney</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="author" content="Shark-Blades" />
+  <meta name="description" content="Turn-based ghost hunting strategy game based on Phasmophobia." />
+  <meta name="keywords" content="PhasmaPhoney, Phasmophobia, ghost, hunting, game, HTML" />
+  <meta name="google-site-verification" content="2zaxjMijj2SXwFDx3Fe6sQUNzXXZiAAkAP92q6ZFWSg" />
+  <meta property="og:type" content="article" />
+  <meta property="og:site_name" content="PhasmaPhoney" />
+  <meta property="og:url" content="http://www." />
 
-#text-shadow-box {
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #444;
-    font-family: Helvetica, Arial, sans-serif;
-    -webkit-tap-highlight-color: rgba(0,0,0,0);
-    -webkit-user-select: none;
-}
-
-    #text-shadow-box #tsb-text,
-    #text-shadow-box #tsb-link {
-        position: absolute;
-        top: 40%;
-        left: 0;
-        width: 100%;
-        height: 1em;
-        margin: -0.77em 0 0 0;
-        font-size: 90px;
-        line-height: 1em;
-        font-weight: bold;
-        text-align: center;
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      height: 100%;
+      width: 100%;
+      background-color: #000;
+      font-family: Helvetica, Arial, sans-serif;
     }
 
-    #text-shadow-box #tsb-text {
-        font-size: 100px;
-        color: transparent;
-        text-shadow: black 0px -45.2px 19px; 
+    #flash-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
     }
 
-        #text-shadow-box #tsb-link a {
-            color: #999;
-            text-decoration: none;
-        }
-
-    #text-shadow-box #tsb-box,
-    #text-shadow-box #tsb-wall {
-        position: absolute;
-        top: 40%;
-        left: 10%;
-        right: 10%;
-        height: 60%;
+    #orb-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
     }
 
-    #text-shadow-box #tsb-box {
-        -webkit-box-shadow: black 0px -45.2px 39px;
-        -moz-box-shadow: black 0px -45.2px 39px;
-        box-shadow: 0px -45.2px 39px #000;
+    #clouds1, #clouds2 {
+      position: fixed;
+      top: 0; left: 0;
+      width: 300%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 200;
     }
 
-    #text-shadow-box #tsb-wall {
-        background: #999;
+    #clouds1 {
+      background: linear-gradient(to right, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 100%);
+      opacity: 0.4;
+      filter: blur(10px);
+      animation: cloudDrift1 80s linear infinite;
     }
 
-        #text-shadow-box #tsb-wall p {
-            position: relative;
-            font-size: 18px;
-            line-height: 1.5em;
-            text-align: justify;
-            color: #222;
-            width: 550px;
-            margin: 1.5em auto;
-            cursor: default;
-        }
+    #clouds2 {
+      background: linear-gradient(to right, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 100%);
+      opacity: 0.3;
+      filter: blur(14px);
+      animation: cloudDrift2 120s linear infinite;
+    }
 
-            #text-shadow-box #tsb-wall p a {
-                color: #fff;
-            }
+    @keyframes cloudDrift1 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
 
-                #text-shadow-box #tsb-wall p a:hover {
-                    text-decoration: none;
-                    color: #000;
-                    background: #fff;
-                }
+    @keyframes cloudDrift2 {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
 
-#tsb-spot {
-    position: relative;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    pointer-events: none;
-    background: -webkit-gradient(radial, center center, 0, center center, 450, from(rgba(0,0,0,0)), to(rgba(0,0,0,1)));
-    background: -moz-radial-gradient(center 45deg, circle closest-side, transparent 0, black 450px);
-    background: -o-radial-gradient(center, circle closest-side, transparent 0, black 450px);
-}
+    #background-logo {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("./logo.png");
+      background-repeat: no-repeat;
+      background-position: center center;
+      background-size: contain;
+      opacity: 0.1;
+      z-index: -4;
+    }
 
-#background-image {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("");
-    background-size: cover;
-    background-position: center;
-    z-index: -3;
-}
-#canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: -2;
-}
+    #background-image {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url("");
+      background-size: cover;
+      background-position: center;
+      z-index: -3;
+    }
 
-#background-logo {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url("./logo.png");
-    background-repeat: no-repeat;
-    background-position: center center;
-    background-size: contain;
-    opacity: 0.1;
-    z-index: -4;
-}
+    #status-bar {
+      margin-top: 10px;
+      font-family: monospace;
+      color: #0ff;
+    }
 
-#rain-canvas {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: -1;
-    pointer-events: none;
-}
-</style>
-<style type="text/css">
-#tsb-spot {
-    display: none;
-}
-#tsb-ie {
-    position: absolute;
-    top: -80%;
-    left: -50%;
-    width: 100%;
-    height: 100%;
-    background: url(data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiA/Pgo8c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgdmlld0JveD0iMCAwIDEgMSIgcHJlc2VydmVBc3BlY3RSYXRpbz0ibm9uZSI+CiAgPHJhZGlhbEdyYWRpZW50IGlkPSJncmFkLXVjZ2ctZ2VuZXJhdGVkIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY3g9IjUwJSIgY3k9IjUwJSIgcj0iNzUlIj4KICAgIDxzdG9wIG9mZnNldD0iMCUiIHN0b3AtY29sb3I9IiMwMDAwMDAiIHN0b3Atb3BhY2l0eT0iMCIvPgogICAgPHN0b3Agb2Zmc2V0PSI3NCUiIHN0b3AtY29sb3I9IiMwMDAwMDAiIHN0b3Atb3BhY2l0eT0iMSIvPgogICAgPHN0b3Agb2Zmc2V0PSIxMDAlIiBzdG9wLWNvbG9yPSIjMDAwMDAwIiBzdG9wLW9wYWNpdHk9IjEiLz4KICA8L3JhZGlhbEdyYWRpZW50PgogIDxyZWN0IHg9Ii01MCIgeT0iLTUwIiB3aWR0aD0iMTAxIiBoZWlnaHQ9IjEwMSIgZmlsbD0idXJsKCNncmFkLXVjZ2ctZ2VuZXJhdGVkKSIgLz4KPC9zdmc+);
-}
-</style>
-<style>
-.text-glow{
-    font-size:4em;
-    color: #FFFFFF;
-    font-family:Arial;
- 
-}
- 
-.text-glow:hover,
-.text-glow:focus
-.text-glow:active{
-    -webkit-stroke-width: 5.3px;
-    -webkit-stroke-color: #FFFFFF;
-    -webkit-fill-color: #FFFFFF;
-    text-shadow: 1px 0px 20px blue;
-    -webkit-transition: width 0.3s; /*Safari & Chrome*/
-    transition: width 0.3s;
-    -moz-transition: width 0.3s; /* Firefox 4 */
-    -o-transition: width 0.3s; /* Opera */
-     
-}
- 
-.text-glow a{
-     
-    -webkit-transition: all 0.3s ease-in; /*Safari & Chrome*/  
-    transition: all 0.3s ease-in;
-    -moz-transition: all 0.3s ease-in; /* Firefox 4 */
-    -o-transition: all 0.3s ease-in; /* Opera */
-     
-    text-decoration:none;
-    color:white;
-}
- 
-</style>
-<style>
-{margin: 0; padding: 0;}
+    @keyframes typing-blink {
+      0%, 100% { opacity: 0; }
+      50% { opacity: 1; }
+    }
 
-body {
-	/*You can use any kind of background here.*/
-	background: #6b92b9;
-}
-canvas {
-	display: block;
-}
-	
-<style>
-#start-button-container {
-    position: absolute;
-    top: 55%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    text-align: center;
-}
-#start-button {
-    padding: 16px 48px;
-    font-size: 24px;
-    background-color: #111;
-    color: #eee;
-    border: 2px solid #444;
-    cursor: pointer;
-    transition: all 0.2s ease-in-out;
-}
-#start-button:hover {
-    background-color: #333;
-    color: #fff;
-    border-color: #666;
-}
-</style>
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
-}
+    #ada-typing {
+      font-family: monospace;
+      color: #0ff;
+      display: inline-block;
+      margin-left: 4px;
+      animation: typing-blink 1s infinite;
+    }
 
-#background-image {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-size: cover;
-    background-repeat: no-repeat;
-    background-position: center;
-    z-index: -1;
-}
-</style><style>
-html, body {
-    margin: 0;
-    padding: 0;
-    overflow: hidden;
-    height: 100%;
-    width: 100%;
-    background-color: #000 !important;
-}
-
-</style><style>
-#clouds1, #clouds2 {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 300%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 200;
-}
-------------REMOVE ALL CLOUD DATA
-#clouds1 {
-    background: linear-gradient(to right, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 100%);
-    opacity: 0.4;
-    filter: blur(10px);
-    animation: moveClouds1 80s linear infinite;
-}
-
-#clouds2 {
-    background: linear-gradient(to right, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 100%);
-    opacity: 0.3;
-    filter: blur(14px);
-    animation: moveClouds2 120s linear infinite;
-}
-
-@keyframes moveClouds1 {
-    from { transform: translateX(0); }
-    to { transform: translateX(-50%); }
-}
-
-@keyframes moveClouds2 {
-    from { transform: translateX(100%); }
-    to { transform: translateX(-100%); }
-}
-</style>
-	---------REMOVE ALL CLOUD DATA
-	<style>
-#clouds1 {
-    animation: cloudDrift1 80s linear infinite;
-}
-#clouds2 {
-    animation: cloudDrift2 120s linear infinite;
-}
-@keyframes cloudDrift1 {
-    0% { transform: translateX(0); }
-    100% { transform: translateX(-50%); }
-}
-@keyframes cloudDrift2 {
-    0% { transform: translateX(100%); }
-    100% { transform: translateX(-100%); }
-}
-</style><style>
-@keyframes typing-blink {
-  0% { opacity: 0; }
-  50% { opacity: 1; }
-  100% { opacity: 0; }
-}
-#ada-typing {
-  font-family: monospace;
-  color: #0ff;
-  display: inline-block;
-  margin-left: 4px;
-  animation: typing-blink 1s infinite;
-}
-</style>
-	<script type="text/phasma-data">
-PHASMA-PHONEY: Ritual. Paranormal. Game.
-
-GENERAL RULES
----------ADD ALL GAME RULES
-</script>
+    footer {
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      color: white;
+      font-size: 0.9em;
+      font-family: sans-serif;
+      z-index: 9999;
+    }
+  </style>
 </head>
-<body>-------------REMOVE ALL CLOUD INFORMATION FROM ENTIRE FILE
-	<div id="clouds1"></div>
-	<div id="clouds2"></div>
-	<div id="flash-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:white;opacity:0;pointer-events:none;z-index:9999;">
-		
-	</div>
-<div id="main-menu" style="text-align: center; color: white; margin-top: 40px;">
-<ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
-<button id="start-button-ada" onclick="startAda()" style="position:absolute;top:35%;left:50%;transform:translateX(-50%);padding:16px 48px;font-size:24px;z-index:5000;background:#111;color:#eee;border:2px solid #666;cursor:pointer;">Start</button><li></li>
-</ul>
-	------------------ADD 4 RANDOM WELCOME LINES TO BE RANDOMLY CHOSEN AT STARTUP THAT YOU GENERATE THAT ARE BASED ON STARTING AN INVESTIGATION FOR HUNTING GHOSTS
-<p style="font-style: italic; font-size: 0.95em;">Deo: “Welcome back, Let’s hope your deduction is better than your taste in decorations”</p>
-</div>
-<canvas id="orb-canvas" style="position: fixed;  top: 0;  left: 0;  width: 100vw;  height: 100vh;  pointer-events: none;  z-index: 9999"></canvas><div id="center-wrapper" style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: relative; z-index: 3; text-align: center; font-family: sans-serif;"><div id="background-logo"></div><div id="background-image"></div><div style="text-align: center; margin-top: 20px;">
-</div>
-	<body style="line-height:1em; background-image:url(http://cdn.hdwallpaperspics.com/uploads/2012/11/cool-desktop-backgrounds-for-mac-3.jpg); background-repeat: no-repeat; background-size: 100%;background-attachment:fixed ">
-<center>
-<div style="background-image:url(http://www.wnyc.org/i/620/372/l/80/1/blackbox.jpeg); opacity:0.8;filter:alpha(opacity=20); width: 75%;">
-<div id="text-shadow-box" style="position: relative; z-index: 2; color: white;">
-	<div id="tsb-text">PhasmaPhoney</div>
-</div>
-</div></center></body></div>
-	<script>
+<body>
+  <!-- Lightning Flash Effect -->
+  <div id="flash-overlay"></div>
+
+  <!-- Background Logo & Image -->
+  <div id="background-logo"></div>
+  <div id="background-image"></div>
+
+  <!-- Orb Canvas for Animated Ambient Effects -->
+  <canvas id="orb-canvas"></canvas>
+
+  <!-- Main Menu -->
+  <div id="main-menu" style="text-align: center; color: white; margin-top: 40px;">
+    <ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
+      <button id="start-button-ada"
+              onclick="startAda()"
+              style="position:absolute;top:35%;left:50%;transform:translateX(-50%);
+                     padding:16px 48px;font-size:24px;z-index:5000;
+                     background:#111;color:#eee;border:2px solid #666;cursor:pointer;">
+        Start
+      </button>
+    </ul>
+    <p style="font-style: italic; font-size: 0.95em;">
+      Deo: “Welcome back, PhasmaPhoney. Let’s hope your deduction is better than your taste in candles.”
+    </p>
+  </div>
+
+  <!-- ADA Modal Dialog Box -->
+  <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
+    border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
+    max-width:600px;height:80%;color:#0ff;font-family:monospace;">
+
+    <div id="ada-log" style="height:85%;overflow-y:auto;padding:10px;
+          background:#000;border:1px solid #333;margin-bottom:10px;">
+      ADA: I'm here to assist you. Type 'start', 'talk', 'records', or 'exit'.
+    </div>
+
+    <input id="ada-input"
+           placeholder="Type a command..."
+           style="width:100%;padding:8px;background:#222;
+                  color:#0ff;border:1px solid #0ff;" />
+
+    <div id="status-bar">
+      Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
+    </div>
+  </div>
+
+  <!-- Optional game UI area for displaying content after start -->
+  <div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div>
+  <div id="game-ui"
+       style="display:none;margin-top:20px;border:1px solid #0ff;
+              padding:10px;color:#0ff;font-family:monospace;background:#000;">
+  </div>
+
+  <!-- Footer -->
+ <script>
+// === Game Data Setup ===
+const ghostProfiles = {
+  spirit: {
+    intro: "Spirits are common and offer minimal signs.",
+    behavior: "You hear soft whispers echoing from nowhere..."
+  },
+  wraith: {
+    intro: "Wraiths float and leave no footprints.",
+    behavior: "The air shifts, but the salt remains untouched."
+  },
+  poltergeist: {
+    intro: "Poltergeists manipulate objects aggressively.",
+    behavior: "Crash! An item flies across the room!"
+  },
+  banshee: {
+    intro: "Banshees focus on a single target and sing.",
+    behavior: "A distant melody... almost a lullaby, follows you."
+  },
+  jinn: {
+    intro: "Jinns are fast when their power is active.",
+    behavior: "Your electronics surge with unnatural force."
+  },
+  mare: {
+    intro: "Mares thrive in the darkness.",
+    behavior: "The lights suddenly flicker out, plunging you into black."
+  },
+  revenant: {
+    intro: "Revenants are slow... until they see you.",
+    behavior: "Footsteps... then a sudden sprint."
+  },
+  shade: {
+    intro: "Shades are shy and quiet around people.",
+    behavior: "A silence thicker than air lingers here."
+  },
+  demon: {
+    intro: "Demons hunt early and often.",
+    behavior: "Growl... the lights burst in your face!"
+  },
+  yurei: {
+    intro: "Yureis drain your sanity rapidly.",
+    behavior: "The door slams. Your mind fogs."
+  },
+  oni: {
+    intro: "Onis are active and throw objects forcefully.",
+    behavior: "Something crashes violently nearby!"
+  },
+  yokai: {
+    intro: "Yokais are angered by voices.",
+    behavior: "You hear muttering. It mimics your own words..."
+  },
+  hantu: {
+    intro: "Hantus are colder in freezing rooms.",
+    behavior: "Your breath freezes. Ice forms near the walls."
+  },
+  goryo: {
+    intro: "Goryos show themselves only through video.",
+    behavior: "You glimpse movement—but only on the screen."
+  },
+  myling: {
+    intro: "Mylings make footsteps loud but stay eerily silent.",
+    behavior: "Heavy steps echo... then silence grips the air."
+  },
+  onryo: {
+    intro: "Onryos react violently to extinguished flames.",
+    behavior: "A candle snuffs out. Something exhales behind you."
+  },
+  "the twins": {
+    intro: "The Twins act independently and inconsistently.",
+    behavior: "Noise from two places... at the same time."
+  },
+  raiju: {
+    intro: "Raijus become stronger near electronics.",
+    behavior: "Your devices scream with static as it draws closer."
+  },
+  obake: {
+    intro: "Obakes leave distorted fingerprints.",
+    behavior: "You see a smudged handprint... then it's gone."
+  },
+  "the mimic": {
+    intro: "The Mimic pretends to be other ghosts.",
+    behavior: "Its signs don’t match. Something’s wrong here."
+  },
+  moroi: {
+    intro: "Morois curse you and drain your sanity.",
+    behavior: "A voice whispers directly into your head."
+  },
+  deogen: {
+    intro: "Deogens always know where you are.",
+    behavior: "It moves slowly... but it's always facing you."
+  },
+  thaye: {
+    intro: "Thayes age over time and grow less aggressive.",
+    behavior: "You feel it watching—less than before."
+  },
+  succubus: {
+    intro: "The Succubus manipulates through seduction and fear.",
+    behavior: "You feel drawn... a chill traces your spine."
+  }
+};
+
+const game = {
+  started: false,
+  active: false,
+  turn: 0,
+  sanity: 100,
+  xp: 0, // Optional: Experience tracking
+  level: 1, // Optional: Level system
+  prestige: 0, // Optional: Prestige tier
+  inventory: ['Lighter', 'Notebook'],
+  equipmentUsed: [], // Track used items for summary or logic
+  position: [0, 0], // Grid-based position for map logic
+  map: [
+    ['●','_','_'],
+    ['|','_','|'],
+    ['|','_','|']
+  ],
+  roomNameMap: [
+    ['Van','Foyer','Kitchen'],
+    ['Basement','Living Room','Bathroom'],
+    ['Garage','Bedroom','Storage']
+  ],
+  ghost: null,
+  evidence: [],
+  ghostRoom: null,
+  ghostTraitsSeen: [], // Track behaviors for deduction
+  guessedGhost: null,
+  journal: [], // Optional: Player notes
+  events: [], // Log of turn-based ghost events
+  smudgeUsed: 0,
+  crucifixUsed: false,
+  protections: {
+    crucifixPlaced: false,
+    smudgeCount: 2
+  },
+  settings: {
+    difficulty: 'Amateur',
+    allowHints: true,
+    noEvidenceMode: false
+  }
+};
+
+
+const introDialogues = [
+  "Deo: I've got a bad feeling about this one...",
+  "Deo: Remember, this isn't a ghost story - it's real.",
+  "Deo: Stay on your toes out there.",
+  "Deo: Let's see what we're dealing with this time.",
+  "Deo: Keep the lights on and the sanity high!"
+];
+</script>
+
+<script>
+// === DOM Elements ===
+const logBox = document.getElementById('ada-log');
+const inputBox = document.getElementById('ada-input');
+const gameUI = document.getElementById('game-ui');
+const turnCounter = document.getElementById('turn-counter');
+const sanityBar = document.getElementById('sanity-bar');
+
+function updateStatus() {
+  turnCounter.textContent = game.turn;
+  sanityBar.textContent = game.sanity;
+}
+
+function updateMapDisplay() {
+  let [x, y] = game.position;
+  let display = "";
+  for (let i = 0; i < game.map.length; i++) {
+    for (let j = 0; j < game.map[i].length; j++) {
+      display += (i === x && j === y) ? "● " : game.map[i][j] + " ";
+    }
+    display += "<br>";
+  }
+  return display;
+}
+
+function logMessage(text, from="ADA") {
+  const line = document.createElement("div");
+  line.innerHTML = `<strong>${from}:</strong> `;
+  const span = document.createElement("span");
+  span.textContent = text;
+  line.appendChild(span);
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+</script>
+
+<script>
+// === ADA Typing + Response System ===
+function simulateTyping(text, from = "ADA") {
+  const line = document.createElement("div");
+  line.innerHTML = `<strong>${from}:</strong> `;
+  logBox.appendChild(line);
+  const span = document.createElement("span");
+  line.appendChild(span);
+
+  const cursor = document.createElement("span");
+  cursor.setAttribute("id", "ada-typing");
+  cursor.textContent = "|";
+  line.appendChild(cursor);
+
+  let i = 0;
+  function typeChar() {
+    if (i < text.length) {
+      span.textContent += text[i++];
+      logBox.scrollTop = logBox.scrollHeight;
+      setTimeout(typeChar, 18 + Math.random() * 30);
+    } else {
+      cursor.remove();
+    }
+  }
+  typeChar();
+}
+
+function respondTo(cmd) {
+  const command = cmd.trim().toLowerCase();
+  if (!command) return;
+  game.turn++;
+  updateStatus();
+
+  if (command === "start") {
+    game.started = true;
+    game.active = true;
+    game.ghost = Object.keys(ghostProfiles)[Math.floor(Math.random() * 5)];
+    gameUI.style.display = 'block';
+    return ghostProfiles[game.ghost].intro + " Type 'move' or 'map' to continue.";
+  }
+
+  if (command === "map") return updateMapDisplay();
+
+  if (command === "move") {
+    let [x, y] = game.position;
+    y = (y + 1) % 3;
+    game.position = [x, y];
+    game.sanity = Math.max(0, game.sanity - 5);
+    updateStatus();
+    return "You moved. " + ghostProfiles[game.ghost].behavior + " " + updateMapDisplay();
+  }
+
+  if (command.startsWith("add evidence")) {
+    const ev = command.split("add evidence")[1].trim();
+    if (!game.evidence.includes(ev)) {
+      game.evidence.push(ev);
+      return ev + " noted.";
+    }
+    return "Already recorded.";
+  }
+
+  if (command === "guess") {
+    return "You believe the ghost is a " + game.ghost.toUpperCase() + ".";
+  }
+
+  if (command === "inventory") {
+    return "Inventory: " + game.inventory.join(", ");
+  }
+
+  if (command === "end") {
+    game.started = false;
+    game.active = false;
+    gameUI.style.display = 'none';
+    return "Investigation complete. The ghost was a " + game.ghost.toUpperCase() + ".";
+  }
+
+  return "Unknown command. Try: start, move, map, inventory, guess, end.";
+}
+</script>
+
+<script>
+// === Input Hook + Start Button ===
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-button-ada');
+  const modal = document.getElementById('ada-modal');
+
+  if (startBtn && modal) {
+    startBtn.addEventListener('click', () => {
+      modal.style.display = 'block';
+      simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
+    });
+  }
+
+  inputBox.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      const txt = inputBox.value;
+      inputBox.value = '';
+      if (!txt.trim()) return;
+      simulateTyping(txt, "You");
+      let response = adaParse(txt) || respondTo(txt);
+      setTimeout(() => simulateTyping(response), 300);
+    }
+  });
+});
+</script>
+
+<script>
+// === Knowledge Parser from Rules ===
+const rulesText = document.querySelector('script[type="text/phasma-data"]')?.innerText || '';
+const ADA_KNOWLEDGE = rulesText.split("\n").filter(line => line.trim());
+
+function adaParse(input) {
+  const cmd = input.toLowerCase();
+  if (cmd.includes("succubus")) return "Succubus commentary is only unlocked after a specific ghost interaction.";
+  if (cmd.includes("mirror")) return "The Haunted Mirror shows the ghost room but drains sanity rapidly.";
+  if (cmd.includes("cards")) return "Tarot Cards have random effects: death, sanity drain, or even resurrection.";
+  if (cmd.includes("prestige")) return "Prestige is shown as a Roman numeral before your level. Max is Level 100.";
+  if (cmd.includes("legacy")) return "Memory Logs retain your wins, ghost guesses, and performance stats.";
+  if (cmd.includes("yurei")) return "Yurei drains sanity and slams doors—watch for its patterns.";
+  return null;
+}
+</script>
+<script>
+// === Orb Animation System ===
 const canvas = document.getElementById('orb-canvas');
 const ctx = canvas.getContext('2d');
 let width = canvas.width = window.innerWidth;
@@ -394,7 +530,6 @@ function animateOrbs() {
 
     orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
 
-    // Fade logic
     if (orb.fadeIn) {
       orb.opacity += 0.01;
       if (orb.opacity >= 0.7) {
@@ -405,7 +540,6 @@ function animateOrbs() {
       orb.opacity -= 0.001;
     }
 
-    // Random visibility pulse
     if (Math.random() < 0.002) {
       orb.opacity += 0.1;
       if (orb.opacity > 1) orb.opacity = 1;
@@ -416,7 +550,6 @@ function animateOrbs() {
       continue;
     }
 
-    // Smooth direction change
     if (orb.tick % orb.changeInterval === 0) {
       let angle = Math.random() * 2 * Math.PI;
       let speed = Math.sqrt(orb.vx * orb.vx + orb.vy * orb.vy);
@@ -447,179 +580,141 @@ window.addEventListener('resize', () => {
   height = canvas.height = window.innerHeight;
 });
 </script>
-	<footer style="position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 0.9em; font-family: sans-serif; z-index: 9999;">Shark-Blades — This game was an invisionment of the first-person ghost hunting game Phasmophobia.</footer><script>
+
+<script>
+// === Lightning Flash Effect ===
 function lightningFlash() {
-    const flash = document.getElementById('flash-overlay');
-    if (!flash) return;
-    flash.style.opacity = '0.4';
-    setTimeout(() => { flash.style.opacity = '0'; }, 100);
+  const flash = document.getElementById('flash-overlay');
+  if (!flash) return;
+  flash.style.opacity = '0.4';
+  setTimeout(() => { flash.style.opacity = '0'; }, 100);
 }
+
 setInterval(() => {
-    setTimeout(lightningFlash, Math.random() * 2000);
+  setTimeout(lightningFlash, Math.random() * 2000);
 }, 10000);
 </script>
-	----------------MAKE THIS A FUNCTIONAL MENU WITH BUTTONS TO ACTIVATE
-	<div id="ada-menu" style="display:none;"><li>2. Ghost Talk</li><li>3. Hall of Records</li><li>4. Save Game</li><li>5. Memories</li><li>6. Ask Deo</li><li>7. Exit Game</li></div>
-<div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
-    transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
-    border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
-    max-width:600px;height:80%;color:#0ff;font-family:monospace;">
-<div id="ada-log" style="height:85%;overflow-y:auto;padding:10px;
-      background:#000;border:1px solid #333;margin-bottom:10px;">
-    ADA: REPLACE THE BUTTONS THEN THIS IS THE OUTPUT BOX
-  </div>
-<input id="ada-input" placeholder="REPLACE WITH BUTTONS" style="width:100%;padding:8px;background:#222;color:#0ff;border:1px solid #0ff;"/>
-<div id="status-bar" style="margin-top:10px;font-family:monospace;color:#0ff;">
-  Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
-</div>
-</div>
-<div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div><div id="game-ui" style="display:none;margin-top:20px;border:1px solid #0ff;padding:10px;color:#0ff;font-family:monospace;background:#000;"></div>
-	<script>
-document.addEventListener('DOMContentLoaded', function () {
-    const button = document.getElementById('start-button-ada');
-    const modal = document.getElementById('ada-modal');
-    const log = document.getElementById('ada-log');
-    const input = document.getElementById('ada-input');
-    const gameUI = document.getElementById('game-ui');
-    const turnCounter = document.getElementById('turn-counter');
-    const sanityBar = document.getElementById('sanity-bar');
-
-    const game = {
-        started: false,
-        turn: 0,
-        sanity: 100,
-        inventory: ['Lighter', 'Notebook'],
-        map: [],
-        position: [0, 0],
-        ghost: null,
-        evidence: [],
-        active: false
-    };
-
-    const ghostProfiles = {
-   --------- FIX THIS-ADD ALL GHOST PROFILES WITH THERE DETAILS AND MAKE SURE THIS LINKS UP TO ALL THE OTHER INFORMATION THAT REQUIRES THE GHOST INFO
-    };
-
-    function updateMapDisplay() {
-        let [x, y] = game.position;
-        let display = "";
-        for (let i = 0; i < game.map.length; i++) {
-            for (let j = 0; j < game.map[i].length; j++) {
-                display += (i === x && j === y) ? "● " : game.map[i][j] + " ";
-            }
-            display += "<br>";
-        }
-        return display;
-    }
------------MAKE THIS SANITY AND TURN COUNTER WORK CORRECTLY
-    function updateStatus() {
-        turnCounter.textContent = game.turn;
-        sanityBar.textContent = game.sanity;
-    }
-
-    function simulateTyping(response, from="ADA") {
-        const line = document.createElement("div");
-        line.innerHTML = `<strong>${from}:</strong> `;
-        log.appendChild(line);
-
-        let i = 0;
-        const typingSpan = document.createElement("span");
-        line.appendChild(typingSpan);
-        const cursor = document.createElement("span");
-        cursor.setAttribute("id", "ada-typing");
-        cursor.textContent = "|";
-        line.appendChild(cursor);
-
-        function typeChar() {
-            if (i < response.length) {
-                typingSpan.textContent += response[i++];
-                log.scrollTop = log.scrollHeight;
-                setTimeout(typeChar, 18 + Math.random() * 30);
-            } else {
-                cursor.remove();
-            }
-        }
-        typeChar();
-    }
------------FIX THIS SECTION TO BE DYNAMIC BUTTON OPTIONS RESPONCES FIX MAP INFORMATION AND HOW IT FUNCTIONS AS WELL
-    function respondTo(text) {
-        const cmd = text.trim().toLowerCase();
-        if (!cmd) return;
---------------FIX TICK TIMER
-        game.turn++;
-        updateStatus();
-
-        if (cmd === "start") {
-            game.started = true;
-            game.active = true;
-            game.ghost = Object.keys(ghostProfiles)[Math.floor(Math.random() * 5)];
-            gameUI.style.display = 'block';
-            return ghostProfiles[game.ghost].intro + " Type 'move' or 'map' to continue.";
-        }
-
-        if (cmd === "map") return updateMapDisplay();
-        if (cmd === "move") {
-            let [x, y] = game.position;
-            y = (y + 1) % 3;
-            game.position = [x, y];
-            game.sanity = Math.max(0, game.sanity - 5);
-            updateStatus();
-            return "You moved. " + ghostProfiles[game.ghost].behavior + " " + updateMapDisplay();
-        }
-        if (cmd.startsWith("add evidence")) {
-            const ev = cmd.split("add evidence")[1].trim();
-            if (!game.evidence.includes(ev)) {
-                game.evidence.push(ev);
-                return ev + " noted.";
-            }
-            return "Already recorded.";
-        }
-        if (cmd === "guess") return "You believe the ghost is a " + game.ghost.toUpperCase() + ".";
-        if (cmd === "inventory") return "Inventory: " + game.inventory.join(", ");
-        if (cmd === "end") {
-            game.started = false;
-            game.active = false;
-            gameUI.style.display = 'none';
-            return "Investigation complete. The ghost was a " + game.ghost.toUpperCase() + ".";
-        }
-
-        return "unkown option return.";
-    }
-
-    if (button && modal && input && log) {
-        button.addEventListener('click', () => {
-            modal.style.display = 'block';
-        });
-
-        input.addEventListener('keydown', function (e) {
-            if (e.key === 'Enter') {
-                const txt = input.value;
-                input.value = '';
-                if (!txt.trim()) return;
-                simulateTyping(txt, "You");
-                
-    let res = adaParse(txt);
-    if (!res) res = respondTo(txt);
-    
-                setTimeout(() => simulateTyping(res, "ADA"), 300);
-            }
-        });
-    }
-});
+<script type="text/phasma-data">
+PHASMA-PHONEY:
+- Guess ghost by behavior
+- No evidence default mode
+- Turn-based mechanics with sanity
+- Ghosts: Spirit, Wraith, Poltergeist, Demon, Mare
+- Cursed Possessions: Mirror, Tarot Cards
+- Succubus ghost unlocks after ritual event
+- XP and Prestige (max: Level 100 Roman numeral)
 </script>
-	<script>
-// ADA now reads and parses the full Phasma-Phoney rule set from a hidden script
-const rulesText = document.querySelector('script[type="text/phasma-data"]').innerText;
-const ADA_KNOWLEDGE = rulesText.split("\n").filter(line => line.trim());
--------FIX THESE PARSE OPTIONS TO WORK WITH THE DYNAMIC SELECTIONS FROM BUTTONS AND ADD ANY PARSE THAT IS MISSING FOR GAME FUNCTION 
-function adaParse(input) {
-  const cmd = input.toLowerCase();
-  if (cmd.includes("succubus")) return "Succubus commentary is only unlocked after a specific ghost interaction.";
-  if (cmd.includes("mirror")) return "The Haunted Mirror shows the ghost room but drains sanity rapidly.";
-  if (cmd.includes("cards")) return "Tarot Cards have random effects: death, sanity drain, or even resurrection.";
-  if (cmd.includes("prestige")) return "Prestige is shown as a Roman numeral before your level. Max is Level 100.";
-  if (cmd.includes("legacy")) return "Memory Logs retain your wins, ghost guesses, and performance stats.";
-  if (cmd.includes("yurei")) return "Yurei drains sanity and slams doors—watch for its patterns.";
-  return null; // default to main responder if no special line triggered
+
+<style>
+/* === Responsive Footer === */
+footer {
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: white;
+  font-size: 0.9em;
+  font-family: sans-serif;
+  z-index: 9999;
+  background: rgba(0,0,0,0.6);
+  padding: 4px 12px;
+  border-radius: 6px;
 }
-</script></body></html>
+
+/* === Optional: Typing Text Entry Fade === */
+#intro-dialogue {
+  font-family: monospace;
+  font-size: 1.1em;
+  color: #0ff;
+  animation: fadeIntro 1.8s ease-in-out;
+}
+
+@keyframes fadeIntro {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* === Mobile Optimization Fixes === */
+@media (max-width: 600px) {
+  #start-button-ada {
+    font-size: 18px !important;
+    padding: 12px 30px !important;
+  }
+
+  #ada-modal {
+    width: 95% !important;
+    padding: 12px !important;
+  }
+
+  #ada-log {
+    font-size: 13px !important;
+  }
+}
+</style>
+<style>
+#changelog-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 500px;
+  background: #111;
+  border: 2px solid #444;
+  padding: 16px;
+  color: #0f0;
+  z-index: 9999;
+  font-family: monospace;
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.2);
+}
+
+#changelog-modal h2 {
+  margin-top: 0;
+  color: #0ff;
+  font-size: 1.3em;
+}
+
+#changelog-modal ul {
+  padding-left: 20px;
+  font-size: 0.95em;
+}
+
+#changelog-modal button {
+  margin-top: 12px;
+  padding: 6px 12px;
+  font-size: 0.9em;
+  background: #000;
+  border: 1px solid #0ff;
+  color: #0ff;
+  cursor: pointer;
+}
+
+footer span.version-tag {
+  cursor: pointer;
+  text-decoration: underline dotted;
+  margin-left: 8px;
+  color: #0ff;
+}
+</style>
+
+<footer>
+  Shark‑Blades — Phasma‑Phoney - Fan Built text/turn based version of Phasmaphobia.
+  <span class="version-tag" onclick="document.getElementById('changelog-modal').style.display = 'block'">
+    Build v1.2.3
+  </span>
+</footer>
+
+<div id="changelog-modal">
+  <h2>Phasma‑Phoney Build v1.2.3</h2>
+  <ul>
+    <li>Integrated logic blocks and mobile HUD</li>
+    <li>Orbs and ambient animation visuals</li>
+    <li>Interactive ADA command assistant</li>
+    <li>Ghost hunt logic with room-based movement</li>
+    <li>Inventory, sanity, XP, and evidence tracking</li>
+  </ul>
+  <button onclick="document.getElementById('changelog-modal').style.display = 'none'">Close</button>
+</div>
+</body>
+</html>
