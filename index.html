@@ -593,11 +593,17 @@ document.addEventListener("DOMContentLoaded", () => {
   renderEvidence();
   loadJournal();
 
+  document.addEventListener("DOMContentLoaded", () => {
+ showLoadoutScreen();
+ renderEvidence();
+  loadJournal();
+
   // Automatically trigger loadout screen after title fades
   setTimeout(() => {
     document.getElementById("loadout-screen").style.display = "block";
   }, 7000); // Match title screen fade timing
 });
+
 
 
 setTimeout(() => {
@@ -618,8 +624,7 @@ function confirmLoadout() {
   const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
   all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
 
-  // Hide loadout screen
-  document.getElementById("loadout-screen").style.display = "none";
+
 
   // 👇 START INVESTIGATION IMMEDIATELY
   const keys = Object.keys(ghostProfiles);
