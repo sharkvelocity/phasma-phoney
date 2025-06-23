@@ -189,6 +189,112 @@
     <option value="Candle">Candle</option>
   </select>
 </div>
+<!-- Use Item Popup Canvas -->
+<div id="item-popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  background:#111; border:2px solid #0ff; padding:20px; z-index:9999; color:#0ff; font-family:monospace;
+  box-shadow:0 0 15px rgba(0,255,255,0.3); width:90%; max-width:400px;">
+  <h3 style="margin-top:0; text-align:center;">Choose Item to Use</h3>
+  <div id="item-button-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+  <button onclick="closeItemPopup()" style="margin-top:10px; padding:6px 12px; background:#000; border:1px solid #0ff; color:#0ff;">Cancel</button>
+</div>
+
+<!-- Use Items Button (add to your UI) -->
+<button onclick="openItemPopup()" style="margin:10px; padding:8px 16px; background:#000; border:1px solid #0ff; color:#0ff;">
+  Use Items
+</button>
+
+<script>
+// === Use Item Popup Logic ===
+function openItemPopup() {
+  const popup = document.getElementById('item-popup');
+  const buttonList = document.getElementById('item-button-list');
+  buttonList.innerHTML = '';
+
+  if (game.inventory.length === 0) {
+    buttonList.innerHTML = "<p>No items to use.</p>";
+  } else {
+    game.inventory.forEach(item => {
+      const btn = document.createElement("button");
+      btn.textContent = item;
+      btn.style.background = "#000";
+      btn.style.color = "#0ff";
+      btn.style.border = "1px solid #0ff";
+      btn.style.cursor = "pointer";
+      btn.onclick = () => {
+        useItem(item);
+        closeItemPopup();
+      };
+      buttonList.appendChild(btn);
+    });
+  }
+
+  popup.style.display = 'block';
+}
+
+function closeItemPopup() {
+  document.getElementById('item-popup').style.display = 'none';
+}
+
+// === In-Game Item Usage Handler ===
+function useItem(item) {
+  const loc = game.roomNameMap[game.position[0]][game.position[1]];
+  const ghostHere = loc === game.ghostRoom;
+  let used = false;
+
+  switch (item.toLowerCase()) {
+    case "emf":
+    case "emf reader":
+      if (ghostHere) {
+        simulateTyping("The EMF reader spikes to level 5!");
+        if (!game.evidence.includes("EMF")) game.evidence.push("EMF");
+      } else {
+        simulateTyping("Nothing unusual detected with the EMF.");
+      }
+      used = true;
+      break;
+
+    case "notebook":
+    case "journal":
+      simulateTyping("You place the notebook on the ground, waiting for signs...");
+      used = false; // permanent item
+      break;
+
+    case "smudge":
+    case "smudge stick":
+      if (game.protections.smudgeCount > 0) {
+        game.protections.smudgeCount--;
+        simulateTyping("You burn a smudge stick. The ghost's presence fades momentarily.");
+        used = true;
+      } else {
+        simulateTyping("You're out of smudge sticks.");
+      }
+      break;
+
+    case "crucifix":
+      if (!game.crucifixUsed) {
+        game.crucifixUsed = true;
+        game.protections.crucifixPlaced = true;
+        simulateTyping("You place a crucifix down. It should prevent a hunt if placed correctly.");
+        used = false; // remains in play
+      } else {
+        simulateTyping("You've already used your crucifix.");
+      }
+      break;
+
+    default:
+      simulateTyping("Nothing happens with that item.");
+      used = false;
+  }
+
+  if (used) {
+    // Remove only if it is a consumable
+    const index = game.inventory.indexOf(item);
+    if (index !== -1) game.inventory.splice(index, 1);
+  }
+
+  updateStatus();
+}
+</script>
 
     <div id="status-bar">
       Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
@@ -905,3 +1011,4 @@ footer span.version-tag {
   </ul>
   <button onclick="document.getElementById('changelog-modal').style.display = 'none'">Close</button>
 </div>
+</body></html>
