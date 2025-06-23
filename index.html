@@ -1,16 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>PhasmaPhoney Atmosphere — Pouring Rain</title>
+  <meta charset="utf-8" />
+  <title>PhasmaPhoney</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      height: 100%;
-      background: black;
       overflow: hidden;
+      height: 100%;
+      font-family: monospace;
     }
+    button {
+      background: #000;
+      color: #0ff;
+      border: 1px solid #0ff;
+      padding: 8px 14px;
+      margin: 4px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0ff;
+      color: #000;
+    }
+
+
     .layer, canvas {
       position: absolute;
       top: 0; left: 0;
@@ -18,11 +34,22 @@
       height: 100vh;
       pointer-events: none;
     }
+
     .background { z-index: 1; }
     #middle-layer { z-index: 2; }
     #orb-canvas { z-index: 3; }
     .foreground { z-index: 4; }
-  </style>
+  
+    .scene-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
+    .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+    .background { z-index: 1; }
+    .lightning { z-index: 2; background: white; opacity: 0; transition: opacity 0.15s ease-in-out; }
+    .foreground { z-index: 3; }
+    #orb-canvas, #background-logo { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; }
+    #background-logo { background: url('Title.png') center/contain no-repeat; opacity: .1; z-index: -3; }
+    #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 999; }
+  
+</style>
 </head>
 <body>
 
@@ -142,6 +169,369 @@ window.addEventListener("resize", () => {
   oh = orbCanvas.height = window.innerHeight;
 });
 </script>
+
+<!-- STATUS BAR (HUD) -->
+<div id="status-bar" style="color:#0ff; padding: 8px;">
+  <div>Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%</div>
+  <div id="map-display">Room: Van</div>
+</div>
+
+<!-- EVIDENCE PANEL -->
+<div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
+  <h3 style="margin:0;">Evidence</h3>
+  <div id="evidence-checklist" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
+  <p id="remaining-ghosts" style="color:#0f0;"></p>
+</div>
+
+<!-- MAIN GAME UI OUTPUT -->
+<div id="game-ui" style="padding:12px;color:white;"></div>
+
+<!-- LOADOUT SELECTION -->
+<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h2>Select Loadout (Max 3)</h2>
+  <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
+  <button onclick="confirmLoadout()">Confirm Loadout</button>
+  <button onclick="randomLoadout()">Random Loadout</button>
+</div>
+
+<!-- VAN PANEL -->
+<div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Van Inventory</h3>
+  <div id="van-button-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+  <button onclick="closeVanPanel()">Done</button>
+</div>
+
+<!-- GUESS GHOST POPUP -->
+<div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Who is the Ghost?</h3>
+  <div id="guess-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  <button onclick="closeGuess()">Cancel</button>
+</div>
+
+<!-- ITEM POPUP -->
+<div id="item-popup" style="display:none;position:absolute;top:10%;left:20%;right:20%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Choose Item</h3>
+  <div id="item-button-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  <button onclick="closeItemPopup()">Cancel</button>
+</div>
+
+<!-- JOURNAL -->
+<div id="journal-screen" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Notes</h3>
+  <textarea id="journal-text" placeholder="Your notes..." style="width:100%;height:150px;"></textarea><br>
+  <button onclick="closeJournal()">Close</button>
+</div>
+
+<!-- ADA COMMAND PANEL -->
+<div id="ada-modal" style="display:none;position:absolute;bottom:0;left:0;width:100%;background:#000;border-top:1px solid #0ff;padding:10px;z-index:5;">
+  <div id="ada-log" style="height:200px;overflow-y:auto;background:#000;color:#0ff;padding:6px;border:1px solid #0ff;margin-bottom:8px;"></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    <button onclick="handleCommand('move')">Move</button>
+    <button onclick="handleCommand('map')">Map</button>
+    <button onclick="handleCommand('inventory')">Inventory</button>
+    <button onclick="openGuess()">Guess</button>
+    <button onclick="handleCommand('van')">Visit Van</button>
+    <button onclick="handleCommand('end')">End</button>
+    <button onclick="openItemPopup()">Use Items</button>
+    <button onclick="openJournal()">Open Journal</button>
+  </div>
+</div>
+
+
+<!-- FOOTER -->
+<footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.4 — Full Gameplay</footer>
+<script>
+const game = {
+  inventory: [],
+  vanStock: {},
+  turn: 0,
+  sanity: 100,
+  ghost: null,
+  ghostRoom: null,
+  position: [0, 0],
+  roomMap: [
+    ["Van", "Foyer", "Kitchen"],
+    ["Basement", "Living Room", "Bathroom"],
+    ["Garage", "Bedroom", "Storage"]
+  ]
+};
+
+let selectedEvidence = new Set();
+let narrationEnabled = true;
+
+function log(text) {
+  const ada = document.getElementById("ada-log");
+  const div = document.createElement("div");
+  div.innerHTML = "<strong>ADA:</strong> " + text;
+  ada.appendChild(div);
+  ada.scrollTop = ada.scrollHeight;
+  speak(text);
+}
+
+function speak(text) {
+  if (!narrationEnabled) return;
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.pitch = 1.05;
+  utterance.rate = 0.96;
+  utterance.volume = 0.95;
+  speechSynthesis.speak(utterance);
+}
+
+function updateMap() {
+  const room = game.roomMap[game.position[0]][game.position[1]];
+  document.getElementById("map-display").textContent = "Room: " + room;
+}
+
+function handleCommand(cmd) {
+  game.turn++;
+  document.getElementById("turn-counter").textContent = game.turn;
+  let room = game.roomMap[game.position[0]][game.position[1]];
+
+  switch (cmd.toLowerCase()) {
+    
+    case "move":
+      game.position[1] = (game.position[1] + 1) % 3;
+      updateMap();
+      game.sanity = Math.max(0, game.sanity - 5);
+      document.getElementById("sanity-bar").textContent = game.sanity;
+      room = game.roomMap[game.position[0]][game.position[1]];
+      log("You moved to " + room + ".");
+      if (room === game.ghostRoom) ambientNarration(room, game.ghost);
+      else ambientNarration(room);
+      break;
+    case "map":
+      updateMap();
+      break;
+    case "inventory":
+      log("Your gear: " + game.inventory.join(", "));
+      break;
+    case "van":
+      openVanPanel();
+      break;
+    case "end":
+      endGame(false);
+      break;
+    default:
+      log("Unknown command.");
+  }
+}
+</script>
+
+<script>
+function useItem(item) {
+  if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
+    log("Nothing happens.");
+    return;
+  }
+
+  const ghost = ghostProfiles[game.ghost];
+  const room = game.roomMap[game.position[0]][game.position[1]];
+  const inRoom = room === game.ghostRoom;
+
+  switch (item.toLowerCase()) {
+    case "emf":
+      log(inRoom && ghost.tools.includes("emf") ? "EMF spikes to 5!" : "No EMF detected.");
+      if (inRoom && ghost.tools.includes("emf")) checkEvidence("EMF Level 5");
+      break;
+    case "spirit box":
+      log(inRoom && ghost.tools.includes("spirit box") ? "Spirit Box crackles!" : "Only static.");
+      if (inRoom && ghost.tools.includes("spirit box")) checkEvidence("Spirit Box");
+      break;
+    case "uv":
+    case "fingerprints":
+      log(inRoom && ghost.tools.includes("uv") ? "Fingerprints found!" : "No prints.");
+      if (inRoom && ghost.tools.includes("uv")) checkEvidence("Fingerprints");
+      break;
+    case "book":
+      log(inRoom && ghost.tools.includes("book") ? "Ghost writing appears!" : "The pages remain blank.");
+      if (inRoom && ghost.tools.includes("book")) checkEvidence("Ghost Writing");
+      break;
+    case "thermometer":
+      log(inRoom && ghost.tools.includes("thermometer") ? "Freezing temps!" : "It's warm.");
+      if (inRoom && ghost.tools.includes("thermometer")) checkEvidence("Freezing Temps");
+      break;
+    case "dots":
+      log(inRoom && ghost.tools.includes("dots") ? "Motion detected!" : "No movement.");
+      if (inRoom && ghost.tools.includes("dots")) checkEvidence("D.O.T.S");
+      break;
+    case "camera":
+      log(inRoom && ghost.tools.includes("camera") ? "Orbs spotted!" : "Nothing on film.");
+      if (inRoom && ghost.tools.includes("camera")) checkEvidence("Orbs");
+      break;
+    case "smudge":
+      if (game.vanStock["Smudge"]) {
+        game.vanStock["Smudge"]--;
+        log("Smudge used. The air clears.");
+      } else log("No smudge sticks left.");
+      break;
+    case "candle":
+      log("The candle flickers mysteriously.");
+      break;
+    case "crucifix":
+      log("You place the crucifix nearby.");
+      break;
+    case "salt":
+      log("You sprinkle salt on the floor.");
+      break;
+    default:
+      log("Nothing happens.");
+  }
+}
+</script>
+<script>
+function openItemPopup() {
+  const popup = document.getElementById("item-popup");
+  const list = document.getElementById("item-button-list");
+  list.innerHTML = "";
+
+  game.inventory.forEach(item => {
+    const b = document.createElement("button");
+    b.textContent = item;
+    b.onclick = () => {
+      useItem(item);
+      closeItemPopup();
+    };
+    list.appendChild(b);
+  });
+
+  popup.style.display = "block";
+}
+
+function closeItemPopup() {
+  document.getElementById("item-popup").style.display = "none";
+}
+
+function openGuess() {
+  const popup = document.getElementById("guess-popup");
+  const list = document.getElementById("guess-list");
+  list.innerHTML = "";
+
+  Object.keys(ghostProfiles).forEach(g => {
+    const btn = document.createElement("button");
+    btn.textContent = g.toUpperCase();
+    btn.onclick = () => {
+      makeGuess(g);
+      closeGuess();
+    };
+    list.appendChild(btn);
+  });
+
+  popup.style.display = "block";
+}
+
+function closeGuess() {
+  document.getElementById("guess-popup").style.display = "none";
+}
+
+function makeGuess(name) {
+  if (name.toLowerCase() === game.ghost.toLowerCase()) {
+    log("✅ Correct! It was " + name.toUpperCase());
+    endGame(true);
+  } else {
+    log("❌ Incorrect. It was " + game.ghost.toUpperCase());
+    endGame(false);
+  }
+}
+
+function endGame(success) {
+  document.getElementById("ada-modal").style.display = "none";
+  alert(success ? "🎉 Victory!" : "💀 Game Over");
+  const ui = document.getElementById("game-ui");
+  const btn = document.createElement("button");
+  btn.textContent = "🔁 Restart";
+  btn.onclick = () => location.reload();
+  ui.innerHTML = "";
+  ui.appendChild(btn);
+}
+</script>
+
+<script>
+function renderEvidence() {
+  const container = document.getElementById("evidence-checklist");
+  container.innerHTML = "";
+
+  evidenceTypes.forEach(ev => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedEvidence.has(ev);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedEvidence.add(ev);
+      else selectedEvidence.delete(ev);
+      renderEvidence();
+    };
+    label.appendChild(checkbox);
+    label.append(" " + ev);
+    container.appendChild(label);
+  });
+
+  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
+    [...selectedEvidence].every(ev => evs.includes(ev))
+  ).map(([ghost]) => ghost);
+
+  document.getElementById("remaining-ghosts").textContent =
+    match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
+}
+</script>
+
+<script>
+function loadJournal() {
+  const val = localStorage.getItem("journal");
+  if (val) document.getElementById("journal-text").value = val;
+}
+
+function saveJournal() {
+  localStorage.setItem("journal", document.getElementById("journal-text").value);
+}
+
+function openJournal() {
+  document.getElementById("journal-screen").style.display = "block";
+}
+
+function closeJournal() {
+  saveJournal();
+  document.getElementById("journal-screen").style.display = "none";
+}
+</script>
+
+<script>
+// Final startup hook
+document.addEventListener("DOMContentLoaded", () => {
+  showLoadoutScreen();
+  renderEvidence();
+  loadJournal();
+});
+
+  // Show the ADA command interface after loadout is picked
+  <script>
+function confirmLoadout() {
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
+  if (selected.length > 3) return alert("Max 3 items.");
+  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
+
+  // Stock van with remaining items
+  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
+
+  // Hide loadout screen
+  document.getElementById("loadout-screen").style.display = "none";
+
+  // 👇 START INVESTIGATION IMMEDIATELY
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+
+  // Update and show ADA panel
+  updateMap();
+  document.getElementById("ada-modal").style.display = "block";
+  log("Your investigation begins...");
+  renderEvidence();
+  loadJournal();
+}
+</script>
+
+</body>
+</html>
 
 </body>
 </html>
