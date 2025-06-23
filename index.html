@@ -1,163 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>PhasmaPhoney</title>
+  <meta charset="UTF-8" />
+  <title>Phasma‑Phoney Title</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
+      width: 100vw; height: 100vh;
+      background: black;
       overflow: hidden;
-      height: 100%;
-      font-family: monospace;
-    }
-    button {
-      background: #000;
-      color: #0ff;
-      border: 1px solid #0ff;
-      padding: 8px 14px;
-      margin: 4px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0ff;
-      color: #000;
+      font-family: sans-serif;
     }
 
-
-    .layer, canvas {
-      position: absolute;
+    #title-screen {
+      position: fixed;
       top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100vw; height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      z-index: 10;
+      opacity: 1;
+      transition: opacity 2s ease-in-out;
+    }
+
+    #title-screen img {
+      max-width: 80%;
+      animation: pulse 3s infinite ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.02); }
+    }
+
+    #main-scene {
+      display: none;
+    }
+
+    .layered-scene {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 1;
       pointer-events: none;
     }
 
-    .background { z-index: 1; }
-    #middle-layer { z-index: 2; }
-    #orb-canvas { z-index: 3; }
-    .foreground { z-index: 4; }
-  
-    .scene-container { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: -1; }
-    .layer { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
-    .background { z-index: 1; }
-    .lightning { z-index: 2; background: white; opacity: 0; transition: opacity 0.15s ease-in-out; }
-    .foreground { z-index: 3; }
-    #orb-canvas, #background-logo { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; }
-    #background-logo { background: url('Title.png') center/contain no-repeat; opacity: .1; z-index: -3; }
-    #flash-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; opacity: 0; pointer-events: none; z-index: 999; }
-  
-</style>
+    .layer {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      object-fit: cover;
+    }
+
+    .rain-canvas, .orb-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 2;
+    }
+
+    .lightning {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white;
+      opacity: 0;
+      transition: opacity 0.2s ease-in-out;
+      z-index: 3;
+    }
+  </style>
 </head>
 <body>
 
-<!-- LAYERS -->
-<img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer background" />
-<canvas id="middle-layer"></canvas>
-<canvas id="orb-canvas"></canvas>
-<img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer foreground" />
+<!-- TITLE SCREEN -->
+<div id="title-screen">
+  <img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/logo.png?raw=true" alt="PhasmaPhoney Logo" />
+</div>
+
+<!-- MAIN SCENE -->
+<div id="main-scene">
+  <div class="layered-scene">
+    <img src="https://uce65e3d24f97dd7b2813b2abae4.dl.dropboxusercontent.com/cd/0/inline/CsJJ5OxFA00s8TxfGuZoVdG2dcizQ35kuNU9RzFK6qjZVW0UqawuRHbk2AswiBc7PEFIuRnpsAbb67zBSRGkXSEFE9hNrx4W_dFZ9Jkq7YipvZ8VfM5RtyTMjw4ncAMFEPDUdm8_iYOMBh8ih40eIDXv/file#" class="layer" />
+    <canvas class="rain-canvas" id="rain"></canvas>
+    <div class="lightning" id="lightning"></div>
+    <img src="https://ucc218b40a18deae88ce4c584e4e.dl.dropboxusercontent.com/cd/0/inline/CsLdmdO_UdabdP4CkHre_QZE0adW1brnfvMHZ3ObFTgmmVTFKH6Rjc-ldqZyWexwAKrDUhuozlq-cJTPtd7wLU3b6dB94z42vz_hC-IxTJgR_gb0shtp2j8-SBS-Ie9SMV9z1I5TfPJueqKlfQherGXV/file#" class="layer" />
+    <canvas class="orb-canvas" id="orbs"></canvas>
+  </div>
+</div>
 
 <script>
-// Heavy diagonal rain + lightning
-const mid = document.getElementById("middle-layer");
-const midCtx = mid.getContext("2d");
-let W = mid.width = window.innerWidth;
-let H = mid.height = window.innerHeight;
+// Fade out title after 5s and reveal main scene by 7s
+setTimeout(() => {
+  document.getElementById('title-screen').style.opacity = 0;
+}, 5000);
+setTimeout(() => {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('main-scene').style.display = 'block';
+}, 7000);
 
-let rainDrops = Array.from({ length: 400 }, () => ({
-  x: Math.random() * W,
-  y: Math.random() * H,
-  l: Math.random() * 20 + 15,
-  xs: -2, // horizontal drift
-  ys: Math.random() * 8 + 10 // vertical speed
-}));
+// === RAIN (DIAGONAL) ===
+const rainCanvas = document.getElementById("rain");
+const rainCtx = rainCanvas.getContext("2d");
+let rainWidth = rainCanvas.width = window.innerWidth;
+let rainHeight = rainCanvas.height = window.innerHeight;
 
-let lightningOpacity = 0;
+function createRaindrop() {
+  return {
+    x: Math.random() * rainWidth,
+    y: Math.random() * rainHeight,
+    length: Math.random() * 20 + 10,
+    speedX: -1,
+    speedY: Math.random() * 4 + 4
+  };
+}
 
-function drawRainAndLightning() {
-  midCtx.clearRect(0, 0, W, H);
+let raindrops = Array.from({ length: 150 }, createRaindrop);
 
-  // Rain
-  midCtx.strokeStyle = 'rgba(180, 220, 255, 0.4)';
-  midCtx.lineWidth = 1;
-  midCtx.beginPath();
-  for (let drop of rainDrops) {
-    midCtx.moveTo(drop.x, drop.y);
-    midCtx.lineTo(drop.x + drop.xs, drop.y + drop.l);
-  }
-  midCtx.stroke();
-
-  for (let drop of rainDrops) {
-    drop.x += drop.xs;
-    drop.y += drop.ys;
-    if (drop.y > H || drop.x < 0) {
-      drop.y = -20;
-      drop.x = Math.random() * W + 100;
+function animateRain() {
+  rainCtx.clearRect(0, 0, rainWidth, rainHeight);
+  rainCtx.strokeStyle = "rgba(173,216,230,0.3)";
+  rainCtx.lineWidth = 1.2;
+  for (let drop of raindrops) {
+    rainCtx.beginPath();
+    rainCtx.moveTo(drop.x, drop.y);
+    rainCtx.lineTo(drop.x + drop.speedX * 2, drop.y + drop.length);
+    rainCtx.stroke();
+    drop.x += drop.speedX;
+    drop.y += drop.speedY;
+    if (drop.y > rainHeight || drop.x < 0) {
+      Object.assign(drop, createRaindrop());
+      drop.y = 0;
     }
   }
-
-  // Lightning
-  if (lightningOpacity > 0) {
-    midCtx.fillStyle = `rgba(255,255,255,${lightningOpacity})`;
-    midCtx.fillRect(0, 0, W, H);
-    lightningOpacity -= 0.02;
-  }
-
-  requestAnimationFrame(drawRainAndLightning);
+  requestAnimationFrame(animateRain);
 }
-drawRainAndLightning();
-
-setInterval(() => {
-  if (Math.random() > 0.65) lightningOpacity = 0.5;
-}, 5000);
+animateRain();
 
 window.addEventListener("resize", () => {
-  W = mid.width = window.innerWidth;
-  H = mid.height = window.innerHeight;
+  rainWidth = rainCanvas.width = window.innerWidth;
+  rainHeight = rainCanvas.height = window.innerHeight;
 });
-</script>
 
-<script>
-// Floating Orbs
-const orbCanvas = document.getElementById("orb-canvas");
+// === LIGHTNING FLASHES ===
+const lightning = document.getElementById("lightning");
+function triggerLightning() {
+  lightning.style.opacity = "0.5";
+  setTimeout(() => lightning.style.opacity = "0", 100);
+}
+setInterval(() => {
+  if (Math.random() > 0.7) triggerLightning();
+}, 6000);
+
+// === FLOATING ORBS ===
+const orbCanvas = document.getElementById("orbs");
 const orbCtx = orbCanvas.getContext("2d");
-let ow = orbCanvas.width = window.innerWidth;
-let oh = orbCanvas.height = window.innerHeight;
+let orbWidth = orbCanvas.width = window.innerWidth;
+let orbHeight = orbCanvas.height = window.innerHeight;
 
 function createOrb() {
   return {
-    x: Math.random() * ow,
-    y: Math.random() * oh,
-    vx: (Math.random() - 0.5) * 0.4,
-    vy: (Math.random() - 0.5) * 0.4,
-    radius: Math.random() * 2 + 1,
+    x: Math.random() * orbWidth,
+    y: Math.random() * orbHeight,
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: (Math.random() - 0.5) * 0.8,
+    baseRadius: Math.random() * 2 + 1,
+    radius: 1,
     opacity: 0,
     fadeIn: true,
-    tick: 0
+    tick: 0,
+    changeInterval: Math.floor(Math.random() * 150 + 50)
   };
 }
-let orbs = Array.from({ length: 20 }, createOrb);
+
+let orbs = Array.from({ length: 15 }, createOrb);
 
 function animateOrbs() {
-  orbCtx.clearRect(0, 0, ow, oh);
+  orbCtx.clearRect(0, 0, orbWidth, orbHeight);
   for (let orb of orbs) {
     orb.tick++;
-    orb.opacity += orb.fadeIn ? 0.01 : -0.005;
-    if (orb.opacity >= 0.6) orb.fadeIn = false;
-    if (orb.opacity <= 0) Object.assign(orb, createOrb());
-
-    orb.x += orb.vx;
-    orb.y += orb.vy;
-    if (orb.x < 0 || orb.x > ow) orb.vx *= -1;
-    if (orb.y < 0 || orb.y > oh) orb.vy *= -1;
-
+    orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
+    orb.opacity += orb.fadeIn ? 0.01 : -0.001;
+    if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
+    if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
+    if (orb.tick % orb.changeInterval === 0) {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
+      orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
+      orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
+    }
+    orb.x += orb.vx; orb.y += orb.vy;
+    if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= orbWidth) orb.vx *= -1;
+    if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= orbHeight) orb.vy *= -1;
     orbCtx.beginPath();
     orbCtx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-    orbCtx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
-    orbCtx.shadowColor = `rgba(255, 255, 255, ${orb.opacity * 0.6})`;
-    orbCtx.shadowBlur = 10;
+    orbCtx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+    orbCtx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
+    orbCtx.shadowBlur = 10 + orb.opacity * 10;
     orbCtx.fill();
   }
   requestAnimationFrame(animateOrbs);
@@ -165,16 +207,12 @@ function animateOrbs() {
 animateOrbs();
 
 window.addEventListener("resize", () => {
-  ow = orbCanvas.width = window.innerWidth;
-  oh = orbCanvas.height = window.innerHeight;
+  orbWidth = orbCanvas.width = window.innerWidth;
+  orbHeight = orbCanvas.height = window.innerHeight;
 });
 </script>
-
-<!-- STATUS BAR (HUD) -->
-<div id="status-bar" style="color:#0ff; padding: 8px;">
-  <div>Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%</div>
-  <div id="map-display">Room: Van</div>
-</div>
+</body>
+</html>
 
 <!-- EVIDENCE PANEL -->
 <div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
