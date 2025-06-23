@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>PhasmaPhoney Atmosphere</title>
+  <title>PhasmaPhoney Atmosphere — Pouring Rain</title>
   <style>
     html, body {
       margin: 0;
@@ -26,34 +26,34 @@
 </head>
 <body>
 
-<!-- LAYERED VISUALS -->
+<!-- LAYERS -->
 <img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer background" />
 <canvas id="middle-layer"></canvas>
 <canvas id="orb-canvas"></canvas>
 <img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer foreground" />
 
 <script>
-// Rain + Lightning in middle-layer
+// Heavy diagonal rain + lightning
 const mid = document.getElementById("middle-layer");
 const midCtx = mid.getContext("2d");
 let W = mid.width = window.innerWidth;
 let H = mid.height = window.innerHeight;
 
-let rainDrops = Array.from({ length: 100 }, () => ({
+let rainDrops = Array.from({ length: 400 }, () => ({
   x: Math.random() * W,
   y: Math.random() * H,
-  l: Math.random() * 20 + 10,
-  xs: 0,
-  ys: Math.random() * 4 + 4
+  l: Math.random() * 20 + 15,
+  xs: -2, // horizontal drift
+  ys: Math.random() * 8 + 10 // vertical speed
 }));
 
 let lightningOpacity = 0;
 
 function drawRainAndLightning() {
   midCtx.clearRect(0, 0, W, H);
-  
+
   // Rain
-  midCtx.strokeStyle = 'rgba(173,216,230,0.6)';
+  midCtx.strokeStyle = 'rgba(180, 220, 255, 0.4)';
   midCtx.lineWidth = 1;
   midCtx.beginPath();
   for (let drop of rainDrops) {
@@ -63,10 +63,11 @@ function drawRainAndLightning() {
   midCtx.stroke();
 
   for (let drop of rainDrops) {
+    drop.x += drop.xs;
     drop.y += drop.ys;
-    if (drop.y > H) {
+    if (drop.y > H || drop.x < 0) {
       drop.y = -20;
-      drop.x = Math.random() * W;
+      drop.x = Math.random() * W + 100;
     }
   }
 
@@ -82,7 +83,7 @@ function drawRainAndLightning() {
 drawRainAndLightning();
 
 setInterval(() => {
-  if (Math.random() > 0.6) lightningOpacity = 0.4;
+  if (Math.random() > 0.65) lightningOpacity = 0.5;
 }, 5000);
 
 window.addEventListener("resize", () => {
