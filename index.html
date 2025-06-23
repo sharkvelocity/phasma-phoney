@@ -132,12 +132,33 @@
 <div id="game-ui" style="padding:12px;color:white;"></div>
 
 <!-- LOADOUT SELECTION -->
-<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-  <h2>Select Loadout (Max 3)</h2>
-  <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
-  <button onclick="confirmLoadout()">Confirm Loadout</button>
-  <button onclick="randomLoadout()">Random Loadout</button>
-</div>
+<script>
+function confirmLoadout() {
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
+  if (selected.length > 3) return alert("Max 3 items.");
+  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
+
+  // Stock van with remaining items
+  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
+
+  // Hide loadout screen
+  document.getElementById("loadout-screen").style.display = "none";
+
+  // 👇 START INVESTIGATION IMMEDIATELY
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+
+  // Update and show ADA panel
+  updateMap();
+  document.getElementById("ada-modal").style.display = "block";
+  log("Your investigation begins...");
+  renderEvidence();
+  loadJournal();
+}
+</script>
+
 
 <!-- VAN PANEL -->
 <div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
