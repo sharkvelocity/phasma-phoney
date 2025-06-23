@@ -1,129 +1,98 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>PhasmaPhoney Background</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <title>Orbs and Lightning</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
-      background: black;
       height: 100%;
+      background: black;
       overflow: hidden;
     }
-    .scene-container {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: -1;
-    }
-    .layer {
+    .layer, canvas {
       position: absolute;
       top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
+      width: 100vw;
+      height: 100vh;
     }
-    .background { z-index: 1; }
     .lightning {
-      z-index: 2;
       background: white;
       opacity: 0;
-      transition: opacity 0.15s ease-in-out;
-    }
-    .foreground { z-index: 3; }
-    #orb-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: 0;
+      transition: opacity 0.2s ease-in-out;
+      z-index: 10;
     }
   </style>
 </head>
 <body>
 
-<!-- BACKGROUND LAYERS -->
-<div class="scene-container">
-  <img src="https://ucd08702be0de190e6ebe163f3c6.dl.dropboxusercontent.com/cd/0/inline/CsIt7hos8RxdFcUIhIlbgswc8UNfoZz-80oNMat6r_w3z_kO4FML9IOZaeLhPV10Z6wtR0RqVyfJiqx60EVDYStx8JIjs0S67-oiwJ420oP3s8wn053Lzb76Lw4ZLzQIpLrZgtOxFkGJrZIAFqVdyS-C/file##" class="layer background" />
-  <div class="layer lightning"></div>
-  <img src="https://uc643fc9744c717a5c425ee1c718.dl.dropboxusercontent.com/cd/0/inline/CsKDCYqoyV8a4E32iwY55MjWiJqArq28fz-2dJ03SQO6khVjwNXjsoeM9AktMyZafHcZBm3YhLmP0oNh4MSnd0zNIJEpHJuhHuLkFHCj2eB8TK_vAG6ENqXXaEMlpBfRAxz-Xd_MUeRqk6DzP21074Tq/file#" class="layer foreground" />
-</div>
-
-<!-- ORB CANVAS -->
+<!-- Background and Foreground -->
+<img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer">
 <canvas id="orb-canvas"></canvas>
+<img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer">
+<div class="lightning" id="lightning"></div>
 
-<!-- LIGHTNING LOGIC -->
 <script>
-  const flash = document.querySelector(".lightning");
-  function triggerFlash() {
-    flash.style.opacity = "0.4";
-    setTimeout(() => flash.style.opacity = "0", 150);
+// Lightning Flash
+const lightning = document.getElementById("lightning");
+setInterval(() => {
+  if (Math.random() > 0.6) {
+    lightning.style.opacity = "0.4";
+    setTimeout(() => lightning.style.opacity = "0", 150);
   }
-  setInterval(() => {
-    if (Math.random() > 0.6) triggerFlash();
-  }, 6000);
-</script>
+}, 5000);
 
-<!-- ORB ANIMATION -->
-<script>
-  const canvas = document.getElementById("orb-canvas");
-  const ctx = canvas.getContext("2d");
-  let width = canvas.width = window.innerWidth;
-  let height = canvas.height = window.innerHeight;
+// Floating Orbs
+const canvas = document.getElementById("orb-canvas");
+const ctx = canvas.getContext("2d");
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
 
-  function createOrb() {
-    return {
-      x: Math.random() * width,
-      y: Math.random() * height,
-      vx: (Math.random() - 0.5) * 0.8,
-      vy: (Math.random() - 0.5) * 0.8,
-      baseRadius: Math.random() * 2 + 1,
-      radius: 1,
-      opacity: 0,
-      fadeIn: true,
-      tick: 0,
-      changeInterval: Math.floor(Math.random() * 150 + 50)
-    };
+function createOrb() {
+  return {
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * 0.5,
+    vy: (Math.random() - 0.5) * 0.5,
+    radius: Math.random() * 2 + 1,
+    opacity: 0,
+    fadeIn: true,
+    tick: 0
+  };
+}
+
+let orbs = Array.from({ length: 20 }, createOrb);
+
+function animateOrbs() {
+  ctx.clearRect(0, 0, width, height);
+  for (let orb of orbs) {
+    orb.tick++;
+    orb.opacity += orb.fadeIn ? 0.01 : -0.005;
+    if (orb.opacity >= 0.6) orb.fadeIn = false;
+    if (orb.opacity <= 0) Object.assign(orb, createOrb());
+
+    orb.x += orb.vx;
+    orb.y += orb.vy;
+    if (orb.x < 0 || orb.x > width) orb.vx *= -1;
+    if (orb.y < 0 || orb.y > height) orb.vy *= -1;
+
+    ctx.beginPath();
+    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
+    ctx.shadowColor = `rgba(255, 255, 255, ${orb.opacity * 0.6})`;
+    ctx.shadowBlur = 10;
+    ctx.fill();
   }
+  requestAnimationFrame(animateOrbs);
+}
 
-  let orbs = Array.from({ length: 15 }, createOrb);
+animateOrbs();
 
-  function animateOrbs() {
-    ctx.clearRect(0, 0, width, height);
-    for (let orb of orbs) {
-      orb.tick++;
-      orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
-      orb.opacity += orb.fadeIn ? 0.01 : -0.001;
-      if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
-      if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
-      if (orb.tick % orb.changeInterval === 0) {
-        const angle = Math.random() * 2 * Math.PI;
-        const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
-        orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
-        orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
-      }
-      orb.x += orb.vx;
-      orb.y += orb.vy;
-      if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= width) orb.vx *= -1;
-      if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= height) orb.vy *= -1;
-
-      ctx.beginPath();
-      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-      ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
-      ctx.shadowBlur = 10 + orb.opacity * 10;
-      ctx.fill();
-    }
-    requestAnimationFrame(animateOrbs);
-  }
-
-  animateOrbs();
-
-  window.addEventListener("resize", () => {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
-  });
+window.addEventListener("resize", () => {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
 </script>
 
 </body>
