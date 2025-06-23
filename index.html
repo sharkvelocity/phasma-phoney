@@ -202,7 +202,6 @@ window.addEventListener("resize", () => {
   rainWidth = rainCanvas.width = window.innerWidth;
   rainHeight = rainCanvas.height = window.innerHeight;
 });
-
 // === LIGHTNING FLASHES ===
 const lightning = document.getElementById("lightning");
 function triggerLightning() {
@@ -593,6 +592,13 @@ function closeJournal() {
 document.addEventListener("DOMContentLoaded", () => {
   renderEvidence();
   loadJournal();
+
+  // Automatically trigger loadout screen after title fades
+  setTimeout(() => {
+    document.getElementById("loadout-screen").style.display = "block";
+  }, 7000); // Match title screen fade timing
+});
+
 
 setTimeout(() => {
   const screen = document.getElementById("loadout-screen");
