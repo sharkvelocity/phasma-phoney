@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Orbs + Lightning (Layered)</title>
+  <title>PhasmaPhoney Atmosphere</title>
   <style>
     html, body {
       margin: 0;
@@ -16,61 +16,104 @@
       top: 0; left: 0;
       width: 100vw;
       height: 100vh;
+      pointer-events: none;
     }
     .background { z-index: 1; }
-    .lightning {
-      z-index: 2;
-      background: white;
-      opacity: 0;
-      transition: opacity 0.15s ease-in-out;
-    }
+    #middle-layer { z-index: 2; }
     #orb-canvas { z-index: 3; }
     .foreground { z-index: 4; }
   </style>
 </head>
 <body>
 
-<!-- LAYER ORDER -->
+<!-- LAYERED VISUALS -->
 <img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer background" />
-<div class="layer lightning" id="lightning"></div>
+<canvas id="middle-layer"></canvas>
 <canvas id="orb-canvas"></canvas>
 <img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer foreground" />
 
 <script>
-// LIGHTNING FLASH
-const lightning = document.getElementById("lightning");
-setInterval(() => {
-  if (Math.random() > 0.6) {
-    lightning.style.opacity = "0.4";
-    setTimeout(() => lightning.style.opacity = "0", 150);
+// Rain + Lightning in middle-layer
+const mid = document.getElementById("middle-layer");
+const midCtx = mid.getContext("2d");
+let W = mid.width = window.innerWidth;
+let H = mid.height = window.innerHeight;
+
+let rainDrops = Array.from({ length: 100 }, () => ({
+  x: Math.random() * W,
+  y: Math.random() * H,
+  l: Math.random() * 20 + 10,
+  xs: 0,
+  ys: Math.random() * 4 + 4
+}));
+
+let lightningOpacity = 0;
+
+function drawRainAndLightning() {
+  midCtx.clearRect(0, 0, W, H);
+  
+  // Rain
+  midCtx.strokeStyle = 'rgba(173,216,230,0.6)';
+  midCtx.lineWidth = 1;
+  midCtx.beginPath();
+  for (let drop of rainDrops) {
+    midCtx.moveTo(drop.x, drop.y);
+    midCtx.lineTo(drop.x + drop.xs, drop.y + drop.l);
   }
+  midCtx.stroke();
+
+  for (let drop of rainDrops) {
+    drop.y += drop.ys;
+    if (drop.y > H) {
+      drop.y = -20;
+      drop.x = Math.random() * W;
+    }
+  }
+
+  // Lightning
+  if (lightningOpacity > 0) {
+    midCtx.fillStyle = `rgba(255,255,255,${lightningOpacity})`;
+    midCtx.fillRect(0, 0, W, H);
+    lightningOpacity -= 0.02;
+  }
+
+  requestAnimationFrame(drawRainAndLightning);
+}
+drawRainAndLightning();
+
+setInterval(() => {
+  if (Math.random() > 0.6) lightningOpacity = 0.4;
 }, 5000);
+
+window.addEventListener("resize", () => {
+  W = mid.width = window.innerWidth;
+  H = mid.height = window.innerHeight;
+});
 </script>
 
 <script>
-// FLOATING ORBS
-const canvas = document.getElementById("orb-canvas");
-const ctx = canvas.getContext("2d");
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
+// Floating Orbs
+const orbCanvas = document.getElementById("orb-canvas");
+const orbCtx = orbCanvas.getContext("2d");
+let ow = orbCanvas.width = window.innerWidth;
+let oh = orbCanvas.height = window.innerHeight;
 
 function createOrb() {
   return {
-    x: Math.random() * width,
-    y: Math.random() * height,
-    vx: (Math.random() - 0.5) * 0.5,
-    vy: (Math.random() - 0.5) * 0.5,
+    x: Math.random() * ow,
+    y: Math.random() * oh,
+    vx: (Math.random() - 0.5) * 0.4,
+    vy: (Math.random() - 0.5) * 0.4,
     radius: Math.random() * 2 + 1,
     opacity: 0,
     fadeIn: true,
     tick: 0
   };
 }
-
 let orbs = Array.from({ length: 20 }, createOrb);
 
 function animateOrbs() {
-  ctx.clearRect(0, 0, width, height);
+  orbCtx.clearRect(0, 0, ow, oh);
   for (let orb of orbs) {
     orb.tick++;
     orb.opacity += orb.fadeIn ? 0.01 : -0.005;
@@ -79,24 +122,23 @@ function animateOrbs() {
 
     orb.x += orb.vx;
     orb.y += orb.vy;
-    if (orb.x < 0 || orb.x > width) orb.vx *= -1;
-    if (orb.y < 0 || orb.y > height) orb.vy *= -1;
+    if (orb.x < 0 || orb.x > ow) orb.vx *= -1;
+    if (orb.y < 0 || orb.y > oh) orb.vy *= -1;
 
-    ctx.beginPath();
-    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
-    ctx.shadowColor = `rgba(255, 255, 255, ${orb.opacity * 0.6})`;
-    ctx.shadowBlur = 10;
-    ctx.fill();
+    orbCtx.beginPath();
+    orbCtx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+    orbCtx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
+    orbCtx.shadowColor = `rgba(255, 255, 255, ${orb.opacity * 0.6})`;
+    orbCtx.shadowBlur = 10;
+    orbCtx.fill();
   }
   requestAnimationFrame(animateOrbs);
 }
-
 animateOrbs();
 
 window.addEventListener("resize", () => {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
+  ow = orbCanvas.width = window.innerWidth;
+  oh = orbCanvas.height = window.innerHeight;
 });
 </script>
 
