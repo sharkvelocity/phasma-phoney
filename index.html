@@ -167,10 +167,28 @@
       ADA: I'm here to assist you. Type 'start', 'talk', 'records', or 'exit'.
     </div>
 
-    <input id="ada-input"
-           placeholder="Type a command..."
-           style="width:100%;padding:8px;background:#222;
-                  color:#0ff;border:1px solid #0ff;" />
+    <div id="command-buttons" style="display: flex; flex-wrap: wrap; gap: 6px; justify-content: center;">
+  <button onclick="handleButtonCommand('start')">Start</button>
+  <button onclick="handleButtonCommand('move')">Move</button>
+  <button onclick="handleButtonCommand('map')">Map</button>
+  <button onclick="handleButtonCommand('inventory')">Inventory</button>
+  <button onclick="handleButtonCommand('guess')">Guess</button>
+  <button onclick="handleButtonCommand('end')">End</button>
+  <select onchange="handleButtonCommand('use ' + this.value)" style="margin-top:6px;">
+    <option value="">Use Item...</option>
+    <option value="EMF">EMF</option>
+    <option value="Spirit Box">Spirit Box</option>
+    <option value="UV">UV</option>
+    <option value="Camera">Camera</option>
+    <option value="D.O.T.S">D.O.T.S</option>
+    <option value="Book">Book</option>
+    <option value="Thermometer">Thermometer</option>
+    <option value="Smudge">Smudge</option>
+    <option value="Crucifix">Crucifix</option>
+    <option value="Salt">Salt</option>
+    <option value="Candle">Candle</option>
+  </select>
+</div>
 
     <div id="status-bar">
       Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
@@ -183,8 +201,15 @@
        style="display:none;margin-top:20px;border:1px solid #0ff;
               padding:10px;color:#0ff;font-family:monospace;background:#000;">
   </div>
+<script>
+function handleButtonCommand(cmd) {
+  if (!cmd || cmd === "use ") return;
+  simulateTyping(cmd, "You");
+  let response = adaParse(cmd) || respondTo(cmd);
+  setTimeout(() => simulateTyping(response), 300);
+}
+</script>
 
-  <!-- Footer -->
  <script>
 // === Game Data Setup ===
 const ghostProfiles = {
@@ -373,85 +398,7 @@ function logMessage(text, from="ADA") {
 }
 </script>
 
-<script>
-// === ADA Typing + Response System ===
-function simulateTyping(text, from = "ADA") {
-  const line = document.createElement("div");
-  line.innerHTML = `<strong>${from}:</strong> `;
-  logBox.appendChild(line);
-  const span = document.createElement("span");
-  line.appendChild(span);
 
-  const cursor = document.createElement("span");
-  cursor.setAttribute("id", "ada-typing");
-  cursor.textContent = "|";
-  line.appendChild(cursor);
-
-  let i = 0;
-  function typeChar() {
-    if (i < text.length) {
-      span.textContent += text[i++];
-      logBox.scrollTop = logBox.scrollHeight;
-      setTimeout(typeChar, 18 + Math.random() * 30);
-    } else {
-      cursor.remove();
-    }
-  }
-  typeChar();
-}
-
-function respondTo(cmd) {
-  const command = cmd.trim().toLowerCase();
-  if (!command) return;
-  game.turn++;
-  updateStatus();
-
-  if (command === "start") {
-    game.started = true;
-    game.active = true;
-    game.ghost = Object.keys(ghostProfiles)[Math.floor(Math.random() * 5)];
-    gameUI.style.display = 'block';
-    return ghostProfiles[game.ghost].intro + " Type 'move' or 'map' to continue.";
-  }
-
-  if (command === "map") return updateMapDisplay();
-
-  if (command === "move") {
-    let [x, y] = game.position;
-    y = (y + 1) % 3;
-    game.position = [x, y];
-    game.sanity = Math.max(0, game.sanity - 5);
-    updateStatus();
-    return "You moved. " + ghostProfiles[game.ghost].behavior + " " + updateMapDisplay();
-  }
-
-  if (command.startsWith("add evidence")) {
-    const ev = command.split("add evidence")[1].trim();
-    if (!game.evidence.includes(ev)) {
-      game.evidence.push(ev);
-      return ev + " noted.";
-    }
-    return "Already recorded.";
-  }
-
-  if (command === "guess") {
-    return "You believe the ghost is a " + game.ghost.toUpperCase() + ".";
-  }
-
-  if (command === "inventory") {
-    return "Inventory: " + game.inventory.join(", ");
-  }
-
-  if (command === "end") {
-    game.started = false;
-    game.active = false;
-    gameUI.style.display = 'none';
-    return "Investigation complete. The ghost was a " + game.ghost.toUpperCase() + ".";
-  }
-
-  return "Unknown command. Try: start, move, map, inventory, guess, end.";
-}
-</script>
 
 <script>
 // === Input Hook + Start Button ===
@@ -478,6 +425,167 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 });
 </script>
+<script>
+function respondTo(cmd) {
+  const command = cmd.trim().toLowerCase();
+  if (!command) return;
+  game.turn++;
+  updateStatus();
+if (command === "start") {
+  game.started = true;
+  game.active = true;
+
+  const ghostKeys = Object.keys(ghostProfiles);
+  game.ghost = ghostKeys[Math.floor(Math.random() * ghostKeys.length)];
+
+  game.ghostRoom = game.roomNameMap?.[1]?.[1] || "Living Room";
+  gameUI.style.display = 'block';
+
+  const ambient = [
+    "Deo: The readings are unstable. This one's different.",
+    "Deo: Keep an eye on your sanity. It's watching.",
+    "Deo: Try not to anger it. Not yet.",
+    "Deo: We're going in blind—same as always.",
+    "Deo: Set your equipment. Then breathe. Slowly."
+  ];
+
+  const hint = game.settings?.allowHints
+    ? ` The air feels different near the ${game.ghostRoom}.`
+    : "";
+
+  return ambient[Math.floor(Math.random() * ambient.length)] + hint + " Tap a command to begin.";
+}
+
+
+
+  if (command === "map") return updateMapDisplay();
+
+  if (command === "move") {
+    let [x, y] = game.position;
+    y = (y + 1) % 3;
+    game.position = [x, y];
+    game.sanity = Math.max(0, game.sanity - 5);
+    updateStatus();
+    return "You moved. " + ghostProfiles[game.ghost].behavior + " " + updateMapDisplay();
+  }
+
+  if (command.startsWith("add evidence")) {
+    const ev = command.split("add evidence")[1].trim();
+    if (!game.evidence.includes(ev)) {
+      game.evidence.push(ev);
+      return ev + " noted.";
+    }
+    return "Already recorded.";
+  }
+
+  if (command.startsWith("use ")) {
+    const item = command.split("use ")[1].trim().toLowerCase();
+    const inGhostRoom = game.roomNameMap[game.position[0]][game.position[1]] === game.ghostRoom;
+    const hasItem = game.inventory.map(i => i.toLowerCase()).includes(item);
+
+    if (!hasItem) return "You don't have that item.";
+
+    switch (item) {
+      case "emf":
+      case "emf reader":
+        if (inGhostRoom && ["spirit", "jinn", "oni", "goryo", "raiju", "obake", "the twins", "myling"].includes(game.ghost))
+          return "EMF spikes to level 5!";
+        return "The EMF reader remains quiet.";
+
+      case "spirit box":
+        if (inGhostRoom && ["spirit", "wraith", "mare", "yokai", "onryo", "the twins", "moroi", "deogen", "the mimic", "succubus"].includes(game.ghost))
+          return "Spirit Box crackles and a whisper replies.";
+        return "You hear only static.";
+
+      case "uv":
+      case "uv light":
+      case "fingerprints":
+        if (inGhostRoom && ["wraith", "poltergeist", "banshee", "jinn", "hantu", "goryo", "myling", "obake", "the mimic"].includes(game.ghost))
+          return "A glowing fingerprint is revealed!";
+        return "Nothing glows under the UV light.";
+
+      case "camera":
+      case "video camera":
+        if (inGhostRoom && ["mare", "revenant", "yurei", "hantu", "goryo", "raiju", "obake", "the mimic", "thaye"].includes(game.ghost))
+          return "You spot a floating ghost orb through the lens.";
+        return "No orbs detected.";
+
+      case "dots":
+      case "projector":
+        if (inGhostRoom && ["wraith", "phantom", "banshee", "yurei", "oni", "yokai", "goryo", "raiju", "deogen", "thaye"].includes(game.ghost))
+          return "A shadow darts across the D.O.T.S.";
+        return "No motion detected.";
+
+      case "book":
+      case "writing":
+      case "notebook":
+        if (inGhostRoom && ["spirit", "poltergeist", "mare", "revenant", "shade", "demon", "myling", "moroi", "deogen", "thaye"].includes(game.ghost))
+          return "Ghostly writing appears on the pages!";
+        return "The book remains blank.";
+
+      case "thermometer":
+      case "temperature":
+        if (inGhostRoom && ["jinn", "mare", "revenant", "shade", "demon", "yurei", "oni", "hantu", "onryo", "the twins", "moroi", "the mimic"].includes(game.ghost))
+          return "Temperature drops below freezing!";
+        return "Temperature is stable.";
+
+      case "smudge":
+      case "smudge stick":
+        if (game.protections.smudgeCount > 0) {
+          game.protections.smudgeCount--;
+          return "You burn a smudge stick. The air lightens and the ghost calms.";
+        }
+        return "You're out of smudge sticks.";
+
+      case "crucifix":
+        if (!game.crucifixUsed) {
+          game.crucifixUsed = true;
+          game.protections.crucifixPlaced = true;
+          return "You place a crucifix on the ground. It may stop a hunt.";
+        }
+        return "You've already used your crucifix.";
+
+      case "salt":
+        if (inGhostRoom) {
+          if (game.ghost === "wraith")
+            return "No footprints appear. Suspicious...";
+          else
+            return "You see footprints in the salt.";
+        }
+        return "Nothing happens.";
+
+      case "candle":
+        if (inGhostRoom) {
+          if (game.ghost === "onryo")
+            return "The flame snuffs instantly! A chill passes through.";
+          return "You light the candle. It flickers gently.";
+        }
+        return "You light a candle, but nothing reacts.";
+
+      default:
+        return "You can't use that right now.";
+    }
+  }
+
+  if (command === "guess") {
+    game.guessedGhost = game.ghost;
+    return "You believe the ghost is a " + game.ghost.toUpperCase() + ".";
+  }
+
+  if (command === "inventory") {
+    return "Inventory: " + game.inventory.join(", ");
+  }
+
+  if (command === "end") {
+    game.started = false;
+    game.active = false;
+    gameUI.style.display = 'none';
+    return "Investigation complete. The ghost was a " + game.ghost.toUpperCase() + ".";
+  }
+
+  return "Unknown command. Try: start, move, use [item], map, inventory, guess, end.";
+}
+</script>
 
 <script>
 // === Knowledge Parser from Rules ===
@@ -486,13 +594,94 @@ const ADA_KNOWLEDGE = rulesText.split("\n").filter(line => line.trim());
 
 function adaParse(input) {
   const cmd = input.toLowerCase();
-  if (cmd.includes("succubus")) return "Succubus commentary is only unlocked after a specific ghost interaction.";
-  if (cmd.includes("mirror")) return "The Haunted Mirror shows the ghost room but drains sanity rapidly.";
-  if (cmd.includes("cards")) return "Tarot Cards have random effects: death, sanity drain, or even resurrection.";
-  if (cmd.includes("prestige")) return "Prestige is shown as a Roman numeral before your level. Max is Level 100.";
-  if (cmd.includes("legacy")) return "Memory Logs retain your wins, ghost guesses, and performance stats.";
-  if (cmd.includes("yurei")) return "Yurei drains sanity and slams doors—watch for its patterns.";
+
+  // Cursed Items
+  if (cmd.includes("succubus")) return "The Succubus only reveals herself once you've proven yourself... or lost yourself.";
+  if (cmd.includes("mirror")) return "The Haunted Mirror shows the ghost room but devours your sanity in exchange.";
+  if (cmd.includes("cards") || cmd.includes("tarot")) return "Tarot Cards can bless or break you: death, sanity loss, or revival—draw at your own risk.";
+  if (cmd.includes("music box")) return "The Music Box soothes... then calls the ghost to dance. It ends with silence or screams.";
+  if (cmd.includes("ouija")) return "The Ouija Board answers your questions—but each answer takes a piece of you.";
+  if (cmd.includes("voodoo")) return "Each pin in the Voodoo Doll forces ghost interaction—some worse than others.";
+
+  // Mechanics
+  if (cmd.includes("prestige")) return "Prestige shows as a Roman numeral beside your level. Max is Level C (100).";
+  if (cmd.includes("legacy")) return "Legacy Logs track ghost guesses, survival streaks, and your level history.";
+  if (cmd.includes("xp") || cmd.includes("experience")) return "Gain XP by surviving, identifying ghosts, and completing rituals.";
+  if (cmd.includes("sanity")) return "Sanity drops every turn or when exposed to ghost events. Protect it or die early.";
+  if (cmd.includes("no evidence")) return "In No Evidence mode, only behaviors and interactions reveal the ghost. Tools lie. Patterns don't.";
+
+  // Ghost Specific
+  if (cmd.includes("yurei")) return "Yurei are sanity assassins. Door slams and silence are their whispers.";
+  if (cmd.includes("deogen")) return "Deogen never loses sight of you... but moves slowly. Don't stop moving.";
+  if (cmd.includes("mimic")) return "The Mimic copies other ghosts perfectly. Trust only consistent signs.";
+  if (cmd.includes("demon")) return "Demons hunt fast and early. If you're hearing growls—run.";
+  if (cmd.includes("shade")) return "Shades are shy. The quieter it gets, the closer you are.";
+
+  // General
+  if (cmd.includes("help")) return "Try 'start', 'move', 'map', 'inventory', 'add evidence [item]', 'guess', or 'end'.";
+  if (cmd.includes("commands")) return "Available commands: start, move, map, use [item], guess, inventory, add evidence, end.";
+
   return null;
+}
+
+</script>
+<div id="floor-items-bar" style="display:none; background:#111; padding:10px; margin-top:10px; color:#0f0; font-family:monospace;">
+  <strong>Floor Items:</strong>
+  <div id="floor-item-buttons"></div>
+</div>
+<script>
+const floorItems = {}; // { "roomName": ["EMF Reader", "Camera"] }
+
+function getCurrentRoomName() {
+  const [x, y] = game.position;
+  return game.roomNameMap?.[x]?.[y] || `Room-${x}-${y}`;
+}
+
+function renderFloorItems() {
+  const room = getCurrentRoomName();
+  const items = floorItems[room] || [];
+  const container = document.getElementById("floor-item-buttons");
+  container.innerHTML = '';
+  if (items.length === 0) {
+    document.getElementById("floor-items-bar").style.display = "none";
+    return;
+  }
+  items.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = `Pick up ${item}`;
+    btn.onclick = () => {
+      if (game.inventory.length >= 3) {
+        simulateTyping("Your hands are full. Drop something first.");
+        return;
+      }
+      game.inventory.push(item);
+      floorItems[room] = floorItems[room].filter(i => i !== item);
+      simulateTyping(`You picked up the ${item}.`);
+      renderFloorItems();
+    };
+    container.appendChild(btn);
+  });
+  document.getElementById("floor-items-bar").style.display = "block";
+}
+
+function dropItemOptions() {
+  const output = document.createElement("div");
+  game.inventory.forEach((item, idx) => {
+    const btn = document.createElement("button");
+    btn.textContent = `Drop ${item}`;
+    btn.onclick = () => {
+      const room = getCurrentRoomName();
+      floorItems[room] = floorItems[room] || [];
+      floorItems[room].push(item);
+      game.inventory.splice(idx, 1);
+      simulateTyping(`You dropped the ${item}.`);
+      renderFloorItems();
+      updateStatus();
+      output.remove();
+    };
+    output.appendChild(btn);
+  });
+  logBox.appendChild(output);
 }
 </script>
 <script>
@@ -716,5 +905,3 @@ footer span.version-tag {
   </ul>
   <button onclick="document.getElementById('changelog-modal').style.display = 'none'">Close</button>
 </div>
-</body>
-</html>
