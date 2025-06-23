@@ -11,6 +11,36 @@
       font-family: monospace;
       height: 100%; overflow: hidden;
     }
+    .scene-container {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.background {
+  z-index: 1;
+}
+
+.lightning {
+  z-index: 2;
+  background: white;
+  opacity: 0;
+  transition: opacity 0.1s;
+}
+
+.foreground {
+  z-index: 3;
+  pointer-events: none;
+}
+
     button {
       background: #000; color: #0ff;
       border: 1px solid #0ff; padding: 8px 14px;
@@ -22,12 +52,8 @@
       width: 100vw; height: 100vh; z-index: -2;
     }
     #background-logo {
-      background: url('/Title.png') center/contain no-repeat;
+      background: url('Title.png') center/contain no-repeat;
       opacity: .1; z-index: -3;
-    }
-    #background-image {
-      background: url('/House.png') center/cover no-repeat;
-      z-index: -2;
     }
     #status-bar, #game-ui, #ada-modal, #loadout-screen,
     #journal-screen, #item-popup, #van-panel, #guess-popup {
@@ -61,7 +87,7 @@
       border: 1px solid #0ff; padding: 10px;
     }
 #status-bar {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   width: 100%;
@@ -117,11 +143,19 @@
 </style>
 </head>
 <body>
+  <script>
+  setInterval(() => {
+    const flash = document.querySelector(".lightning");
+    flash.style.opacity = "0.5";
+    setTimeout(() => flash.style.opacity = "0", 100);
+  }, 8000 + Math.random() * 4000);
+</script>
   <canvas id="orb-canvas"></canvas>
   <div id="background-logo"></div>
   <div id="background-image"></div>
 
-  <!-- Game HUD and Visuals will follow -->  <!-- Loadout Screen -->
+  <!-- Game HUD and Visuals will follow -->  
+  <!-- Loadout Screen -->
   <div id="loadout-screen">
     <h2>Select Loadout (Max 3)</h2>
     <div id="item-selection" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
