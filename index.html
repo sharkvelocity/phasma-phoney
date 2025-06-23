@@ -379,7 +379,7 @@ GENERAL RULES:
 <ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
 <button id="start-button-ada" onclick="startAda()" style="position:absolute;top:35%;left:50%;transform:translateX(-50%);padding:16px 48px;font-size:24px;z-index:5000;background:#111;color:#eee;border:2px solid #666;cursor:pointer;">Start</button><li></li>
 </ul>
-<p style="font-style: italic; font-size: 0.95em;">Deo: “Welcome back, PhasmaPhoney. Let’s hope your deduction is better than your taste in candles.”</p>
+<p style="font-style: italic; font-size: 0.95em;">Deo: “Welcome back, Let’s hope your deduction is better than your taste in decorations”</p>
 </div>
 <canvas id="orb-canvas" style="position: fixed;  top: 0;  left: 0;  width: 100vw;  height: 100vh;  pointer-events: none;  z-index: 9999"></canvas><div id="center-wrapper" style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: relative; z-index: 3; text-align: center; font-family: sans-serif;"><div id="background-logo"></div><div id="background-image"></div><div style="text-align: center; margin-top: 20px;">
 </div>
@@ -501,7 +501,8 @@ setInterval(() => {
   Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
 </div>
 </div>
-<div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div><div id="game-ui" style="display:none;margin-top:20px;border:1px solid #0ff;padding:10px;color:#0ff;font-family:monospace;background:#000;"></div><script>
+<div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div><div id="game-ui" style="display:none;margin-top:20px;border:1px solid #0ff;padding:10px;color:#0ff;font-family:monospace;background:#000;"></div>
+	<script>
 document.addEventListener('DOMContentLoaded', function () {
     const button = document.getElementById('start-button-ada');
     const modal = document.getElementById('ada-modal');
@@ -516,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function () {
         turn: 0,
         sanity: 100,
         inventory: ['Lighter', 'Notebook'],
-        map: [['●','_','_'], ['|','_','|'], ['|','_','|']],
+        map: [],
         position: [0, 0],
         ghost: null,
         evidence: [],
@@ -614,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function () {
             return "Investigation complete. The ghost was a " + game.ghost.toUpperCase() + ".";
         }
 
-        return "Unknown command. Try: start, move, map, inventory, guess, end.";
+        return "unkown option return.";
     }
 
     if (button && modal && input && log) {
