@@ -12,7 +12,64 @@
       overflow: hidden;
       font-family: sans-serif;
     }
-
+    .hidden { display: none; }
+    #start-btn { font-size: 16px; margin-top: 20px; }
+    #game-screen {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      justify-content: space-between;
+      padding: 10px;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      height: 100%;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #narrator-box {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      width: 90%;
+      background: #111;
+      padding: 10px;
+      border: 1px solid #444;
+    }
+    #system-text, #narrator-thought {
+      flex: 1;
+      background: #222;
+      padding: 8px;
+      border: 1px solid #333;
+      min-height: 60px;
+    }
+    #main-readout {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+    }
+    #hud-status {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+    }
+    
     #title-screen {
       position: fixed;
       top: 0; left: 0;
