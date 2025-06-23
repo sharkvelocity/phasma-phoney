@@ -5,123 +5,22 @@
   <title>PhasmaPhoney</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      background: #000;
-      color: #0ff;
-      font-family: monospace;
-      height: 100%;
-      overflow: hidden;
-    }
-
-    button {
-      background: #000;
-      color: #0ff;
-      border: 1px solid #0ff;
-      padding: 8px 14px;
-      margin: 4px;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0ff;
-      color: #000;
-    }
-
-    #orb-canvas, #background-logo, #background-image {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      z-index: -2;
-    }
-
-    #background-logo {
-      background: url('./logo.png') center/contain no-repeat;
-      opacity: 0.1;
-      z-index: -3;
-    }
-
-    #background-image {
-      background: url('./house.png') center/cover no-repeat;
-      z-index: -2;
-    }
-
-    #status-bar {
-      padding: 10px;
-      background: #000;
-    }
-
-    #game-ui {
-      margin: 20px;
-      padding: 10px;
-      border: 1px solid #0ff;
-      background: #000;
-    }
-
-    #ada-modal {
-      display: none;
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111;
-      border: 2px solid #0ff;
-      padding: 20px;
-      width: 90%;
-      max-width: 600px;
-      height: 80%;
-      z-index: 1000;
-      overflow-y: auto;
-    }
-
-    #loadout-screen, #journal-screen, #item-popup, #van-panel, #guess-popup {
-      display: none;
-      position: fixed;
-      top: 50%; left: 50%;
-      transform: translate(-50%, -50%);
-      background: #111;
-      border: 2px solid #0ff;
-      padding: 20px;
-      width: 90%;
-      max-width: 500px;
-      z-index: 9999;
-      box-shadow: 0 0 15px rgba(0,255,255,0.3);
-    }
-
-    #journal-text {
-      width: 100%;
-      height: 200px;
-      background: #000;
-      color: #0ff;
-      border: 1px solid #0ff;
-      padding: 10px;
-    }
-
-    #evidence-panel {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      width: 240px;
-      background: #111;
-      border: 1px solid #0ff;
-      padding: 10px;
-      font-family: monospace;
-      z-index: 9999;
-    }
-
-    footer {
-      position: fixed;
-      bottom: 10px;
-      left: 50%;
-      transform: translateX(-50%);
-      color: white;
-      font-size: 0.8em;
-      background: rgba(0, 0, 0, 0.6);
-      padding: 4px 12px;
-      z-index: 9999;
-    }
+    html, body { margin: 0; padding: 0; background: #000; color: #0ff; font-family: monospace; height: 100%; overflow: hidden; }
+    button { background: #000; color: #0ff; border: 1px solid #0ff; padding: 8px 14px; margin: 4px; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #0ff; color: #000; }
+    #orb-canvas, #background-logo, #background-image { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: -2; }
+    #background-logo { background: url('./logo.png') center/contain no-repeat; opacity: .1; z-index: -3; }
+    #background-image { background: url('./house.png') center/cover no-repeat; z-index: -2; }
+    #status-bar, #game-ui, #ada-modal, #loadout-screen, #journal-screen, #item-popup, #van-panel, #guess-popup { border: 1px solid #0ff; background: #000; }
+    #status-bar { padding: 10px; background: #000; position: fixed; top: 0; width: 100%; z-index: 1000; }
+    #game-ui { margin: 60px 20px 20px; padding: 10px; }
+    #ada-modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; width: 90%; max-width: 600px; height: 80%; padding: 20px; z-index: 1100; overflow-y: auto; }
+    #loadout-screen, #journal-screen, #item-popup, #van-panel, #guess-popup { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #111; width: 90%; max-width: 500px; padding: 20px; z-index: 1200; }
+    #journal-text { width: 100%; height: 200px; background: #000; color: #0ff; border: 1px solid #0ff; padding: 10px; }
+    #evidence-panel { position: fixed; top: 60px; right: 10px; width: 240px; background: #111; border: 1px solid #0ff; padding: 10px; z-index: 1000; }
+    #guess-popup { width: auto; }
+    #map-display { margin: 10px 0; font-size: .9em; }
+    footer { position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: #fff; font-size: .8em; background: rgba(0,0,0,.6); padding: 4px 12px; z-index: 1000; }
   </style>
 </head>
 <body>
@@ -129,314 +28,293 @@
   <div id="background-logo"></div>
   <div id="background-image"></div>
 
-  <div id="loadout-screen">
-    <h2>Select Your Loadout (Pick 3)</h2>
+  <!-- Loadout Screen -->
+  <div id="loadout-screen"><h2>Select Loadout (Max 3)</h2>
     <div id="item-selection" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
     <button onclick="confirmLoadout()">Confirm Loadout</button>
     <button onclick="randomLoadout()">Random Loadout</button>
   </div>
 
-  <div id="journal-screen">
-    <h3>Investigation Notes</h3>
-    <textarea id="journal-text" placeholder="Write your notes..."></textarea>
-    <br />
+  <!-- Journal Screen -->
+  <div id="journal-screen"><h3>Notes</h3>
+    <textarea id="journal-text" placeholder="Your notes..."></textarea><br>
     <button onclick="closeJournal()">Close</button>
   </div>
 
-  <div id="status-bar">
-    Turn: <span id="turn-counter">0</span> |
-    Sanity: <span id="sanity-bar">100</span>%
+  <!-- Item Popup -->
+  <div id="item-popup"><h3>Choose Item</h3>
+    <div id="item-button-list"></div>
+    <button onclick="closeItemPopup()">Cancel</button>
   </div>
 
-  <div id="evidence-panel">
-    <h3 style="margin-top:0;">Evidence</h3>
-    <div id="evidence-checklist" style="display:flex; flex-direction:column; gap:6px;"></div>
-    <p id="remaining-ghosts" style="margin-top:10px; font-size:0.85em; color:#0f0;"></p>
+  <!-- Van Panel -->
+  <div id="van-panel"><h3>Van Inventory</h3>
+    <div id="van-button-list" style="display:flex; flex-direction:column; gap:6px;"></div>
+    <button onclick="closeVanPanel()">Done</button>
   </div>
 
-  <div id="game-ui"></div>
-  <div id="ada-modal">
-    <div id="ada-log" style="height:85%;overflow-y:auto;background:#000;padding:10px;"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;">
-      <button onclick="handleButtonCommand('start')">Start</button>
-      <button onclick="handleButtonCommand('move')">Move</button>
-      <button onclick="handleButtonCommand('map')">Map</button>
-      <button onclick="handleButtonCommand('inventory')">Inventory</button>
-      <button onclick="handleButtonCommand('guess')">Guess</button>
-      <button onclick="handleButtonCommand('van')">Visit Van</button>
-      <button onclick="handleButtonCommand('end')">End</button>
+  <!-- Ghost Guess Popup -->
+  <div id="guess-popup"><h3>Who is the Ghost?</h3>
+    <div id="guess-list" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
+    <button onclick="closeGuess()">Cancel</button>
+  </div>
+
+  <!-- Ada Modal -->
+  <div id="ada-modal"><div id="ada-log" style="height:85%; overflow-y:auto; background:#000; padding:10px;"></div>
+    <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center;">
+      <button onclick="handleCommand('start')">Start</button>
+      <button onclick="handleCommand('move')">Move</button>
+      <button onclick="handleCommand('map')">Map</button>
+      <button onclick="handleCommand('inventory')">Inventory</button>
+      <button onclick="openGuess()">Guess</button>
+      <button onclick="handleCommand('van')">Visit Van</button>
+      <button onclick="handleCommand('end')">End</button>
       <button onclick="openItemPopup()">Use Items</button>
     </div>
   </div>
+
+  <!-- Status Bar & Map -->
+  <div id="status-bar">Turn: <span id="turn-counter">0</span> |
+    Sanity: <span id="sanity-bar">100</span>% | <span id="map-display"></span>
+  </div>
+
+  <!-- Evidence Panel -->
+  <div id="evidence-panel"><h3 style="margin:0;">Evidence</h3>
+    <div id="evidence-checklist"></div>
+    <p id="remaining-ghosts" style="color:#0f0;"></p>
+  </div>
+
+  <!-- Main UI -->
+  <div id="game-ui"></div>
+  <footer>Phasma‑Phoney v1.4 — Full Gameplay</footer>
+
 <script>
-let selectedLoadout = [];
-const allLoadoutItems = [
-  "EMF", "Spirit Box", "UV", "Camera", "D.O.T.S",
-  "Book", "Thermometer", "Smudge", "Crucifix", "Salt", "Candle"
-];
-
-const evidenceTypes = [
-  "EMF Level 5", "Spirit Box", "Fingerprints", "Ghost Writing",
-  "Freezing Temps", "D.O.T.S", "Orbs"
-];
-
+const allLoadoutItems = ["EMF","Spirit Box","UV","Camera","D.O.T.S","Book","Thermometer","Smudge","Crucifix","Salt","Candle"];
+const evidenceTypes = ["EMF Level 5","Spirit Box","Fingerprints","Ghost Writing","Freezing Temps","D.O.T.S","Orbs"];
 const evidenceMap = {
-  spirit:        ["EMF Level 5", "Spirit Box", "Ghost Writing"],
-  wraith:        ["EMF Level 5", "D.O.T.S", "Spirit Box"],
-  poltergeist:   ["Spirit Box", "Ghost Writing", "Fingerprints"],
-  demon:         ["Ghost Writing", "Freezing Temps", "Fingerprints"],
-  succubus:      ["Spirit Box", "Freezing Temps", "Orbs"]
+  spirit: ["EMF Level 5","Spirit Box","Ghost Writing"],
+  wraith: ["EMF Level 5","D.O.T.S","Spirit Box"],
+  poltergeist: ["Spirit Box","Ghost Writing","Fingerprints"],
+  demon: ["Ghost Writing","Freezing Temps","Fingerprints"],
+  succubus: ["Spirit Box","Freezing Temps","Orbs"]
 };
+let selectedEvidence = new Set();
 
-const selectedEvidence = new Set();
-
-const game = {
-  started: false,
-  inventory: [],
-  vanStock: {
-    EMF: 1, "Spirit Box": 1, UV: 1, Camera: 1, "D.O.T.S": 1,
-    Book: 1, Thermometer: 1, Smudge: 4, Crucifix: 1, Salt: 3, Candle: 1
-  },
-  turn: 0,
-  sanity: 100,
-  ghost: null,
-  ghostRoom: null,
-  position: [0, 0],
-  roomNameMap: [["Van", "Foyer", "Kitchen"], ["Basement", "Living Room", "Bathroom"], ["Garage", "Bedroom", "Storage"]]
-};
-
-// === Loadout ===
-function showLoadoutScreen() {
-  const container = document.getElementById("item-selection");
-  container.innerHTML = "";
-  selectedLoadout = [];
-
-  allLoadoutItems.forEach(item => {
-    const btn = document.createElement("button");
-    btn.textContent = item;
-    btn.onclick = () => {
-      if (selectedLoadout.includes(item)) {
-        selectedLoadout = selectedLoadout.filter(i => i !== item);
-        btn.style.background = "#000";
-      } else if (selectedLoadout.length < 3) {
-        selectedLoadout.push(item);
-        btn.style.background = "#0ff";
-      } else {
-        alert("Max 3 items.");
-      }
-    };
-    container.appendChild(btn);
-  });
-}
-
-function confirmLoadout() {
-  game.inventory = ["Notebook", "Lighter", ...selectedLoadout];
-  document.getElementById("loadout-screen").style.display = "none";
-  document.getElementById("ada-modal").style.display = "block";
-  simulateTyping("Deo: Tools are loaded. Proceed.");
-  renderEvidenceChecklist();
-}
-
-function randomLoadout() {
-  const shuffled = [...allLoadoutItems].sort(() => 0.5 - Math.random());
-  selectedLoadout = shuffled.slice(0, 3);
-  confirmLoadout();
-}
-
-// === Evidence ===
-function renderEvidenceChecklist() {
-  const container = document.getElementById("evidence-checklist");
-  container.innerHTML = "";
-
-  evidenceTypes.forEach(evidence => {
-    const label = document.createElement("label");
-    label.style.display = "flex";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.checked = selectedEvidence.has(evidence);
-    checkbox.onchange = () => {
-      if (checkbox.checked) selectedEvidence.add(evidence);
-      else selectedEvidence.delete(evidence);
-      updatePossibleGhosts();
-    };
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(evidence));
-    container.appendChild(label);
-  });
-
-  updatePossibleGhosts();
-}
-
-function updatePossibleGhosts() {
-  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
-    Array.from(selectedEvidence).every(e => evs.includes(e))
-  ).map(([ghost]) => ghost);
-
-  const out = document.getElementById("remaining-ghosts");
-  out.textContent = match.length ? `Possible: ${match.map(g => g.toUpperCase()).join(", ")}` : "No matches.";
-}
-</script>
-<script>
-// === Notebook / Journal ===
-function openJournal() {
-  document.getElementById("journal-screen").style.display = "block";
-}
-function closeJournal() {
-  document.getElementById("journal-screen").style.display = "none";
-}
-
-// === Item Popup ===
-function openItemPopup() {
-  const popup = document.getElementById("item-popup") || createItemPopup();
-  const list = document.getElementById("item-button-list");
-  list.innerHTML = '';
-
-  if (game.inventory.length === 0) {
-    list.innerHTML = "<p>No items available.</p>";
-  } else {
-    game.inventory.forEach(item => {
-      const btn = document.createElement("button");
-      btn.textContent = item;
-      btn.onclick = () => {
-        if (item === "Notebook") {
-          openJournal();
-        } else {
-          simulateTyping("Used: " + item);
-        }
-        closeItemPopup();
-      };
-      list.appendChild(btn);
-    });
-  }
-
-  popup.style.display = 'block';
-}
-
-function closeItemPopup() {
-  const popup = document.getElementById("item-popup");
-  if (popup) popup.style.display = 'none';
-}
-
-function createItemPopup() {
-  const div = document.createElement("div");
-  div.id = "item-popup";
-  div.innerHTML = `
-    <h3>Choose Item to Use</h3>
-    <div id="item-button-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-    <button onclick="closeItemPopup()">Cancel</button>
-  `;
-  div.style = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; padding:20px; border:2px solid #0ff; z-index:9999;";
-  document.body.appendChild(div);
-  return div;
-}
-
-// === Van Panel ===
-function openVanPanel() {
-  const panel = document.getElementById("van-panel") || createVanPanel();
-  const list = document.getElementById("van-button-list");
-  list.innerHTML = '';
-
-  for (const [tool, count] of Object.entries(game.vanStock)) {
-    if (count > 0) {
-      const btn = document.createElement("button");
-      btn.textContent = `Take ${tool}`;
-      btn.onclick = () => {
-        if (game.inventory.length >= 5) {
-          simulateTyping("Inventory full. Drop something first.");
-        } else {
-          game.inventory.push(tool);
-          game.vanStock[tool]--;
-          simulateTyping(`Took ${tool} from van.`);
-          openVanPanel();
-        }
-      };
-      list.appendChild(btn);
-    }
-  }
-
-  const divider = document.createElement("hr");
-  list.appendChild(divider);
-  game.inventory.forEach((item, idx) => {
-    if (item === "Notebook" || item === "Lighter") return;
-    const btn = document.createElement("button");
-    btn.textContent = `Return ${item}`;
-    btn.onclick = () => {
-      game.inventory.splice(idx, 1);
-      game.vanStock[item] = (game.vanStock[item] || 0) + 1;
-      simulateTyping(`Returned ${item} to van.`);
-      openVanPanel();
-    };
-    list.appendChild(btn);
-  });
-
-  panel.style.display = 'block';
-}
-
-function closeVanPanel() {
-  const panel = document.getElementById("van-panel");
-  if (panel) panel.style.display = "none";
-}
-
-function createVanPanel() {
-  const div = document.createElement("div");
-  div.id = "van-panel";
-  div.innerHTML = `<h3>Van Inventory</h3><div id="van-button-list" style="display:flex; flex-direction:column; gap:6px;"></div><button onclick="closeVanPanel()">Done</button>`;
-  div.style = "position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:#111; padding:20px; border:2px solid #0ff; z-index:9999;";
-  document.body.appendChild(div);
-  return div;
-}
-
-// === Ghost Behavior Logic ===
 const ghostProfiles = {
-  spirit:      { intro: "Common and basic", behavior: "Faint whispering echoes..." },
-  wraith:      { intro: "Avoids salt", behavior: "Air shifts... but salt untouched." },
-  poltergeist: { intro: "Throws objects", behavior: "Books fly off the shelves!" },
-  demon:       { intro: "Aggressive hunter", behavior: "You feel a dark presence..." },
-  succubus:    { intro: "Uses seduction and fear", behavior: "A chill... and a breath on your neck." }
+  spirit: {intro:"Calm presence", tools:["emf","spirit box","book"], behavior:"You hear soft whispers...", roomHint:"Library"},
+  wraith: {intro:"Avoids salt", tools:["emf","dots","spirit box"], behavior:"The air shifts...but salt untouched.", roomHint:"Bathroom"},
+  poltergeist: {intro:"Throws items", tools:["spirit box","book","uv"], behavior:"Objects rattle violently!", roomHint:"Kitchen"},
+  demon: {intro:"Aggressive early", tools:["book","thermometer","uv"], behavior:"A low growl echoes!", roomHint:"Basement"},
+  succubus:{intro:"Seductive chill", tools:["spirit box","thermometer","camera"],behavior:"A chill passes your spine.", roomHint:"Bedroom"}
 };
 
-// === ADA Assistant Command Handler ===
-function handleButtonCommand(cmd) {
-  const c = cmd.toLowerCase();
-  game.turn = (game.turn || 0) + 1;
-  document.getElementById("turn-counter").textContent = game.turn;
+let game = {
+  inventory: [], vanStock:{}, turn:0, sanity:100, ghost:null, ghostRoom:null,
+  position:[0,0], roomMap:[["Van","Foyer","Kitchen"],["Basement","Living Room","Bathroom"],["Garage","Bedroom","Storage"]]
+};
 
-  if (c === "start") {
-    const g = Object.keys(ghostProfiles);
-    game.ghost = g[Math.floor(Math.random() * g.length)];
-    game.ghostRoom = "Living Room";
-    simulateTyping("Deo: Ghost confirmed. Start your sweep.");
-  } else if (c === "move") {
-    game.sanity = Math.max(0, game.sanity - 5);
-    document.getElementById("sanity-bar").textContent = game.sanity;
-    simulateTyping(ghostProfiles[game.ghost]?.behavior || "You move, but nothing reacts.");
-  } else if (c === "map") {
-    simulateTyping("You're in the " + (game.roomNameMap?.[0]?.[0] || "Unknown"));
-  } else if (c === "inventory") {
-    simulateTyping("Inventory: " + game.inventory.join(", "));
-  } else if (c === "van") {
-    openVanPanel();
-  } else if (c === "guess") {
-    simulateTyping("You suspect: " + (game.ghost?.toUpperCase() || "UNKNOWN"));
-  } else if (c === "end") {
-    simulateTyping("You end the hunt. The ghost was: " + (game.ghost?.toUpperCase() || "UNKNOWN"));
-  } else {
-    simulateTyping("ADA: Command not recognized.");
+function showLoadoutScreen(){
+  const div=document.getElementById("loadout-screen"),
+        sel=document.getElementById("item-selection");
+  sel.innerHTML=""; game.inventory=[]; let selected=[];
+  allLoadoutItems.forEach(item=>{
+    let btn=document.createElement("button"); btn.textContent=item;
+    btn.onclick=()=>{
+      if(selected.includes(item)){selected=selected.filter(i=>i!==item);btn.style.background="";}
+      else if(selected.length<3){selected.push(item);btn.style.background="#0ff";}
+      else alert("Max 3");
+    };
+    sel.appendChild(btn);
+  });
+  div.style.display="block";
+}
+
+function confirmLoadout(){
+  game.inventory=["Notebook","Lighter",...Array.from(document.querySelectorAll("#item-selection button")).filter(b=>b.style.background).map(b=>b.textContent)];
+  const vs = {}; allLoadoutItems.forEach(i=>vs[i]=2); game.vanStock = vs;
+  document.getElementById("loadout-screen").style.display="none"; document.getElementById("ada-modal").style.display="block";
+  log("Loadout confirmed.");
+  loadJournal(); renderEvidence(); updateMap();
+}
+
+function randomLoadout(){
+  const r = allLoadoutItems.sort(()=>.5-Math.random()).slice(0,3);
+  game.inventory=["Notebook","Lighter",...r];
+  document.getElementById("loadout-screen").style.display="none"; document.getElementById("ada-modal").style.display="block";
+  log("Random loadout: "+r.join(", "));
+  loadJournal(); renderEvidence(); updateMap();
+}
+
+function loadJournal(){
+  const t=localStorage.getItem("journal"); if(t) document.getElementById("journal-text").value=t;
+}
+
+function saveJournal(){
+  localStorage.setItem("journal",document.getElementById("journal-text").value);
+}
+
+function openJournal(){document.getElementById("journal-screen").style.display="block";}
+function closeJournal(){saveJournal();document.getElementById("journal-screen").style.display="none";}
+
+function openItemPopup(){
+  const pop=document.getElementById("item-popup"), lst=document.getElementById("item-button-list");
+  lst.innerHTML="";
+  game.inventory.forEach(item=>{
+    let b=document.createElement("button"); b.textContent=item;
+    b.onclick=()=>{
+      useItem(item); closeItemPopup();
+    };
+    lst.appendChild(b);
+  });
+  pop.style.display="block";
+}
+function closeItemPopup(){document.getElementById("item-popup").style.display="none";}
+
+function useItem(item){
+  log("Used: "+item);
+  const ghost=ghostProfiles[game.ghost];
+  let roomName=game.roomMap[game.position[0]][game.position[1]];
+  switch(item.toLowerCase()){
+    case "emf":
+    case "emf reader":
+      if(["emf"].includes(item.toLowerCase()) && ghost.tools.includes("emf") && roomName===game.ghostRoom){
+        log("EMF spikes to 5!"); checkEvidence("EMF Level 5");
+      } else log("No EMF reading.");
+      break;
+    case "spirit box":
+      if(ghost.tools.includes("spirit box") && roomName===game.ghostRoom){log("Spirit Box crackles!"); checkEvidence("Spirit Box");}
+      else log("Only static.");
+      break;
+    case "uv": case "uv light":
+      if(ghost.tools.includes("uv") && roomName===game.ghostRoom){log("Fingerprints detected!"); checkEvidence("Fingerprints");}
+      else log("Nothing glows.");
+      break;
+    case "book": case "notebook":
+      if(ghost.tools.includes("book") && roomName===game.ghostRoom){log("Ghost writing appears!"); checkEvidence("Ghost Writing");}
+      else log("Still blank.");
+      break;
+    case "thermometer":
+      if(ghost.tools.includes("thermometer") && roomName===game.ghostRoom){log("Freezing temps detected!"); checkEvidence("Freezing Temps");}
+      else log("Temp normal.");
+      break;
+    case "dots":
+      if(ghost.tools.includes("dots") && roomName===game.ghostRoom){log("Motion on DOTS projector!"); checkEvidence("D.O.T.S");}
+      else log("No motion.");
+      break;
+    case "camera":
+      if(ghost.tools.includes("camera") && roomName===game.ghostRoom){log("Ghostly orbs captured!"); checkEvidence("Orbs");}
+      else log("No orbs.");
+      break;
+    case "salt":
+      log(ghost.intro); break;
+    case "smudge":
+      if(game.vanStock["Smudge"]) game.vanStock["Smudge"]--, log("Smudge protects you.");
+      break;
+    case "crucifix":
+      log("Crucifix placed.");
+      break;
+    default:
+      break;
   }
 }
 
-function simulateTyping(text, from = "ADA") {
-  const log = document.getElementById("ada-log");
-  const line = document.createElement("div");
-  line.innerHTML = `<strong>${from}:</strong> `;
-  line.appendChild(document.createTextNode(text));
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
+function checkEvidence(ev){
+  selectedEvidence.add(ev); document.querySelectorAll("#evidence-checklist input").forEach(c=>{if(c.nextSibling.textContent==ev)c.checked=true;});
+  renderEvidence();
+}
+function renderEvidence(){
+  const container=document.getElementById("evidence-checklist");
+  container.innerHTML=""; evidenceTypes.forEach(ev=>{
+    let l=document.createElement("label"), c=document.createElement("input"); c.type="checkbox"; c.checked=selectedEvidence.has(ev);
+    c.onchange=()=>{
+      if(c.checked)selectedEvidence.add(ev);else selectedEvidence.delete(ev);
+      renderEvidence();
+    };
+    l.appendChild(c); l.appendChild(document.createTextNode(ev));
+    container.appendChild(l);
+  });
+  const poss=Object.keys(evidenceMap).filter(g=>[...selectedEvidence].every(e=>evidenceMap[g].includes(e)));
+  document.getElementById("remaining-ghosts").textContent = poss.length ? "Possible: "+poss.join(", ").toUpperCase() : "No matches.";
+}
+
+function openVanPanel(){
+  const pan=document.getElementById("van-panel"), lst=document.getElementById("van-button-list");
+  lst.innerHTML="";
+  for(const t in game.vanStock)if(game.vanStock[t]>0){
+    let b=document.createElement("button");b.textContent=`Take ${t}`;b.onclick=()=>{
+      if(game.inventory.length<5){game.inventory.push(t); game.vanStock[t]--;log(`Picked ${t}`); openVanPanel();}
+      else log("Inventory full");
+    };
+    lst.appendChild(b);
+  }
+  lst.appendChild(document.createElement("hr"));
+  game.inventory.forEach((it,i)=>{
+    if(!["Notebook","Lighter"].includes(it)){
+      let b=document.createElement("button");b.textContent=`Return ${it}`;b.onclick=()=>{
+        game.inventory.splice(i,1); game.vanStock[it]++;log(`Returned ${it}`);openVanPanel();
+      };
+      lst.appendChild(b);
+    }
+  });
+  pan.style.display="block";
+}
+function closeVanPanel(){document.getElementById("van-panel").style.display="none";}
+
+function openGuess(){
+  const pop=document.getElementById("guess-popup"), lst=document.getElementById("guess-list");
+  lst.innerHTML="";
+  Object.keys(ghostProfiles).forEach(g=>{
+    let b=document.createElement("button"); b.textContent=g.toUpperCase();
+    b.onclick=()=>{makeGuess(g);closeGuess();};
+    lst.appendChild(b);
+  });
+  pop.style.display="block";
+}
+function makeGuess(g){
+  if(g===game.ghost){log("✅ Correct! You solved it."); endGame(true);}
+  else{log("❌ Incorrect. The ghost was "+game.ghost.toUpperCase()); endGame(false);}
+}
+function closeGuess(){document.getElementById("guess-popup").style.display="none";}
+
+function endGame(won){
+  document.getElementById("ada-modal").style.display="none";
+  let msg=won? "🎉 You Win!" : "💀 You Lose!";
+  alert(msg+"\nGame over.");
+}
+
+function handleCommand(cmd){
+  const c=cmd.toLowerCase();
+  game.turn++; document.getElementById("turn-counter").textContent=game.turn;
+  if(c==="start"){
+    game.ghost = Object.keys(ghostProfiles)[Math.floor(Math.random()*Object.keys(ghostProfiles).length)];
+    game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+    log("Ghost is in the "+game.ghostRoom);
+  } else if(c==="move"){
+    game.position[1] = (game.position[1]+1)%3;
+    updateMap(); game.sanity=Math.max(0,game.sanity-5);
+    document.getElementById("sanity-bar").textContent=game.sanity;
+    const here=game.roomMap[game.position[0]][game.position[1]];
+    log("You move to "+here);
+    if(here===game.ghostRoom) log(ghostProfiles[game.ghost].behavior);
+  } else if(c==="map") updateMap();
+  else if(c==="inventory") log("Inventory: "+game.inventory.join(", "));
+  else if(c==="van") openVanPanel();
+  else if(c==="end") endGame(game.ghost===null?false:true);
+  else log("Unknown cmd.");
+}
+
+function updateMap(){
+  const mapd=game.roomMap[game.position[0]][game.position[1]];
+  document.getElementById("map-display").textContent="Room: "+mapd;
+}
+
+function log(txt){
+  const g=document.getElementById("ada-log"),d=document.createElement("div");
+  d.innerHTML="<strong>ADA:</strong> "+txt;
+  g.appendChild(d); g.scrollTop=g.scrollHeight;
 }
 
 document.addEventListener("DOMContentLoaded", showLoadoutScreen);
 </script>
-
-<footer>Phasma‑Phoney v1.3 — All Systems Integrated</footer>
 </body>
 </html>
