@@ -153,17 +153,19 @@
     <img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&dl=1" class="layer foreground" />
   </div>
 
-  <script>
-    const flash = document.querySelector(".lightning");
-    function triggerFlash() {
-      flash.style.opacity = "0.4";
-      setTimeout(() => flash.style.opacity = "0", 100);
-    }
-
-    setInterval(() => {
-      if (Math.random() > 0.6) triggerFlash();
-    }, 5000);
-  </script>
+ <div id="scene-container" style="position:fixed;top:0;left:0;width:100%;height:100%;
+  background:white;opacity:0;pointer-events:none;z-index:999;"></div>
+<script>
+function lightningFlash() {
+  const flash = document.getElementById("flash-overlay");
+  if (!flash) return;
+  flash.style.opacity = "0.4";
+  setTimeout(() => { flash.style.opacity = "0"; }, 150);
+}
+setInterval(() => {
+  setTimeout(lightningFlash, Math.random() * 2000);
+}, 12000);
+</script>
 </style>
 </head>
 <body>
