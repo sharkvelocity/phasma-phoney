@@ -5,154 +5,143 @@
   <title>Phasma‑Phoney Title</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    html, body {
-      margin: 0; padding: 0;
-      width: 100vw; height: 100vh;
-      background: black;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
+  html, body {
+    margin: 0; padding: 0;
+    width: 100vw; height: 100vh;
+    background: black;
+    overflow: hidden;
+    font-family: sans-serif;
+  }
 
-    #left-panel, #right-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      padding: 10px;
-      height: 100%;
-    }
-    #center-panel {
-      flex-grow: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 10px;
-      overflow-y: auto;
-    }
-    #narrator-box {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      width: 90%;
-      background: #111;
-      padding: 10px;
-      border: 1px solid #444;
-    }
-    #system-text, #narrator-thought {
-      flex: 1;
-      background: #222;
-      padding: 8px;
-      border: 1px solid #333;
-      min-height: 60px;
-    }
-    #main-readout {
-      background: #111;
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #444;
-      width: 90%;
-      max-height: 300px;
-      overflow-y: auto;
-      white-space: pre-wrap;
-    }
-    #hud-status {
-      background: #111;
-      padding: 10px;
-      margin: 5px;
-      border: 1px solid #444;
-      width: 90%;
-    }
-    
-    #title-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: black;
-      z-index: 10;
-      opacity: 1;
-      transition: opacity 2s ease-in-out;
-    }
+  /* Layout Panels */
+  #left-panel, #right-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    height: 100%;
+  }
 
-    #title-screen img {
-      max-width: 80%;
-      animation: pulse 5s infinite ease-in-out;
-    }
+  #center-panel {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 10px;
+    overflow-y: auto;
+  }
 
-    @keyframes pulse {
-      0%, 100% { opacity: 0.9; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.04); }
-    }
+  #narrator-box {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    width: 90%;
+    background: #111;
+    padding: 10px;
+    border: 1px solid #444;
+  }
 
-#main-scene {
-  display: none;
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  overflow: hidden;
-}
+  #system-text, #narrator-thought {
+    flex: 1;
+    background: #222;
+    padding: 8px;
+    border: 1px solid #333;
+    min-height: 60px;
+  }
 
-.layer.background {
-  z-index: 1;
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  object-fit: cover;
-  pointer-events: none;
-}
+  #main-readout {
+    background: #111;
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #444;
+    width: 90%;
+    max-height: 300px;
+    overflow-y: auto;
+    white-space: pre-wrap;
+  }
 
-.rain-block-front {
-  z-index: 2;
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  object-fit: cover;
-  pointer-events: none;
-}
+  #hud-status {
+    background: #111;
+    padding: 10px;
+    margin: 5px;
+    border: 1px solid #444;
+    width: 90%;
+  }
 
-.lightning {
-  z-index: 3;
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
-  background: white;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-  pointer-events: none;
-}
+  /* Title Screen */
+  #title-screen {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: black;
+    z-index: 10;
+    opacity: 1;
+    transition: opacity 2s ease-in-out;
+  }
 
-.foreground {
-  z-index: 4;
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  object-fit: cover;
-  pointer-events: none;
-}
+  #title-screen img {
+    max-width: 80%;
+    animation: pulse 5s infinite ease-in-out;
+  }
 
-.orb-canvas {
-  z-index: 5;
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  pointer-events: none;
-}
+  @keyframes pulse {
+    0%, 100% { opacity: 0.9; transform: scale(1); }
+    50% { opacity: 1; transform: scale(1.04); }
+  }
 
-}
-#loadout-screen {
-  opacity: 0;
-  display: none; /* Needed to prevent it from taking space */
-  transition: opacity 1s ease-in-out;
-}
-#loadout-screen.show {
-  opacity: 1;
-  display: block;
-}
+  /* Shared fullscreen layer class */
+  .fullscreen-layer {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    object-fit: cover;
+    pointer-events: none;
+  }
 
-  </style>
+  /* Scene Layers */
+  #main-scene {
+    display: none;
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+    overflow: hidden;
+  }
+
+  .layer.background      { z-index: 1; }
+  .rain-block-front      { z-index: 2; }
+  .lightning             {
+    z-index: 3;
+    background: white;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+  }
+  .foreground            { z-index: 4; }
+
+  /* Orb Layer */
+  .orb-canvas {
+    z-index: 5;
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw; height: 100vh;
+    pointer-events: none;
+  }
+
+  /* Loadout Screen Fade */
+  #loadout-screen {
+    opacity: 0;
+    display: none;
+    transition: opacity 1s ease-in-out;
+  }
+  #loadout-screen.show {
+    opacity: 1;
+    display: block;
+  }
+</style>
+
 </head>
 <body>
 
