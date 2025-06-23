@@ -600,16 +600,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Automatically trigger loadout screen after title fades
   setTimeout(() => {
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderEvidence();
+  loadJournal();
+
+  // Automatically trigger loadout screen after title fades
+  setTimeout(() => {
     document.getElementById("loadout-screen").style.display = "block";
   }, 7000); // Match title screen fade timing
 });
-
-
-
-setTimeout(() => {
-  const screen = document.getElementById("loadout-screen");
-  screen.classList.add("show");
-}, 7000);
+</script>
 
 
 
