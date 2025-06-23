@@ -77,59 +77,81 @@
 
     #title-screen img {
       max-width: 80%;
-      animation: pulse 3s infinite ease-in-out;
+      animation: pulse 5s infinite ease-in-out;
     }
 
     @keyframes pulse {
       0%, 100% { opacity: 0.9; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.02); }
+      50% { opacity: 1; transform: scale(1.04); }
     }
 
-    #main-scene {
-      display: none;
-    }
-
-    .layered-scene {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    .layer {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
-
-    .rain-canvas, .orb-canvas {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      pointer-events: none;
-      z-index: 2;
-    }
-
-    .lightning {
-      position: absolute;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: white;
-      opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-      z-index: 3;
-    }
-#loadout-screen {
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
+#main-scene {
+  display: none;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  overflow: hidden;
 }
 
+.layer.background {
+  z-index: 1;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.rain-block-front {
+  z-index: 2;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.lightning {
+  z-index: 3;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%;
+  height: 100%;
+  background: white;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+  pointer-events: none;
+}
+
+.foreground {
+  z-index: 4;
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  object-fit: cover;
+  pointer-events: none;
+}
+
+.orb-canvas {
+  z-index: 5;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  pointer-events: none;
+}
+
+}
+#loadout-screen {
+  opacity: 0;
+  display: none; /* Needed to prevent it from taking space */
+  transition: opacity 1s ease-in-out;
+}
 #loadout-screen.show {
   opacity: 1;
   display: block;
 }
+
   </style>
 </head>
 <body>
@@ -142,16 +164,21 @@
 <!-- MAIN SCENE -->
 <div id="main-scene">
   <div class="layered-scene">
-    <img src="https://uce65e3d24f97dd7b2813b2abae4.dl.dropboxusercontent.com/cd/0/inline/CsJJ5OxFA00s8TxfGuZoVdG2dcizQ35kuNU9RzFK6qjZVW0UqawuRHbk2AswiBc7PEFIuRnpsAbb67zBSRGkXSEFE9hNrx4W_dFZ9Jkq7YipvZ8VfM5RtyTMjw4ncAMFEPDUdm8_iYOMBh8ih40eIDXv/file#" class="layer" />
-     <div class="lightning" id="lightning"></div>
-<canvas class="rain-canvas" id="rain"></canvas>
+    <!-- BACKGROUND -->
+<img src="background.jpg" class="layer background" />
 
-<img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/rainblock.png?raw=true" class="layer" />
+<!-- RAINBLOCK -->
+<img src="rainblock.png" class="rain-block-front" />
 
-<canvas class="orb-canvas" id="orbs"></canvas>
-   
-    <img src="https://ucc218b40a18deae88ce4c584e4e.dl.dropboxusercontent.com/cd/0/inline/CsLdmdO_UdabdP4CkHre_QZE0adW1brnfvMHZ3ObFTgmmVTFKH6Rjc-ldqZyWexwAKrDUhuozlq-cJTPtd7wLU3b6dB94z42vz_hC-IxTJgR_gb0shtp2j8-SBS-Ie9SMV9z1I5TfPJueqKlfQherGXV/file#" class="layer" />
-    <canvas class="orb-canvas" id="orbs"></canvas>
+<!-- LIGHTNING -->
+<div class="lightning" id="lightning"></div>
+
+<!-- FOREGROUND -->
+<img src="foreground.png" class="foreground" />
+
+<!-- ORBS -->
+<canvas id="orbs" class="orb-canvas"></canvas>
+
   </div>
 </div>
 
@@ -162,7 +189,7 @@ setTimeout(() => {
 }, 5000);
 setTimeout(() => {
   document.getElementById('title-screen').style.display = 'none';
-  document.getElementById('main-scene').style.display = 'block';
+  document.getElementById('main-scene').style.display = 'none';
 }, 7000);
 
 // === RAIN (DIAGONAL) ===
@@ -176,8 +203,8 @@ function createRaindrop() {
     x: Math.random() * rainWidth,
     y: Math.random() * rainHeight,
     length: Math.random() * 20 + 10,
-    speedX: -1,
-    speedY: Math.random() * 4 + 4
+    speedX: -3,
+    speedY: Math.random() * 6 + 6
   };
 }
 
@@ -190,7 +217,7 @@ function animateRain() {
   for (let drop of raindrops) {
     rainCtx.beginPath();
     rainCtx.moveTo(drop.x, drop.y);
-    rainCtx.lineTo(drop.x + drop.speedX * 2, drop.y + drop.length);
+    rainCtx.lineTo(drop.x + drop.speedX * 4, drop.y + drop.length);
     rainCtx.stroke();
     drop.x += drop.speedX;
     drop.y += drop.speedY;
