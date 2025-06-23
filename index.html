@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Layered Lightning Orbs Background</title>
+  <title>PhasmaPhoney Background</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
@@ -33,109 +33,97 @@
       transition: opacity 0.15s ease-in-out;
     }
     .foreground { z-index: 3; }
-    #orb-canvas, #background-logo {
+    #orb-canvas {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      z-index: -2;
-    }
-    #background-logo {
-      background: url('https://www.dropbox.com/scl/fi/77kbiz3htxkxapw55k73f/Title.png?rlkey=hzsxs20axhz3nywr7g76wnvkn&raw=1') center/contain no-repeat;
-      opacity: 0.1;
-      z-index: -3;
-    }
-    #flash-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: white;
-      opacity: 0;
-      pointer-events: none;
-      z-index: 999;
+      z-index: 0;
     }
   </style>
 </head>
 <body>
 
-<!-- LAYERED SCENE -->
+<!-- BACKGROUND LAYERS -->
 <div class="scene-container">
   <img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer background" />
-  <div class="layer lightning" id="lightning-layer"></div>
+  <div class="layer lightning"></div>
   <img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer foreground" />
 </div>
 
+<!-- ORB CANVAS -->
 <canvas id="orb-canvas"></canvas>
-<div id="background-logo"></div>
-<div id="flash-overlay"></div>
 
+<!-- LIGHTNING LOGIC -->
 <script>
-// Lightning flashes
-const flash = document.querySelector(".lightning");
-function triggerFlash() {
-  flash.style.opacity = "0.4";
-  setTimeout(() => flash.style.opacity = "0", 150);
-}
-setInterval(() => {
-  if (Math.random() > 0.6) triggerFlash();
-}, 6000);
+  const flash = document.querySelector(".lightning");
+  function triggerFlash() {
+    flash.style.opacity = "0.4";
+    setTimeout(() => flash.style.opacity = "0", 150);
+  }
+  setInterval(() => {
+    if (Math.random() > 0.6) triggerFlash();
+  }, 6000);
 </script>
 
+<!-- ORB ANIMATION -->
 <script>
-// Floating orbs
-const canvas = document.getElementById("orb-canvas");
-const ctx = canvas.getContext("2d");
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
+  const canvas = document.getElementById("orb-canvas");
+  const ctx = canvas.getContext("2d");
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
 
-function createOrb() {
-  return {
-    x: Math.random() * width,
-    y: Math.random() * height,
-    vx: (Math.random() - 0.5) * 0.8,
-    vy: (Math.random() - 0.5) * 0.8,
-    baseRadius: Math.random() * 2 + 1,
-    radius: 1,
-    opacity: 0,
-    fadeIn: true,
-    tick: 0,
-    changeInterval: Math.floor(Math.random() * 150 + 50)
-  };
-}
-
-let orbs = Array.from({ length: 15 }, createOrb);
-
-function animateOrbs() {
-  ctx.clearRect(0, 0, width, height);
-  for (let orb of orbs) {
-    orb.tick++;
-    orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
-    orb.opacity += orb.fadeIn ? 0.01 : -0.001;
-    if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
-    if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
-    if (orb.tick % orb.changeInterval === 0) {
-      const angle = Math.random() * 2 * Math.PI;
-      const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
-      orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
-      orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
-    }
-    orb.x += orb.vx; orb.y += orb.vy;
-    if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= width) orb.vx *= -1;
-    if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= height) orb.vy *= -1;
-    ctx.beginPath();
-    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-    ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
-    ctx.shadowBlur = 10 + orb.opacity * 10;
-    ctx.fill();
+  function createOrb() {
+    return {
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: (Math.random() - 0.5) * 0.8,
+      baseRadius: Math.random() * 2 + 1,
+      radius: 1,
+      opacity: 0,
+      fadeIn: true,
+      tick: 0,
+      changeInterval: Math.floor(Math.random() * 150 + 50)
+    };
   }
-  requestAnimationFrame(animateOrbs);
-}
-animateOrbs();
 
-window.addEventListener("resize", () => {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-});
+  let orbs = Array.from({ length: 15 }, createOrb);
+
+  function animateOrbs() {
+    ctx.clearRect(0, 0, width, height);
+    for (let orb of orbs) {
+      orb.tick++;
+      orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
+      orb.opacity += orb.fadeIn ? 0.01 : -0.001;
+      if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
+      if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
+      if (orb.tick % orb.changeInterval === 0) {
+        const angle = Math.random() * 2 * Math.PI;
+        const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
+        orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
+        orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
+      }
+      orb.x += orb.vx;
+      orb.y += orb.vy;
+      if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= width) orb.vx *= -1;
+      if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= height) orb.vy *= -1;
+
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+      ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
+      ctx.shadowBlur = 10 + orb.opacity * 10;
+      ctx.fill();
+    }
+    requestAnimationFrame(animateOrbs);
+  }
+
+  animateOrbs();
+
+  window.addEventListener("resize", () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
 </script>
 
 </body>
