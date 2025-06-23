@@ -10,8 +10,6 @@
 <meta content="" name="description"/>
 <meta content="" property="og:description"/>
 <meta content="Phasmaphobia Turn based ghost hunter" name="keywords"/>
-<meta content="http://www." name="identifier-url"/>
-<meta content="http://www." property="og:url"/>
 <style media="all" type="text/css">
 html,
 body {
@@ -138,7 +136,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url("./logo.png")
+    background-image: url("./logo.png");
     background-repeat: no-repeat;
     background-position: center center;
     background-size: contain;
@@ -156,9 +154,7 @@ body {
     pointer-events: none;
 }
 </style>
-<!--[if IE]>
 <style type="text/css">
-/* Sadly no IE9 support for pointer-events: none; nor CSS2 text-shadow */
 #tsb-spot {
     display: none;
 }
@@ -361,7 +357,8 @@ html, body {
   margin-left: 4px;
   animation: typing-blink 1s infinite;
 }
-</style><script type="text/phasma-data">
+</style>
+	<script type="text/phasma-data">
 PHASMA-PHONEY: Ritual. Paranormal. Game.
 
 GENERAL RULES:
@@ -374,8 +371,10 @@ GENERAL RULES:
 - Firelight: Candle tiers 1–3, each with duration and ghost interaction rules.
 - Legacy: Memory logs of past ghosts, turns, streaks, and level progression.
 - Experience and prestige system up to Level 100 (Roman numeral caps).
-</script></head>
-<body><div id="clouds1"></div><div id="clouds2"></div><div id="flash-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:white;opacity:0;pointer-events:none;z-index:9999;"></div>
+</script>
+</head>
+<body>
+	<div id="clouds1"></div><div id="clouds2"></div><div id="flash-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:white;opacity:0;pointer-events:none;z-index:9999;"></div>
 <div id="main-menu" style="text-align: center; color: white; margin-top: 40px;">
 <ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
 <button id="start-button-ada" onclick="startAda()" style="position:absolute;top:35%;left:50%;transform:translateX(-50%);padding:16px 48px;font-size:24px;z-index:5000;background:#111;color:#eee;border:2px solid #666;cursor:pointer;">Start</button><li></li>
@@ -383,7 +382,8 @@ GENERAL RULES:
 <p style="font-style: italic; font-size: 0.95em;">Deo: “Welcome back, PhasmaPhoney. Let’s hope your deduction is better than your taste in candles.”</p>
 </div>
 <canvas id="orb-canvas" style="position: fixed;  top: 0;  left: 0;  width: 100vw;  height: 100vh;  pointer-events: none;  z-index: 9999"></canvas><div id="center-wrapper" style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: relative; z-index: 3; text-align: center; font-family: sans-serif;"><div id="background-logo"></div><div id="background-image"></div><div style="text-align: center; margin-top: 20px;">
-</div><body style="line-height:1em; background-image:url(http://cdn.hdwallpaperspics.com/uploads/2012/11/cool-desktop-backgrounds-for-mac-3.jpg); background-repeat: no-repeat; background-size: 100%;background-attachment:fixed ">
+</div>
+	<body style="line-height:1em; background-image:url(http://cdn.hdwallpaperspics.com/uploads/2012/11/cool-desktop-backgrounds-for-mac-3.jpg); background-repeat: no-repeat; background-size: 100%;background-attachment:fixed ">
 <center>
 <div style="background-image:url(http://www.wnyc.org/i/620/372/l/80/1/blackbox.jpeg); opacity:0.8;filter:alpha(opacity=20); width: 75%;">
 <div id="text-shadow-box" style="position: relative; z-index: 2; color: white;"><div id="tsb-text">PhasmaPhoney</div>
@@ -475,7 +475,8 @@ window.addEventListener('resize', () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
 });
-</script><footer style="position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 0.9em; font-family: sans-serif; z-index: 9999;">Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer><script>
+</script>
+	<footer style="position: fixed; bottom: 10px; left: 50%; transform: translateX(-50%); color: white; font-size: 0.9em; font-family: sans-serif; z-index: 9999;">Shark-Blades — This game was an invisionment of the first-person ghost hunting game Phasmophobia.</footer><script>
 function lightningFlash() {
     const flash = document.getElementById('flash-overlay');
     if (!flash) return;
@@ -485,16 +486,17 @@ function lightningFlash() {
 setInterval(() => {
     setTimeout(lightningFlash, Math.random() * 2000);
 }, 10000);
-</script><div id="ada-menu" style="display:none;"><li>2. Ghost Talk</li><li>3. Hall of Records</li><li>4. Save Game</li><li>5. Memories</li><li>6. Ask Deo</li><li>7. Exit Game</li></div>
+</script>
+	<div id="ada-menu" style="display:none;"><li>2. Ghost Talk</li><li>3. Hall of Records</li><li>4. Save Game</li><li>5. Memories</li><li>6. Ask Deo</li><li>7. Exit Game</li></div>
 <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
     transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
     border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
     max-width:600px;height:80%;color:#0ff;font-family:monospace;">
 <div id="ada-log" style="height:85%;overflow-y:auto;padding:10px;
       background:#000;border:1px solid #333;margin-bottom:10px;">
-    ADA: I'm here to assist you. Type 'start', 'talk', 'records', or 'exit'.
+    ADA: REPLACE THE BUTTONS THEN THIS IS THE OUTPUT BOX
   </div>
-<input id="ada-input" placeholder="Type a command..." style="width:100%;padding:8px;background:#222;color:#0ff;border:1px solid #0ff;"/>
+<input id="ada-input" placeholder="REPLACE WITH BUTTONS" style="width:100%;padding:8px;background:#222;color:#0ff;border:1px solid #0ff;"/>
 <div id="status-bar" style="margin-top:10px;font-family:monospace;color:#0ff;">
   Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
 </div>
@@ -635,7 +637,8 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 });
-</script><script>
+</script>
+	<script>
 // ADA now reads and parses the full Phasma-Phoney rule set from a hidden script
 const rulesText = document.querySelector('script[type="text/phasma-data"]').innerText;
 const ADA_KNOWLEDGE = rulesText.split("\n").filter(line => line.trim());
