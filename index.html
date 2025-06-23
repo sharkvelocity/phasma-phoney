@@ -132,33 +132,12 @@
 <div id="game-ui" style="padding:12px;color:white;"></div>
 
 <!-- LOADOUT SELECTION -->
-<script>
-function confirmLoadout() {
-  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
-  if (selected.length > 3) return alert("Max 3 items.");
-  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
-
-  // Stock van with remaining items
-  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
-  all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
-
-  // Hide loadout screen
-  document.getElementById("loadout-screen").style.display = "none";
-
-  // 👇 START INVESTIGATION IMMEDIATELY
-  const keys = Object.keys(ghostProfiles);
-  game.ghost = keys[Math.floor(Math.random() * keys.length)];
-  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
-
-  // Update and show ADA panel
-  updateMap();
-  document.getElementById("ada-modal").style.display = "block";
-  log("Your investigation begins...");
-  renderEvidence();
-  loadJournal();
-}
-</script>
-
+<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h2>Select Loadout (Max 3)</h2>
+  <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
+  <button onclick="confirmLoadout()">Confirm Loadout</button>
+  <button onclick="randomLoadout()">Random Loadout</button>
+</div>
 
 <!-- VAN PANEL -->
 <div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
@@ -192,7 +171,6 @@ function confirmLoadout() {
 <div id="ada-modal" style="display:none;position:absolute;bottom:0;left:0;width:100%;background:#000;border-top:1px solid #0ff;padding:10px;z-index:5;">
   <div id="ada-log" style="height:200px;overflow-y:auto;background:#000;color:#0ff;padding:6px;border:1px solid #0ff;margin-bottom:8px;"></div>
   <div style="display:flex;flex-wrap:wrap;gap:6px;">
-    
     <button onclick="handleCommand('move')">Move</button>
     <button onclick="handleCommand('map')">Map</button>
     <button onclick="handleCommand('inventory')">Inventory</button>
@@ -203,6 +181,7 @@ function confirmLoadout() {
     <button onclick="openJournal()">Open Journal</button>
   </div>
 </div>
+
 
 <!-- FOOTER -->
 <footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.4 — Full Gameplay</footer>
@@ -467,25 +446,35 @@ document.addEventListener("DOMContentLoaded", () => {
   renderEvidence();
   loadJournal();
 });
-document.addEventListener("DOMContentLoaded", () => {
-  showLoadoutScreen();
-  renderEvidence();
-  loadJournal();
 
   // Show the ADA command interface after loadout is picked
-  document.getElementById("confirmLoadout").onclick = () => {
-    document.getElementById("loadout-screen").style.display = "none";
-    document.getElementById("ada-modal").style.display = "block";
-const keys = Object.keys(ghostProfiles);
-game.ghost = keys[Math.floor(Math.random() * keys.length)];
-game.ghostRoom = ghostProfiles[game.ghost].roomHint;
-updateMap();
-log("Your investigation begins...");
+  <script>
+function confirmLoadout() {
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
+  if (selected.length > 3) return alert("Max 3 items.");
+  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
 
-    updateMap();
-  };
-});
+  // Stock van with remaining items
+  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
+
+  // Hide loadout screen
+  document.getElementById("loadout-screen").style.display = "none";
+
+  // 👇 START INVESTIGATION IMMEDIATELY
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+
+  // Update and show ADA panel
+  updateMap();
+  document.getElementById("ada-modal").style.display = "block";
+  log("Your investigation begins...");
+  renderEvidence();
+  loadJournal();
+}
 </script>
+
 </body>
 </html>
 
