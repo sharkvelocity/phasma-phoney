@@ -171,7 +171,7 @@
 <div id="ada-modal" style="display:none;position:absolute;bottom:0;left:0;width:100%;background:#000;border-top:1px solid #0ff;padding:10px;z-index:5;">
   <div id="ada-log" style="height:200px;overflow-y:auto;background:#000;color:#0ff;padding:6px;border:1px solid #0ff;margin-bottom:8px;"></div>
   <div style="display:flex;flex-wrap:wrap;gap:6px;">
-    <button onclick="handleCommand('start')">Start</button>
+    
     <button onclick="handleCommand('move')">Move</button>
     <button onclick="handleCommand('map')">Map</button>
     <button onclick="handleCommand('inventory')">Inventory</button>
@@ -233,13 +233,7 @@ function handleCommand(cmd) {
   let room = game.roomMap[game.position[0]][game.position[1]];
 
   switch (cmd.toLowerCase()) {
-    case "start":
-      const keys = Object.keys(ghostProfiles);
-      game.ghost = keys[Math.floor(Math.random() * keys.length)];
-      game.ghostRoom = ghostProfiles[game.ghost].roomHint;
-      updateMap();
-      log("Your investigation begins...");
-      break;
+    
     case "move":
       game.position[1] = (game.position[1] + 1) % 3;
       updateMap();
@@ -451,6 +445,24 @@ document.addEventListener("DOMContentLoaded", () => {
   showLoadoutScreen();
   renderEvidence();
   loadJournal();
+});
+document.addEventListener("DOMContentLoaded", () => {
+  showLoadoutScreen();
+  renderEvidence();
+  loadJournal();
+
+  // Show the ADA command interface after loadout is picked
+  document.getElementById("confirmLoadout").onclick = () => {
+    document.getElementById("loadout-screen").style.display = "none";
+    document.getElementById("ada-modal").style.display = "block";
+const keys = Object.keys(ghostProfiles);
+game.ghost = keys[Math.floor(Math.random() * keys.length)];
+game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+updateMap();
+log("Your investigation begins...");
+
+    updateMap();
+  };
 });
 </script>
 </body>
