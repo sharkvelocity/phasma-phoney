@@ -502,32 +502,34 @@ function openVanPanel() {
 function closeVanPanel() {
   document.getElementById("van-panel").style.display = "none";
 }
-</script><script>
-function openGuess() {
-  const pop = document.getElementById("guess-popup"),
-        lst = document.getElementById("guess-list");
+</script>function openGuess() {
+  const pop = document.getElementById("guess-popup");
+  const lst = document.getElementById("guess-list");
   lst.innerHTML = "";
-  Object.keys(ghostProfiles).forEach(g => {
-    let b = document.createElement("button");
-    b.textContent = g.toUpperCase();
-    b.onclick = () => {
-      makeGuess(g);
+
+  Object.entries(ghostProfiles).forEach(([key, profile]) => {
+    const btn = document.createElement("button");
+    btn.textContent = key.toUpperCase(); // Visible name
+    btn.onclick = () => {
+      makeGuess(key); // Pass correct lowercase key
       closeGuess();
     };
-    lst.appendChild(b);
+    lst.appendChild(btn);
   });
+
   pop.style.display = "block";
 }
 
-function makeGuess(g) {
-  if (g === game.ghost) {
+function makeGuess(guessKey) {
+  const correct = guessKey === game.ghost;
+  if (correct) {
     log("✅ Correct! You solved it.");
-    endGame(true);
   } else {
     log("❌ Incorrect. The ghost was " + game.ghost.toUpperCase());
-    endGame(false);
   }
+  endGame(correct);
 }
+
 
 function closeGuess() {
   document.getElementById("guess-popup").style.display = "none";
