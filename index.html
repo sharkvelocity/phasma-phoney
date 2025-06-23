@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Orbs and Lightning</title>
+  <title>Orbs + Lightning (Layered)</title>
   <style>
     html, body {
       margin: 0;
@@ -17,24 +17,27 @@
       width: 100vw;
       height: 100vh;
     }
+    .background { z-index: 1; }
     .lightning {
+      z-index: 2;
       background: white;
       opacity: 0;
-      transition: opacity 0.2s ease-in-out;
-      z-index: 10;
+      transition: opacity 0.15s ease-in-out;
     }
+    #orb-canvas { z-index: 3; }
+    .foreground { z-index: 4; }
   </style>
 </head>
 <body>
 
-<!-- Background and Foreground -->
-<img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer">
+<!-- LAYER ORDER -->
+<img src="https://www.dropbox.com/scl/fi/b1r0ez74v60dnpuqxdzpj/background.png?rlkey=fbf34d7fobq08dihq0urnex3v&raw=1" class="layer background" />
+<div class="layer lightning" id="lightning"></div>
 <canvas id="orb-canvas"></canvas>
-<img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer">
-<div class="lightning" id="lightning"></div>
+<img src="https://www.dropbox.com/scl/fi/l6i8ln2sjxg7r7xd5qei0/foreground.png?rlkey=mcxmo7gzk8hwu8o9k4oi8hdk0&raw=1" class="layer foreground" />
 
 <script>
-// Lightning Flash
+// LIGHTNING FLASH
 const lightning = document.getElementById("lightning");
 setInterval(() => {
   if (Math.random() > 0.6) {
@@ -42,8 +45,10 @@ setInterval(() => {
     setTimeout(() => lightning.style.opacity = "0", 150);
   }
 }, 5000);
+</script>
 
-// Floating Orbs
+<script>
+// FLOATING ORBS
 const canvas = document.getElementById("orb-canvas");
 const ctx = canvas.getContext("2d");
 let width = canvas.width = window.innerWidth;
