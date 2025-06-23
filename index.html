@@ -82,7 +82,13 @@
       background: rgba(0,0,0,.6);
       padding: 4px 12px; z-index: 1000;
     }
-  </style>
+  #evidence-checklist label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+</style>
 </head>
 <body>
   <canvas id="orb-canvas"></canvas>
@@ -164,8 +170,28 @@ const evidenceMap = {
   spirit: ["EMF Level 5", "Spirit Box", "Ghost Writing"],
   wraith: ["EMF Level 5", "D.O.T.S", "Spirit Box"],
   poltergeist: ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  banshee: ["D.O.T.S", "UV", "Orbs"],
+  jinn: ["EMF Level 5", "UV", "Freezing Temps"],
+  mare: ["Spirit Box", "Ghost Writing", "Orbs"],
+  revenant: ["Ghost Writing", "Freezing Temps", "Orbs"],
+  shade: ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
   demon: ["Ghost Writing", "Freezing Temps", "Fingerprints"],
-  succubus: ["Spirit Box", "Freezing Temps", "Orbs"]
+  yurei: ["Freezing Temps", "Orbs", "D.O.T.S"],
+  oni: ["EMF Level 5", "Freezing Temps", "D.O.T.S"],
+  yokai: ["Spirit Box", "D.O.T.S", "Orbs"],
+  hantu: ["Freezing Temps", "Fingerprints", "Orbs"],
+  goryo: ["EMF Level 5", "D.O.T.S", "Fingerprints"],
+  myling: ["EMF Level 5", "Ghost Writing", "Fingerprints"],
+  onryo: ["Spirit Box", "Freezing Temps", "Orbs"],
+  the_twins: ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  raiju: ["EMF Level 5", "D.O.T.S", "Orbs"],
+  obake: ["EMF Level 5", "UV", "Orbs"],
+  the_mimic: ["Spirit Box", "Fingerprints", "Freezing Temps"],
+  moroi: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  deogen: ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  thaye: ["Ghost Writing", "D.O.T.S", "Orbs"],
+  phantom: ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  succubus: ["Spirit Box", "Freezing Temps", "Orbs"],
 };
 let selectedEvidence = new Set();
 
@@ -212,7 +238,31 @@ let game = {
     ["Garage", "Bedroom", "Storage"]
   ]
 };
+function renderEvidence() {
+  const container = document.getElementById("evidence-checklist");
+  container.innerHTML = "";
+  evidenceTypes.forEach(ev => {
+    let label = document.createElement("label");
+    let checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedEvidence.has(ev);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedEvidence.add(ev);
+      else selectedEvidence.delete(ev);
+      renderEvidence();
+    };
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(ev));
+    container.appendChild(label);
+  });
 
+  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
+    [...selectedEvidence].every(ev => evs.includes(ev))
+  ).map(([ghost]) => ghost);
+
+  const output = document.getElementById("remaining-ghosts");
+  output.textContent = match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
+}
 function showLoadoutScreen() {
   const div = document.getElementById("loadout-screen"),
         sel = document.getElementById("item-selection");
@@ -284,68 +334,108 @@ function closeItemPopup() {
 }
 
 function useItem(item) {
+  if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
+    log("Nothing happens.");
+    return;
+  }
+
   log("Used: " + item);
+
   const ghost = ghostProfiles[game.ghost];
-  let roomName = game.roomMap[game.position[0]][game.position[1]];
+  const roomName = game.roomMap[game.position[0]][game.position[1]];
+  const isGhostRoom = roomName === game.ghostRoom;
+
   switch (item.toLowerCase()) {
     case "emf":
     case "emf reader":
-      if (ghost.tools.includes("emf") && roomName === game.ghostRoom) {
+      if (ghost.tools.includes("emf") && isGhostRoom) {
         log("EMF spikes to 5!");
         checkEvidence("EMF Level 5");
       } else log("No EMF reading.");
       break;
+
     case "spirit box":
-      if (ghost.tools.includes("spirit box") && roomName === game.ghostRoom) {
+      if (ghost.tools.includes("spirit box") && isGhostRoom) {
         log("Spirit Box crackles!");
         checkEvidence("Spirit Box");
       } else log("Only static.");
       break;
+
     case "uv":
     case "uv light":
-      if (ghost.tools.includes("uv") && roomName === game.ghostRoom) {
+    case "fingerprints":
+      if (ghost.tools.includes("uv") && isGhostRoom) {
         log("Fingerprints detected!");
         checkEvidence("Fingerprints");
       } else log("Nothing glows.");
       break;
+
     case "book":
     case "notebook":
-      if (ghost.tools.includes("book") && roomName === game.ghostRoom) {
+    case "ghost writing":
+      if (ghost.tools.includes("book") && isGhostRoom) {
         log("Ghost writing appears!");
         checkEvidence("Ghost Writing");
       } else openJournal();
       break;
+
     case "thermometer":
-      if (ghost.tools.includes("thermometer") && roomName === game.ghostRoom) {
+    case "freezing temps":
+      if (ghost.tools.includes("thermometer") && isGhostRoom) {
         log("Freezing temps detected!");
         checkEvidence("Freezing Temps");
-      } else log("Temp normal.");
+      } else log("Temperature is normal.");
       break;
+
     case "dots":
-      if (ghost.tools.includes("dots") && roomName === game.ghostRoom) {
-        log("Motion on DOTS projector!");
+    case "d.o.t.s":
+    case "projector":
+      if (ghost.tools.includes("dots") && isGhostRoom) {
+        log("Motion on the DOTS projector!");
         checkEvidence("D.O.T.S");
-      } else log("No motion.");
+      } else log("No motion detected.");
       break;
+
     case "camera":
-      if (ghost.tools.includes("camera") && roomName === game.ghostRoom) {
+    case "photo":
+    case "video camera":
+      if (ghost.tools.includes("camera") && isGhostRoom) {
         log("Ghostly orbs captured!");
         checkEvidence("Orbs");
-      } else log("No orbs.");
+      } else log("Nothing captured.");
       break;
+
     case "salt":
-      log(ghost.intro); break;
+      log(ghost.intro);
+      break;
+
     case "smudge":
+    case "smudge stick":
       if (game.vanStock["Smudge"]) {
         game.vanStock["Smudge"]--;
-        log("Smudge protects you.");
+        log("Smudge stick burned. You feel safer.");
+      } else {
+        log("You're out of smudge sticks.");
       }
       break;
+
     case "crucifix":
-      log("Crucifix placed.");
+      log("You placed a crucifix on the ground.");
       break;
+
+    case "candle":
+      log("The candle flickers. Nothing unusual.");
+      break;
+
+    case "lighter":
+      log("You flick the lighter. It works.");
+      break;
+
+    default:
+      log("You try using the " + item + ", but nothing happens.");
   }
 }
+
 
 function checkEvidence(ev) {
   selectedEvidence.add(ev);
@@ -438,17 +528,33 @@ function makeGuess(g) {
     endGame(false);
   }
 }
+
 function closeGuess() {
   document.getElementById("guess-popup").style.display = "none";
 }
 
 function endGame(won) {
-  document.getElementById("ada-modal").style.display = "none";
-  const msg = won ? "🎉 You Win!" : "💀 You Lose!";
-  alert(msg + "\nGame over.");
+  const modal = document.getElementById("ada-modal");
+  if (modal) modal.style.display = "none";
+
+  const status = won ? "🎉 You Win!" : "💀 You Lose!";
+  const ghostName = game.ghost?.toUpperCase() || "UNKNOWN";
+
+  log(status + " The ghost was: " + ghostName);
+  alert(status + "\nGhost: " + ghostName);
+
+  // Show Restart Button
+  const ui = document.getElementById("game-ui");
+  const restartBtn = document.createElement("button");
+  restartBtn.textContent = "🔄 Play Again";
+  restartBtn.style.marginTop = "12px";
+  restartBtn.onclick = () => {
+    location.reload(); // Clean reload
+  };
+  ui.innerHTML = ""; // Clear any UI
+  ui.appendChild(restartBtn);
 }
 
-// === Main Command Handler ===
 function handleCommand(cmd) {
   const c = cmd.toLowerCase();
   game.turn++;
@@ -478,6 +584,7 @@ function handleCommand(cmd) {
     log("Unknown command.");
   }
 }
+
 
 // === Status & Map ===
 function updateMap() {
