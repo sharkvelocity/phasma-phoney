@@ -987,8 +987,8 @@ footer span.version-tag {
   <span class="version-tag" onclick="document.getElementById('changelog-modal').style.display = 'block'">
     Build v1.2.3
   </span>
-</footer>
 
+</footer>
 <div id="changelog-modal">
   <h2>Phasma‑Phoney Build v1.2.3</h2>
   <ul>
@@ -1000,4 +1000,45 @@ footer span.version-tag {
   </ul>
   <button onclick="document.getElementById('changelog-modal').style.display = 'none'">Close</button>
 </div>
-</body></html>
+<script>
+// === GLOBAL HOOKS ===
+function simulateTyping(text, from = "ADA") {
+  logMessage(text, from);
+}
+
+function startAda() {
+  const modal = document.getElementById('ada-modal');
+  modal.style.display = 'block';
+  const line = introDialogues[Math.floor(Math.random() * introDialogues.length)];
+  simulateTyping(line, "Deo");
+}
+
+function handleButtonCommand(cmd) {
+  if (!cmd || cmd === "use ") return;
+  simulateTyping(cmd, "You");
+  let response = adaParse(cmd) || respondTo(cmd);
+  setTimeout(() => simulateTyping(response), 300);
+}
+
+function logMessage(text, from = "ADA") {
+  const logBox = document.getElementById("ada-log");
+  if (!logBox) return;
+  const line = document.createElement("div");
+  line.innerHTML = `<strong>${from}:</strong> `;
+  const span = document.createElement("span");
+  span.textContent = text;
+  line.appendChild(span);
+  logBox.appendChild(line);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+</script>
+
+<script>
+// === DOMContentLoaded Hook ===
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-button-ada');
+  if (startBtn) {
+    startBtn.addEventListener('click', startAda);
+  }
+});
+</script></body></html>
