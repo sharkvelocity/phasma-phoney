@@ -121,6 +121,15 @@
       transition: opacity 0.2s ease-in-out;
       z-index: 3;
     }
+#loadout-screen {
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+#loadout-screen.show {
+  opacity: 1;
+  display: block;
+}
   </style>
 </head>
 <body>
@@ -582,10 +591,15 @@ function closeJournal() {
 <script>
 // Final startup hook
 document.addEventListener("DOMContentLoaded", () => {
-  showLoadoutScreen();
   renderEvidence();
   loadJournal();
-});
+
+setTimeout(() => {
+  const screen = document.getElementById("loadout-screen");
+  screen.classList.add("show");
+}, 7000);
+
+
 
   // Show the ADA command interface after loadout is picked
   <script>
