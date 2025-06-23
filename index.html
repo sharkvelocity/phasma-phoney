@@ -12,15 +12,7 @@
       overflow: hidden;
       font-family: sans-serif;
     }
-    .hidden { display: none; }
-    #start-btn { font-size: 16px; margin-top: 20px; }
-    #game-screen {
-      display: flex;
-      width: 100vw;
-      height: 100vh;
-      justify-content: space-between;
-      padding: 10px;
-    }
+
     #left-panel, #right-panel {
       display: flex;
       flex-direction: column;
@@ -268,8 +260,6 @@ window.addEventListener("resize", () => {
   orbHeight = orbCanvas.height = window.innerHeight;
 });
 </script>
-</body>
-</html>
 
 <!-- EVIDENCE PANEL -->
 <div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
@@ -324,17 +314,17 @@ window.addEventListener("resize", () => {
     <button onclick="handleCommand('move')">Move</button>
     <button onclick="handleCommand('map')">Map</button>
     <button onclick="handleCommand('inventory')">Inventory</button>
-    <button onclick="openGuess()">Guess</button>
     <button onclick="handleCommand('van')">Visit Van</button>
     <button onclick="handleCommand('end')">End</button>
     <button onclick="openItemPopup()">Use Items</button>
+    <button onclick="openGuess()">Guess</button>
     <button onclick="openJournal()">Open Journal</button>
   </div>
 </div>
 
 
 <!-- FOOTER -->
-<footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.4 — Full Gameplay</footer>
+<footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.8 </footer>
 <script>
 const game = {
   inventory: [],
@@ -624,9 +614,5 @@ function confirmLoadout() {
   loadJournal();
 }
 </script>
-
-</body>
-</html>
-
 </body>
 </html>
