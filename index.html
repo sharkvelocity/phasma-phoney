@@ -1,3 +1,4 @@
+--------IVE ADDED FIX NOTES THROUGHOUT THIS DOCUMENT THAT ARE FORMATTED LIKE THIS SENTENCE IS. DO WHAT EACH SAYS PLEASE ALSO THE INCLUDED LOGIC BLOCK FILE IS TO BE COMBINED ACCORDINGLY WHILE LEAVING THE DESIGN AND VISUAL ASPECT INTACT
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <title>PhasmaPhoney</title>
@@ -275,7 +276,7 @@ html, body {
     pointer-events: none;
     z-index: 200;
 }
-
+------------REMOVE ALL CLOUD DATA
 #clouds1 {
     background: linear-gradient(to right, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 100%);
     opacity: 0.4;
@@ -299,7 +300,9 @@ html, body {
     from { transform: translateX(100%); }
     to { transform: translateX(-100%); }
 }
-</style><style>
+</style>
+	---------REMOVE ALL CLOUD DATA
+	<style>
 #clouds1 {
     animation: cloudDrift1 80s linear infinite;
 }
@@ -331,19 +334,11 @@ html, body {
 	<script type="text/phasma-data">
 PHASMA-PHONEY: Ritual. Paranormal. Game.
 
-GENERAL RULES:
-- No evidence mode supported.
-- Correctly identify ghosts by behavior.
-- Turn system with sanity loss.
-- Ghosts: Spirit, Wraith, Poltergeist, Demon, Mare, Thaye, Yurei, Onryo, etc.
-- Cursed possessions: Mirror, Ouija, Cards, Music Box, Voodoo, etc.
-- Succubus hidden ghost type with unlockable commentary.
-- Firelight: Candle tiers 1–3, each with duration and ghost interaction rules.
-- Legacy: Memory logs of past ghosts, turns, streaks, and level progression.
-- Experience and prestige system up to Level 100 (Roman numeral caps).
+GENERAL RULES
+---------ADD ALL GAME RULES
 </script>
 </head>
-<body>
+<body>-------------REMOVE ALL CLOUD INFORMATION FROM ENTIRE FILE
 	<div id="clouds1"></div>
 	<div id="clouds2"></div>
 	<div id="flash-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:white;opacity:0;pointer-events:none;z-index:9999;">
@@ -353,6 +348,7 @@ GENERAL RULES:
 <ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
 <button id="start-button-ada" onclick="startAda()" style="position:absolute;top:35%;left:50%;transform:translateX(-50%);padding:16px 48px;font-size:24px;z-index:5000;background:#111;color:#eee;border:2px solid #666;cursor:pointer;">Start</button><li></li>
 </ul>
+	------------------ADD 4 RANDOM WELCOME LINES TO BE RANDOMLY CHOSEN AT STARTUP THAT YOU GENERATE THAT ARE BASED ON STARTING AN INVESTIGATION FOR HUNTING GHOSTS
 <p style="font-style: italic; font-size: 0.95em;">Deo: “Welcome back, Let’s hope your deduction is better than your taste in decorations”</p>
 </div>
 <canvas id="orb-canvas" style="position: fixed;  top: 0;  left: 0;  width: 100vw;  height: 100vh;  pointer-events: none;  z-index: 9999"></canvas><div id="center-wrapper" style="display: flex; justify-content: center; align-items: center; height: 100vh; width: 100vw; position: relative; z-index: 3; text-align: center; font-family: sans-serif;"><div id="background-logo"></div><div id="background-image"></div><div style="text-align: center; margin-top: 20px;">
@@ -462,6 +458,7 @@ setInterval(() => {
     setTimeout(lightningFlash, Math.random() * 2000);
 }, 10000);
 </script>
+	----------------MAKE THIS A FUNCTIONAL MENU WITH BUTTONS TO ACTIVATE
 	<div id="ada-menu" style="display:none;"><li>2. Ghost Talk</li><li>3. Hall of Records</li><li>4. Save Game</li><li>5. Memories</li><li>6. Ask Deo</li><li>7. Exit Game</li></div>
 <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
     transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
@@ -500,11 +497,7 @@ document.addEventListener('DOMContentLoaded', function () {
     };
 
     const ghostProfiles = {
-        spirit: { intro: "Spirits leave behind minor signs.", behavior: "You hear soft whispers..." },
-        wraith: { intro: "Wraiths float over salt and vanish.", behavior: "The room chills. No footsteps." },
-        poltergeist: { intro: "Poltergeists throw objects at random.", behavior: "Crash! Something flew past you!" },
-        demon: { intro: "Demons attack early and fast.", behavior: "Growl... Lights flicker violently!" },
-        mare: { intro: "Mares prefer the dark. Watch your lights.", behavior: "The power goes out..." }
+   --------- FIX THIS-ADD ALL GHOST PROFILES WITH THERE DETAILS AND MAKE SURE THIS LINKS UP TO ALL THE OTHER INFORMATION THAT REQUIRES THE GHOST INFO
     };
 
     function updateMapDisplay() {
@@ -518,7 +511,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         return display;
     }
-
+-----------MAKE THIS SANITY AND TURN COUNTER WORK CORRECTLY
     function updateStatus() {
         turnCounter.textContent = game.turn;
         sanityBar.textContent = game.sanity;
@@ -548,11 +541,11 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         typeChar();
     }
-
+-----------FIX THIS SECTION TO BE DYNAMIC BUTTON OPTIONS RESPONCES FIX MAP INFORMATION AND HOW IT FUNCTIONS AS WELL
     function respondTo(text) {
         const cmd = text.trim().toLowerCase();
         if (!cmd) return;
-
+--------------FIX TICK TIMER
         game.turn++;
         updateStatus();
 
@@ -618,7 +611,7 @@ document.addEventListener('DOMContentLoaded', function () {
 // ADA now reads and parses the full Phasma-Phoney rule set from a hidden script
 const rulesText = document.querySelector('script[type="text/phasma-data"]').innerText;
 const ADA_KNOWLEDGE = rulesText.split("\n").filter(line => line.trim());
-
+-------FIX THESE PARSE OPTIONS TO WORK WITH THE DYNAMIC SELECTIONS FROM BUTTONS AND ADD ANY PARSE THAT IS MISSING FOR GAME FUNCTION 
 function adaParse(input) {
   const cmd = input.toLowerCase();
   if (cmd.includes("succubus")) return "Succubus commentary is only unlocked after a specific ghost interaction.";
