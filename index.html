@@ -22,26 +22,19 @@
       width: 100vw; height: 100vh; z-index: -2;
     }
     #background-logo {
-      background: url('./logo.png') center/contain no-repeat;
+      background: url('/Title.png') center/contain no-repeat;
       opacity: .1; z-index: -3;
     }
     #background-image {
-      background: url('./house.png') center/cover no-repeat;
+      background: url('/House.png') center/cover no-repeat;
       z-index: -2;
     }
     #status-bar, #game-ui, #ada-modal, #loadout-screen,
     #journal-screen, #item-popup, #van-panel, #guess-popup {
       border: 1px solid #0ff; background: #000;
     }
-    #status-bar {
-      padding: 10px; background: #000;
-      position: fixed; top: 0; width: 100%;
-      z-index: 1000;
-    }
-    #game-ui {
-      margin: 60px 20px 20px;
-      padding: 10px;
-    }
+
+
     #ada-modal {
       display: none;
       position: fixed;
@@ -67,12 +60,45 @@
       background: #000; color: #0ff;
       border: 1px solid #0ff; padding: 10px;
     }
-    #evidence-panel {
-      position: fixed; top: 60px; right: 10px;
-      width: 240px; background: #111;
-      border: 1px solid #0ff; padding: 10px;
-      z-index: 1000;
-    }
+#status-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  padding: 8px 16px;
+  background: #000;
+  border-bottom: 1px solid #0ff;
+  z-index: 1000;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.95em;
+}
+
+#map-display {
+  margin-left: auto;
+  color: #0ff;
+}
+
+#evidence-panel {
+  position: fixed;
+  top: 50px;
+  right: 10px;
+  width: 250px;
+  background: #111;
+  border: 1px solid #0ff;
+  padding: 10px;
+  z-index: 1000;
+  font-size: 0.9em;
+}
+
+#game-ui {
+  margin: 80px 260px 20px 20px; /* top | right | bottom | left */
+  padding: 10px;
+  background: #000;
+  border: 1px solid #0ff;
+  min-height: 300px;
+}
+
     #guess-popup { width: auto; }
     #map-display { margin: 10px 0; font-size: .9em; }
     footer {
@@ -148,10 +174,12 @@
 
   <!-- HUD Status Bar -->
   <div id="status-bar">
+  <div>
     Turn: <span id="turn-counter">0</span> |
-    Sanity: <span id="sanity-bar">100</span>% |
-    <span id="map-display"></span>
+    Sanity: <span id="sanity-bar">100</span>%
   </div>
+  <div id="map-display">Room: Van</div>
+</div>
 
   <!-- Evidence Panel -->
   <div id="evidence-panel">
