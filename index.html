@@ -712,7 +712,14 @@ document.addEventListener("keydown", (e) => {
       renderEvidence();
       break;
 
-    case "0": // ESC behavior — close all panels
+   case "0":
+  if (e.shiftKey) {
+    confirmLoadout(); // Shift+0 = start investigation
+  } else {
+    randomLoadout();  // 0 = just randomize
+  }
+  break;
+
     case "Escape":
       ["journal-screen", "item-popup", "guess-popup", "van-panel", "loadout-screen"]
         .forEach(id => {
