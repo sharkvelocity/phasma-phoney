@@ -180,7 +180,7 @@ setTimeout(() => {
 }, 5000);
 setTimeout(() => {
   document.getElementById('title-screen').style.display = 'none';
-  document.getElementById('main-scene').style.display = 'none';
+  document.getElementById('main-scene').style.display = 'block';
 }, 7000);
 
 // === RAIN (DIAGONAL) ===
@@ -371,6 +371,25 @@ const game = {
     ["Garage", "Bedroom", "Storage"]
   ]
 };
+const evidenceToTool = {
+  "EMF Level 5": "emf",
+  "Spirit Box": "spirit box",
+  "Fingerprints": "uv",
+  "Ghost Writing": "book",
+  "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots",
+  "Orbs": "camera"
+};
+
+const ghostProfiles = Object.fromEntries(
+  Object.entries(evidenceMap).map(([name, ev]) => [
+    name,
+    {
+      tools: ev.map(e => evidenceToTool[e]),
+      roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
+    }
+  ])
+);
 
 const evidenceTypes = [
   "EMF Level 5",
@@ -409,7 +428,6 @@ const evidenceMap = {
   Moroi: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
   Deogen: ["Spirit Box", "Ghost Writing", "D.O.T.S"],
   Thaye: ["Ghost Writing", "Orbs", "D.O.T.S"],
-  Mimic: ["Spirit Box", "Freezing Temps", "Fingerprints"] // included again as some lists do
 };
 
 let narrationEnabled = true;
@@ -440,44 +458,46 @@ function updateMap() {
 function handleCommand(cmd) {
   game.turn++;
   document.getElementById("turn-counter").textContent = game.turn;
-  let room = game.roomMap[game.position[0]][game.position[1]];
 
   switch (cmd.toLowerCase()) {
-    
     case "move":
       game.position[1] = (game.position[1] + 1) % 3;
-      updateMap();
       game.sanity = Math.max(0, game.sanity - 5);
       document.getElementById("sanity-bar").textContent = game.sanity;
-      room = game.roomMap[game.position[0]][game.position[1]];
-      log("You moved to " + room + ".");
-      if (room === game.ghostRoom) ambientNarration(room, game.ghost);
-      else ambientNarration(room);
+      updateMap();
+      const movedRoom = game.roomMap[game.position[0]][game.position[1]];
+      log("You moved to " + movedRoom + ".");
+      ambientNarration(movedRoom, game.ghostRoom === movedRoom ? game.ghost : null);
       break;
+
     case "map":
       updateMap();
       break;
+
     case "inventory":
-      log("Your gear: " + game.inventory.join(", "));
+      log("Your gear: " + (game.inventory.length ? game.inventory.join(", ") : "nothing yet"));
       break;
+
     case "van":
       openVanPanel();
       break;
+
     case "end":
       endGame(false);
       break;
+
     default:
       log("Unknown command.");
   }
 }
-</script>
 
-<script>
+
 function useItem(item) {
   if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
     log("Nothing happens.");
     return;
   }
+const allLoadoutItems = ["EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S", "Camera", "Smudge", "Candle", "Crucifix", "Salt"];
 
   const ghost = ghostProfiles[game.ghost];
   const room = game.roomMap[game.position[0]][game.position[1]];
@@ -533,6 +553,10 @@ function useItem(item) {
   }
 }
 </script>
+<div id="map-display"></div>
+<div id="turn-counter"></div>
+<div id="sanity-bar"></div>
+
 <script>
 function openItemPopup() {
   const popup = document.getElementById("item-popup");
@@ -700,10 +724,6 @@ function confirmLoadout() {
     game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
   });
 
-  const screen = document.getElementById("loadout-screen");
-  screen.classList.remove("show");
-  screen.style.opacity = 0;
-  setTimeout(() => screen.style.display = "none", 1000);
 
   const keys = Object.keys(ghostProfiles);
   game.ghost = keys[Math.floor(Math.random() * keys.length)];
@@ -733,7 +753,7 @@ function confirmLoadout() {
   log("Your investigation begins...");
   renderEvidence();
   loadJournal();
-}
+
 
 </script>
 <script>
