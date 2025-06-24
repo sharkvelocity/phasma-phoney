@@ -763,29 +763,46 @@ function openGuess() {
 function closeGuess() {
   document.getElementById("guess-popup").style.display = "none";
 }
-
-function makeGuess(name) {
-  if (name.toLowerCase() === game.ghost.toLowerCase()) {
-    log("✅ Correct! It was " + name.toUpperCase());
-    endGame(true);
-  } else {
-    log("❌ Incorrect. It was " + game.ghost.toUpperCase());
-    endGame(false);
-  }
-}
-
-function endGame(success) {
-  document.getElementById("ada-modal").style.display = "none";
-  alert(success ? "🎉 Victory!" : "💀 Game Over");
-  const ui = document.getElementById("game-ui");
-  const btn = document.createElement("button");
-  btn.textContent = "🔁 Restart";
-  btn.onclick = () => location.reload();
-  ui.innerHTML = "";
-  ui.appendChild(btn);
-}
-</script>
 <script>
+const evidenceTypes = [
+  "EMF Level 5",
+  "Spirit Box",
+  "Fingerprints",
+  "Ghost Writing",
+  "Freezing Temps",
+  "D.O.T.S",
+  "Orbs"
+];
+
+const selectedEvidence = new Set();
+
+const evidenceMap = {
+  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
+  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
+  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
+  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
+  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
+  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
+  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
+  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
+  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
+  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
+  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
+  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
+};
+
 function renderEvidence() {
   const container = document.getElementById("evidence-checklist");
   container.innerHTML = "";
@@ -812,7 +829,8 @@ function renderEvidence() {
   document.getElementById("remaining-ghosts").textContent =
     match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
 }
-
+</script>
+<script>
 function loadJournal() {
   const val = localStorage.getItem("journal");
   if (val) document.getElementById("journal-text").value = val;
