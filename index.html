@@ -828,19 +828,28 @@ footer {
 
   const loadout = document.getElementById("loadout-screen");
   loadout.style.display = "block";
-
-  // Trigger fade-in via CSS transition
-  setTimeout(() => loadout.classList.add("show"), 50);
 }
-</script>
+ </script>
+	function startGameFlow() {
+  const title = document.getElementById("title-screen");
+  const loadout = document.getElementById("loadout-screen");
+  title.style.opacity = 0;
+
+  setTimeout(() => {
+    title.style.display = "none";
+    loadout.style.display = "block";
+    setTimeout(() => loadout.classList.add("show"), 50);
+  }, 1500);
+}
+  <script>
+	
   document.addEventListener("DOMContentLoaded", () => {
-    renderLoadoutOptions();
-    renderEvidence();
-    loadJournal();
-    window.addEventListener("beforeunload", saveJournal);
-  
-    setTimeout(startGameFlow, 7000);
-  });
+  renderLoadoutOptions();
+  renderEvidence();
+  loadJournal();
+  window.addEventListener("beforeunload", saveJournal);
+	setTimeout(startGameFlow, 7000);
+});
   </script>
   <script>
   function randomLoadout() {
