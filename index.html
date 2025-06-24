@@ -144,17 +144,18 @@ html, body {
   padding: 20px;
   color: #0ff;
   border: 1px solid #0ff;
-  z-index: 10;
+  z-index: 19;
 }
 
-#loadout-screen {
+#loadout-screen { 
+  z-index: 20;
   left: 10%;
   right: 10%;
   opacity: 0;
   transition: opacity 1s ease-in-out;
 }
 #loadout-screen.show {	
-  z-index: 7; 
+  z-index: 19; 
   opacity: 1;
   display: block;
 }
@@ -164,7 +165,7 @@ html, body {
   position: absolute;
   top: 10px;
   right: 10px;
-  z-index: 7;
+  z-index: 16;
   background: #000;
   border: 1px solid #0ff;
   padding: 10px;
@@ -188,7 +189,7 @@ html, body {
   background: #000;
   border-top: 1px solid #0ff;
   padding: 10px;
-  z-index: 9;
+  z-index: 15;
 }
 
 #ada-log {
