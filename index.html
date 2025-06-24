@@ -827,25 +827,11 @@ footer {
   const title = document.getElementById("title-screen");
   const loadout = document.getElementById("loadout-screen");
 	title.style.opacity = 0;
+	
 
-	setTimeout(() => {
-	title.style.display = "none";
-	loadout.style.display = "block";
-	setTimeout(() => loadout.classList.add("show"), 50);
-  }, 1500);
-	
   </script>
-  <script>
-	
-  document.addEventListener("DOMContentLoaded", () => {
-  renderLoadoutOptions();
-  renderEvidence();
-  loadJournal();
-  window.addEventListener("beforeunload", saveJournal);
-	setTimeout(startGameFlow, 7000);
-});
-  </script>
-  <script>
+
+    <script>
   function randomLoadout() {
     const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
     checkboxes.forEach(cb => cb.checked = false);
