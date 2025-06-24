@@ -17,7 +17,8 @@ html, body {
 }
 
 /* === PANELS AND HUD === */
-#left-panel, #right-panel {
+#left-panel, #right-panel { 
+  z-index: 22;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -25,7 +26,8 @@ html, body {
   height: 100%;
 }
 
-#center-panel { z-index: 20;
+#center-panel { 
+  z-index: 21;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -34,7 +36,8 @@ html, body {
   overflow-y: auto;
 }
 
-#narrator-box { z-index: 19;
+#narrator-box { 
+  z-index: 19;
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -65,7 +68,7 @@ html, body {
 }
 
 #hud-status { 
-  z-index: 17;
+  z-index: 18.5;
   background: #111;
   padding: 10px;
   margin: 5px;
