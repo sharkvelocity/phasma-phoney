@@ -1,11 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Phasma‑Phoney Title</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
-  /* === GLOBAL RESET & BASICS === */
+<style>
+/* === GLOBAL RESET & BASICS === */
 html, body {
   margin: 0;
   padding: 0;
@@ -14,61 +11,6 @@ html, body {
   background: black;
   overflow: hidden;
   font-family: sans-serif;
-}
-
-/* === PANELS AND HUD === */
-#left-panel, #right-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  height: 100%;
-}
-
-#center-panel {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  overflow-y: auto;
-}
-
-#narrator-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  width: 90%;
-  background: #111;
-  padding: 10px;
-  border: 1px solid #444;
-}
-
-#system-text, #narrator-thought {
-  flex: 1;
-  background: #222;
-  padding: 8px;
-  border: 1px solid #333;
-  min-height: 60px;
-}
-
-#main-readout {
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
-  max-height: 300px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-}
-
-#hud-status {
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
 }
 
 /* === TITLE SCREEN === */
@@ -80,7 +22,7 @@ html, body {
   justify-content: center;
   align-items: center;
   background: black;
-  z-index: 10;
+  z-index: 100;
   opacity: 1;
   transition: opacity 2s ease-in-out;
 }
@@ -95,7 +37,7 @@ html, body {
   50% { opacity: 1; transform: scale(1.04); }
 }
 
-/* === LAYER SYSTEM FOR MAIN SCENE === */
+/* === LAYERED SCENE === */
 #main-scene {
   display: none;
   position: relative;
@@ -114,78 +56,55 @@ html, body {
   pointer-events: none;
 }
 
-/* Ordered by Z-Index */
-.layer.background      { z-index: 1; }
-.rain-canvas           { z-index: 2; }
-.rain-block-front      { z-index: 3; }
-.lightning             {
+/* Layer Z-Order (Bottom → Top) */
+.layer.background        { z-index: 1; }
+.rain-canvas             { z-index: 2; }
+.rain-block-front        { z-index: 3; }
+.lightning               {
   z-index: 4;
   background: white;
   opacity: 0;
   transition: opacity 0.2s ease-in-out;
 }
-.foreground            { z-index: 5; }
-.orb-canvas            { z-index: 6; }
+.foreground              { z-index: 5; }
+.orb-canvas              { z-index: 6; }
 
-/* === UI POPUPS === */
+/* === GAME UI PANELS (always top) === */
+#hud-status,
+#game-ui,
+#evidence-panel,
+#ada-modal,
 #loadout-screen,
 #van-panel,
 #guess-popup,
 #item-popup,
-#journal-screen {
-  display: none;
-  position: absolute;
-  top: 10%;
-  left: 15%;
-  right: 15%;
-  background: #111;
-  padding: 20px;
-  color: #0ff;
-  border: 1px solid #0ff;
+#journal-screen,
+#left-panel,
+#right-panel,
+#center-panel,
+#narrator-box {
   z-index: 10;
-}
-
-#loadout-screen {
-  left: 10%;
-  right: 10%;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-}
-#loadout-screen.show {
-  opacity: 1;
-  display: block;
-}
-
-/* === EVIDENCE PANEL === */
-#evidence-panel {
   position: absolute;
+}
+
+/* === Evidence Panel === */
+#evidence-panel {
   top: 10px;
   right: 10px;
-  z-index: 7;
   background: #000;
   border: 1px solid #0ff;
   padding: 10px;
   color: #0ff;
 }
 
-#evidence-checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-/* === ADA PANEL === */
+/* === ADA Panel === */
 #ada-modal {
-  display: none;
-  position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   background: #000;
   border-top: 1px solid #0ff;
   padding: 10px;
-  z-index: 9;
 }
 
 #ada-log {
@@ -206,14 +125,35 @@ html, body {
   cursor: pointer;
 }
 
-#item-selection label,
-#van-button-list button,
-#item-button-list button,
-#guess-list button {
+/* === Loadout / Journal Popups === */
+#loadout-screen,
+#van-panel,
+#guess-popup,
+#item-popup,
+#journal-screen {
+  top: 10%;
+  left: 15%;
+  right: 15%;
+  background: #111;
+  padding: 20px;
   color: #0ff;
+  border: 1px solid #0ff;
+  display: none;
 }
 
-/* === JOURNAL === */
+#loadout-screen {
+  left: 10%;
+  right: 10%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+#loadout-screen.show {
+  display: block;
+  opacity: 1;
+}
+
+/* === Journal === */
 #journal-text {
   width: 100%;
   height: 150px;
@@ -224,7 +164,38 @@ html, body {
   font-family: monospace;
 }
 
-/* === FOOTER === */
+/* === Narrator Panel === */
+#narrator-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 90%;
+  background: #111;
+  padding: 10px;
+  border: 1px solid #444;
+}
+
+#system-text, #narrator-thought {
+  flex: 1;
+  background: #222;
+  padding: 8px;
+  border: 1px solid #333;
+  min-height: 60px;
+}
+
+/* === Misc === */
+#main-readout {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* === Footer === */
 footer {
   position: fixed;
   bottom: 0;
@@ -235,8 +206,8 @@ footer {
   color: #0ff;
   background: #000;
   border-top: 1px solid #0ff;
+  z-index: 11;
 }
-
 </style>
 </head>
 <body>
@@ -857,20 +828,30 @@ document.addEventListener("DOMContentLoaded", () => {
   loadJournal();
   window.addEventListener("beforeunload", saveJournal);
 
-  // Immediately show loadout behind title screen
+  // Pre-show loadout
   const loadout = document.getElementById("loadout-screen");
   loadout.style.display = "block";
   requestAnimationFrame(() => loadout.classList.add("show"));
 
-  // Title fade after 5 seconds
+  // Initialize canvas and animation BEFORE title fades
+  resizeCanvases();  // Ensure canvas sizes are correct
+  animateRain();
+  animateOrbs();
+  setInterval(() => {
+    if (Math.random() > 0.7) triggerLightning();
+  }, 6000);
+
+  // Fade out title after 5s
   setTimeout(() => {
     document.getElementById('title-screen').style.opacity = 0;
   }, 5000);
 
-  // Fully hide title screen and show main scene
+  // Remove title and show main game screen
   setTimeout(() => {
     document.getElementById('title-screen').style.display = 'none';
     document.getElementById('main-scene').style.display = 'block';
     speak("Welcome back, I've put together a few jobs for you.");
   }, 7000);
 });
+</script></body>
+</html>
