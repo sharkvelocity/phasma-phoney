@@ -301,7 +301,6 @@ window.addEventListener("resize", () => {
 
 <!-- MAIN GAME UI OUTPUT -->
 <div id="game-ui" style="padding:12px;color:white;"></div>
-
 <!-- LOADOUT SELECTION -->
 <div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
   <h2>Select Loadout (Max 3)</h2>
@@ -371,25 +370,8 @@ const game = {
     ["Garage", "Bedroom", "Storage"]
   ]
 };
-const evidenceToTool = {
-  "EMF Level 5": "emf",
-  "Spirit Box": "spirit box",
-  "Fingerprints": "uv",
-  "Ghost Writing": "book",
-  "Freezing Temps": "thermometer",
-  "D.O.T.S": "dots",
-  "Orbs": "camera"
-};
 
-const ghostProfiles = Object.fromEntries(
-  Object.entries(evidenceMap).map(([name, ev]) => [
-    name,
-    {
-      tools: ev.map(e => evidenceToTool[e]),
-      roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
-    }
-  ])
-);
+// 1. Evidence Types
 
 const evidenceTypes = [
   "EMF Level 5",
@@ -401,36 +383,71 @@ const evidenceTypes = [
   "Orbs",
 ];
 
-const selectedEvidence = new Set();
+// 2. Loadout Items
+
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
+  "Camera", "Smudge", "Candle", "Crucifix", "Salt"
+];
+
+
+// 3. Evidence Map (used by ghostProfiles)
 
 const evidenceMap = {
-  Spirit: ["Spirit Box", "Ghost Writing", "EMF Level 5"],
-  Wraith: ["Spirit Box", "D.O.T.S", "EMF Level 5"],
-  Phantom: ["Spirit Box", "D.O.T.S", "Fingerprints"],
-  Poltergeist: ["Spirit Box", "Ghost Writing", "Fingerprints"],
-  Banshee: ["D.O.T.S", "Orbs", "Fingerprints"],
-  Jinn: ["EMF Level 5", "Fingerprints", "Freezing Temps"],
-  Mare: ["Spirit Box", "Ghost Writing", "Orbs"],
-  Revenant: ["Ghost Writing", "Orbs", "Freezing Temps"],
-  Shade: ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
-  Demon: ["Ghost Writing", "Fingerprints", "Freezing Temps"],
-  Yurei: ["Freezing Temps", "Orbs", "D.O.T.S"],
-  Oni: ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
-  Yokai: ["Spirit Box", "Orbs", "D.O.T.S"],
-  Hantu: ["Fingerprints", "Freezing Temps", "Orbs"],
-  Goryo: ["EMF Level 5", "Fingerprints", "D.O.T.S"],
-  Myling: ["EMF Level 5", "Fingerprints", "Ghost Writing"],
-  Onryo: ["Spirit Box", "Freezing Temps", "Orbs"],
-  The Twins: ["EMF Level 5", "Spirit Box", "Freezing Temps"],
-  Raiju: ["EMF Level 5", "Orbs", "D.O.T.S"],
-  Obake: ["EMF Level 5", "Orbs", "Fingerprints"],
-  The Mimic: ["Spirit Box", "Freezing Temps", "Fingerprints"], // also fakes orbs
-  Moroi: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
-  Deogen: ["Spirit Box", "Ghost Writing", "D.O.T.S"],
-  Thaye: ["Ghost Writing", "Orbs", "D.O.T.S"],
+  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
+  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
+  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
+  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
+  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
+  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
+  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
+  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
+  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
+  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
+  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
+  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
 };
 
+// 4. Evidence → Tool map (used by ghostProfiles)
+const evidenceToTool = {
+  "EMF Level 5": "emf",
+  "Spirit Box": "spirit box",
+  "Fingerprints": "uv",
+  "Ghost Writing": "book",
+  "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots",
+  "Orbs": "camera"
+};
+
+// 5. Ghost Profiles (depends on both evidenceMap and evidenceToTool)
+
+const ghostProfiles = Object.fromEntries(
+  Object.entries(evidenceMap).map(([name, ev]) => [
+    name,
+    {
+      tools: ev.map(e => evidenceToTool[e]),
+      roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
+    }
+  ])
+);
+
+// 6. Evidence selection & narrator flag
+
+const selectedEvidence = new Set();
 let narrationEnabled = true;
+
 
 function log(text) {
   const ada = document.getElementById("ada-log");
@@ -497,7 +514,6 @@ function useItem(item) {
     log("Nothing happens.");
     return;
   }
-const allLoadoutItems = ["EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S", "Camera", "Smudge", "Candle", "Crucifix", "Salt"];
 
   const ghost = ghostProfiles[game.ghost];
   const room = game.roomMap[game.position[0]][game.position[1]];
@@ -552,12 +568,7 @@ const allLoadoutItems = ["EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.
       log("Nothing happens.");
   }
 }
-</script>
-<div id="map-display"></div>
-<div id="turn-counter"></div>
-<div id="sanity-bar"></div>
 
-<script>
 function openItemPopup() {
   const popup = document.getElementById("item-popup");
   const list = document.getElementById("item-button-list");
@@ -622,9 +633,7 @@ function endGame(success) {
   ui.innerHTML = "";
   ui.appendChild(btn);
 }
-</script>
 
-<script>
 function renderEvidence() {
   const container = document.getElementById("evidence-checklist");
   container.innerHTML = "";
@@ -651,9 +660,7 @@ function renderEvidence() {
   document.getElementById("remaining-ghosts").textContent =
     match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
 }
-</script>
 
-<script>
 function loadJournal() {
   const val = localStorage.getItem("journal");
   if (val) document.getElementById("journal-text").value = val;
@@ -674,8 +681,7 @@ function closeJournal() {
   document.getElementById("journal-screen").style.display = "none";
 window.addEventListener("beforeunload", saveJournal);
 }
-</script>
-<script>
+
 document.addEventListener("DOMContentLoaded", () => {
   renderLoadoutOptions();
   renderEvidence();
@@ -711,8 +717,7 @@ function renderLoadoutOptions() {
     container.appendChild(label);
   });
 }
-</script>
-<script>
+
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
@@ -740,7 +745,8 @@ function confirmLoadout() {
   const screen = document.getElementById("loadout-screen");
   screen.classList.remove("show");
   screen.style.opacity = 0;
-  setTimeout(() => screen.style.display = "none", 1000); // Match transition duration
+  setTimeout(() => screen.style.display = "none", 1000); 
+	// Match transition duration
 
   // Start investigation
   const keys = Object.keys(ghostProfiles);
@@ -755,8 +761,6 @@ function confirmLoadout() {
   loadJournal();
 
 
-</script>
-<script>
 document.addEventListener("keydown", (e) => {
   const isInput = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
   if (isInput) return;
