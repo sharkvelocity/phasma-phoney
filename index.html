@@ -847,11 +847,7 @@ footer {
     loadJournal();
     window.addEventListener("beforeunload", saveJournal);
   
-    setTimeout(() => {
-      const loadout = document.getElementById("loadout-screen");
-      loadout.style.display = "block";
-      setTimeout(() => loadout.classList.add("show"), 50);
-    }, 7000);
+    setTimeout(startGameFlow, 7000);
   });
   </script>
   <script>
