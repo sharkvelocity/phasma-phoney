@@ -33,7 +33,7 @@ html, body {
   z-index: 20;
   position: absolute;
 }
-
+#
 #narrator-box {
   display: flex;
   justify-content: space-between;
@@ -880,44 +880,34 @@ footer {
   }
   
   function confirmLoadout() {
-    const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
-    if (selected.length > 3) return alert("Max 3 items.");
-  
-    game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
-  
-    const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
-    all.forEach(name => {
-      game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
-    });
-  
-  
-    const keys = Object.keys(ghostProfiles);
-    game.ghost = keys[Math.floor(Math.random() * keys.length)];
-    game.ghostRoom = ghostProfiles[game.ghost].roomHint;
-  
-    updateMap();
-    document.getElementById("ada-modal").style.display = "block";
-    log("Your investigation begins...");
-    renderEvidence();
-    loadJournal();
-  }
-  </script>
-  <script>
-  document.addEventListener('keydown', (e) => {
-    if (e.key.toLowerCase() === 'p' && e.shiftKey) {
-      const loadoutScreen = document.getElementById("loadout-screen");
-  
-      if (loadoutScreen && loadoutScreen.style.display === 'block') {
-        log("🎲 Shift+P pressed: Random loadout selected.");
-        randomLoadout();
-        setTimeout(() => {
-          confirmLoadout();
-          log("✅ Loadout confirmed. Investigation begins.");
-        }, 100); // slight delay for checkbox updates
-      }
-    }
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
+  if (selected.length > 3) return alert("Max 3 items.");
+
+  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
+
+  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  all.forEach(name => {
+    game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
   });
+
+  // 🟢 Random ghost + ghostRoom
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+
+  // ✅ Hide loadout screen and show game HUD
+  document.getElementById("loadout-screen").style.display = "none";
+  document.getElementById("main-scene").style.display = "block";
+  document.getElementById("hud-status").style.display = "block";
+  document.getElementById("ada-modal").style.display = "block";
+
+  updateMap();
+  renderEvidence();
+  loadJournal();
+  log("Your investigation begins...");
+}
   </script>
-  <footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v.1-Alpha </footer>
+  <footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v.1-Alpha 
+  </footer>
   </body></html>
   
