@@ -5,17 +5,19 @@
     <title>Phasma‑Phoney Title</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <style>
-    /* === GLOBAL RESET & BASICS === */
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    overflow: hidden;
-    font-family: sans-serif;
-  }
-  #hud-status,
+/* === GLOBAL RESET & BASICS === */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  overflow: hidden;
+  font-family: sans-serif;
+}
+
+/* === HUD AND PANELS === */
+#hud-status,
 #game-ui,
 #evidence-panel,
 #ada-modal,
@@ -23,243 +25,218 @@
 #van-panel,
 #guess-popup,
 #item-popup,
-#journal-screen {
+#journal-screen,
+#left-panel,
+#right-panel,
+#center-panel,
+#narrator-box {
   z-index: 20;
-  position: absolute; /* ensure stacking context applies */
+  position: absolute;
 }
-  /* === PANELS AND HUD === */
-  #left-panel, #right-panel { 
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    height: 100%;
-  }
-  
-  #center-panel { 
-    z-index: 20;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    overflow-y: auto;
-  }
-  
-  #narrator-box { 
-    z-index: 20;
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    width: 90%;
-    background: #111;=
-    padding: 10px;
-    border: 1px solid #444;
-  }
-  
-  #system-text, #narrator-thought {
-    z-index: 18.75;
-    flex: 1;
-    background: #222;
-    padding: 8px;
-    border: 1px solid #333;
-    min-height: 60px;
-  }
-  
-  #main-readout {
-    background: #111;
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #444;
-    width: 90%;
-    max-height: 300px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
-  
-  #hud-status { 
-    background: #111;
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #444;
-    width: 90%;
-  }
-  
-  /* === TITLE SCREEN === */
-  #title-screen {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: black;
-    z-index: 10;
-    opacity: 1;
-    transition: opacity 2s ease-in-out;
-  }
-  
-  #title-screen img {
-    max-width: 80%;
-    animation: pulse 5s infinite ease-in-out;
-  }
-  
-  @keyframes pulse {
-    0%, 100% { opacity: 0.9; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.04); }
-  }
-  
-  /* === LAYER SYSTEM FOR MAIN SCENE === */
-  #main-scene {
-    display: none;
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1;
-    overflow: hidden;
-  }
-  
-  .fullscreen-layer {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100vw;
-    height: 100vh;
-    object-fit: cover;
-    pointer-events: none;
-  }
-  
-  /* Ordered by Z-Index */
-  .layer.background      { z-index: 1; }
-  .rain-canvas           { z-index: 2; }
-  .rain-block-front      { z-index: 3; }
-  .lightning             {
-    z-index: 4;
-    background: white;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-  }
-  .foreground            { z-index: 6; }
-  .orb-canvas            { z-index: 2.5; }
-  
-  /* === UI POPUPS === */
-  #loadout-screen,
-  #van-panel,
-  #guess-popup,
-  #item-popup,
-  #journal-screen {
-    display: none;
-    position: absolute;
-    top: 10%;
-    left: 15%;
-    right: 15%;
-    background: #111;
-    padding: 20px;
-    color: #0ff;
-    border: 1px solid #0ff;
-    z-index: 20;
-  }
-  
-  #loadout-screen { 
-    left: 10%;
-    right: 10%;
-    opacity: 0;
-    transition: opacity 1s ease-in-out;
-  }
-  #loadout-screen.show {	 
-    opacity: 1;
-    display: block;
-  }
-  
-  /* === EVIDENCE PANEL === */
-  #evidence-panel {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    z-index: 20;
-    background: #000;
-    border: 1px solid #0ff;
-    padding: 10px;
-    color: #0ff;
-  }
-  
-  #evidence-checklist {
-    z-index: 20;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 8px;
-  }
-  
-  /* === ADA PANEL === */
-  #ada-modal {
-    display: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background: #000;
-    border-top: 1px solid #0ff;
-    padding: 10px;
-    z-index: 20;
-  }
-  
-  #ada-log {
-    height: 200px;
-    overflow-y: auto;
-    background: #000;
-    color: #0ff;
-    padding: 6px;
-    border: 1px solid #0ff;
-    margin-bottom: 8px;
-  }
-  
-  #ada-modal button {
-    background: #111;
-    color: #0ff;
-    border: 1px solid #0ff;
-    padding: 6px 10px;
-    cursor: pointer;
-  }
-  
-  #item-selection label,
-  #van-button-list button,
-  #item-button-list button,
-  #guess-list button {
-    color: #0ff;
-  }
-  
-  /* === JOURNAL === */
-  #journal-text {
-    width: 100%;
-    height: 150px;
-    background: #000;
-    color: #0ff;
-    border: 1px solid #0ff;
-    padding: 8px;
-    font-family: monospace;
-  }
-  
-  /* === FOOTER === */
-  footer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    text-align: center;
-    padding: 6px;
-    font-size: 0.85em;
-    color: #0ff;
-    background: #000;
-    border-top: 1px solid #0ff;
-  }
-  
+
+#narrator-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 90%;
+  background: #111;
+  padding: 10px;
+  border: 1px solid #444;
+}
+
+#system-text, #narrator-thought {
+  flex: 1;
+  background: #222;
+  padding: 8px;
+  border: 1px solid #333;
+  min-height: 60px;
+  z-index: 19;
+}
+
+#main-readout {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
+
+/* === STATUS BOX === */
+#hud-status {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+}
+
+/* === TITLE SCREEN === */
+#title-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: black;
+  z-index: 10;
+  opacity: 1;
+  transition: opacity 2s ease-in-out;
+}
+
+#title-screen img {
+  max-width: 80%;
+  animation: pulse 5s infinite ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50%      { opacity: 1;   transform: scale(1.04); }
+}
+
+/* === LAYERED VISUAL SCENE === */
+#main-scene {
+  display: none;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.fullscreen-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.layer.background      { z-index: 1; }
+.rain-canvas           { z-index: 2; }
+.orb-canvas            { z-index: 3; }
+.rain-block-front      { z-index: 4; }
+.lightning             {
+  z-index: 5;
+  background: white;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.foreground            { z-index: 6; }
+
+/* === UI POPUPS === */
+#loadout-screen,
+#van-panel,
+#guess-popup,
+#item-popup,
+#journal-screen {
+  display: none;
+  top: 10%;
+  left: 15%;
+  right: 15%;
+  background: #111;
+  padding: 20px;
+  color: #0ff;
+  border: 1px solid #0ff;
+}
+
+#loadout-screen {
+  left: 10%;
+  right: 10%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+#loadout-screen.show {
+  opacity: 1;
+  display: block;
+}
+
+/* === EVIDENCE PANEL === */
+#evidence-panel {
+  top: 10px;
+  right: 10px;
+  background: #000;
+  border: 1px solid #0ff;
+  padding: 10px;
+  color: #0ff;
+}
+#evidence-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+/* === ADA COMMAND PANEL === */
+#ada-modal {
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  border-top: 1px solid #0ff;
+  padding: 10px;
+}
+
+#ada-log {
+  height: 200px;
+  overflow-y: auto;
+  background: #000;
+  color: #0ff;
+  padding: 6px;
+  border: 1px solid #0ff;
+  margin-bottom: 8px;
+}
+
+#ada-modal button {
+  background: #111;
+  color: #0ff;
+  border: 1px solid #0ff;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+#item-selection label,
+#van-button-list button,
+#item-button-list button,
+#guess-list button {
+  color: #0ff;
+}
+
+/* === JOURNAL === */
+#journal-text {
+  width: 100%;
+  height: 150px;
+  background: #000;
+  color: #0ff;
+  border: 1px solid #0ff;
+  padding: 8px;
+  font-family: monospace;
+}
+
+/* === FOOTER === */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.85em;
+  color: #0ff;
+  background: #000;
+  border-top: 1px solid #0ff;
+}
   </style>
   </head>
   <body>
   
   <div id="title-screen">
     <img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/logo.png?raw=true" alt="PhasmaPhoney Logo" />
-  </div>
+  </div> 
   
   
   <div id="main-scene">
