@@ -1,3 +1,6 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
 <style>
 /* === GLOBAL RESET & BASICS === */
 html, body {
@@ -206,3 +209,649 @@ footer {
   z-index: 11;
 }
 </style>
+</head>
+<body>
+
+<div id="title-screen">
+  <img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/logo.png?raw=true" alt="PhasmaPhoney Logo" />
+</div>
+
+
+<div id="main-scene">
+  <div class="layered-scene">
+
+<img src="background.png" class="layer background fullscreen-layer" />
+<canvas id="rain" class="rain-canvas fullscreen-layer"></canvas>
+<img src="rainblock.png" class="rain-block-front fullscreen-layer" />
+<div class="lightning fullscreen-layer" id="lightning"></div>
+<img src="foreground.png" class="foreground fullscreen-layer" />
+<canvas id="orbs" class="orb-canvas fullscreen-layer"></canvas>
+
+  </div>
+</div>
+<stlye>
+setTimeout(() => {
+  speak("Welcome back, We've got some jobs for you.");
+}, 7100);
+</style>
+
+<div id="hud-status">
+  <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
+  <p><strong>Sanity:</strong> <span id="sanity-bar">100</span></p>
+  <p><strong>Location:</strong> <span id="map-display">Van</span></p>
+</div>
+<script>
+function log(msg) {
+  const logBox = document.getElementById("ada-log");
+  const p = document.createElement("p");
+  p.textContent = msg;
+  logBox.appendChild(p);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+
+// Fade out title after 5s and reveal main scene by 7s
+setTimeout(() => {
+  document.getElementById('title-screen').style.opacity = 0;
+}, 5000);
+setTimeout(() => {
+  document.getElementById('title-screen').style.display = 'none';
+  document.getElementById('main-scene').style.display = 'block';
+}, 7000);
+
+// === RAIN (DIAGONAL) ===
+const rainCanvas = document.getElementById("rain");
+const rainCtx = rainCanvas.getContext("2d");
+let rainWidth = rainCanvas.width = window.innerWidth;
+let rainHeight = rainCanvas.height = window.innerHeight;
+
+function createRaindrop() {
+  return {
+    x: Math.random() * rainWidth,
+    y: Math.random() * rainHeight,
+    length: Math.random() * 20 + 10,
+    speedX: -3,
+    speedY: Math.random() * 6 + 6
+  };
+}
+
+let raindrops = Array.from({ length: 150 }, createRaindrop);
+
+function animateRain() {
+  rainCtx.clearRect(0, 0, rainWidth, rainHeight);
+  rainCtx.strokeStyle = "rgba(173,216,230,0.3)";
+  rainCtx.lineWidth = 1.2;
+  for (let drop of raindrops) {
+    rainCtx.beginPath();
+    rainCtx.moveTo(drop.x, drop.y);
+    rainCtx.lineTo(drop.x + drop.speedX * 4, drop.y + drop.length);
+    rainCtx.stroke();
+    drop.x += drop.speedX;
+    drop.y += drop.speedY;
+    if (drop.y > rainHeight || drop.x < 0) {
+      Object.assign(drop, createRaindrop());
+      drop.y = 0;
+    }
+  }
+  requestAnimationFrame(animateRain);
+}
+animateRain();
+
+window.addEventListener("resize", () => {
+  rainWidth = rainCanvas.width = window.innerWidth;
+  rainHeight = rainCanvas.height = window.innerHeight;
+});
+// === LIGHTNING FLASHES ===
+const lightning = document.getElementById("lightning");
+function triggerLightning() {
+  lightning.style.opacity = "0.5";
+  setTimeout(() => lightning.style.opacity = "0", 100);
+}
+setInterval(() => {
+  if (Math.random() > 0.7) triggerLightning();
+}, 6000);
+
+// === FLOATING ORBS ===
+const orbCanvas = document.getElementById("orbs");
+const orbCtx = orbCanvas.getContext("2d");
+let orbWidth = orbCanvas.width = window.innerWidth;
+let orbHeight = orbCanvas.height = window.innerHeight;
+
+function createOrb() {
+  return {
+    x: Math.random() * orbWidth,
+    y: Math.random() * orbHeight,
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: (Math.random() - 0.5) * 0.8,
+    baseRadius: Math.random() * 2 + 1,
+    radius: 1,
+    opacity: 0,
+    fadeIn: true,
+    tick: 0,
+    changeInterval: Math.floor(Math.random() * 150 + 50)
+  };
+}
+
+let orbs = Array.from({ length: 15 }, createOrb);
+
+function animateOrbs() {
+  orbCtx.clearRect(0, 0, orbWidth, orbHeight);
+  for (let orb of orbs) {
+    orb.tick++;
+    orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
+    orb.opacity += orb.fadeIn ? 0.01 : -0.001;
+    if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
+    if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
+    if (orb.tick % orb.changeInterval === 0) {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
+      orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
+      orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
+    }
+    orb.x += orb.vx; orb.y += orb.vy;
+    if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= orbWidth) orb.vx *= -1;
+    if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= orbHeight) orb.vy *= -1;
+    orbCtx.beginPath();
+    orbCtx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+    orbCtx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+    orbCtx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
+    orbCtx.shadowBlur = 10 + orb.opacity * 10;
+    orbCtx.fill();
+  }
+  requestAnimationFrame(animateOrbs);
+}
+animateOrbs();
+
+window.addEventListener("resize", () => {
+  orbWidth = orbCanvas.width = window.innerWidth;
+  orbHeight = orbCanvas.height = window.innerHeight;
+});
+</script>
+
+<!-- EVIDENCE PANEL -->
+<div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
+  <h3 style="margin:0;">Evidence</h3>
+  <div id="evidence-checklist" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
+  <p id="remaining-ghosts" style="color:#0f0;"></p>
+</div>
+
+<!-- MAIN GAME UI OUTPUT -->
+<div id="game-ui" style="padding:12px;color:white;"></div>
+<!-- LOADOUT SELECTION -->
+<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h2>Select Loadout (Max 3)</h2>
+  <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
+  <button onclick="confirmLoadout()">Confirm Loadout</button>
+  <button onclick="randomLoadout()">Random Loadout</button>
+</div>
+
+<!-- VAN PANEL -->
+<div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Van Inventory</h3>
+  <div id="van-button-list" style="display:flex;flex-direction:column;gap:6px;"></div>
+  <button onclick="closeVanPanel()">Done</button>
+</div>
+
+<!-- GUESS GHOST POPUP -->
+<div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Who is the Ghost?</h3>
+  <div id="guess-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+  <button onclick="closeGuess()">Cancel</button>
+</div>
+
+<!-- ITEM POPUP -->
+<div id="item-popup" style="display:none;position:absolute;top:10%;left:20%;right:20%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Choose Item</h3>
+  <div id="item-button-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  <button onclick="closeItemPopup()">Cancel</button>
+</div>
+
+<!-- JOURNAL -->
+<div id="journal-screen" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+  <h3>Notes</h3>
+  <textarea id="journal-text" placeholder="Your notes..." style="width:100%;height:150px;"></textarea><br>
+  <button onclick="closeJournal()">Close</button>
+</div>
+
+<!-- ADA COMMAND PANEL -->
+<div id="ada-modal" style="display:none;position:absolute;bottom:0;left:0;width:100%;background:#000;border-top:1px solid #0ff;padding:10px;z-index:5;">
+  <div id="ada-log" style="height:200px;overflow-y:auto;background:#000;color:#0ff;padding:6px;border:1px solid #0ff;margin-bottom:8px;"></div>
+  <div style="display:flex;flex-wrap:wrap;gap:6px;">
+    <button onclick="handleCommand('move')">Move</button>
+    <button onclick="handleCommand('map')">Map</button>
+    <button onclick="handleCommand('inventory')">Inventory</button>
+    <button onclick="handleCommand('van')">Visit Van</button>
+    <button onclick="handleCommand('end')">End</button>
+    <button onclick="openItemPopup()">Use Items</button>
+    <button onclick="openGuess()">Guess</button>
+    <button onclick="openJournal()">Open Journal</button>
+  </div>
+</div>
+<script>
+function ambientNarration(room, ghostHere) {
+  const sanity = game.sanity;
+  let thoughts = [];
+
+  // === ENVIRONMENTAL FLAVOR ===
+  const roomDescriptions = {
+    "Foyer": ["The old foyer creaks with age.", "Dim light spills across the dusty floor."],
+    "Kitchen": ["The refrigerator hums softly.", "Utensils lie scattered like forgotten memories."],
+    "Bathroom": ["A faint drip echoes from the sink.", "The mirror is too fogged to see yourself clearly."],
+    "Basement": ["It smells of mold and still air.", "You can barely see past the shadows."],
+    "Living Room": ["An old couch slumps in the corner.", "Ashes rest cold in the fireplace."],
+    "Bedroom": ["The sheets are tangled and cold.", "Someone left the closet door half open."],
+    "Garage": ["Tools hang neatly on the wall, untouched.", "Oil stains mark the concrete floor."],
+    "Storage": ["Dust floats like static in the beam of your light.", "Boxes are stacked like forgotten secrets."]
+  };
+
+  if (roomDescriptions[room]) {
+    thoughts.push(...roomDescriptions[room]);
+  } else {
+    thoughts.push("The air feels still in this room.");
+  }
+
+  // === SANITY-BASED THOUGHTS ===
+  if (sanity >= 80) {
+    thoughts.push(
+      "You feel confident and focused.",
+      "Your breathing is steady.",
+      "Nothing feels off... yet."
+    );
+  } else if (sanity >= 50) {
+    thoughts.push(
+      "You try to shake off the tension.",
+      "Your nerves are holding for now.",
+      "Something feels... off, but you press on."
+    );
+  } else if (sanity >= 30) {
+    thoughts.push(
+      "Your thoughts drift. Was that a sound?",
+      "You’re starting to feel watched.",
+      "You swear something just moved in the corner of your vision."
+    );
+  } else {
+    thoughts.push(
+      "Your head spins. You can’t trust what you're seeing.",
+      "Paranoia creeps in like a chill wind.",
+      "Every shadow feels like it's waiting for you."
+    );
+  }
+
+  // === FINAL THOUGHT OUTPUT ===
+  const randomThought = thoughts[Math.floor(Math.random() * thoughts.length)];
+  log(randomThought);
+  speak(randomThought);
+}
+function speak(text) {
+  if (!narrationEnabled) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.voice = speechSynthesis.getVoices().find(v => v.lang.startsWith("en"));
+  utter.rate = 1;
+  speechSynthesis.speak(utter);
+}
+</script>
+<script>
+const selectedEvidence = new Set();
+
+const game = {
+  inventory: [],
+  vanStock: {},
+  turn: 0,
+  sanity: 100,
+  ghost: null,
+  ghostRoom: null,
+  position: [0, 0],
+  roomMap: [
+    ["Van", "Foyer", "Kitchen"],
+    ["Basement", "Living Room", "Bathroom"],
+    ["Garage", "Bedroom", "Storage"]
+  ]
+};
+
+// 1. Evidence Types
+
+const evidenceTypes = [
+  "EMF Level 5",
+  "Spirit Box",
+  "Fingerprints",
+  "Ghost Writing",
+  "Freezing Temps",
+  "D.O.T.S",
+  "Orbs",
+];
+
+// 2. Loadout Items
+
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
+  "Camera", "Smudge", "Candle", "Crucifix", "Salt"
+];
+</script>
+<script>
+
+// 3. Evidence Map (used by ghostProfiles)
+
+const evidenceMap = {
+  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
+  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
+  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
+  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
+  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
+  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
+  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
+  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
+  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
+  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
+  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
+  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
+};
+
+// 4. Evidence → Tool map (used by ghostProfiles)
+const evidenceToTool = {
+  "EMF Level 5": "emf",
+  "Spirit Box": "spirit box",
+  "Fingerprints": "uv",
+  "Ghost Writing": "book",
+  "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots",
+  "Orbs": "camera"
+};
+
+// 5. Ghost Profiles (depends on both evidenceMap and evidenceToTool)
+
+const ghostProfiles = Object.fromEntries(
+  Object.entries(evidenceMap).map(([name, ev]) => [
+    name,
+    {
+      tools: ev.map(e => evidenceToTool[e]),
+      roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
+    }
+  ])
+);
+
+// 6. Evidence selection & narrator flag
+
+
+let narrationEnabled = true;
+function ambientNarration(room, ghostHere) {
+  const sanity = game.sanity;
+  let thoughts = [];
+
+function updateMap() {
+  const room = game.roomMap[game.position[0]][game.position[1]];
+  document.getElementById("map-display").textContent = "Room: " + room;
+}
+
+function handleCommand(cmd) {
+  game.turn++;
+  document.getElementById("turn-counter").textContent = game.turn;
+
+  switch (cmd.toLowerCase()) {
+    case "move":
+      game.position[1] = (game.position[1] + 1) % 3;
+      game.sanity = Math.max(0, game.sanity - 5);
+      document.getElementById("sanity-bar").textContent = game.sanity;
+      updateMap();
+      const movedRoom = game.roomMap[game.position[0]][game.position[1]];
+      log("You moved to " + movedRoom + ".");
+      ambientNarration(movedRoom, game.ghostRoom === movedRoom ? game.ghost : null);
+      break;
+
+    case "map":
+      updateMap();
+      break;
+
+    case "inventory":
+      log("Your gear: " + (game.inventory.length ? game.inventory.join(", ") : "nothing yet"));
+      break;
+
+    case "van":
+      openVanPanel();
+      break;
+
+    case "end":
+      endGame(false);
+      break;
+
+    default:
+      log("Unknown command.");
+  }
+}
+
+
+function useItem(item) {
+  if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
+    log("Nothing happens.");
+    return;
+  }
+
+  const ghost = ghostProfiles[game.ghost];
+  const room = game.roomMap[game.position[0]][game.position[1]];
+  const inRoom = room === game.ghostRoom;
+
+  switch (item.toLowerCase()) {
+    case "emf":
+      log(inRoom && ghost.tools.includes("emf") ? "EMF spikes to 5!" : "No EMF detected.");
+      if (inRoom && ghost.tools.includes("emf")) checkEvidence("EMF Level 5");
+      break;
+    case "spirit box":
+      log(inRoom && ghost.tools.includes("spirit box") ? "Spirit Box crackles!" : "Only static.");
+      if (inRoom && ghost.tools.includes("spirit box")) checkEvidence("Spirit Box");
+      break;
+    case "uv":
+    case "fingerprints":
+      log(inRoom && ghost.tools.includes("uv") ? "Fingerprints found!" : "No prints.");
+      if (inRoom && ghost.tools.includes("uv")) checkEvidence("Fingerprints");
+      break;
+    case "book":
+      log(inRoom && ghost.tools.includes("book") ? "Ghost writing appears!" : "The pages remain blank.");
+      if (inRoom && ghost.tools.includes("book")) checkEvidence("Ghost Writing");
+      break;
+    case "thermometer":
+      log(inRoom && ghost.tools.includes("thermometer") ? "Freezing temps!" : "It's warm.");
+      if (inRoom && ghost.tools.includes("thermometer")) checkEvidence("Freezing Temps");
+      break;
+    case "dots":
+      log(inRoom && ghost.tools.includes("dots") ? "Motion detected!" : "No movement.");
+      if (inRoom && ghost.tools.includes("dots")) checkEvidence("D.O.T.S");
+      break;
+    case "camera":
+      log(inRoom && ghost.tools.includes("camera") ? "Orbs spotted!" : "Nothing on film.");
+      if (inRoom && ghost.tools.includes("camera")) checkEvidence("Orbs");
+      break;
+    case "smudge":
+      if (game.vanStock["Smudge"]) {
+        game.vanStock["Smudge"]--;
+        log("Smudge used. The air clears.");
+      } else log("No smudge sticks left.");
+      break;
+    case "candle":
+      log("The candle flickers mysteriously.");
+      break;
+    case "crucifix":
+      log("You place the crucifix nearby.");
+      break;
+    case "salt":
+      log("You sprinkle salt on the floor.");
+      break;
+    default:
+      log("Nothing happens.");
+  }
+}
+
+function openItemPopup() {
+  const popup = document.getElementById("item-popup");
+  const list = document.getElementById("item-button-list");
+  list.innerHTML = "";
+
+  game.inventory.forEach(item => {
+    const b = document.createElement("button");
+    b.textContent = item;
+    b.onclick = () => {
+      useItem(item);
+      closeItemPopup();
+    };
+    list.appendChild(b);
+  });
+
+  popup.style.display = "block";
+}
+
+function closeItemPopup() {
+  document.getElementById("item-popup").style.display = "none";
+}
+
+function openGuess() {
+  const popup = document.getElementById("guess-popup");
+  const list = document.getElementById("guess-list");
+  list.innerHTML = "";
+
+  Object.keys(ghostProfiles).forEach(g => {
+    const btn = document.createElement("button");
+    btn.textContent = g.toUpperCase();
+    btn.onclick = () => {
+      makeGuess(g);
+      closeGuess();
+    };
+    list.appendChild(btn);
+  });
+
+  popup.style.display = "block";
+}
+
+function closeGuess() {
+  document.getElementById("guess-popup").style.display = "none";
+}
+
+const evidenceTypes = [
+  "EMF Level 5",
+  "Spirit Box",
+  "Fingerprints",
+  "Ghost Writing",
+  "Freezing Temps",
+  "D.O.T.S",
+  "Orbs"
+];
+
+const selectedEvidence = new Set();
+
+const evidenceMap = {
+  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
+  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
+  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
+  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
+  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
+  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
+  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
+  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
+  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
+  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
+  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
+  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
+};
+
+function renderEvidence() {
+  const container = document.getElementById("evidence-checklist");
+  container.innerHTML = "";
+
+  evidenceTypes.forEach(ev => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedEvidence.has(ev);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedEvidence.add(ev);
+      else selectedEvidence.delete(ev);
+      renderEvidence();
+    };
+    label.appendChild(checkbox);
+    label.append(" " + ev);
+    container.appendChild(label);
+  });
+
+  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
+    [...selectedEvidence].every(ev => evs.includes(ev))
+  ).map(([ghost]) => ghost);
+
+  document.getElementById("remaining-ghosts").textContent =
+    match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
+}
+
+function loadJournal() {
+  const val = localStorage.getItem("journal");
+  if (val) document.getElementById("journal-text").value = val;
+document.getElementById("journal-text").addEventListener("input", saveJournal);
+
+}
+
+function saveJournal() {
+  localStorage.setItem("journal", document.getElementById("journal-text").value);
+}
+
+function openJournal() {
+  document.getElementById("journal-screen").style.display = "block";
+}
+
+function closeJournal() {
+  saveJournal();
+  document.getElementById("journal-screen").style.display = "none";
+
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderLoadoutOptions();
+  renderEvidence();
+  loadJournal();
+  window.addEventListener("beforeunload", saveJournal);
+
+  // Pre-show loadout
+  const loadout = document.getElementById("loadout-screen");
+  loadout.style.display = "block";
+  requestAnimationFrame(() => loadout.classList.add("show"));
+
+  // Initialize canvas and animation BEFORE title fades
+  resizeCanvases();  // Ensure canvas sizes are correct
+  animateRain();
+  animateOrbs();
+  setInterval(() => {
+    if (Math.random() > 0.7) triggerLightning();
+  }, 6000);
+
+  // Fade out title after 5s
+  setTimeout(() => {
+    document.getElementById('title-screen').style.opacity = 0;
+  }, 5000);
+
+  // Remove title and show main game screen
+  setTimeout(() => {
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('main-scene').style.display = 'block';
+    speak("Welcome back, I've put together a few jobs for you.");
+  }, 7000);
+});
+</script></body>
+</html>
