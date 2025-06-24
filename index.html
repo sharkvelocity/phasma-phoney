@@ -829,8 +829,7 @@ function renderEvidence() {
   document.getElementById("remaining-ghosts").textContent =
     match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
 }
-</script>
-<script>
+
 function loadJournal() {
   const val = localStorage.getItem("journal");
   if (val) document.getElementById("journal-text").value = val;
