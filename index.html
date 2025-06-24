@@ -592,6 +592,8 @@ function renderEvidence() {
 function loadJournal() {
   const val = localStorage.getItem("journal");
   if (val) document.getElementById("journal-text").value = val;
+document.getElementById("journal-text").addEventListener("input", saveJournal);
+
 }
 
 function saveJournal() {
@@ -605,61 +607,99 @@ function openJournal() {
 function closeJournal() {
   saveJournal();
   document.getElementById("journal-screen").style.display = "none";
+window.addEventListener("beforeunload", saveJournal);
 }
 </script>
 
 <script>
 // Final startup hook
-document.addEventListener("DOMContentLoaded", () => {
-  renderEvidence();
-  loadJournal();
 
   document.addEventListener("DOMContentLoaded", () => {
  showLoadoutScreen();
  renderEvidence();
   loadJournal();
 
-  // Automatically trigger loadout screen after title fades
-  setTimeout(() => {
 
-document.addEventListener("DOMContentLoaded", () => {
-  renderEvidence();
-  loadJournal();
-
-  // Automatically trigger loadout screen after title fades
+  // Automatically show the loadout screen after the title fades
   setTimeout(() => {
-    document.getElementById("loadout-screen").style.display = "block";
-  }, 7000); // Match title screen fade timing
+    const loadout = document.getElementById("loadout-screen");
+    loadout.style.display = "block";
+    setTimeout(() => loadout.classList.add("show"), 50); // trigger fade-in
+  }, 7000);
 });
 </script>
 
 
-
   // Show the ADA command interface after loadout is picked
-  <script>
+
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
+  
   game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
 
   // Stock van with remaining items
   const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
   all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
 
+  // Fade out loadout screen
+  const screen = document.getElementById("loadout-screen");
+  screen.classList.remove("show");
+  screen.style.opacity = 0;
+  setTimeout(() => screen.style.display = "none", 1000); // Match transition duration
 
-
-  // 👇 START INVESTIGATION IMMEDIATELY
+  // Start investigation
   const keys = Object.keys(ghostProfiles);
   game.ghost = keys[Math.floor(Math.random() * keys.length)];
   game.ghostRoom = ghostProfiles[game.ghost].roomHint;
 
-  // Update and show ADA panel
+  // Show ADA panel
   updateMap();
   document.getElementById("ada-modal").style.display = "block";
   log("Your investigation begins...");
   renderEvidence();
   loadJournal();
 }
+
+</script>
+<script>
+document.addEventListener("keydown", (e) => {
+  const isInput = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
+  if (isInput) return; // avoid triggering while typing
+
+  switch (e.key.toLowerCase()) {
+    case "a": // Open/close ADA command panel
+      const ada = document.getElementById("ada-modal");
+      ada.style.display = (ada.style.display === "block") ? "none" : "block";
+      break;
+
+    case "l": // Toggle loadout screen
+      const loadout = document.getElementById("loadout-screen");
+      if (loadout.classList.contains("show")) {
+        loadout.classList.remove("show");
+        setTimeout(() => loadout.style.display = "none", 500);
+      } else {
+        loadout.style.display = "block";
+        setTimeout(() => loadout.classList.add("show"), 20);
+      }
+      break;
+
+    case "j": // Open journal
+      openJournal();
+      break;
+
+    case "escape": // ESC closes all panels
+      ["journal-screen", "item-popup", "guess-popup", "van-panel", "loadout-screen"]
+        .forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            el.classList?.remove("show");
+            el.style.display = "none";
+          }
+        });
+      break;
+  }
+});
 </script>
 </body>
 </html>
