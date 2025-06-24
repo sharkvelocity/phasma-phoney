@@ -821,26 +821,20 @@ footer {
   function closeJournal() {
     saveJournal();
     document.getElementById("journal-screen").style.display = "none";
-  
-  }
-	function startGameFlow() {
-  document.getElementById("title-screen").style.display = "none";
-
-  const loadout = document.getElementById("loadout-screen");
-  loadout.style.display = "block";
 }
- </script>
-	function startGameFlow() {
+	
+  function startGameFlow() {
   const title = document.getElementById("title-screen");
   const loadout = document.getElementById("loadout-screen");
-  title.style.opacity = 0;
-
-  setTimeout(() => {
-    title.style.display = "none";
-    loadout.style.display = "block";
-    setTimeout(() => loadout.classList.add("show"), 50);
+	title.style.opacity = 0;
+	}
+	setTimeout(() => {
+	title.style.display = "none";
+	loadout.style.display = "block";
+	setTimeout(() => loadout.classList.add("show"), 50);
   }, 1500);
-}
+	
+  </script>
   <script>
 	
   document.addEventListener("DOMContentLoaded", () => {
