@@ -379,19 +379,39 @@ const evidenceTypes = [
   "Ghost Writing",
   "Freezing Temps",
   "D.O.T.S",
-  "Orbs"
+  "Orbs",
 ];
 
 const selectedEvidence = new Set();
 
 const evidenceMap = {
   Spirit: ["Spirit Box", "Ghost Writing", "EMF Level 5"],
-  Poltergeist: ["Spirit Box", "Ghost Writing", "Fingerprints"],
-  Banshee: ["Fingerprints", "Orbs", "D.O.T.S"],
+  Wraith: ["Spirit Box", "D.O.T.S", "EMF Level 5"],
   Phantom: ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  Poltergeist: ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  Banshee: ["D.O.T.S", "Orbs", "Fingerprints"],
+  Jinn: ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  Mare: ["Spirit Box", "Ghost Writing", "Orbs"],
   Revenant: ["Ghost Writing", "Orbs", "Freezing Temps"],
-  // ... etc, complete list for all ghost types
+  Shade: ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  Demon: ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  Yurei: ["Freezing Temps", "Orbs", "D.O.T.S"],
+  Oni: ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  Yokai: ["Spirit Box", "Orbs", "D.O.T.S"],
+  Hantu: ["Fingerprints", "Freezing Temps", "Orbs"],
+  Goryo: ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  Myling: ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  Onryo: ["Spirit Box", "Freezing Temps", "Orbs"],
+  The Twins: ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  Raiju: ["EMF Level 5", "Orbs", "D.O.T.S"],
+  Obake: ["EMF Level 5", "Orbs", "Fingerprints"],
+  The Mimic: ["Spirit Box", "Freezing Temps", "Fingerprints"], // also fakes orbs
+  Moroi: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  Deogen: ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  Thaye: ["Ghost Writing", "Orbs", "D.O.T.S"],
+  Mimic: ["Spirit Box", "Freezing Temps", "Fingerprints"] // included again as some lists do
 };
+
 let narrationEnabled = true;
 
 function log(text) {
@@ -631,35 +651,70 @@ function closeJournal() {
 window.addEventListener("beforeunload", saveJournal);
 }
 </script>
-
 <script>
-// Final startup hook
 document.addEventListener("DOMContentLoaded", () => {
+  renderLoadoutOptions();
   renderEvidence();
   loadJournal();
+  window.addEventListener("beforeunload", saveJournal);
 
-  // Automatically show the loadout screen after the title fades
   setTimeout(() => {
     const loadout = document.getElementById("loadout-screen");
     loadout.style.display = "block";
-    setTimeout(() => loadout.classList.add("show"), 50); // trigger fade-in
+    setTimeout(() => loadout.classList.add("show"), 50);
   }, 7000);
 });
+function randomLoadout() {
+  const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
+  checkboxes.forEach(cb => cb.checked = false);
 
+  const shuffled = checkboxes.sort(() => 0.5 - Math.random()).slice(0, 3);
+  shuffled.forEach(cb => cb.checked = true);
+}
 
+function renderLoadoutOptions() {
+  const container = document.getElementById("item-selection");
+  container.innerHTML = "";
 
-  // Show the ADA command interface after loadout is picked
+  allLoadoutItems.forEach(item => {
+    const label = document.createElement("label");
+    label.style.marginRight = "10px";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = item;
+    label.appendChild(checkbox);
+    label.append(" " + item);
+    container.appendChild(label);
+  });
+}
 </script>
 <script>
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
-  
+
   game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
 
-  // Stock van with remaining items
   const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
-  all.forEach(name => game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1));
+  all.forEach(name => {
+    game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
+  });
+
+  const screen = document.getElementById("loadout-screen");
+  screen.classList.remove("show");
+  screen.style.opacity = 0;
+  setTimeout(() => screen.style.display = "none", 1000);
+
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
+
+  updateMap();
+  document.getElementById("ada-modal").style.display = "block";
+  log("Your investigation begins...");
+  renderEvidence();
+  loadJournal();
+}
 
   // Fade out loadout screen
   const screen = document.getElementById("loadout-screen");
