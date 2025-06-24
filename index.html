@@ -520,6 +520,8 @@ function speak(text) {
 }
 </script>
 <script>
+const selectedEvidence = new Set();
+
 const game = {
   inventory: [],
   vanStock: {},
@@ -611,7 +613,6 @@ const ghostProfiles = Object.fromEntries(
 // 6. Evidence selection & narrator flag
 
 
-const selectedEvidence = new Set();
 let narrationEnabled = true;
 function ambientNarration(room, ghostHere) {
   const sanity = game.sanity;
