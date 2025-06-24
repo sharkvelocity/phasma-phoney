@@ -853,62 +853,24 @@ function closeJournal() {
 
 document.addEventListener("DOMContentLoaded", () => {
   renderLoadoutOptions();
+  renderEvidence();
   loadJournal();
   window.addEventListener("beforeunload", saveJournal);
 
+  // Immediately show loadout behind title screen
+  const loadout = document.getElementById("loadout-screen");
+  loadout.style.display = "block";
+  requestAnimationFrame(() => loadout.classList.add("show"));
+
+  // Title fade after 5 seconds
   setTimeout(() => {
-    const loadout = document.getElementById("loadout-screen");
-    loadout.style.display = "block";
-    setTimeout(() => loadout.classList.add("show"), 50);
+    document.getElementById('title-screen').style.opacity = 0;
+  }, 5000);
+
+  // Fully hide title screen and show main scene
+  setTimeout(() => {
+    document.getElementById('title-screen').style.display = 'none';
+    document.getElementById('main-scene').style.display = 'block';
+    speak("Welcome back, I've put together a few jobs for you.");
   }, 7000);
 });
-
-function randomLoadout() {
-  const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
-  checkboxes.forEach(cb => cb.checked = false);
-
-  const shuffled = checkboxes.sort(() => 0.5 - Math.random()).slice(0, 3);
-  shuffled.forEach(cb => cb.checked = true);
-}
-
-function renderLoadoutOptions() {
-  const container = document.getElementById("item-selection");
-  container.innerHTML = "";
-
-  allLoadoutItems.forEach(item => {
-    const label = document.createElement("label");
-    label.style.marginRight = "10px";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = item;
-    label.appendChild(checkbox);
-    label.append(" " + item);
-    container.appendChild(label);
-  });
-}
-
-function confirmLoadout() {
-  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
-  if (selected.length > 3) return alert("Max 3 items.");
-
-  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
-
-  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
-  all.forEach(name => {
-    game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
-  });
-
-
-  const keys = Object.keys(ghostProfiles);
-  game.ghost = keys[Math.floor(Math.random() * keys.length)];
-  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
-
-  updateMap();
-  document.getElementById("ada-modal").style.display = "block";
-  log("Your investigation begins...");
-  renderEvidence();
-  loadJournal();
-}
-</script>
-<footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.8 </footer>
-</body></html>
