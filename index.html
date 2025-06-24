@@ -25,7 +25,7 @@ html, body {
   height: 100%;
 }
 
-#center-panel {
+#center-panel { z-index: 20;
   flex-grow: 1;
   display: flex;
   flex-direction: column;
@@ -34,17 +34,18 @@ html, body {
   overflow-y: auto;
 }
 
-#narrator-box {
+#narrator-box { z-index: 19;
   display: flex;
   justify-content: space-between;
   gap: 10px;
   width: 90%;
-  background: #111;
+  background: #111;=
   padding: 10px;
   border: 1px solid #444;
 }
 
 #system-text, #narrator-thought {
+  z-index: 18;
   flex: 1;
   background: #222;
   padding: 8px;
@@ -63,7 +64,8 @@ html, body {
   white-space: pre-wrap;
 }
 
-#hud-status {
+#hud-status { 
+  z-index: 17;
   background: #111;
   padding: 10px;
   margin: 5px;
@@ -125,7 +127,7 @@ html, body {
   transition: opacity 0.2s ease-in-out;
 }
 .foreground            { z-index: 6; }
-.orb-canvas            { z-index: 5; }
+.orb-canvas            { z-index: 2.5; }
 
 /* === UI POPUPS === */
 #loadout-screen,
