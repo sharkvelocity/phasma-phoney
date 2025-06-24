@@ -613,12 +613,9 @@ window.addEventListener("beforeunload", saveJournal);
 
 <script>
 // Final startup hook
-
-  document.addEventListener("DOMContentLoaded", () => {
- showLoadoutScreen();
- renderEvidence();
+document.addEventListener("DOMContentLoaded", () => {
+  renderEvidence();
   loadJournal();
-
 
   // Automatically show the loadout screen after the title fades
   setTimeout(() => {
@@ -632,6 +629,7 @@ window.addEventListener("beforeunload", saveJournal);
 
   // Show the ADA command interface after loadout is picked
 </script>
+<script>
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
