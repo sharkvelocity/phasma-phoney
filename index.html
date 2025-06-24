@@ -1,831 +1,146 @@
-  <!DOCTYPE html>
-  <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Phasma‑Phoney Title</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <style>
-/* === GLOBAL RESET & BASICS === */
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  background: black;
-  overflow: hidden;
-  font-family: sans-serif;
-}
-
-/* === HUD AND PANELS === */
-#hud-status,
-#game-ui,
-#evidence-panel,
-#ada-modal,
-#loadout-screen,
-#van-panel,
-#guess-popup,
-#item-popup,
-#journal-screen,
-#left-panel,
-#right-panel,
-#center-panel,
-#narrator-box {
-  z-index: 20;
-  position: absolute;
-}
-#narrator-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  width: 90%;
-  background: #111;
-  padding: 10px;
-  border: 1px solid #444;
-}
-
-#system-text, #narrator-thought {
-  flex: 1;
-  background: #222;
-  padding: 8px;
-  border: 1px solid #333;
-  min-height: 60px;
-  z-index: 19;
-}
-
-#main-readout {
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
-  max-height: 300px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-}
-
-/* === STATUS BOX === */
-#hud-status {
-  display: none; /* hide until main scene */
-  z-index: 20;
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
-}
-
-/* === TITLE SCREEN === */
-#title-screen {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: black;
-  z-index: 10;
-  opacity: 1;
-  transition: opacity 2s ease-in-out;
-}
-
-#title-screen img {
-  max-width: 80%;
-  animation: pulse 5s infinite ease-in-out;
-}
-
-@keyframes pulse {
-  0%, 100% { opacity: 0.9; transform: scale(1); }
-  50%      { opacity: 1;   transform: scale(1.04); }
-}
-
-/* === LAYERED VISUAL SCENE === */
-#main-scene {
-  display: none;
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.fullscreen-layer {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  object-fit: cover;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.layer.background      { z-index: 1; }
-.rain-canvas           { z-index: 2; }
-.orb-canvas            { z-index: 3; }
-.rain-block-front      { z-index: 4; }
-.lightning             {
-  z-index: 5;
-  background: white;
-  opacity: 0;
-  transition: opacity 0.2s ease-in-out;
-}
-.foreground            { z-index: 6; }
-
-/* === UI POPUPS === */
-#loadout-screen,
-#van-panel,
-#guess-popup,
-#item-popup,
-#journal-screen {
-  display: none;
-  top: 10%;
-  left: 15%;
-  right: 15%;
-  background: #111;
-  padding: 20px;
-  color: #0ff;
-  border: 1px solid #0ff;
-}
-
-#loadout-screen {
-  left: 10%;
-  right: 10%;
-  opacity: 0;
-  transition: opacity 1s ease-in-out;
-}
-#loadout-screen.show {
-  opacity: 1;
-  display: block;
-}
-
-/* === EVIDENCE PANEL === */
-#evidence-panel {
-  top: 10px;
-  right: 10px;
-  background: #000;
-  border: 1px solid #0ff;
-  padding: 10px;
-  color: #0ff;
-}
-#evidence-checklist {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: 8px;
-}
-
-/* === ADA COMMAND PANEL === */
-#ada-modal {
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background: #000;
-  border-top: 1px solid #0ff;
-  padding: 10px;
-}
-
-#ada-log {
-  height: 200px;
-  overflow-y: auto;
-  background: #000;
-  color: #0ff;
-  padding: 6px;
-  border: 1px solid #0ff;
-  margin-bottom: 8px;
-}
-
-#ada-modal button {
-  background: #111;
-  color: #0ff;
-  border: 1px solid #0ff;
-  padding: 6px 10px;
-  cursor: pointer;
-}
-
-#item-selection label,
-#van-button-list button,
-#item-button-list button,
-#guess-list button {
-  color: #0ff;
-}
-
-/* === JOURNAL === */
-#journal-text {
-  width: 100%;
-  height: 150px;
-  background: #000;
-  color: #0ff;
-  border: 1px solid #0ff;
-  padding: 8px;
-  font-family: monospace;
-}
-
-/* === FOOTER === */
-footer {
-  position: fixed;
-  bottom: 0;
-  width: 100%;
-  text-align: center;
-  padding: 6px;
-  font-size: 0.85em;
-  color: #0ff;
-  background: #000;
-  border-top: 1px solid #0ff;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phasma‑Phoney</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      overflow: hidden;
+      font-family: sans-serif;
+    }
+    #title-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      z-index: 10;
+      opacity: 1;
+      transition: opacity 2s ease-in-out;
+    }
+    #title-screen img {
+      max-width: 80%;
+      animation: pulse 5s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.9; transform: scale(1); }
+      50%      { opacity: 1;   transform: scale(1.04); }
+    }
+    #main-scene, #hud-status, #ada-modal, #loadout-screen {
+      display: none;
+    }
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      padding: 6px;
+      font-size: 0.85em;
+      color: #0ff;
+      background: #000;
+      border-top: 1px solid #0ff;
+    }
   </style>
-  </head>
-  <body>
-  
-  <div id="title-screen">
-    <img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/logo.png?raw=true" alt="PhasmaPhoney Logo" />
-  </div> 
-  
-  
-  <div id="main-scene">
-    <div class="layered-scene">
-  
-  <img src="background.png" class="layer background fullscreen-layer" />
-  <canvas id="rain" class="rain-canvas fullscreen-layer"></canvas>
-  <img src="rainblock.png" class="rain-block-front fullscreen-layer" />
-  <div class="lightning fullscreen-layer" id="lightning"></div>
-  <img src="foreground.png" class="foreground fullscreen-layer" />
-  <canvas id="orbs" class="orb-canvas fullscreen-layer"></canvas>
-  
-    </div>
-  </div>
-  <div id="hud-status">
-    <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
-    <p><strong>Sanity:</strong> <span id="sanity-bar">100</span></p>
-    <p><strong>Location:</strong> <span id="map-display">Van</span></p>
-  </div>
-  <script>
-  function log(msg) {
-    const logBox = document.getElementById("ada-log");
-    const p = document.createElement("p");
-    p.textContent = msg;
-    logBox.appendChild(p);
-    logBox.scrollTop = logBox.scrollHeight;
-  }
-  
-  
-  // === RAIN (DIAGONAL) ===
-  const rainCanvas = document.getElementById("rain");
-  const rainCtx = rainCanvas.getContext("2d");
-  let rainWidth = rainCanvas.width = window.innerWidth;
-  let rainHeight = rainCanvas.height = window.innerHeight;
-  
-  function createRaindrop() {
-    return {
-      x: Math.random() * rainWidth,
-      y: Math.random() * rainHeight,
-      length: Math.random() * 20 + 10,
-      speedX: -3,
-      speedY: Math.random() * 6 + 6
-    };
-  }
-  
-  let raindrops = Array.from({ length: 150 }, createRaindrop);
-  
-  function animateRain() {
-    rainCtx.clearRect(0, 0, rainWidth, rainHeight);
-    rainCtx.strokeStyle = "rgba(173,216,230,0.3)";
-    rainCtx.lineWidth = 1.2;
-    for (let drop of raindrops) {
-      rainCtx.beginPath();
-      rainCtx.moveTo(drop.x, drop.y);
-      rainCtx.lineTo(drop.x + drop.speedX * 4, drop.y + drop.length);
-      rainCtx.stroke();
-      drop.x += drop.speedX;
-      drop.y += drop.speedY;
-      if (drop.y > rainHeight || drop.x < 0) {
-        Object.assign(drop, createRaindrop());
-        drop.y = 0;
-      }
+</head>
+<body>
+
+<div id="title-screen">
+  <img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/logo.png?raw=true" alt="PhasmaPhoney Logo" />
+</div>
+
+<div id="main-scene">[...layers and canvases will go here...]</div>
+<div id="hud-status">
+  <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
+  <p><strong>Sanity:</strong> <span id="sanity-bar">100</span></p>
+  <p><strong>Location:</strong> <span id="map-display">Van</span></p>
+</div>
+
+<script>
+// === GAME DATA STRUCTURES ===
+const game = {
+  inventory: [],
+  vanStock: {},
+  turn: 0,
+  sanity: 100,
+  ghost: null,
+  ghostRoom: null,
+  position: [0, 0],
+  roomMap: [
+    ["Van", "Foyer", "Kitchen"],
+    ["Basement", "Living Room", "Bathroom"],
+    ["Garage", "Bedroom", "Storage"]
+  ]
+};
+
+const evidenceTypes = [
+  "EMF Level 5", "Spirit Box", "Fingerprints", "Ghost Writing",
+  "Freezing Temps", "D.O.T.S", "Orbs"
+];
+
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
+  "Camera", "Smudge", "Candle", "Crucifix", "Salt"
+];
+
+const evidenceToTool = {
+  "EMF Level 5": "emf", "Spirit Box": "spirit box", "Fingerprints": "uv",
+  "Ghost Writing": "book", "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots", "Orbs": "camera"
+};
+
+const evidenceMap = {
+  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
+  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
+  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
+  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
+  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
+  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
+  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
+  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
+  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
+  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
+  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
+  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
+};
+
+const ghostProfiles = Object.fromEntries(
+  Object.entries(evidenceMap).map(([name, ev]) => [
+    name,
+    {
+      tools: ev.map(e => evidenceToTool[e]),
+      roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
     }
-    requestAnimationFrame(animateRain);
-  }
-  animateRain();
-  
-  window.addEventListener("resize", () => {
-    rainWidth = rainCanvas.width = window.innerWidth;
-    rainHeight = rainCanvas.height = window.innerHeight;
-  });
-  // === LIGHTNING FLASHES ===
-  const lightning = document.getElementById("lightning");
-  function triggerLightning() {
-    lightning.style.opacity = "0.5";
-    setTimeout(() => lightning.style.opacity = "0", 100);
-  }
-  setInterval(() => {
-    if (Math.random() > 0.7) triggerLightning();
-  }, 6000);
-  
-  // === FLOATING ORBS ===
-  const orbCanvas = document.getElementById("orbs");
-  const orbCtx = orbCanvas.getContext("2d");
-  let orbWidth = orbCanvas.width = window.innerWidth;
-  let orbHeight = orbCanvas.height = window.innerHeight;
-  
-  function createOrb() {
-    return {
-      x: Math.random() * orbWidth,
-      y: Math.random() * orbHeight,
-      vx: (Math.random() - 0.5) * 0.8,
-      vy: (Math.random() - 0.5) * 0.8,
-      baseRadius: Math.random() * 2 + 1,
-      radius: 1,
-      opacity: 0,
-      fadeIn: true,
-      tick: 0,
-      changeInterval: Math.floor(Math.random() * 150 + 50)
-    };
-  }
-  
-  let orbs = Array.from({ length: 15 }, createOrb);
-  
-  function animateOrbs() {
-    orbCtx.clearRect(0, 0, orbWidth, orbHeight);
-    for (let orb of orbs) {
-      orb.tick++;
-      orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
-      orb.opacity += orb.fadeIn ? 0.01 : -0.001;
-      if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
-      if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
-      if (orb.tick % orb.changeInterval === 0) {
-        const angle = Math.random() * 2 * Math.PI;
-        const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
-        orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
-        orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
-      }
-      orb.x += orb.vx; orb.y += orb.vy;
-      if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= orbWidth) orb.vx *= -1;
-      if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= orbHeight) orb.vy *= -1;
-      orbCtx.beginPath();
-      orbCtx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-      orbCtx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-      orbCtx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
-      orbCtx.shadowBlur = 10 + orb.opacity * 10;
-      orbCtx.fill();
-    }
-    requestAnimationFrame(animateOrbs);
-  }
-  animateOrbs();
-  
-  window.addEventListener("resize", () => {
-    orbWidth = orbCanvas.width = window.innerWidth;
-    orbHeight = orbCanvas.height = window.innerHeight;
-  });
-  </script>
-  
-  <!-- EVIDENCE PANEL -->
-  <div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
-    <h3 style="margin:0;">Evidence</h3>
-    <div id="evidence-checklist" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
-    <p id="remaining-ghosts" style="color:#0f0;"></p>
-  </div>
-  
-  <!-- MAIN GAME UI OUTPUT -->
-  <div id="game-ui" style="padding:12px;color:white;"></div>
-  <!-- LOADOUT SELECTION -->
-  <div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-    <h2>Select Loadout (Max 3)</h2>
-    <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
-    <button onclick="confirmLoadout()">Confirm Loadout</button>
-    <button onclick="randomLoadout()">Random Loadout</button>
-  </div>
-  
-  <!-- VAN PANEL -->
-  <div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-    <h3>Van Inventory</h3>
-    <div id="van-button-list" style="display:flex;flex-direction:column;gap:6px;"></div>
-    <button onclick="closeVanPanel()">Done</button>
-  </div>
-  
-  <!-- GUESS GHOST POPUP -->
-  <div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-    <h3>Who is the Ghost?</h3>
-    <div id="guess-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-    <button onclick="closeGuess()">Cancel</button>
-  </div>
-  
-  <!-- ITEM POPUP -->
-  <div id="item-popup" style="display:none;position:absolute;top:10%;left:20%;right:20%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-    <h3>Choose Item</h3>
-    <div id="item-button-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-    <button onclick="closeItemPopup()">Cancel</button>
-  </div>
-  
-  <!-- JOURNAL -->
-  <div id="journal-screen" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-    <h3>Notes</h3>
-    <textarea id="journal-text" placeholder="Your notes..." style="width:100%;height:150px;"></textarea><br>
-    <button onclick="closeJournal()">Close</button>
-  </div>
-  
-  <!-- ADA COMMAND PANEL -->
-  <div id="ada-modal" style="display:none;position:absolute;bottom:0;left:0;width:100%;background:#000;border-top:1px solid #0ff;padding:10px;z-index:5;">
-    <div id="ada-log" style="height:200px;overflow-y:auto;background:#000;color:#0ff;padding:6px;border:1px solid #0ff;margin-bottom:8px;"></div>
-    <div style="display:flex;flex-wrap:wrap;gap:6px;">
-      <button onclick="handleCommand('move')">Move</button>
-      <button onclick="handleCommand('map')">Map</button>
-      <button onclick="handleCommand('inventory')">Inventory</button>
-      <button onclick="handleCommand('van')">Visit Van</button>
-      <button onclick="handleCommand('end')">End</button>
-      <button onclick="openItemPopup()">Use Items</button>
-      <button onclick="openGuess()">Guess</button>
-      <button onclick="openJournal()">Open Journal</button>
-    </div>
-  </div>
-  <script>
-  function ambientNarration(room, ghostHere) {
-    const sanity = game.sanity;
-    let thoughts = [];
-  
-    // === ENVIRONMENTAL FLAVOR ===
-    const roomDescriptions = {
-      "Foyer": ["The old foyer creaks with age.", "Dim light spills across the dusty floor."],
-      "Kitchen": ["The refrigerator hums softly.", "Utensils lie scattered like forgotten memories."],
-      "Bathroom": ["A faint drip echoes from the sink.", "The mirror is too fogged to see yourself clearly."],
-      "Basement": ["It smells of mold and still air.", "You can barely see past the shadows."],
-      "Living Room": ["An old couch slumps in the corner.", "Ashes rest cold in the fireplace."],
-      "Bedroom": ["The sheets are tangled and cold.", "Someone left the closet door half open."],
-      "Garage": ["Tools hang neatly on the wall, untouched.", "Oil stains mark the concrete floor."],
-      "Storage": ["Dust floats like static in the beam of your light.", "Boxes are stacked like forgotten secrets."]
-    };
-  
-    if (roomDescriptions[room]) {
-      thoughts.push(...roomDescriptions[room]);
-    } else {
-      thoughts.push("The air feels still in this room.");
-    }
-  
-    // === SANITY-BASED THOUGHTS ===
-    if (sanity >= 80) {
-      thoughts.push(
-        "You feel confident and focused.",
-        "Your breathing is steady.",
-        "Nothing feels off... yet."
-      );
-    } else if (sanity >= 50) {
-      thoughts.push(
-        "You try to shake off the tension.",
-        "Your nerves are holding for now.",
-        "Something feels... off, but you press on."
-      );
-    } else if (sanity >= 30) {
-      thoughts.push(
-        "Your thoughts drift. Was that a sound?",
-        "You’re starting to feel watched.",
-        "You swear something just moved in the corner of your vision."
-      );
-    } else {
-      thoughts.push(
-        "Your head spins. You can’t trust what you're seeing.",
-        "Paranoia creeps in like a chill wind.",
-        "Every shadow feels like it's waiting for you."
-      );
-    }
-  
-    // === FINAL THOUGHT OUTPUT ===
-    const randomThought = thoughts[Math.floor(Math.random() * thoughts.length)];
-    log(randomThought);
-    speak(randomThought);
-  }
-  function speak(text) {
-    if (!narrationEnabled) return;
-  
-    const utter = new SpeechSynthesisUtterance(text);
-  
-    // Find a feminine English voice
-    const voices = speechSynthesis.getVoices();
-    utter.voice = voices.find(v =>
-      v.lang.startsWith("en") &&
-      /female|woman|Fiona|Google UK English Female|Samantha|Karen|Moira/i.test(v.name)
-    ) || voices[0];
-  
-    utter.pitch = 1.6;    // Higher pitch sounds more flirtatious
-    utter.rate = 0.85;    // Slightly slower for a sultry effect
-    utter.volume = 1.0;
-  
-    speechSynthesis.speak(utter);
-  }
-  </script>
-  <script>
-  const game = {
-    inventory: [],
-    vanStock: {},
-    turn: 0,
-    sanity: 100,
-    ghost: null,
-    ghostRoom: null,
-    position: [0, 0],
-    roomMap: [
-      ["Van", "Foyer", "Kitchen"],
-      ["Basement", "Living Room", "Bathroom"],
-      ["Garage", "Bedroom", "Storage"]
-    ]
-  };
-  
-  // 1. Evidence Types
-  
-  const evidenceTypes = [
-    "EMF Level 5",
-    "Spirit Box",
-    "Fingerprints",
-    "Ghost Writing",
-    "Freezing Temps",
-    "D.O.T.S",
-    "Orbs",
-  ];
-  
-  // 2. Loadout Items
-  
-  const allLoadoutItems = [
-    "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
-    "Camera", "Smudge", "Candle", "Crucifix", "Salt"
-  ];
-  </script>
-  <script>
-  
-  // 3. Evidence Map (used by ghostProfiles)
-  
-  const evidenceMap = {
-    "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
-    "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
-    "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
-    "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
-    "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
-    "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
-    "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
-    "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
-    "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
-    "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
-    "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
-    "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
-    "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
-    "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
-    "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
-    "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
-    "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
-    "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
-    "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
-    "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
-    "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
-    "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
-    "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
-    "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
-  };
-  
-  // 4. Evidence → Tool map (used by ghostProfiles)
-  const evidenceToTool = {
-    "EMF Level 5": "emf",
-    "Spirit Box": "spirit box",
-    "Fingerprints": "uv",
-    "Ghost Writing": "book",
-    "Freezing Temps": "thermometer",
-    "D.O.T.S": "dots",
-    "Orbs": "camera"
-  };
-  
-  // 5. Ghost Profiles (depends on both evidenceMap and evidenceToTool)
-  
-  const ghostProfiles = Object.fromEntries(
-    Object.entries(evidenceMap).map(([name, ev]) => [
-      name,
-      {
-        tools: ev.map(e => evidenceToTool[e]),
-        roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
-      }
-    ])
-  );
-  
-  // 6. Evidence selection & narrator flag
-  
-  
-  const selectedEvidence = new Set();
-  let narrationEnabled = true;
-  function ambientNarration(room, ghostHere) {
-    const sanity = game.sanity;
-    let thoughts = [];
-  
-  function updateMap() {
-    const room = game.roomMap[game.position[0]][game.position[1]];
-    document.getElementById("map-display").textContent = "Room: " + room;
-  }
-  
-  function handleCommand(cmd) {
-    game.turn++;
-    document.getElementById("turn-counter").textContent = game.turn;
-  
-    switch (cmd.toLowerCase()) {
-      case "move":
-        game.position[1] = (game.position[1] + 1) % 3;
-        game.sanity = Math.max(0, game.sanity - 5);
-        document.getElementById("sanity-bar").textContent = game.sanity;
-        updateMap();
-        const movedRoom = game.roomMap[game.position[0]][game.position[1]];
-        log("You moved to " + movedRoom + ".");
-        ambientNarration(movedRoom, game.ghostRoom === movedRoom ? game.ghost : null);
-        break;
-  
-      case "map":
-        updateMap();
-        break;
-  
-      case "inventory":
-        log("Your gear: " + (game.inventory.length ? game.inventory.join(", ") : "nothing yet"));
-        break;
-  
-      case "van":
-        openVanPanel();
-        break;
-  
-      case "end":
-        endGame(false);
-        break;
-  
-      default:
-        log("Unknown command.");
-    }
-  }
-  </script>
-  <script>
-  
-  function useItem(item) {
-    if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
-      log("Nothing happens.");
-      return;
-    }
-  
-    const ghost = ghostProfiles[game.ghost];
-    const room = game.roomMap[game.position[0]][game.position[1]];
-    const inRoom = room === game.ghostRoom;
-  
-    switch (item.toLowerCase()) {
-      case "emf":
-        log(inRoom && ghost.tools.includes("emf") ? "EMF spikes to 5!" : "No EMF detected.");
-        if (inRoom && ghost.tools.includes("emf")) checkEvidence("EMF Level 5");
-        break;
-      case "spirit box":
-        log(inRoom && ghost.tools.includes("spirit box") ? "Spirit Box crackles!" : "Only static.");
-        if (inRoom && ghost.tools.includes("spirit box")) checkEvidence("Spirit Box");
-        break;
-      case "uv":
-      case "fingerprints":
-        log(inRoom && ghost.tools.includes("uv") ? "Fingerprints found!" : "No prints.");
-        if (inRoom && ghost.tools.includes("uv")) checkEvidence("Fingerprints");
-        break;
-      case "book":
-        log(inRoom && ghost.tools.includes("book") ? "Ghost writing appears!" : "The pages remain blank.");
-        if (inRoom && ghost.tools.includes("book")) checkEvidence("Ghost Writing");
-        break;
-      case "thermometer":
-        log(inRoom && ghost.tools.includes("thermometer") ? "Freezing temps!" : "It's warm.");
-        if (inRoom && ghost.tools.includes("thermometer")) checkEvidence("Freezing Temps");
-        break;
-      case "dots":
-        log(inRoom && ghost.tools.includes("dots") ? "Motion detected!" : "No movement.");
-        if (inRoom && ghost.tools.includes("dots")) checkEvidence("D.O.T.S");
-        break;
-      case "camera":
-        log(inRoom && ghost.tools.includes("camera") ? "Orbs spotted!" : "Nothing on film.");
-        if (inRoom && ghost.tools.includes("camera")) checkEvidence("Orbs");
-        break;
-      case "smudge":
-        if (game.vanStock["Smudge"]) {
-          game.vanStock["Smudge"]--;
-          log("Smudge used. The air clears.");
-        } else log("No smudge sticks left.");
-        break;
-      case "candle":
-        log("The candle flickers mysteriously.");
-        break;
-      case "crucifix":
-        log("You place the crucifix nearby.");
-        break;
-      case "salt":
-        log("You sprinkle salt on the floor.");
-        break;
-      default:
-        log("Nothing happens.");
-    }
-  }
-  
-  function openItemPopup() {
-    const popup = document.getElementById("item-popup");
-    const list = document.getElementById("item-button-list");
-    list.innerHTML = "";
-  
-    game.inventory.forEach(item => {
-      const b = document.createElement("button");
-      b.textContent = item;
-      b.onclick = () => {
-        useItem(item);
-        closeItemPopup();
-      };
-      list.appendChild(b);
-    });
-  
-    popup.style.display = "block";
-  }
-  
-  function closeItemPopup() {
-    document.getElementById("item-popup").style.display = "none";
-  }
-  
-  function openGuess() {
-    const popup = document.getElementById("guess-popup");
-    const list = document.getElementById("guess-list");
-    list.innerHTML = "";
-  
-    Object.keys(ghostProfiles).forEach(g => {
-      const btn = document.createElement("button");
-      btn.textContent = g.toUpperCase();
-      btn.onclick = () => {
-        makeGuess(g);
-        closeGuess();
-      };
-      list.appendChild(btn);
-    });
-  
-    popup.style.display = "block";
-  }
-  
-  function closeGuess() {
-    document.getElementById("guess-popup").style.display = "none";
-  }
-  
-  function makeGuess(name) {
-    if (name.toLowerCase() === game.ghost.toLowerCase()) {
-      log("✅ Correct! It was " + name.toUpperCase());
-      endGame(true);
-    } else {
-      log("❌ Incorrect. It was " + game.ghost.toUpperCase());
-      endGame(false);
-    }
-  }
-  
-  function endGame(success) {
-    document.getElementById("ada-modal").style.display = "none";
-    alert(success ? "🎉 Victory!" : "💀 Game Over");
-    const ui = document.getElementById("game-ui");
-    const btn = document.createElement("button");
-    btn.textContent = "🔁 Restart";
-    btn.onclick = () => location.reload();
-    ui.innerHTML = "";
-    ui.appendChild(btn);
-  }
-  </script>
-  <script>
-  function renderEvidence() {
-    const container = document.getElementById("evidence-checklist");
-    container.innerHTML = "";
-  
-    evidenceTypes.forEach(ev => {
-      const label = document.createElement("label");
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.checked = selectedEvidence.has(ev);
-      checkbox.onchange = () => {
-        if (checkbox.checked) selectedEvidence.add(ev);
-        else selectedEvidence.delete(ev);
-        renderEvidence();
-      };
-      label.appendChild(checkbox);
-      label.append(" " + ev);
-      container.appendChild(label);
-    });
-  
-    const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
-      [...selectedEvidence].every(ev => evs.includes(ev))
-    ).map(([ghost]) => ghost);
-  
-    document.getElementById("remaining-ghosts").textContent =
-      match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
-  }
-  
-  function loadJournal() {
-    const val = localStorage.getItem("journal");
-    if (val) document.getElementById("journal-text").value = val;
-  document.getElementById("journal-text").addEventListener("input", saveJournal);
-  
-  }
-  
-  function saveJournal() {
-    localStorage.setItem("journal", document.getElementById("journal-text").value);
-  }
-  
-  function openJournal() {
-    document.getElementById("journal-screen").style.display = "block";
-  }
-  
-  function closeJournal() {
-    saveJournal();
-    document.getElementById("journal-screen").style.display = "none";
-}
-	
-  function startGameFlow() {
+  ])
+);
+</script>
+
+<!-- === TITLE SCREEN TRANSITION + SCENE SETUP === -->
+<script>
+function startGameFlow() {
   const title = document.getElementById("title-screen");
   const loadout = document.getElementById("loadout-screen");
+
+  // Fade out logo
   title.style.opacity = 0;
 
   setTimeout(() => {
@@ -835,34 +150,346 @@ footer {
   }, 1500);
 }
 
-  </script>
+document.addEventListener("DOMContentLoaded", () => {
+  renderLoadoutOptions();
+  renderEvidence();
+  loadJournal();
+  window.addEventListener("beforeunload", saveJournal);
+  setTimeout(startGameFlow, 7000); // Begin after title animation
+});
+</script>
 
-    <script>
-  function randomLoadout() {
-    const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
-    checkboxes.forEach(cb => cb.checked = false);
-  
-    const shuffled = checkboxes.sort(() => 0.5 - Math.random()).slice(0, 3);
-    shuffled.forEach(cb => cb.checked = true);
+<!-- === SCENE LAYERS (RAIN, ORBS, FOREGROUND) === -->
+<script>
+const rainCanvas = document.createElement("canvas");
+rainCanvas.id = "rain";
+rainCanvas.className = "rain-canvas fullscreen-layer";
+document.getElementById("main-scene").appendChild(rainCanvas);
+
+const orbCanvas = document.createElement("canvas");
+orbCanvas.id = "orbs";
+orbCanvas.className = "orb-canvas fullscreen-layer";
+document.getElementById("main-scene").appendChild(orbCanvas);
+
+const lightning = document.createElement("div");
+lightning.id = "lightning";
+lightning.className = "lightning fullscreen-layer";
+document.getElementById("main-scene").appendChild(lightning);
+
+const rainCtx = rainCanvas.getContext("2d");
+const orbCtx = orbCanvas.getContext("2d");
+
+function resizeCanvas() {
+  rainCanvas.width = orbCanvas.width = window.innerWidth;
+  rainCanvas.height = orbCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+// === RAIN LOGIC ===
+let raindrops = Array.from({ length: 150 }, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  length: Math.random() * 20 + 10,
+  speedX: -3,
+  speedY: Math.random() * 6 + 6
+}));
+
+function animateRain() {
+  rainCtx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+  rainCtx.strokeStyle = "rgba(173,216,230,0.3)";
+  rainCtx.lineWidth = 1.2;
+
+  for (let drop of raindrops) {
+    rainCtx.beginPath();
+    rainCtx.moveTo(drop.x, drop.y);
+    rainCtx.lineTo(drop.x + drop.speedX * 4, drop.y + drop.length);
+    rainCtx.stroke();
+
+    drop.x += drop.speedX;
+    drop.y += drop.speedY;
+    if (drop.y > rainCanvas.height || drop.x < 0) {
+      drop.x = Math.random() * window.innerWidth;
+      drop.y = 0;
+    }
   }
-  
-  function renderLoadoutOptions() {
-    const container = document.getElementById("item-selection");
-    container.innerHTML = "";
-  
-    allLoadoutItems.forEach(item => {
-      const label = document.createElement("label");
-      label.style.marginRight = "10px";
-      const checkbox = document.createElement("input");
-      checkbox.type = "checkbox";
-      checkbox.value = item;
-      label.appendChild(checkbox);
-      label.append(" " + item);
-      container.appendChild(label);
-    });
+  requestAnimationFrame(animateRain);
+}
+animateRain();
+
+// === ORB LOGIC ===
+let orbs = Array.from({ length: 15 }, () => ({
+  x: Math.random() * window.innerWidth,
+  y: Math.random() * window.innerHeight,
+  vx: (Math.random() - 0.5) * 0.8,
+  vy: (Math.random() - 0.5) * 0.8,
+  baseRadius: Math.random() * 2 + 1,
+  radius: 1,
+  opacity: 0,
+  fadeIn: true,
+  tick: 0,
+  changeInterval: Math.floor(Math.random() * 150 + 50)
+}));
+
+function animateOrbs() {
+  orbCtx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
+  for (let orb of orbs) {
+    orb.tick++;
+    orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
+    orb.opacity += orb.fadeIn ? 0.01 : -0.001;
+    if (orb.opacity >= 0.6) { orb.opacity = 0.6; orb.fadeIn = false; }
+    if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
+    if (orb.tick % orb.changeInterval === 0) {
+      const angle = Math.random() * 2 * Math.PI;
+      const speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
+      orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
+      orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
+    }
+    orb.x += orb.vx; orb.y += orb.vy;
+    if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= orbCanvas.width) orb.vx *= -1;
+    if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= orbCanvas.height) orb.vy *= -1;
+
+    orbCtx.beginPath();
+    orbCtx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+    orbCtx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+    orbCtx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
+    orbCtx.shadowBlur = 10 + orb.opacity * 10;
+    orbCtx.fill();
   }
-  
-  function confirmLoadout() {
+  requestAnimationFrame(animateOrbs);
+}
+animateOrbs();
+function createOrb() {
+  return {
+    x: Math.random() * orbCanvas.width,
+    y: Math.random() * orbCanvas.height,
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: (Math.random() - 0.5) * 0.8,
+    baseRadius: Math.random() * 2 + 1,
+    radius: 1,
+    opacity: 0,
+    fadeIn: true,
+    tick: 0,
+    changeInterval: Math.floor(Math.random() * 150 + 50)
+  };
+}
+
+// === LIGHTNING FLASHES ===
+function triggerLightning() {
+  lightning.style.opacity = "0.5";
+  setTimeout(() => lightning.style.opacity = "0", 100);
+}
+setInterval(() => {
+  if (Math.random() > 0.7) triggerLightning();
+}, 6000);
+</script>
+
+<script>
+// === GAME STATE ===
+const game = {
+  inventory: [],
+  vanStock: {},
+  turn: 0,
+  sanity: 100,
+  ghost: null,
+  ghostRoom: null,
+  position: [0, 0],
+  roomMap: [
+    ["Van", "Foyer", "Kitchen"],
+    ["Basement", "Living Room", "Bathroom"],
+    ["Garage", "Bedroom", "Storage"]
+  ]
+};
+
+// === EVIDENCE + TOOLS ===
+const evidenceTypes = [
+  "EMF Level 5", "Spirit Box", "Fingerprints",
+  "Ghost Writing", "Freezing Temps", "D.O.T.S", "Orbs"
+];
+
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
+  "Camera", "Smudge", "Candle", "Crucifix", "Salt"
+];
+
+const evidenceToTool = {
+  "EMF Level 5": "emf",
+  "Spirit Box": "spirit box",
+  "Fingerprints": "uv",
+  "Ghost Writing": "book",
+  "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots",
+  "Orbs": "camera"
+};
+
+const evidenceMap = {
+  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
+  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
+  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
+  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
+  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
+  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
+  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
+  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
+  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
+  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
+  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
+  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
+  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
+  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
+};
+
+const ghostProfiles = Object.fromEntries(
+  Object.entries(evidenceMap).map(([name, ev]) => [
+    name,
+    {
+      tools: ev.map(e => evidenceToTool[e]),
+      roomHint: ["Foyer", "Kitchen", "Bathroom", "Garage", "Bedroom", "Living Room"][Math.floor(Math.random() * 6)]
+    }
+  ])
+);
+
+// === UI INTERACTIONS ===
+const selectedEvidence = new Set();
+let narrationEnabled = true;
+
+function renderEvidence() {
+  const container = document.getElementById("evidence-checklist");
+  container.innerHTML = "";
+
+  evidenceTypes.forEach(ev => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedEvidence.has(ev);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedEvidence.add(ev);
+      else selectedEvidence.delete(ev);
+      renderEvidence();
+    };
+    label.appendChild(checkbox);
+    label.append(" " + ev);
+    container.appendChild(label);
+  });
+
+  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
+    [...selectedEvidence].every(ev => evs.includes(ev))
+  ).map(([ghost]) => ghost);
+
+  document.getElementById("remaining-ghosts").textContent =
+    match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
+}
+
+function updateMap() {
+  const room = game.roomMap[game.position[0]][game.position[1]];
+  document.getElementById("map-display").textContent = room;
+}
+
+function ambientNarration(room) {
+  const thoughts = [];
+  const sanity = game.sanity;
+  const descriptions = {
+    "Foyer": ["Dust floats in the air.", "The foyer is silent."],
+    "Kitchen": ["The sink is dripping.", "A fridge hums steadily."],
+    "Basement": ["It's damp and cold down here.", "Shadows cling to corners."],
+    "Living Room": ["The TV flickers for a moment.", "A couch faces the darkness."],
+    "Bathroom": ["The mirror is cracked.", "A breeze rustles the curtain."],
+    "Bedroom": ["The bed is unmade.", "You sense someone's breath."],
+    "Garage": ["A wrench lies on the ground.", "Something shifted in the dark."],
+    "Storage": ["Boxes tower ominously.", "You hear scratching."]
+  };
+
+  if (descriptions[room]) thoughts.push(...descriptions[room]);
+
+  if (sanity >= 80) thoughts.push("You feel steady.");
+  else if (sanity >= 50) thoughts.push("You feel tense.");
+  else if (sanity >= 30) thoughts.push("Your nerves are shaking.");
+  else thoughts.push("You can barely think straight.");
+
+  const pick = thoughts[Math.floor(Math.random() * thoughts.length)];
+  log(pick);
+  speak(pick);
+}
+
+function speak(text) {
+  if (!narrationEnabled) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  const voices = speechSynthesis.getVoices();
+  utter.voice = voices.find(v =>
+    v.lang.startsWith("en") && /female|Samantha|Moira/i.test(v.name)
+  ) || voices[0];
+  utter.pitch = 1.5;
+  utter.rate = 0.85;
+  utter.volume = 1;
+  speechSynthesis.speak(utter);
+}
+
+function handleCommand(cmd) {
+  game.turn++;
+  document.getElementById("turn-counter").textContent = game.turn;
+  if (cmd === "move") {
+    game.position[1] = (game.position[1] + 1) % 3;
+    game.sanity = Math.max(0, game.sanity - 5);
+    document.getElementById("sanity-bar").textContent = game.sanity;
+    const room = game.roomMap[game.position[0]][game.position[1]];
+    updateMap();
+    log("Moved to " + room);
+    ambientNarration(room);
+  } else if (cmd === "map") {
+    updateMap();
+  } else if (cmd === "inventory") {
+    log("Inventory: " + (game.inventory.join(", ") || "none"));
+  } else if (cmd === "van") {
+    openVanPanel();
+  } else if (cmd === "end") {
+    endGame(false);
+  } else {
+    log("Unknown command.");
+  }
+}
+
+function log(msg) {
+  const logBox = document.getElementById("ada-log");
+  const p = document.createElement("p");
+  p.textContent = msg;
+  logBox.appendChild(p);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+function randomLoadout() {
+  const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
+  checkboxes.forEach(cb => cb.checked = false);
+  const shuffled = checkboxes.sort(() => 0.5 - Math.random()).slice(0, 3);
+  shuffled.forEach(cb => cb.checked = true);
+}
+
+function renderLoadoutOptions() {
+  const container = document.getElementById("item-selection");
+  container.innerHTML = "";
+
+  allLoadoutItems.forEach(item => {
+    const label = document.createElement("label");
+    label.style.marginRight = "10px";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = item;
+    label.appendChild(checkbox);
+    label.append(" " + item);
+    container.appendChild(label);
+  });
+}
+
+function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
 
@@ -873,12 +500,10 @@ footer {
     game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
   });
 
-  // 🟢 Random ghost + ghostRoom
   const keys = Object.keys(ghostProfiles);
   game.ghost = keys[Math.floor(Math.random() * keys.length)];
   game.ghostRoom = ghostProfiles[game.ghost].roomHint;
 
-  // ✅ Hide loadout screen and show game HUD
   document.getElementById("loadout-screen").style.display = "none";
   document.getElementById("main-scene").style.display = "block";
   document.getElementById("hud-status").style.display = "block";
@@ -889,8 +514,200 @@ footer {
   loadJournal();
   log("Your investigation begins...");
 }
-  </script>
-  <footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v.1-Alpha 
-  </footer>
-  </body></html>
-  
+
+function loadJournal() {
+  const val = localStorage.getItem("journal");
+  if (val) document.getElementById("journal-text").value = val;
+  document.getElementById("journal-text").addEventListener("input", saveJournal);
+}
+function saveJournal() {
+  localStorage.setItem("journal", document.getElementById("journal-text").value);
+}
+function openJournal() {
+  document.getElementById("journal-screen").style.display = "block";
+}
+function closeJournal() {
+  saveJournal();
+  document.getElementById("journal-screen").style.display = "none";
+}
+</script>
+
+<script>
+function useItem(item) {
+  if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
+    log("Nothing happens.");
+    return;
+  }
+
+  const ghost = ghostProfiles[game.ghost];
+  const room = game.roomMap[game.position[0]][game.position[1]];
+  const inRoom = room === game.ghostRoom;
+
+  switch (item.toLowerCase()) {
+    case "emf":
+      log(inRoom && ghost.tools.includes("emf") ? "EMF spikes to 5!" : "No EMF detected.");
+      if (inRoom && ghost.tools.includes("emf")) checkEvidence("EMF Level 5");
+      break;
+    case "spirit box":
+      log(inRoom && ghost.tools.includes("spirit box") ? "Spirit Box crackles!" : "Only static.");
+      if (inRoom && ghost.tools.includes("spirit box")) checkEvidence("Spirit Box");
+      break;
+    case "uv":
+    case "fingerprints":
+      log(inRoom && ghost.tools.includes("uv") ? "Fingerprints found!" : "No prints.");
+      if (inRoom && ghost.tools.includes("uv")) checkEvidence("Fingerprints");
+      break;
+    case "book":
+      log(inRoom && ghost.tools.includes("book") ? "Ghost writing appears!" : "The pages remain blank.");
+      if (inRoom && ghost.tools.includes("book")) checkEvidence("Ghost Writing");
+      break;
+    case "thermometer":
+      log(inRoom && ghost.tools.includes("thermometer") ? "Freezing temps!" : "It's warm.");
+      if (inRoom && ghost.tools.includes("thermometer")) checkEvidence("Freezing Temps");
+      break;
+    case "dots":
+      log(inRoom && ghost.tools.includes("dots") ? "Motion detected!" : "No movement.");
+      if (inRoom && ghost.tools.includes("dots")) checkEvidence("D.O.T.S");
+      break;
+    case "camera":
+      log(inRoom && ghost.tools.includes("camera") ? "Orbs spotted!" : "Nothing on film.");
+      if (inRoom && ghost.tools.includes("camera")) checkEvidence("Orbs");
+      break;
+    case "smudge":
+      if (game.vanStock["Smudge"]) {
+        game.vanStock["Smudge"]--;
+        log("Smudge used. The air clears.");
+      } else log("No smudge sticks left.");
+      break;
+    case "candle":
+      log("The candle flickers mysteriously.");
+      break;
+    case "crucifix":
+      log("You place the crucifix nearby.");
+      break;
+    case "salt":
+      log("You sprinkle salt on the floor.");
+      break;
+    default:
+      log("Nothing happens.");
+  }
+}
+
+function openItemPopup() {
+  const popup = document.getElementById("item-popup");
+  const list = document.getElementById("item-button-list");
+  list.innerHTML = "";
+
+  game.inventory.forEach(item => {
+    const b = document.createElement("button");
+    b.textContent = item;
+    b.onclick = () => {
+      useItem(item);
+      closeItemPopup();
+    };
+    list.appendChild(b);
+  });
+
+  popup.style.display = "block";
+}
+function closeItemPopup() {
+  document.getElementById("item-popup").style.display = "none";
+}
+
+function openVanPanel() {
+  const panel = document.getElementById("van-panel");
+  const list = document.getElementById("van-button-list");
+  list.innerHTML = "";
+
+  Object.keys(game.vanStock).forEach(item => {
+    const b = document.createElement("button");
+    b.textContent = `${item} (${game.vanStock[item]})`;
+    b.onclick = () => {
+      if (game.inventory.length >= 3) return alert("Inventory full (max 3).");
+      if (game.vanStock[item] <= 0) return alert("Out of stock.");
+      game.inventory.push(item);
+      game.vanStock[item]--;
+      log(`Took ${item} from van.`);
+      openVanPanel(); // re-render
+    };
+    list.appendChild(b);
+  });
+
+  panel.style.display = "block";
+}
+function closeVanPanel() {
+  document.getElementById("van-panel").style.display = "none";
+}
+
+function openGuess() {
+  const popup = document.getElementById("guess-popup");
+  const list = document.getElementById("guess-list");
+  list.innerHTML = "";
+
+  Object.keys(ghostProfiles).forEach(g => {
+    const btn = document.createElement("button");
+    btn.textContent = g.toUpperCase();
+    btn.onclick = () => {
+      makeGuess(g);
+      closeGuess();
+    };
+    list.appendChild(btn);
+  });
+
+  popup.style.display = "block";
+}
+function closeGuess() {
+  document.getElementById("guess-popup").style.display = "none";
+}
+function makeGuess(name) {
+  if (name.toLowerCase() === game.ghost.toLowerCase()) {
+    log("✅ Correct! It was " + name.toUpperCase());
+    endGame(true);
+  } else {
+    log("❌ Incorrect. It was " + game.ghost.toUpperCase());
+    endGame(false);
+  }
+}
+function endGame(success) {
+  document.getElementById("ada-modal").style.display = "none";
+  alert(success ? "🎉 Victory!" : "💀 Game Over");
+
+  const ui = document.getElementById("game-ui");
+  const btn = document.createElement("button");
+  btn.textContent = "🔁 Restart";
+  btn.onclick = () => location.reload();
+  ui.innerHTML = "";
+  ui.appendChild(btn);
+}
+
+function checkEvidence(ev) {
+  if (!selectedEvidence.has(ev)) {
+    selectedEvidence.add(ev);
+    renderEvidence();
+  }
+}
+</script>
+
+<script>
+// === START GAME FLOW ===
+function startGameFlow() {
+  const title = document.getElementById("title-screen");
+  const loadout = document.getElementById("loadout-screen");
+
+  title.style.opacity = 0;
+  setTimeout(() => {
+    title.style.display = "none";
+    loadout.style.display = "block";
+    setTimeout(() => loadout.classList.add("show"), 50);
+  }, 2000);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  renderLoadoutOptions();
+  renderEvidence();
+  loadJournal();
+  window.addEventListener("beforeunload", saveJournal);
+
+  setTimeout(startGameFlow, 7000); // start after title anim
+});
+</script>
