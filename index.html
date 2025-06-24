@@ -905,5 +905,21 @@ function confirmLoadout() {
   loadJournal();
 }
 </script>
+<script>
+document.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'p' && e.shiftKey) {
+    const loadoutScreen = document.getElementById("loadout-screen");
+
+    if (loadoutScreen && loadoutScreen.style.display === 'block') {
+      log("🎲 Shift+P pressed: Random loadout selected.");
+      randomLoadout();
+      setTimeout(() => {
+        confirmLoadout();
+        log("✅ Loadout confirmed. Investigation begins.");
+      }, 100); // slight delay for checkbox updates
+    }
+  }
+});
+</script>
 <footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.8 </footer>
 </body></html>
