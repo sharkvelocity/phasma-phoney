@@ -372,7 +372,26 @@ const game = {
   ]
 };
 
-let selectedEvidence = new Set();
+const evidenceTypes = [
+  "EMF Level 5",
+  "Spirit Box",
+  "Fingerprints",
+  "Ghost Writing",
+  "Freezing Temps",
+  "D.O.T.S",
+  "Orbs"
+];
+
+const selectedEvidence = new Set();
+
+const evidenceMap = {
+  Spirit: ["Spirit Box", "Ghost Writing", "EMF Level 5"],
+  Poltergeist: ["Spirit Box", "Ghost Writing", "Fingerprints"],
+  Banshee: ["Fingerprints", "Orbs", "D.O.T.S"],
+  Phantom: ["Spirit Box", "D.O.T.S", "Fingerprints"],
+  Revenant: ["Ghost Writing", "Orbs", "Freezing Temps"],
+  // ... etc, complete list for all ghost types
+};
 let narrationEnabled = true;
 
 function log(text) {
