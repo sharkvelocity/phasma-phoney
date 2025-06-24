@@ -826,8 +826,14 @@ footer {
   function startGameFlow() {
   const title = document.getElementById("title-screen");
   const loadout = document.getElementById("loadout-screen");
-	title.style.opacity = 0;
-	
+  title.style.opacity = 0;
+
+  setTimeout(() => {
+    title.style.display = "none";
+    loadout.style.display = "block";
+    setTimeout(() => loadout.classList.add("show"), 50);
+  }, 1500);
+}
 
   </script>
 
