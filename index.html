@@ -258,12 +258,11 @@ footer {
 
   </div>
 </div>
-<stlye>
-setTimeout(() => {
-  speak("Welcome back, We've got some jobs for you.");
-}, 7100);
-</style>
-
+<script>
+  setTimeout(() => {
+    speak("Welcome back, I've put together a few jobs for you.");
+  }, 7100);
+</script>#
 <div id="hud-status">
   <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
   <p><strong>Sanity:</strong> <span id="sanity-bar">100</span></p>
@@ -513,9 +512,20 @@ function ambientNarration(room, ghostHere) {
 }
 function speak(text) {
   if (!narrationEnabled) return;
+
   const utter = new SpeechSynthesisUtterance(text);
-  utter.voice = speechSynthesis.getVoices().find(v => v.lang.startsWith("en"));
-  utter.rate = 1;
+
+  // Find a feminine English voice
+  const voices = speechSynthesis.getVoices();
+  utter.voice = voices.find(v =>
+    v.lang.startsWith("en") &&
+    /female|woman|Fiona|Google UK English Female|Samantha|Karen|Moira/i.test(v.name)
+  ) || voices[0];
+
+  utter.pitch = 1.6;    // Higher pitch sounds more flirtatious
+  utter.rate = 0.85;    // Slightly slower for a sultry effect
+  utter.volume = 1.0;
+
   speechSynthesis.speak(utter);
 }
 </script>
