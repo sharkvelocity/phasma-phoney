@@ -627,11 +627,11 @@ window.addEventListener("beforeunload", saveJournal);
     setTimeout(() => loadout.classList.add("show"), 50); // trigger fade-in
   }, 7000);
 });
-</script>
+
 
 
   // Show the ADA command interface after loadout is picked
-
+</script>
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
