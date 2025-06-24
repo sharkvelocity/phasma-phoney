@@ -829,7 +829,8 @@ function renderEvidence() {
   document.getElementById("remaining-ghosts").textContent =
     match.length ? "Possible: " + match.map(g => g.toUpperCase()).join(", ") : "No matches.";
 }
-
+</script>
+<script>
 function loadJournal() {
   const val = localStorage.getItem("journal");
   if (val) document.getElementById("journal-text").value = val;
@@ -853,7 +854,6 @@ function closeJournal() {
 
 document.addEventListener("DOMContentLoaded", () => {
   renderLoadoutOptions();
-  renderEvidence();
   loadJournal();
   window.addEventListener("beforeunload", saveJournal);
 
@@ -863,8 +863,7 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => loadout.classList.add("show"), 50);
   }, 7000);
 });
-</script>
-<script>
+
 function randomLoadout() {
   const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
   checkboxes.forEach(cb => cb.checked = false);
