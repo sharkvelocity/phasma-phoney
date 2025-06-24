@@ -141,16 +141,14 @@
     display: block;
   }
 </style>
-
 </head>
 <body>
 
-<!-- TITLE SCREEN -->
 <div id="title-screen">
   <img src="https://github.com/sharkvelocity/phasma-phoney/blob/Main/logo.png?raw=true" alt="PhasmaPhoney Logo" />
 </div>
 
-<!-- MAIN SCENE -->
+
 <div id="main-scene">
   <div class="layered-scene">
     <!-- BACKGROUND -->
@@ -351,10 +349,6 @@ window.addEventListener("resize", () => {
     <button onclick="openJournal()">Open Journal</button>
   </div>
 </div>
-
-
-<!-- FOOTER -->
-<footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.8 </footer>
 <script>
 const game = {
   inventory: [],
@@ -389,7 +383,8 @@ const allLoadoutItems = [
   "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
   "Camera", "Smudge", "Candle", "Crucifix", "Salt"
 ];
-
+</script>
+<script>
 
 // 3. Evidence Map (used by ghostProfiles)
 
@@ -466,7 +461,8 @@ function speak(text) {
   utterance.volume = 0.95;
   speechSynthesis.speak(utterance);
 }
-
+</script>
+<script>
 function updateMap() {
   const room = game.roomMap[game.position[0]][game.position[1]];
   document.getElementById("map-display").textContent = "Room: " + room;
@@ -507,7 +503,8 @@ function handleCommand(cmd) {
       log("Unknown command.");
   }
 }
-
+</script>
+<script>
 
 function useItem(item) {
   if (!item || !game.ghost || !ghostProfiles[game.ghost]) {
@@ -633,7 +630,8 @@ function endGame(success) {
   ui.innerHTML = "";
   ui.appendChild(btn);
 }
-
+</script>
+<script>
 function renderEvidence() {
   const container = document.getElementById("evidence-checklist");
   container.innerHTML = "";
@@ -679,7 +677,7 @@ function openJournal() {
 function closeJournal() {
   saveJournal();
   document.getElementById("journal-screen").style.display = "none";
-window.addEventListener("beforeunload", saveJournal);
+
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -694,6 +692,8 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => loadout.classList.add("show"), 50);
   }, 7000);
 });
+</script>
+<script>
 function randomLoadout() {
   const checkboxes = Array.from(document.querySelectorAll('#item-selection input'));
   checkboxes.forEach(cb => cb.checked = false);
@@ -740,26 +740,16 @@ function confirmLoadout() {
   renderEvidence();
   loadJournal();
 }
-
-  // Fade out loadout screen
-  const screen = document.getElementById("loadout-screen");
-  screen.classList.remove("show");
-  screen.style.opacity = 0;
-  setTimeout(() => screen.style.display = "none", 1000); 
-	// Match transition duration
-
-  // Start investigation
-  const keys = Object.keys(ghostProfiles);
-  game.ghost = keys[Math.floor(Math.random() * keys.length)];
-  game.ghostRoom = ghostProfiles[game.ghost].roomHint;
-
+</script>
+<script> 
   // Show ADA panel
   updateMap();
   document.getElementById("ada-modal").style.display = "block";
   log("Your investigation begins...");
   renderEvidence();
   loadJournal();
-
+</script>
+<script>
 
 document.addEventListener("keydown", (e) => {
   const isInput = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
@@ -833,6 +823,5 @@ document.addEventListener("keydown", (e) => {
   }
 });
 </script>
-
-</body>
-</html>
+<footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.8 </footer>
+</body></html>
