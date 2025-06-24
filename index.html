@@ -5,141 +5,238 @@
   <title>Phasma‑Phoney Title</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-  html, body {
-    margin: 0; padding: 0;
-    width: 100vw; height: 100vh;
-    background: black;
-    overflow: hidden;
-    font-family: sans-serif;
-  }
+  /* === GLOBAL RESET & BASICS === */
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  height: 100vh;
+  background: black;
+  overflow: hidden;
+  font-family: sans-serif;
+}
 
-  /* Layout Panels */
-  #left-panel, #right-panel {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 10px;
-    height: 100%;
-  }
+/* === PANELS AND HUD === */
+#left-panel, #right-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  height: 100%;
+}
 
-  #center-panel {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 10px;
-    overflow-y: auto;
-  }
+#center-panel {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 10px;
+  overflow-y: auto;
+}
 
-  #narrator-box {
-    display: flex;
-    justify-content: space-between;
-    gap: 10px;
-    width: 90%;
-    background: #111;
-    padding: 10px;
-    border: 1px solid #444;
-  }
+#narrator-box {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 90%;
+  background: #111;
+  padding: 10px;
+  border: 1px solid #444;
+}
 
-  #system-text, #narrator-thought {
-    flex: 1;
-    background: #222;
-    padding: 8px;
-    border: 1px solid #333;
-    min-height: 60px;
-  }
+#system-text, #narrator-thought {
+  flex: 1;
+  background: #222;
+  padding: 8px;
+  border: 1px solid #333;
+  min-height: 60px;
+}
 
-  #main-readout {
-    background: #111;
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #444;
-    width: 90%;
-    max-height: 300px;
-    overflow-y: auto;
-    white-space: pre-wrap;
-  }
+#main-readout {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+  max-height: 300px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+}
 
-  #hud-status {
-    background: #111;
-    padding: 10px;
-    margin: 5px;
-    border: 1px solid #444;
-    width: 90%;
-  }
+#hud-status {
+  background: #111;
+  padding: 10px;
+  margin: 5px;
+  border: 1px solid #444;
+  width: 90%;
+}
 
-  /* Title Screen */
-  #title-screen {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background: black;
-    z-index: 10;
-    opacity: 1;
-    transition: opacity 2s ease-in-out;
-  }
+/* === TITLE SCREEN === */
+#title-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: black;
+  z-index: 10;
+  opacity: 1;
+  transition: opacity 2s ease-in-out;
+}
 
-  #title-screen img {
-    max-width: 80%;
-    animation: pulse 5s infinite ease-in-out;
-  }
+#title-screen img {
+  max-width: 80%;
+  animation: pulse 5s infinite ease-in-out;
+}
 
-  @keyframes pulse {
-    0%, 100% { opacity: 0.9; transform: scale(1); }
-    50% { opacity: 1; transform: scale(1.04); }
-  }
+@keyframes pulse {
+  0%, 100% { opacity: 0.9; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
 
-  /* Shared fullscreen layer class */
-  .fullscreen-layer {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    object-fit: cover;
-    pointer-events: none;
-  }
+/* === LAYER SYSTEM FOR MAIN SCENE === */
+#main-scene {
+  display: none;
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+}
 
-  /* Scene Layers */
-  #main-scene {
-    display: none;
-    position: relative;
-    width: 100vw;
-    height: 100vh;
-    z-index: 1;
-    overflow: hidden;
-  }
+.fullscreen-layer {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  object-fit: cover;
+  pointer-events: none;
+}
 
-  .layer.background      { z-index: 1; }
-  .rain-block-front      { z-index: 2; }
-  .lightning             {
-    z-index: 3;
-    background: white;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-  }
-  .foreground            { z-index: 4; }
+/* Ordered by Z-Index */
+.layer.background      { z-index: 1; }
+.rain-canvas           { z-index: 2; }
+.rain-block-front      { z-index: 3; }
+.lightning             {
+  z-index: 4;
+  background: white;
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+.foreground            { z-index: 5; }
+.orb-canvas            { z-index: 6; }
 
-  /* Orb Layer */
-  .orb-canvas {
-    z-index: 5;
-    position: fixed;
-    top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    pointer-events: none;
-  }
+/* === UI POPUPS === */
+#loadout-screen,
+#van-panel,
+#guess-popup,
+#item-popup,
+#journal-screen {
+  display: none;
+  position: absolute;
+  top: 10%;
+  left: 15%;
+  right: 15%;
+  background: #111;
+  padding: 20px;
+  color: #0ff;
+  border: 1px solid #0ff;
+  z-index: 10;
+}
 
-  /* Loadout Screen Fade */
-  #loadout-screen {
-    opacity: 0;
-    display: none;
-    transition: opacity 1s ease-in-out;
-  }
-  #loadout-screen.show {
-    opacity: 1;
-    display: block;
-  }
+#loadout-screen {
+  left: 10%;
+  right: 10%;
+  opacity: 0;
+  transition: opacity 1s ease-in-out;
+}
+#loadout-screen.show {
+  opacity: 1;
+  display: block;
+}
+
+/* === EVIDENCE PANEL === */
+#evidence-panel {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  z-index: 7;
+  background: #000;
+  border: 1px solid #0ff;
+  padding: 10px;
+  color: #0ff;
+}
+
+#evidence-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 8px;
+}
+
+/* === ADA PANEL === */
+#ada-modal {
+  display: none;
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: #000;
+  border-top: 1px solid #0ff;
+  padding: 10px;
+  z-index: 9;
+}
+
+#ada-log {
+  height: 200px;
+  overflow-y: auto;
+  background: #000;
+  color: #0ff;
+  padding: 6px;
+  border: 1px solid #0ff;
+  margin-bottom: 8px;
+}
+
+#ada-modal button {
+  background: #111;
+  color: #0ff;
+  border: 1px solid #0ff;
+  padding: 6px 10px;
+  cursor: pointer;
+}
+
+#item-selection label,
+#van-button-list button,
+#item-button-list button,
+#guess-list button {
+  color: #0ff;
+}
+
+/* === JOURNAL === */
+#journal-text {
+  width: 100%;
+  height: 150px;
+  background: #000;
+  color: #0ff;
+  border: 1px solid #0ff;
+  padding: 8px;
+  font-family: monospace;
+}
+
+/* === FOOTER === */
+footer {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 6px;
+  font-size: 0.85em;
+  color: #0ff;
+  background: #000;
+  border-top: 1px solid #0ff;
+}
+
 </style>
 </head>
 <body>
@@ -151,7 +248,8 @@
 
 <div id="main-scene">
   <div class="layered-scene">
-    <!-- BACKGROUND -->
+
+
 <img src="background.png" class="layer background" />
 
 <canvas id="rain" class="rain-canvas"></canvas>
@@ -169,6 +267,11 @@
 <canvas id="orbs" class="orb-canvas"></canvas>
 
   </div>
+</div>
+<div id="hud-status">
+  <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
+  <p><strong>Sanity:</strong> <span id="sanity-bar">100</span></p>
+  <p><strong>Location:</strong> <span id="map-display">Van</span></p>
 </div>
 
 <script>
@@ -350,6 +453,62 @@ window.addEventListener("resize", () => {
   </div>
 </div>
 <script>
+function ambientNarration(room, ghostHere) {
+  const sanity = game.sanity;
+  let thoughts = [];
+
+  // === ENVIRONMENTAL FLAVOR ===
+  const roomDescriptions = {
+    "Foyer": ["The old foyer creaks with age.", "Dim light spills across the dusty floor."],
+    "Kitchen": ["The refrigerator hums softly.", "Utensils lie scattered like forgotten memories."],
+    "Bathroom": ["A faint drip echoes from the sink.", "The mirror is too fogged to see yourself clearly."],
+    "Basement": ["It smells of mold and still air.", "You can barely see past the shadows."],
+    "Living Room": ["An old couch slumps in the corner.", "Ashes rest cold in the fireplace."],
+    "Bedroom": ["The sheets are tangled and cold.", "Someone left the closet door half open."],
+    "Garage": ["Tools hang neatly on the wall, untouched.", "Oil stains mark the concrete floor."],
+    "Storage": ["Dust floats like static in the beam of your light.", "Boxes are stacked like forgotten secrets."]
+  };
+
+  if (roomDescriptions[room]) {
+    thoughts.push(...roomDescriptions[room]);
+  } else {
+    thoughts.push("The air feels still in this room.");
+  }
+
+  // === SANITY-BASED THOUGHTS ===
+  if (sanity >= 80) {
+    thoughts.push(
+      "You feel confident and focused.",
+      "Your breathing is steady.",
+      "Nothing feels off... yet."
+    );
+  } else if (sanity >= 50) {
+    thoughts.push(
+      "You try to shake off the tension.",
+      "Your nerves are holding for now.",
+      "Something feels... off, but you press on."
+    );
+  } else if (sanity >= 30) {
+    thoughts.push(
+      "Your thoughts drift. Was that a sound?",
+      "You’re starting to feel watched.",
+      "You swear something just moved in the corner of your vision."
+    );
+  } else {
+    thoughts.push(
+      "Your head spins. You can’t trust what you're seeing.",
+      "Paranoia creeps in like a chill wind.",
+      "Every shadow feels like it's waiting for you."
+    );
+  }
+
+  // === FINAL THOUGHT OUTPUT ===
+  const randomThought = thoughts[Math.floor(Math.random() * thoughts.length)];
+  log(randomThought);
+  speak(randomThought);
+}
+</script>
+<script>
 const game = {
   inventory: [],
   vanStock: {},
@@ -440,29 +599,13 @@ const ghostProfiles = Object.fromEntries(
 
 // 6. Evidence selection & narrator flag
 
+
 const selectedEvidence = new Set();
 let narrationEnabled = true;
+function ambientNarration(room, ghostHere) {
+  const sanity = game.sanity;
+  let thoughts = [];
 
-
-function log(text) {
-  const ada = document.getElementById("ada-log");
-  const div = document.createElement("div");
-  div.innerHTML = "<strong>ADA:</strong> " + text;
-  ada.appendChild(div);
-  ada.scrollTop = ada.scrollHeight;
-  speak(text);
-}
-
-function speak(text) {
-  if (!narrationEnabled) return;
-  const utterance = new SpeechSynthesisUtterance(text);
-  utterance.pitch = 1.05;
-  utterance.rate = 0.96;
-  utterance.volume = 0.95;
-  speechSynthesis.speak(utterance);
-}
-</script>
-<script>
 function updateMap() {
   const room = game.roomMap[game.position[0]][game.position[1]];
   document.getElementById("map-display").textContent = "Room: " + room;
@@ -740,88 +883,6 @@ function confirmLoadout() {
   renderEvidence();
   loadJournal();
 }
-</script>
-<script> 
-  // Show ADA panel
-  updateMap();
-  document.getElementById("ada-modal").style.display = "block";
-  log("Your investigation begins...");
-  renderEvidence();
-  loadJournal();
-</script>
-<script>
-
-document.addEventListener("keydown", (e) => {
-  const isInput = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
-  if (isInput) return;
-
-  switch (e.key) {
-    case "1": // Toggle ADA interface
-      const ada = document.getElementById("ada-modal");
-      ada.style.display = (ada.style.display === "block") ? "none" : "block";
-      break;
-
-    case "2": // Toggle loadout screen
-      const loadout = document.getElementById("loadout-screen");
-      if (loadout.classList.contains("show")) {
-        loadout.classList.remove("show");
-        setTimeout(() => loadout.style.display = "none", 500);
-      } else {
-        loadout.style.display = "block";
-        setTimeout(() => loadout.classList.add("show"), 20);
-      }
-      break;
-
-    case "3": // Open journal
-      openJournal();
-      break;
-
-    case "4": // Open item popup
-      openItemPopup();
-      break;
-
-    case "5": // Open ghost guessing panel
-      openGuess();
-      break;
-
-    case "6": // Open van inventory
-      openVanPanel();
-      break;
-
-    case "7": // End game (confirmation could be added)
-      if (confirm("Are you sure you want to end the investigation?")) {
-        handleCommand("end");
-      }
-      break;
-
-    case "8": // Move command (simulate a step)
-      handleCommand("move");
-      break;
-
-    case "9": // Re-render evidence (useful for debug or refresh)
-      renderEvidence();
-      break;
-
-   case "0":
-  if (e.shiftKey) {
-    confirmLoadout(); // Shift+0 = start investigation
-  } else {
-    randomLoadout();  // 0 = just randomize
-  }
-  break;
-
-    case "Escape":
-      ["journal-screen", "item-popup", "guess-popup", "van-panel", "loadout-screen"]
-        .forEach(id => {
-          const el = document.getElementById(id);
-          if (el) {
-            el.classList.remove("show");
-            el.style.display = "none";
-          }
-        });
-      break;
-  }
-});
 </script>
 <footer style="position:fixed;bottom:0;width:100%;text-align:center;padding:6px;font-size:0.85em;color:#0ff;background:#000;border-top:1px solid #0ff;">Phasma‑Phoney v1.8 </footer>
 </body></html>
