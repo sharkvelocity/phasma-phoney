@@ -663,15 +663,15 @@ function confirmLoadout() {
 <script>
 document.addEventListener("keydown", (e) => {
   const isInput = document.activeElement.tagName === "INPUT" || document.activeElement.tagName === "TEXTAREA";
-  if (isInput) return; // avoid triggering while typing
+  if (isInput) return;
 
-  switch (e.key.toLowerCase()) {
-    case "a": // Open/close ADA command panel
+  switch (e.key) {
+    case "1": // Toggle ADA interface
       const ada = document.getElementById("ada-modal");
       ada.style.display = (ada.style.display === "block") ? "none" : "block";
       break;
 
-    case "l": // Toggle loadout screen
+    case "2": // Toggle loadout screen
       const loadout = document.getElementById("loadout-screen");
       if (loadout.classList.contains("show")) {
         loadout.classList.remove("show");
@@ -682,16 +682,43 @@ document.addEventListener("keydown", (e) => {
       }
       break;
 
-    case "j": // Open journal
+    case "3": // Open journal
       openJournal();
       break;
 
-    case "escape": // ESC closes all panels
+    case "4": // Open item popup
+      openItemPopup();
+      break;
+
+    case "5": // Open ghost guessing panel
+      openGuess();
+      break;
+
+    case "6": // Open van inventory
+      openVanPanel();
+      break;
+
+    case "7": // End game (confirmation could be added)
+      if (confirm("Are you sure you want to end the investigation?")) {
+        handleCommand("end");
+      }
+      break;
+
+    case "8": // Move command (simulate a step)
+      handleCommand("move");
+      break;
+
+    case "9": // Re-render evidence (useful for debug or refresh)
+      renderEvidence();
+      break;
+
+    case "0": // ESC behavior — close all panels
+    case "Escape":
       ["journal-screen", "item-popup", "guess-popup", "van-panel", "loadout-screen"]
         .forEach(id => {
           const el = document.getElementById(id);
           if (el) {
-            el.classList?.remove("show");
+            el.classList.remove("show");
             el.style.display = "none";
           }
         });
@@ -699,5 +726,6 @@ document.addEventListener("keydown", (e) => {
   }
 });
 </script>
+
 </body>
 </html>
