@@ -822,36 +822,47 @@ function closeJournal() {
 
 }
 
+
 document.addEventListener("DOMContentLoaded", () => {
+  // --- Render core UI and load game state ---
   renderLoadoutOptions();
   renderEvidence();
   loadJournal();
   window.addEventListener("beforeunload", saveJournal);
 
-  // Pre-show loadout
-  const loadout = document.getElementById("loadout-screen");
-  loadout.style.display = "block";
-  requestAnimationFrame(() => loadout.classList.add("show"));
+  // --- Ensure canvases are sized before animation starts ---
+  resizeCanvases();
 
-  // Initialize canvas and animation BEFORE title fades
-  resizeCanvases();  // Ensure canvas sizes are correct
+  // --- Begin orb and rain animations ---
   animateRain();
   animateOrbs();
+
+  // --- Trigger random lightning flashes ---
   setInterval(() => {
     if (Math.random() > 0.7) triggerLightning();
   }, 6000);
 
-  // Fade out title after 5s
+  // --- Pre-show loadout panel with fade ---
+  const loadout = document.getElementById("loadout-screen");
+  loadout.style.display = "block";
+  requestAnimationFrame(() => loadout.classList.add("show"));
+
+  // --- Set up initial map and HUD values ---
+  document.getElementById("turn-counter").textContent = game.turn;
+  document.getElementById("sanity-bar").textContent = game.sanity;
+  document.getElementById("map-display").textContent = "Van";
+
+  // --- Title screen fade and intro narration ---
   setTimeout(() => {
-    document.getElementById('title-screen').style.opacity = 0;
+    document.getElementById("title-screen").style.opacity = 0;
   }, 5000);
 
-  // Remove title and show main game screen
   setTimeout(() => {
-    document.getElementById('title-screen').style.display = 'none';
-    document.getElementById('main-scene').style.display = 'block';
-    speak("Welcome back, I've put together a few jobs for you.");
+    document.getElementById("title-screen").style.display = "none";
+    document.getElementById("main-scene").style.display = "block";
+    speak("Welcome back. I've put together a few jobs for you.");
   }, 7000);
 });
-</script></body>
+</script>
+</body>
 </html>
