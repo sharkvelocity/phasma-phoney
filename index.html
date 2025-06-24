@@ -249,32 +249,33 @@ footer {
 <div id="main-scene">
   <div class="layered-scene">
 
-
-<img src="background.png" class="layer background" />
-
-<canvas id="rain" class="rain-canvas"></canvas>
-
-<!-- RAINBLOCK -->
-<img src="rainblock.png" class="rain-block-front" />
-
-<!-- LIGHTNING -->
-<div class="lightning" id="lightning"></div>
-
-<!-- FOREGROUND -->
-<img src="foreground.png" class="foreground" />
-
-<!-- ORBS -->
-<canvas id="orbs" class="orb-canvas"></canvas>
+<img src="background.png" class="layer background fullscreen-layer" />
+<canvas id="rain" class="rain-canvas fullscreen-layer"></canvas>
+<img src="rainblock.png" class="rain-block-front fullscreen-layer" />
+<div class="lightning fullscreen-layer" id="lightning"></div>
+<img src="foreground.png" class="foreground fullscreen-layer" />
+<canvas id="orbs" class="orb-canvas fullscreen-layer"></canvas>
 
   </div>
 </div>
+setTimeout(() => {
+  speak("Welcome back, We've got some jobs for you.");
+}, 7100);
 <div id="hud-status">
   <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
   <p><strong>Sanity:</strong> <span id="sanity-bar">100</span></p>
   <p><strong>Location:</strong> <span id="map-display">Van</span></p>
 </div>
-
 <script>
+function log(msg) {
+  const logBox = document.getElementById("ada-log");
+  const p = document.createElement("p");
+  p.textContent = msg;
+  logBox.appendChild(p);
+  logBox.scrollTop = logBox.scrollHeight;
+}
+
+
 // Fade out title after 5s and reveal main scene by 7s
 setTimeout(() => {
   document.getElementById('title-screen').style.opacity = 0;
@@ -506,6 +507,13 @@ function ambientNarration(room, ghostHere) {
   const randomThought = thoughts[Math.floor(Math.random() * thoughts.length)];
   log(randomThought);
   speak(randomThought);
+}
+function speak(text) {
+  if (!narrationEnabled) return;
+  const utter = new SpeechSynthesisUtterance(text);
+  utter.voice = speechSynthesis.getVoices().find(v => v.lang.startsWith("en"));
+  utter.rate = 1;
+  speechSynthesis.speak(utter);
 }
 </script>
 <script>
