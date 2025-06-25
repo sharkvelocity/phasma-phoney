@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phasma‑Phoney</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phasma‑Phoney</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
    html, body {
   margin: 0;
@@ -57,11 +57,13 @@
     }
 
     #main-scene {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      z-index: 1;
-    }
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 1;
+  overflow: hidden;
+}
 
     #background, #rain, #background-blocker, #lightning, #foreground, #fog, #spiritParticles {
       position: absolute;
@@ -248,11 +250,18 @@
     <button onclick="confirmLoadout()" style="margin-top:20px;">Close Van</button>
   </div>
 
-  <!-- === ADA PANEL === -->
-  <div id="ada-modal" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#111; color:white; padding:10px; font-size:0.9em; z-index:20;">
-    <div id="ada-log" style="max-height:120px; overflow-y:auto; font-family:monospace;"></div>
-    <input id="ada-input" type="text" style="width:100%; background:black; color:white; border:none; padding:6px;" placeholder="Type a command (inspect, guess, use...)" onkeydown="handleAdaCommand(event)">
+ <!-- === ADA INTERFACE PANEL === -->
+<div id="ada-modal" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#111; color:white; padding:10px; font-size:0.9em; z-index:20;">
+  <div id="ada-log" style="max-height:140px; overflow-y:auto; font-family:monospace; margin-bottom:8px;"></div>
+  <div id="ada-buttons" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+    <button onclick="openInspect()">🔍 Inspect</button>
+    <button onclick="openUseMenu()">🛠️ Use</button>
+    <button onclick="openGuess()">👻 Guess</button>
+    <button onclick="openMove()">🚪 Move</button>
+    <button onclick="openJournal()">📓 Journal</button>
   </div>
+  <div id="ada-submenu" style="margin-top:10px; text-align:center;"></div>
+</div>
 
   <!-- === EVIDENCE TRACKER === -->
   <div id="evidence-panel" style="position:fixed; top:10px; right:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
@@ -272,6 +281,7 @@
   <audio id="fail-sound" src="sounds/sad-trombone.mp3"></audio>
   <audio id="win-sound" src="sounds/tada-fanfare.mp3"></audio>
 <script>
+  
   const ghostProfiles = {
     "Spirit": { evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"] },
     "Wraith": { evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S"] },
@@ -456,6 +466,70 @@ const ghostBehaviors = {
       if (behavior.action) behavior.action();
     }
   }
+function log(msg) {
+  const logDiv = document.getElementById("ada-log");
+  logDiv.innerHTML += `<div>> ${msg}</div>`;
+  logDiv.scrollTop = logDiv.scrollHeight;
+}
+
+function openInspect() {
+  document.getElementById("ada-submenu").innerHTML = `
+    <button onclick="inspectRoom()">Inspect Room</button>
+    <button onclick="inspectSanity()">Check Sanity</button>
+  `;
+}
+
+function inspectRoom() {
+  log(`You inspect the ${game.playerRoom}.`);
+  advanceTurn();
+}
+
+function inspectSanity() {
+  log(`Your sanity is at ${game.sanity}%.`);
+  advanceTurn();
+}
+
+function openUseMenu() {
+  const usable = game.inventory.filter(i => i !== "Notebook" && i !== "Lighter");
+  if (usable.length === 0) {
+    document.getElementById("ada-submenu").innerHTML = `<em>You have no usable items.</em>`;
+    return;
+  }
+
+  document.getElementById("ada-submenu").innerHTML = usable.map(i => 
+    `<button onclick="useItem('${i}')">${i}</button>`
+  ).join('');
+}
+
+function useItem(item) {
+  log(`You used the ${item}.`);
+  advanceTurn();
+}
+
+function openGuess() {
+  const ghosts = Object.keys(ghostProfiles);
+  document.getElementById("ada-submenu").innerHTML = ghosts.map(g => 
+    `<button onclick="guessGhost('${g}')">${g}</button>`
+  ).join('');
+}
+
+function openMove() {
+  const rooms = ["Garage", "Living Room", "Basement", "Attic", "Kitchen"];
+  document.getElementById("ada-submenu").innerHTML = rooms.map(r =>
+    `<button onclick="moveTo('${r}')">${r}</button>`
+  ).join('');
+}
+
+function moveTo(room) {
+  game.playerRoom = room;
+  log(`You moved to the ${room}.`);
+  advanceTurn();
+}
+
+function openJournal() {
+  log("You consult the journal for clues...");
+  advanceTurn();
+}
 
   function guessGhost(name) {
     const correct = name.toLowerCase() === game.ghost.toLowerCase();
