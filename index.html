@@ -69,7 +69,7 @@
     }
 
     #background {
-      background: url('background.jpg') no-repeat center center;
+      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/background.png') no-repeat center center;
       background-size: cover;
       z-index: 1;
     }
@@ -93,17 +93,24 @@
       100% { transform: translateY(100vh); opacity: 0; }
     }
 
-    #background-blocker { z-index: 3; background: transparent; }
-    #lightning { background: white; opacity: 0; z-index: 4; pointer-events: none; }
+    #background-blocker { 
+      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/rainblock.png') no-repeat center center;
+      background-size: cover;
+      z-index: 3;
+      pointer-events: none;
+    }
+    #lightning { 
+      background: white; opacity: 0; z-index: 4; pointer-events: none; 
+    }
     #foreground {
-      background: url('foreground.png') no-repeat center center;
+      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/foreground.png') no-repeat center center;
       background-size: cover;
       z-index: 5;
       pointer-events: none;
     }
 
     #fog {
-      background: url('fog.png') repeat;
+      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/fog.png') repeat;
       animation: fogMove 60s linear infinite;
       opacity: 0.25;
       z-index: 6;
