@@ -717,27 +717,9 @@ function closeItemPopup() {
   document.getElementById("item-popup").style.display = "none";
 }
 
-function openGuess() {
-  const popup = document.getElementById("guess-popup");
-  const list = document.getElementById("guess-list");
-  list.innerHTML = "";
-
-  Object.keys(ghostProfiles).forEach(g => {
-    const btn = document.createElement("button");
-    btn.textContent = g.toUpperCase();
-    btn.onclick = () => {
-      makeGuess(g);
-      closeGuess();
-    };
-    list.appendChild(btn);
-  });
-
-  popup.style.display = "block";
-}
-
-function closeGuess() {
-  document.getElementById("guess-popup").style.display = "none";
-}
+<script>
+// === EVIDENCE SETUP ===
+const selectedEvidence = new Set();
 
 const evidenceTypes = [
   "EMF Level 5",
@@ -749,7 +731,37 @@ const evidenceTypes = [
   "Orbs"
 ];
 
-const selectedEvidence = new Set();
+function renderEvidence() {
+  const container = document.getElementById("evidence-checklist");
+  if (!container) return;
+  container.innerHTML = "";
+
+  evidenceTypes.forEach(ev => {
+    const label = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.checked = selectedEvidence.has(ev);
+    checkbox.onchange = () => {
+      if (checkbox.checked) selectedEvidence.add(ev);
+      else selectedEvidence.delete(ev);
+      renderEvidence();
+    };
+    label.appendChild(checkbox);
+    label.append(" " + ev);
+    container.appendChild(label);
+  });
+
+  const match = Object.entries(evidenceMap).filter(([ghost, evs]) =>
+    [...selectedEvidence].every(ev => evs.includes(ev))
+  ).map(([ghost]) => ghost);
+
+  const output = document.getElementById("remaining-ghosts");
+  if (output) {
+    output.textContent = match.length
+      ? "Possible: " + match.map(g => g.toUpperCase()).join(", ")
+      : "No matches.";
+  }
+}
 
 const evidenceMap = {
   "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
