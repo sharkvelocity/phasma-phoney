@@ -367,7 +367,7 @@ window.addEventListener("resize", () => {
 </script>
 
 <!-- EVIDENCE PANEL -->
-<div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
+<div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:10;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
   <h3 style="margin:0;">Evidence</h3>
   <div id="evidence-checklist" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
   <p id="remaining-ghosts" style="color:#0f0;"></p>
@@ -376,7 +376,7 @@ window.addEventListener("resize", () => {
 <!-- MAIN GAME UI OUTPUT -->
 <div id="game-ui" style="padding:12px;color:white;"></div>
 <!-- LOADOUT SELECTION -->
-<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h2>Select Loadout (Max 3)</h2>
   <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
   <button onclick="confirmLoadout()">Confirm Loadout</button>
@@ -384,28 +384,28 @@ window.addEventListener("resize", () => {
 </div>
 
 <!-- VAN PANEL -->
-<div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+<div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h3>Van Inventory</h3>
   <div id="van-button-list" style="display:flex;flex-direction:column;gap:6px;"></div>
   <button onclick="closeVanPanel()">Done</button>
 </div>
 
 <!-- GUESS GHOST POPUP -->
-<div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+<div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h3>Who is the Ghost?</h3>
   <div id="guess-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
   <button onclick="closeGuess()">Cancel</button>
 </div>
 
 <!-- ITEM POPUP -->
-<div id="item-popup" style="display:none;position:absolute;top:10%;left:20%;right:20%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+<div id="item-popup" style="display:none;position:absolute;top:10%;left:20%;right:20%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h3>Choose Item</h3>
   <div id="item-button-list" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
   <button onclick="closeItemPopup()">Cancel</button>
 </div>
 
 <!-- JOURNAL -->
-<div id="journal-screen" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
+<div id="journal-screen" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h3>Notes</h3>
   <textarea id="journal-text" placeholder="Your notes..." style="width:100%;height:150px;"></textarea><br>
   <button onclick="closeJournal()">Close</button>
