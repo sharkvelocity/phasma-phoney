@@ -153,7 +153,7 @@ html, body {
 }
 
 #loadout-screen.show {
-  display: block;
+  display: inline;
   opacity: 1;
 }
 
@@ -212,6 +212,100 @@ footer {
   border-top: 1px solid #0ff;
   z-index: 11;
 }
+/* === GHOST GUESS POPUP === */
+#guess-popup {
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 5%;
+  width: 90%;
+  max-height: 80%;
+  overflow-y: auto;
+  background: #111;
+  color: #fff;
+  border: 2px solid #444;
+  z-index: 20;
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 0 20px #000;
+}
+
+#guess-popup h2 {
+  margin-top: 0;
+  font-size: 1.4em;
+  text-align: center;
+  color: #ccc;
+}
+
+#guess-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+#guess-list button {
+  padding: 8px;
+  background: #222;
+  color: white;
+  border: 1px solid #555;
+  border-radius: 5px;
+  font-size: 0.9em;
+  cursor: pointer;
+}
+
+#guess-list button:hover {
+  background: #333;
+}
+
+/* === EVIDENCE PANEL === */
+#evidence-panel {
+  position: fixed;
+  bottom: 60px;
+  left: 10px;
+  right: 10px;
+  background: #1a1a1a;
+  color: white;
+  padding: 10px;
+  border: 1px solid #333;
+  border-radius: 8px;
+  z-index: 5;
+  box-shadow: 0 0 10px #000;
+}
+
+#evidence-panel h3 {
+  margin: 0 0 10px;
+  font-size: 1.2em;
+  text-align: center;
+  color: #aaa;
+}
+
+#evidence-buttons button {
+  background: #444;
+  color: white;
+  border: none;
+  padding: 6px 10px;
+  font-size: 0.85em;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#evidence-buttons button.active {
+  background: #0a0;
+}
+
+#evidence-buttons button:hover {
+  background: #666;
+}
+
+/* === GLOBAL BUTTON STYLES (optional reuse) === */
+button {
+  font-family: sans-serif;
+  transition: all 0.2s;
+}
+
+
 </style>
 </head>
 <body>
@@ -233,11 +327,11 @@ footer {
 
   </div>
 </div>
-<stlye>
+<script>
 setTimeout(() => {
   speak("Welcome back, We've got some jobs for you.");
 }, 7100);
-</style>
+</script>
 
 <div id="hud-status">
   <p><strong>Turn:</strong> <span id="turn-counter">0</span></p>
@@ -573,15 +667,15 @@ const evidenceToTool = {
     btn.style.padding = "6px";
     btn.style.background = "#444";
     btn.style.color = "white";
-    btn.onclick = () => {
-      if (selectedEvidence.has(ev)) {
-        selectedEvidence.delete(ev);
-        btn.style.background = "#444";
-      } else {
-        selectedEvidence.add(ev);
-        btn.style.background = "#0a0";
-      }
-    };
+btn.onclick = () => {
+  if (selectedEvidence.has(ev)) {
+    selectedEvidence.delete(ev);
+    btn.classList.remove("active");
+  } else {
+    selectedEvidence.add(ev);
+    btn.classList.add("active");
+  }
+};
     evidencePanel.appendChild(btn);
   });
 
