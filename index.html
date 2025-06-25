@@ -69,30 +69,41 @@
     }
 
     #background {
-      background: url('your-background.jpg') no-repeat center center;
+      background: url('background.jpg') no-repeat center center;
       background-size: cover;
       z-index: 1;
     }
 
     #rain {
-      background-image: url('your-rain.gif');
-      background-size: cover;
-      opacity: 0.4;
       z-index: 2;
       pointer-events: none;
+      overflow: hidden;
+    }
+
+    .raindrop {
+      position: absolute;
+      width: 2px;
+      height: 12px;
+      background: rgba(255, 255, 255, 0.2);
+      animation: fall 0.6s linear infinite;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-100vh); opacity: 0.8; }
+      100% { transform: translateY(100vh); opacity: 0; }
     }
 
     #background-blocker { z-index: 3; background: transparent; }
     #lightning { background: white; opacity: 0; z-index: 4; pointer-events: none; }
     #foreground {
-      background: url('your-foreground.png') no-repeat center center;
+      background: url('foreground.png') no-repeat center center;
       background-size: cover;
       z-index: 5;
       pointer-events: none;
     }
 
     #fog {
-      background: url('your-fog.png') repeat;
+      background: url('fog.png') repeat;
       animation: fogMove 60s linear infinite;
       opacity: 0.25;
       z-index: 6;
@@ -140,6 +151,7 @@
   </style>
 </head>
 <body>
+  <!-- === SEIZURE WARNING === -->
   <div id="seizure-warning">
     <h2 style="color:#f55;">⚠ Seizure Warning</h2>
     <p style="max-width:500px; line-height:1.5em;">
@@ -149,10 +161,12 @@
     <button onclick="acknowledgeSeizureWarning()" style="margin-top:30px; padding:10px 20px; font-size:1em; background:#222; color:white; border:1px solid #555; border-radius:6px; cursor:pointer;">I Understand</button>
   </div>
 
+  <!-- === TITLE SCREEN === -->
   <div id="title-screen">
-    <img src="your-title-logo.png" alt="Phasma‑Phoney Logo" />
+    <img src="title-logo.png" alt="Phasma‑Phoney Logo" />
   </div>
 
+  <!-- === LAYERED SCENE === -->
   <div id="main-scene">
     <div id="background"></div>
     <div id="rain"></div>
@@ -193,8 +207,8 @@
   </div>
 
   <!-- === SOUND EFFECTS === -->
-  <audio id="fail-sound" src="https://www.myinstants.com/media/sounds/sad-trombone.mp3"></audio>
-  <audio id="win-sound" src="https://www.myinstants.com/media/sounds/tada-fanfare.mp3"></audio>
+  <audio id="fail-sound" src="sounds/sad-trombone.mp3"></audio>
+  <audio id="win-sound" src="sounds/tada-fanfare.mp3"></audio>
 <script>
   const ghostProfiles = {
     "Spirit": { evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"] },
@@ -275,6 +289,8 @@
     "Thaye":       { action: () => log("The activity fades. The presence weakens...") },
     "The Nightmare": { action: () => log("One of your tools fails to detect. Evidence hides from you.") }
   };
+</script>
+<script>
   function startTitleScreen() {
     const screen = document.getElementById("title-screen");
     screen.style.display = "flex";
@@ -546,6 +562,7 @@
 
   window.onload = () => {
     spawnSpiritParticles();
+    spawnRain();
   };
 
   function spawnSpiritParticles(count = 40) {
@@ -561,6 +578,19 @@
       container.appendChild(orb);
     }
   }
+
+  function spawnRain(count = 100) {
+    const rain = document.getElementById("rain");
+    rain.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const drop = document.createElement("div");
+      drop.className = "raindrop";
+      drop.style.left = Math.random() * 100 + "vw";
+      drop.style.animationDelay = Math.random() + "s";
+      rain.appendChild(drop);
+    }
+  }
 </script>
 </body>
 </html>
+
