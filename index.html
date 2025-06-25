@@ -376,7 +376,7 @@ window.addEventListener("resize", () => {
 <!-- MAIN GAME UI OUTPUT -->
 <div id="game-ui" style="padding:12px;color:white;"></div>
 <!-- LOADOUT SELECTION -->
-<div id="loadout-screen" style="display:none;position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
+<div id="loadout-screen" style="position:absolute;top:10%;left:10%;right:10%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h2>Select Loadout (Max 3)</h2>
   <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:10px;margin-bottom:12px;"></div>
   <button onclick="confirmLoadout()">Confirm Loadout</button>
@@ -384,14 +384,14 @@ window.addEventListener("resize", () => {
 </div>
 
 <!-- VAN PANEL -->
-<div id="van-panel" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
+<div id="van-panel" style="position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h3>Van Inventory</h3>
   <div id="van-button-list" style="display:flex;flex-direction:column;gap:6px;"></div>
   <button onclick="closeVanPanel()">Done</button>
 </div>
 
 <!-- GUESS GHOST POPUP -->
-<div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
+<div id="guess-popup" style="position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:5;">
   <h3>Who is the Ghost?</h3>
   <div id="guess-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
   <button onclick="closeGuess()">Cancel</button>
