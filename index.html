@@ -249,17 +249,24 @@
     <div id="van-items" class="item-grid"></div>
     <button onclick="confirmLoadout()" style="margin-top:20px;">Close Van</button>
   </div>
-
+<!-- === ROOM MAP === -->
+<div id="room-map">
+  <div class="room" onclick="goToRoom('Garage')">Garage</div>
+  <div class="room" onclick="goToRoom('Living Room')">Living Room</div>
+  <div class="room" onclick="goToRoom('Kitchen')">Kitchen</div>
+  <div class="room" onclick="goToRoom('Basement')">Basement</div>
+  <div class="room" onclick="goToRoom('Attic')">Attic</div>
+</div>
  <!-- === ADA INTERFACE PANEL === -->
 <div id="ada-modal" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#111; color:white; padding:10px; font-size:0.9em; z-index:20;">
   <div id="ada-log" style="max-height:140px; overflow-y:auto; font-family:monospace; margin-bottom:8px;"></div>
-  <div id="ada-buttons" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-    <button onclick="openInspect()">🔍 Inspect</button>
-    <button onclick="openUseMenu()">🛠️ Use</button>
-    <button onclick="openGuess()">👻 Guess</button>
-    <button onclick="openMove()">🚪 Move</button>
-    <button onclick="openJournal()">📓 Journal</button>
-  </div>
+<div id="ada-buttons" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+  <button onclick="openInspect()">🔍 Inspect</button>
+  <button onclick="openUseMenu()">🛠️ Use</button>
+  <button onclick="openGuess()">👻 Guess</button>
+  <button onclick="openJournal()">📓 Journal</button>
+</div>
+
   <div id="ada-submenu" style="margin-top:10px; text-align:center;"></div>
 </div>
 
@@ -370,7 +377,17 @@ const ghostBehaviors = {
   () => log("Nothing happens... but it *feels* wrong."),
   () => log("A soft knocking... or maybe just pipes.")
 ];
-</script>
+  function goToRoom(room) {
+  if (game.playerRoom === room) {
+    log(`You're already in the ${room}.`);
+    return;
+  }
+
+  game.playerRoom = room;
+  log(`You move cautiously into the ${room}.`);
+  advanceTurn();
+}
+
 <script>
   function startTitleScreen() {
     const screen = document.getElementById("title-screen");
@@ -394,21 +411,42 @@ const ghostBehaviors = {
     });
     showLoadoutMenu();
   }
+function adaWelcome() {
+  const greetings = [
+    "Welcome back.",
+    "Systems online. Ready to investigate.",
+    "Good to see you again, investigator.",
+    "ADA active. Let’s find that ghost.",
+    "All gear accounted for. Proceed with caution.",
+    "New case received. Let's begin."
+  ];
 
-  function confirmLoadout() {
-    if (!game.inventory.includes("Notebook")) game.inventory.push("Notebook");
-    if (!game.inventory.includes("Lighter")) game.inventory.push("Lighter");
-    document.getElementById("loadout-screen").style.display = "none";
-    document.getElementById("ada-modal").style.display = "block";
-    setupEvidencePanel();
-    log(`Investigation begins. Ghost is haunting the ${game.ghostRoom}.`);
-  }
+  const line = greetings[Math.floor(Math.random() * greetings.length)];
 
-  function handleAdaCommand(e) {
-    if (e.key === "Enter") {
-      const cmd = e.target.value.trim().toLowerCase();
-      e.target.value = "";
-      if (!cmd) return;
+  const utter = new SpeechSynthesisUtterance(line);
+  utter.pitch = 1;
+  utter.rate = 0.92;
+  utter.volume = 0.9;
+
+  const voices = speechSynthesis.getVoices().filter(v => /female|Google US English/i.test(v.name));
+  if (voices.length) utter.voice = voices[0];
+
+  window.speechSynthesis.cancel();
+  window.speechSynthesis.speak(utter);
+}
+
+function confirmLoadout() {
+  if (!game.inventory.includes("Notebook")) game.inventory.push("Notebook");
+  if (!game.inventory.includes("Lighter")) game.inventory.push("Lighter");
+
+  document.getElementById("loadout-screen").style.display = "none";
+  document.getElementById("ada-modal").style.display = "block";
+
+  setupEvidencePanel();
+  log("Investigation begins. Find the haunted room and determine the ghost.");
+  adaWelcome(); // 🔊 ADA speaks here
+}
+
 
       if (cmd.startsWith("guess ")) {
         guessGhost(cmd.slice(6));
@@ -513,18 +551,7 @@ function openGuess() {
   ).join('');
 }
 
-function openMove() {
-  const rooms = ["Garage", "Living Room", "Basement", "Attic", "Kitchen"];
-  document.getElementById("ada-submenu").innerHTML = rooms.map(r =>
-    `<button onclick="moveTo('${r}')">${r}</button>`
-  ).join('');
-}
 
-function moveTo(room) {
-  game.playerRoom = room;
-  log(`You moved to the ${room}.`);
-  advanceTurn();
-}
 
 function openJournal() {
   log("You consult the journal for clues...");
