@@ -373,11 +373,11 @@ window.addEventListener("resize", () => {
 </script>
 
 <!-- EVIDENCE PANEL -->
-<div id="evidence-panel" style="position:absolute;top:10px;right:10px;z-index:5;background:#000;border:1px solid #0ff;padding:10px;color:#0ff;">
-  <h3 style="margin:0;">Evidence</h3>
-  <div id="evidence-checklist" style="display:flex;flex-direction:column;gap:4px;margin-bottom:8px;"></div>
-  <p id="remaining-ghosts" style="color:#0f0;"></p>
+<div id="evidence-panel" style="position:fixed; bottom:60px; left:10px; background:#222; color:white; padding:10px; z-index:15;">
+  <h3>Evidence</h3>
+  <div id="evidence-buttons"></div>
 </div>
+<script>
 
 <!-- MAIN GAME UI OUTPUT -->
 <div id="game-ui" style="padding:12px;color:white;"></div>
@@ -396,11 +396,13 @@ window.addEventListener("resize", () => {
   <button onclick="closeVanPanel()">Done</button>
 </div>
 
-<!-- GUESS GHOST POPUP -->
-<div id="guess-popup" style="display:none;position:absolute;top:10%;left:15%;right:15%;background:#111;padding:20px;color:#0ff;border:1px solid #0ff;z-index:10;">
-  <h3>Who is the Ghost?</h3>
-  <div id="guess-list" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
-  <button onclick="closeGuess()">Cancel</button>
+  
+  <!-- Ghost Guess UI -->
+
+<div id="guess-popup" style="display:none; position:fixed; top:10%; left:10%; width:80%; background:#111; color:white; border:2px solid #444; z-index:20; padding:20px;">
+  <h2>Make Your Guess</h2>
+  <div id="guess-list" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap:10px;"></div>
+  <button onclick="closeGuess()" style="margin-top:15px;">Cancel</button>
 </div>
 
 <!-- ITEM POPUP -->
@@ -495,7 +497,7 @@ function speak(text) {
 }
 </script>
 <script>
-const selectedEvidence = new Set();
+
 const game = {
   inventory: [],
   vanStock: {},
@@ -511,24 +513,6 @@ const game = {
   ]
 };
 
-const evidenceTypes = [
-  "EMF Level 5",
-  "Spirit Box",
-  "Fingerprints",
-  "Ghost Writing",
-  "Freezing Temps",
-  "D.O.T.S",
-  "Orbs",
-];
-const evidenceToTool = {
-  "EMF Level 5": "emf",
-  "Spirit Box": "spirit box",
-  "Fingerprints": "uv",
-  "Ghost Writing": "book",
-  "Freezing Temps": "thermometer",
-  "D.O.T.S": "dots",
-  "Orbs": "camera"
-};
 const allLoadoutItems = [
   "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
   "Camera", "Smudge", "Candle", "Crucifix", "Salt"
@@ -560,7 +544,79 @@ const evidenceMap = {
   "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
   "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
 };
+const selectedEvidence = new Set();
+const evidenceTypes = [
+  "EMF Level 5",
+  "Spirit Box",
+  "Fingerprints",
+  "Ghost Writing",
+  "Freezing Temps",
+  "D.O.T.S",
+  "Orbs",
+];
+const evidenceToTool = {
+  "EMF Level 5": "emf",
+  "Spirit Box": "spirit box",
+  "Fingerprints": "uv",
+  "Ghost Writing": "book",
+  "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots",
+  "Orbs": "camera"
+};
 
+    // Render evidence buttons
+  const evidencePanel = document.getElementById("evidence-buttons");
+  evidenceTypes.forEach(ev => {
+    const btn = document.createElement("button");
+    btn.textContent = ev;
+    btn.style.margin = "4px";
+    btn.style.padding = "6px";
+    btn.style.background = "#444";
+    btn.style.color = "white";
+    btn.onclick = () => {
+      if (selectedEvidence.has(ev)) {
+        selectedEvidence.delete(ev);
+        btn.style.background = "#444";
+      } else {
+        selectedEvidence.add(ev);
+        btn.style.background = "#0a0";
+      }
+    };
+    evidencePanel.appendChild(btn);
+  });
+
+  function openGuess() {
+    const popup = document.getElementById("guess-popup");
+    const list = document.getElementById("guess-list");
+    list.innerHTML = "";
+
+    Object.keys(ghostProfiles).forEach(g => {
+      const btn = document.createElement("button");
+      btn.textContent = g.toUpperCase();
+      btn.style.padding = "8px";
+      btn.style.background = "#333";
+      btn.style.color = "white";
+      btn.style.border = "1px solid #555";
+      btn.onclick = () => {
+        makeGuess(g);
+        closeGuess();
+      };
+      list.appendChild(btn);
+    });
+
+    popup.style.display = "block";
+  }
+
+  function closeGuess() {
+    document.getElementById("guess-popup").style.display = "none";
+  }
+
+  function makeGuess(ghost) {
+    alert(`You guessed: ${ghost.toUpperCase()}`);
+    // Integrate ghost checking logic here
+  }
+</script>
+<script>
 const ghostProfiles = Object.fromEntries(
   Object.entries(evidenceMap).map(([name, ev]) => [
     name,
