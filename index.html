@@ -496,7 +496,6 @@ function speak(text) {
 </script>
 <script>
 const selectedEvidence = new Set();
-
 const game = {
   inventory: [],
   vanStock: {},
@@ -512,8 +511,6 @@ const game = {
   ]
 };
 
-// 1. Evidence Types
-
 const evidenceTypes = [
   "EMF Level 5",
   "Spirit Box",
@@ -523,17 +520,19 @@ const evidenceTypes = [
   "D.O.T.S",
   "Orbs",
 ];
-
-// 2. Loadout Items
-
+const evidenceToTool = {
+  "EMF Level 5": "emf",
+  "Spirit Box": "spirit box",
+  "Fingerprints": "uv",
+  "Ghost Writing": "book",
+  "Freezing Temps": "thermometer",
+  "D.O.T.S": "dots",
+  "Orbs": "camera"
+};
 const allLoadoutItems = [
   "EMF", "Spirit Box", "UV", "Book", "Thermometer", "D.O.T.S",
   "Camera", "Smudge", "Candle", "Crucifix", "Salt"
 ];
-</script>
-<script>
-
-// 3. Evidence Map (used by ghostProfiles)
 
 const evidenceMap = {
   "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
@@ -561,19 +560,6 @@ const evidenceMap = {
   "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
   "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
 };
-
-// 4. Evidence → Tool map (used by ghostProfiles)
-const evidenceToTool = {
-  "EMF Level 5": "emf",
-  "Spirit Box": "spirit box",
-  "Fingerprints": "uv",
-  "Ghost Writing": "book",
-  "Freezing Temps": "thermometer",
-  "D.O.T.S": "dots",
-  "Orbs": "camera"
-};
-
-// 5. Ghost Profiles (depends on both evidenceMap and evidenceToTool)
 
 const ghostProfiles = Object.fromEntries(
   Object.entries(evidenceMap).map(([name, ev]) => [
@@ -721,16 +707,6 @@ function closeItemPopup() {
 // === EVIDENCE SETUP ===
 const selectedEvidence = new Set();
 
-const evidenceTypes = [
-  "EMF Level 5",
-  "Spirit Box",
-  "Fingerprints",
-  "Ghost Writing",
-  "Freezing Temps",
-  "D.O.T.S",
-  "Orbs"
-];
-
 function renderEvidence() {
   const container = document.getElementById("evidence-checklist");
   if (!container) return;
@@ -763,32 +739,7 @@ function renderEvidence() {
   }
 }
 
-const evidenceMap = {
-  "Spirit": ["Spirit Box", "Ghost Writing", "EMF Level 5"],
-  "Wraith": ["Spirit Box", "D.O.T.S", "EMF Level 5"],
-  "Phantom": ["Spirit Box", "D.O.T.S", "Fingerprints"],
-  "Poltergeist": ["Spirit Box", "Ghost Writing", "Fingerprints"],
-  "Banshee": ["D.O.T.S", "Orbs", "Fingerprints"],
-  "Jinn": ["EMF Level 5", "Fingerprints", "Freezing Temps"],
-  "Mare": ["Spirit Box", "Ghost Writing", "Orbs"],
-  "Revenant": ["Ghost Writing", "Orbs", "Freezing Temps"],
-  "Shade": ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
-  "Demon": ["Ghost Writing", "Fingerprints", "Freezing Temps"],
-  "Yurei": ["Freezing Temps", "Orbs", "D.O.T.S"],
-  "Oni": ["D.O.T.S", "EMF Level 5", "Freezing Temps"],
-  "Yokai": ["Spirit Box", "Orbs", "D.O.T.S"],
-  "Hantu": ["Fingerprints", "Freezing Temps", "Orbs"],
-  "Goryo": ["EMF Level 5", "Fingerprints", "D.O.T.S"],
-  "Myling": ["EMF Level 5", "Fingerprints", "Ghost Writing"],
-  "Onryo": ["Spirit Box", "Freezing Temps", "Orbs"],
-  "The Twins": ["EMF Level 5", "Spirit Box", "Freezing Temps"],
-  "Raiju": ["EMF Level 5", "Orbs", "D.O.T.S"],
-  "Obake": ["EMF Level 5", "Orbs", "Fingerprints"],
-  "The Mimic": ["Spirit Box", "Freezing Temps", "Fingerprints"],
-  "Moroi": ["Spirit Box", "Ghost Writing", "Freezing Temps"],
-  "Deogen": ["Spirit Box", "Ghost Writing", "D.O.T.S"],
-  "Thaye": ["Ghost Writing", "Orbs", "D.O.T.S"]
-};
+
 
 function renderEvidence() {
   const container = document.getElementById("evidence-checklist");
