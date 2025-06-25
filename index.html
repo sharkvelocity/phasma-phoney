@@ -15,7 +15,6 @@
       font-family: sans-serif;
     }
 
-    /* === SEIZURE WARNING === */
     #seizure-warning {
       position: fixed;
       top: 0; left: 0;
@@ -33,7 +32,6 @@
       transition: opacity 1.5s ease;
     }
 
-    /* === TITLE SCREEN === */
     #title-screen {
       position: fixed;
       top: 0; left: 0;
@@ -57,7 +55,6 @@
       50% { opacity: 1; transform: scale(1.04); }
     }
 
-    /* === LAYERED SCENE === */
     #main-scene {
       position: relative;
       width: 100vw;
@@ -65,19 +62,19 @@
       z-index: 1;
     }
 
-    #background {
+    #background, #rain, #background-blocker, #lightning, #foreground, #fog, #spiritParticles {
       position: absolute;
       width: 100%;
       height: 100%;
+    }
+
+    #background {
       background: url('your-background.jpg') no-repeat center center;
       background-size: cover;
       z-index: 1;
     }
 
     #rain {
-      position: absolute;
-      width: 100%;
-      height: 100%;
       background-image: url('your-rain.gif');
       background-size: cover;
       opacity: 0.4;
@@ -85,28 +82,9 @@
       pointer-events: none;
     }
 
-    #background-blocker {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: transparent;
-      z-index: 3;
-    }
-
-    #lightning {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      background: white;
-      opacity: 0;
-      z-index: 4;
-      pointer-events: none;
-    }
-
+    #background-blocker { z-index: 3; background: transparent; }
+    #lightning { background: white; opacity: 0; z-index: 4; pointer-events: none; }
     #foreground {
-      position: absolute;
-      width: 100%;
-      height: 100%;
       background: url('your-foreground.png') no-repeat center center;
       background-size: cover;
       z-index: 5;
@@ -114,9 +92,6 @@
     }
 
     #fog {
-      position: absolute;
-      width: 200%;
-      height: 200%;
       background: url('your-fog.png') repeat;
       animation: fogMove 60s linear infinite;
       opacity: 0.25;
@@ -124,18 +99,7 @@
       pointer-events: none;
     }
 
-    @keyframes fogMove {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
-    #spiritParticles {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      z-index: 7;
-      pointer-events: none;
-    }
+    #spiritParticles { z-index: 7; pointer-events: none; }
 
     .orb {
       position: absolute;
@@ -147,31 +111,35 @@
       animation: floatOrb 8s infinite ease-in-out;
     }
 
+    @keyframes fogMove {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
     @keyframes floatOrb {
       0% { transform: translateY(0); opacity: 0.3; }
       50% { opacity: 1; }
       100% { transform: translateY(-100vh); opacity: 0; }
     }
 
-  #evidence-panel button {
-  background: #222;
-  color: white;
-  border: 1px solid #666;
-  padding: 6px;
-  cursor: pointer;
-  border-radius: 4px;
-}
+    #evidence-panel button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 6px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
 
-#evidence-panel button.selected {
-  background: #0f0;
-  color: black;
-  font-weight: bold;
-  border-color: #0f0;
-}
+    #evidence-panel button.selected {
+      background: #0f0;
+      color: black;
+      font-weight: bold;
+      border-color: #0f0;
+    }
   </style>
 </head>
 <body>
-  <!-- === SEIZURE WARNING === -->
   <div id="seizure-warning">
     <h2 style="color:#f55;">⚠ Seizure Warning</h2>
     <p style="max-width:500px; line-height:1.5em;">
@@ -181,12 +149,10 @@
     <button onclick="acknowledgeSeizureWarning()" style="margin-top:30px; padding:10px 20px; font-size:1em; background:#222; color:white; border:1px solid #555; border-radius:6px; cursor:pointer;">I Understand</button>
   </div>
 
-  <!-- === TITLE SCREEN === -->
   <div id="title-screen">
     <img src="your-title-logo.png" alt="Phasma‑Phoney Logo" />
   </div>
 
-  <!-- === MAIN SCENE LAYERS === -->
   <div id="main-scene">
     <div id="background"></div>
     <div id="rain"></div>
@@ -196,17 +162,13 @@
     <div id="fog"></div>
     <div id="spiritParticles"></div>
   </div>
-
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen" style="display:none; color:white; padding:20px; position:absolute; z-index:10; background:black; width:100%; height:100%;">
     <h2>🎒 Your Inventory (max 3)</h2>
     <div id="equipped-items" class="item-grid"></div>
-
     <hr style="margin: 20px 0; border-color: #555;" />
-
     <h2>🚐 Van Inventory</h2>
     <div id="van-items" class="item-grid"></div>
-
     <button onclick="confirmLoadout()" style="margin-top:20px;">Close Van</button>
   </div>
 
@@ -215,12 +177,14 @@
     <div id="ada-log" style="max-height:120px; overflow-y:auto; font-family:monospace;"></div>
     <input id="ada-input" type="text" style="width:100%; background:black; color:white; border:none; padding:6px;" placeholder="Type a command (inspect, guess, use...)" onkeydown="handleAdaCommand(event)">
   </div>
-<!-- === EVIDENCE TRACKER === -->
-<div id="evidence-panel" style="position:fixed; top:10px; right:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
-  <strong>Evidence</strong>
-  <div id="evidence-buttons" style="display:flex; flex-direction:column; gap:5px; margin-top:5px;"></div>
-  <small style="opacity:0.7;">Click to toggle</small>
-</div>
+
+  <!-- === EVIDENCE TRACKER === -->
+  <div id="evidence-panel" style="position:fixed; top:10px; right:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
+    <strong>Evidence</strong>
+    <div id="evidence-buttons" style="display:flex; flex-direction:column; gap:5px; margin-top:5px;"></div>
+    <small style="opacity:0.7;">Click to toggle</small>
+  </div>
+
   <!-- === RESULT SCREEN === -->
   <div id="result-popup" style="display:none; position:fixed; top:20%; left:10%; width:80%; background:#111; color:white; border:2px solid #444; z-index:50; padding:20px; text-align:center; border-radius:8px;">
     <h2 id="result-message"></h2>
@@ -231,8 +195,7 @@
   <!-- === SOUND EFFECTS === -->
   <audio id="fail-sound" src="https://www.myinstants.com/media/sounds/sad-trombone.mp3"></audio>
   <audio id="win-sound" src="https://www.myinstants.com/media/sounds/tada-fanfare.mp3"></audio>
-
-  <script>
+<script>
   const ghostProfiles = {
     "Spirit": { evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"] },
     "Wraith": { evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S"] },
@@ -274,30 +237,44 @@
 
   const game = {
     ghost: null,
-    ghostRoom: null,
+    ghostRoom: "Garage",
     inventory: [],
     vanStock: {},
-    selectedEvidence: new Set()
+    selectedEvidence: new Set(),
+    sanity: 100,
+    currentTurn: 0,
+    nextMimicShift: 0,
+    mimicForm: null,
+    playerRoom: "Garage"
   };
 
-  window.addEventListener("DOMContentLoaded", () => {
-    if (sessionStorage.getItem("seizureAcknowledged")) {
-      document.getElementById("seizure-warning").style.display = "none";
-      startTitleScreen();
-    }
-  });
-
-  function acknowledgeSeizureWarning() {
-    document.getElementById("fail-sound").play().then(a => a.pause()).catch(()=>{});
-    document.getElementById("win-sound").play().then(a => a.pause()).catch(()=>{});
-    sessionStorage.setItem("seizureAcknowledged", "yes");
-    document.getElementById("seizure-warning").style.opacity = 0;
-    setTimeout(() => {
-      document.getElementById("seizure-warning").style.display = "none";
-      startTitleScreen();
-    }, 1500);
-  }
-
+  const ghostBehaviors = {
+    "Spirit":      { action: () => log("You hear footsteps nearby. Something's watching.") },
+    "Wraith":      { action: () => log("A gust of air... it feels like the ghost teleported.") },
+    "Phantom":     { action: () => { log("Your vision dims. You feel your sanity slipping."); game.sanity -= 15; }},
+    "Poltergeist": { action: () => log("Several items fly off the shelf at once!") },
+    "Banshee":     { action: () => log("A soft melody echoes... a singing voice?") },
+    "Jinn":        { action: () => log("The temperature drops and you hear a charge building.") },
+    "Mare":        { action: () => log("The lights flicker violently. Darkness surrounds you.") },
+    "Revenant":    { action: () => log("You feel hunted... it's fast when you run.") },
+    "Shade":       { action: () => log("Everything is eerily calm. It's avoiding attention.") },
+    "Demon":       { action: () => log("An unnatural roar rattles your chest.") },
+    "Yurei":       { action: () => { log("Your head feels heavy. Something is sapping your will."); game.sanity -= 10; }},
+    "Oni":         { action: () => log("Objects launch across the room in a tantrum.") },
+    "Yokai":       { action: () => log("A voice answers your whisper... unintelligible but real.") },
+    "Hantu":       { action: () => log("The air grows icy. Your breath hangs midair.") },
+    "Goryo":       { action: () => log("A shape darts through the DOTS... only on camera.") },
+    "Myling":      { action: () => log("The ghost approaches silently. You barely hear it.") },
+    "Onryo":       { action: () => log("A candle snuffs itself out. It fears the flame.") },
+    "The Twins":   { action: () => log("Something moves upstairs... and behind you at once.") },
+    "Raiju":       { action: () => log("Your equipment shorts out. Static fills the air.") },
+    "Obake":       { action: () => log("You see a fingerprint... but it's distorted.") },
+    "Mimic":       { action: () => mimicGhostBehavior() },
+    "Moroi":       { action: () => log("A chill voice whispers a curse. Your limbs feel weak.") },
+    "Deogen":      { action: () => log("You try to hide... but the ghost knows you're there.") },
+    "Thaye":       { action: () => log("The activity fades. The presence weakens...") },
+    "The Nightmare": { action: () => log("One of your tools fails to detect. Evidence hides from you.") }
+  };
   function startTitleScreen() {
     const screen = document.getElementById("title-screen");
     screen.style.display = "flex";
@@ -313,7 +290,6 @@
   function startGameFlow() {
     const keys = Object.keys(ghostProfiles);
     game.ghost = keys[Math.floor(Math.random() * keys.length)];
-    game.ghostRoom = "Garage";
     game.inventory = ["Notebook", "Lighter"];
     game.vanStock = {};
     allLoadoutItems.forEach(i => {
@@ -327,14 +303,8 @@
     if (!game.inventory.includes("Lighter")) game.inventory.push("Lighter");
     document.getElementById("loadout-screen").style.display = "none";
     document.getElementById("ada-modal").style.display = "block";
-    setupEvidencePanel(); // 👈 Initializes buttons
+    setupEvidencePanel();
     log(`Investigation begins. Ghost is haunting the ${game.ghostRoom}.`);
-  }
-
-  function log(msg) {
-    const logDiv = document.getElementById("ada-log");
-    logDiv.innerHTML += `<div>> ${msg}</div>`;
-    logDiv.scrollTop = logDiv.scrollHeight;
   }
 
   function handleAdaCommand(e) {
@@ -342,14 +312,54 @@
       const cmd = e.target.value.trim().toLowerCase();
       e.target.value = "";
       if (!cmd) return;
+
       if (cmd.startsWith("guess ")) {
-        const name = cmd.slice(6).trim();
-        guessGhost(name);
+        guessGhost(cmd.slice(6));
       } else if (cmd === "inventory") {
         log("You are holding: " + game.inventory.join(", "));
+      } else if (cmd === "use camera") {
+        if (game.ghost === "Mimic" && game.playerRoom === game.ghostRoom) {
+          showMimicOrbs();
+          log("You focus the camera... Orbs flicker in the air.");
+        } else {
+          log("You scan the room... but nothing shows.");
+        }
       } else {
         log("Unknown command.");
       }
+
+      advanceTurn();
+    }
+  }
+
+  function advanceTurn() {
+    game.currentTurn++;
+
+    if (game.ghost === "Mimic") {
+      if (game.nextMimicShift === 0 || game.currentTurn >= game.nextMimicShift) {
+        pickMimicForm();
+        game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+      }
+      mimicGhostBehavior();
+    } else {
+      const behavior = ghostBehaviors[game.ghost];
+      if (behavior && behavior.action) behavior.action();
+    }
+
+    log(`Current sanity: ${game.sanity}%`);
+  }
+
+  function pickMimicForm() {
+    const ghosts = Object.keys(ghostBehaviors).filter(g => g !== "Mimic");
+    const newForm = ghosts[Math.floor(Math.random() * ghosts.length)];
+    game.mimicForm = newForm;
+    log(`Mimic now imitates a ${newForm}.`);
+  }
+
+  function mimicGhostBehavior() {
+    if (game.mimicForm && ghostBehaviors[game.mimicForm]) {
+      const behavior = ghostBehaviors[game.mimicForm];
+      if (behavior.action) behavior.action();
     }
   }
 
@@ -413,7 +423,6 @@
   function setupEvidencePanel() {
     const container = document.getElementById("evidence-buttons");
     container.innerHTML = "";
-
     evidenceTypes.forEach(type => {
       const btn = document.createElement("button");
       btn.textContent = type;
@@ -433,14 +442,14 @@
 
   function updateEvidenceMatch() {
     const matches = Object.entries(ghostProfiles).filter(([name, data]) => {
-      const ev = data.evidence;
       for (let e of game.selectedEvidence) {
-        if (!ev.includes(e)) return false;
+        if (!data.evidence.includes(e)) return false;
       }
       return true;
     });
-    log("Possible ghosts: " + matches.map(m => m[0]).join(", "));
+    log("Possible ghosts: " + matches.map(([n]) => n).join(", "));
   }
+
   function showLoadoutMenu() {
     game.inventory = game.inventory.filter(i => i === "Notebook" || i === "Lighter");
     renderEquipped();
@@ -456,7 +465,6 @@
       const btn = document.createElement("button");
       btn.textContent = item;
       btn.onclick = () => unequipItem(index);
-      btn.classList.add("swap");
       eqDiv.appendChild(btn);
     });
     renderVan();
@@ -470,7 +478,6 @@
       btn.textContent = `${item} (${count})`;
       const disabled = count <= 0 || getEquippedCount() >= 3;
       btn.disabled = disabled;
-      if (!disabled) btn.classList.add("swap");
       btn.onclick = () => {
         if (getEquippedCount() < 3) equipItem(item);
       };
@@ -500,6 +507,47 @@
     }
   }
 
+  function showMimicOrbs() {
+    const container = document.getElementById("spiritParticles");
+    container.innerHTML = "";
+    for (let i = 0; i < 15; i++) {
+      const orb = document.createElement("div");
+      orb.className = "orb";
+      orb.style.left = `${Math.random() * 100}vw`;
+      orb.style.top = `${Math.random() * 100}vh`;
+      orb.style.animationDuration = `${5 + Math.random() * 4}s`;
+      orb.style.opacity = `${0.3 + Math.random() * 0.6}`;
+      container.appendChild(orb);
+    }
+    setTimeout(() => container.innerHTML = "", 5000);
+  }
+
+  function log(msg) {
+    const logDiv = document.getElementById("ada-log");
+    logDiv.innerHTML += `<div>> ${msg}</div>`;
+    logDiv.scrollTop = logDiv.scrollHeight;
+  }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    if (sessionStorage.getItem("seizureAcknowledged")) {
+      document.getElementById("seizure-warning").style.display = "none";
+      startTitleScreen();
+    }
+  });
+
+  function acknowledgeSeizureWarning() {
+    sessionStorage.setItem("seizureAcknowledged", "yes");
+    document.getElementById("seizure-warning").style.opacity = 0;
+    setTimeout(() => {
+      document.getElementById("seizure-warning").style.display = "none";
+      startTitleScreen();
+    }, 1500);
+  }
+
+  window.onload = () => {
+    spawnSpiritParticles();
+  };
+
   function spawnSpiritParticles(count = 40) {
     const container = document.getElementById("spiritParticles");
     container.innerHTML = "";
@@ -513,10 +561,6 @@
       container.appendChild(orb);
     }
   }
-
-  window.onload = () => {
-    spawnSpiritParticles();
-  };
 </script>
 </body>
 </html>
