@@ -5,15 +5,16 @@
   <title>Phasma‑Phoney</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100vw;
-      height: 100vh;
-      background: black;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
+   html, body {
+  margin: 0;
+  padding: 0;
+  background: black;
+  font-family: sans-serif;
+  overflow: hidden;
+  width: 100vw;
+  height: 100dvh; /* ✅ newer standard */
+  touch-action: none;
+}
 
     #seizure-warning {
       position: fixed;
@@ -21,7 +22,7 @@
       width: 100vw; height: 100vh;
       background: black;
       color: white;
-      z-index: 999;
+      z-index: 99;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -323,33 +324,42 @@
     playerRoom: "Garage"
   };
 
-  const ghostBehaviors = {
-    "Spirit":      { action: () => log("You hear footsteps nearby. Something's watching.") },
-    "Wraith":      { action: () => log("A gust of air... it feels like the ghost teleported.") },
-    "Phantom":     { action: () => { log("Your vision dims. You feel your sanity slipping."); game.sanity -= 15; }},
-    "Poltergeist": { action: () => log("Several items fly off the shelf at once!") },
-    "Banshee":     { action: () => log("A soft melody echoes... a singing voice?") },
-    "Jinn":        { action: () => log("The temperature drops and you hear a charge building.") },
-    "Mare":        { action: () => log("The lights flicker violently. Darkness surrounds you.") },
-    "Revenant":    { action: () => log("You feel hunted... it's fast when you run.") },
-    "Shade":       { action: () => log("Everything is eerily calm. It's avoiding attention.") },
-    "Demon":       { action: () => log("An unnatural roar rattles your chest.") },
-    "Yurei":       { action: () => { log("Your head feels heavy. Something is sapping your will."); game.sanity -= 10; }},
-    "Oni":         { action: () => log("Objects launch across the room in a tantrum.") },
-    "Yokai":       { action: () => log("A voice answers your whisper... unintelligible but real.") },
-    "Hantu":       { action: () => log("The air grows icy. Your breath hangs midair.") },
-    "Goryo":       { action: () => log("A shape darts through the DOTS... only on camera.") },
-    "Myling":      { action: () => log("The ghost approaches silently. You barely hear it.") },
-    "Onryo":       { action: () => log("A candle snuffs itself out. It fears the flame.") },
-    "The Twins":   { action: () => log("Something moves upstairs... and behind you at once.") },
-    "Raiju":       { action: () => log("Your equipment shorts out. Static fills the air.") },
-    "Obake":       { action: () => log("You see a fingerprint... but it's distorted.") },
-    "Mimic":       { action: () => mimicGhostBehavior() },
-    "Moroi":       { action: () => log("A chill voice whispers a curse. Your limbs feel weak.") },
-    "Deogen":      { action: () => log("You try to hide... but the ghost knows you're there.") },
-    "Thaye":       { action: () => log("The activity fades. The presence weakens...") },
-    "The Nightmare": { action: () => log("One of your tools fails to detect. Evidence hides from you.") }
-  };
+const ghostBehaviors = {
+  "Spirit":      { hint: () => log("You hear light footsteps pacing nearby.") },
+  "Wraith":      { hint: () => log("A breeze stirs. Something moved quickly.") },
+  "Phantom":     { hint: () => { log("Your vision flickers momentarily."); game.sanity -= 10; }},
+  "Poltergeist": { hint: () => log("A can rolls off a table by itself.") },
+  "Banshee":     { hint: () => log("A distant voice hums a lullaby...") },
+  "Jinn":        { hint: () => log("An unnatural hum fills the room briefly.") },
+  "Mare":        { hint: () => log("All the lights flicker in unison.") },
+  "Revenant":    { hint: () => log("You feel something behind you. Then gone.") },
+  "Shade":       { hint: () => log("It’s oddly quiet... even the wind seems still.") },
+  "Demon":       { hint: () => log("A scream echoes — low and guttural.") },
+  "Yurei":       { hint: () => { log("A pressure falls over you. You feel drained."); game.sanity -= 5; }},
+  "Oni":         { hint: () => log("A painting clatters to the ground!") },
+  "Yokai":       { hint: () => log("You think you heard a whisper in response...") },
+  "Hantu":       { hint: () => log("Your breath fogs up unnaturally.") },
+  "Goryo":       { hint: () => log("You catch a blur of movement on camera.") },
+  "Myling":      { hint: () => log("Something is walking... but there's no sound.") },
+  "Onryo":       { hint: () => log("A candle snuffs itself. There’s no draft.") },
+  "The Twins":   { hint: () => log("Two distinct sounds echo from different rooms.") },
+  "Raiju":       { hint: () => log("Your electronics glitch briefly.") },
+  "Obake":       { hint: () => log("A fingerprint looks... off. Misshapen.") },
+  "Mimic":       { hint: () => mimicGhostBehavior() },
+  "Moroi":       { hint: () => log("You feel a chill run down your spine.") },
+  "Deogen":      { hint: () => log("You feel like it knows where you are...") },
+  "Thaye":       { hint: () => log("The atmosphere feels older... like it's aging.") },
+  "The Nightmare": { hint: () => log("Something prevents your gear from working...") }
+};
+  const ambientBehaviors = [
+  () => log("The lights buzz faintly."),
+  () => log("You hear creaking from upstairs."),
+  () => log("A cold breeze drifts through the hall."),
+  () => log("A shadow moves — was it real?"),
+  () => log("You hear faint static in your gear."),
+  () => log("Nothing happens... but it *feels* wrong."),
+  () => log("A soft knocking... or maybe just pipes.")
+];
 </script>
 <script>
   function startTitleScreen() {
@@ -413,15 +423,22 @@
     game.currentTurn++;
 
     if (game.ghost === "Mimic") {
-      if (game.nextMimicShift === 0 || game.currentTurn >= game.nextMimicShift) {
-        pickMimicForm();
-        game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-      }
-      mimicGhostBehavior();
-    } else {
-      const behavior = ghostBehaviors[game.ghost];
-      if (behavior && behavior.action) behavior.action();
-    }
+  if (game.nextMimicShift === 0 || game.currentTurn >= game.nextMimicShift) {
+    pickMimicForm();
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+  }
+  mimicGhostBehavior();
+} else {
+  const rand = Math.random();
+  if (rand < 0.3) {
+    // 30% chance to show ghost hint
+    ghostBehaviors[game.ghost].hint();
+  } else {
+    // Otherwise, ambient event
+    const ambient = ambientBehaviors[Math.floor(Math.random() * ambientBehaviors.length)];
+    ambient();
+  }
+}
 
     log(`Current sanity: ${game.sanity}%`);
   }
