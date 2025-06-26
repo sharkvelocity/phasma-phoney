@@ -15,8 +15,6 @@
       height: 100dvh;
     }
 
-    
-
     /* === TITLE SCREEN === */
     #title-screen {
       position: fixed;
@@ -248,29 +246,29 @@
 
 const ghostBehaviors = {
   "Spirit":      { hint: () => log("You hear light footsteps pacing nearby.") },
-  "Wraith":      { hint: () => log("A breeze stirs. Something moved quickly.") },
-  "Phantom":     { hint: () => { log("Your vision flickers momentarily."); game.sanity -= 10; }},
-  "Poltergeist": { hint: () => log("A can rolls off a table by itself.") },
-  "Banshee":     { hint: () => log("A distant voice hums a lullaby...") },
-  "Jinn":        { hint: () => log("An unnatural hum fills the room briefly.") },
-  "Mare":        { hint: () => log("All the lights flicker in unison.") },
-  "Revenant":    { hint: () => log("You feel something behind you. Then gone.") },
-  "Shade":       { hint: () => log("It’s oddly quiet... even the wind seems still.") },
-  "Demon":       { hint: () => log("A scream echoes — low and guttural.") },
-  "Yurei":       { hint: () => { log("A pressure falls over you. You feel drained."); game.sanity -= 5; }},
+  "Wraith":      { hint: () => log("A chill runs down your spine just now.") },
+  "Phantom":     { hint: () => { log("Your thought you seen something for a moment, or not."); game.sanity -= 10; }},
+  "Poltergeist": { hint: () => log("A can rolls into the darkness from a nearby table.") },
+  "Banshee":     { hint: () => log("Its not a shade. It just did a singing event...") },
+  "Jinn":        { hint: () => log("A click in the distance and the microwave beeps.") },
+  "Mare":        { hint: () => log("a growl is heard but, you can't see where.") },
+  "Revenant":    { hint: () => log("You hear something behind you, it sounds like..RUN.... ") },
+  "Shade":       { hint: () => log("ghost fart, its not an Oni.") },
+  "Demon":       { hint: () => log("An echo? A laugh?") },
+  "Yurei":       { hint: () => { log("A slam then a pressure falls over you. You feel drained."); game.sanity -= 5; }},
   "Oni":         { hint: () => log("A painting clatters to the ground!") },
-  "Yokai":       { hint: () => log("You think you heard a whisper in response...") },
-  "Hantu":       { hint: () => log("Your breath fogs up unnaturally.") },
-  "Goryo":       { hint: () => log("You catch a blur of movement on camera.") },
-  "Myling":      { hint: () => log("Something is walking... but there's no sound.") },
-  "Onryo":       { hint: () => log("A candle snuffs itself. There’s no draft.") },
+  "Yokai":       { hint: () => log("gotta stay calm, quite, it might here you.") },
+  "Hantu":       { hint: () => log("drafty, usually not an issue in summer.") },
+  "Goryo":       { hint: () => log("sounds angry, glad it hasn't killed me, might be an oni?") },
+  "Myling":      { hint: () => log("Something is walking... but it may have been the wind.") },
+  "Onryo":       { hint: () => log("A candle flickers softly before going out") },
   "The Twins":   { hint: () => log("Two distinct sounds echo from different rooms.") },
-  "Raiju":       { hint: () => log("Your electronics glitch briefly.") },
+  "Raiju":       { hint: () => log("THUMP THUMP. you hear a heart beat.. close..") },
   "Obake":       { hint: () => log("A fingerprint looks... off. Misshapen.") },
   "Mimic":       { hint: () => mimicGhostBehavior() },
   "Moroi":       { hint: () => log("You feel a chill run down your spine.") },
   "Deogen":      { hint: () => log("You feel like it knows where you are...") },
-  "Thaye":       { hint: () => log("The atmosphere feels older... like it's aging.") },
+  "Thaye":       { hint: () => log("You know something is wrong, I see it everywhere I go.") },
   "The Nightmare": { hint: () => log("Something prevents your gear from working...") }
 };
   const ambientBehaviors = [
@@ -331,11 +329,11 @@ function startGameFlow() {
 function adaWelcome() {
   const greetings = [
     "Welcome back.",
-    "Systems online. Ready to investigate.",
-    "Good to see you again, investigator.",
-    "ADA active. Let’s find that ghost.",
-    "All gear accounted for. Proceed with caution.",
-    "New case received. Let's begin."
+    "System Malfunction. Clearing out the clutter before I go. Time to get Obaked",
+    "Good to see you again, i've got a job for you.",
+    "Alots happened since you where out.",
+    "Be careful out thier. Proceed with caution.",
+    "Let's begin."
   ];
 
   const line = greetings[Math.floor(Math.random() * greetings.length)];
