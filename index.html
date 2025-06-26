@@ -136,6 +136,44 @@
 </head>
 <body>
   
+<script>
+const game = {
+  ghost: null,
+  ghostRoom: null,
+  playerRoom: null,
+  inventory: [],
+  vanStock: {},
+  selectedEvidence: new Set(),
+  currentTurn: 0,
+  sanity: 100,
+  mimicForm: null,
+  nextMimicShift: 0
+};
+
+function startTitleScreen() {
+  const screen = document.getElementById("title-screen");
+  screen.style.display = "flex";
+
+  // Auto-fade after 3 seconds
+  setTimeout(() => {
+    screen.style.opacity = 0;
+    setTimeout(() => {
+      screen.style.display = "none";
+      startGameFlow(); // ⚠️ make sure this function exists
+    }, 2000);
+  }, 3000);
+}
+
+function startGameFlow() {
+  // Just to test
+  console.log("Game started!");
+  // Insert your actual startup logic here (loadout, van, ghost selection etc)
+}
+
+// Wait for DOM before starting title sequence
+window.addEventListener("DOMContentLoaded", () => {
+  startTitleScreen();
+});
 
   <!-- === MAIN SCENE LAYERS === -->
   <div id="main-scene">
