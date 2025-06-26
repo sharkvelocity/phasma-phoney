@@ -291,17 +291,18 @@ const ghostBehaviors = {
   advanceTurn();
 }
 
-  // ===== TITLE SCREEN =====
 function startTitleScreen() {
   const screen = document.getElementById("title-screen");
   screen.style.display = "flex";
-  screen.onclick = () => {
+
+  // Auto-fade after 3 seconds
+  setTimeout(() => {
     screen.style.opacity = 0;
     setTimeout(() => {
       screen.style.display = "none";
       startGameFlow();
-    }, 2000);
-  };
+    }, 2000); // match transition duration
+  }, 3000); // how long to show logo before fade
 }
 
 
