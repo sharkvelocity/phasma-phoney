@@ -215,12 +215,12 @@
       This game contains flashing lights, rapid animations, and sudden visual effects that may trigger seizures for people with photosensitive epilepsy.<br><br>
       Viewer discretion is advised.
     </p>
-    <button onclick="acknowledgeSeizureWarning()" style="margin-top:30px; padding:10px 20px; font-size:1em; background:#222; color:white; border:1px solid #555; border-radius:6px; cursor:pointer;">Yes</button>
+    <button onclick="seizureAcknowledged()" style="margin-top:30px; padding:10px 20px; font-size:1em; background:#222; color:white; border:1px solid #555; border-radius:6px; cursor:pointer;">Yes</button>
   </div>
 
   <!-- === TITLE SCREEN === -->
   <div id="title-screen">
-    <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/" alt="Phasma‑Phoney Logo" />
+    <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/logo.png" alt="Phasma‑Phoney Logo" />
   </div>
 
   <!-- === MAIN SCENE LAYERS === -->
@@ -285,7 +285,7 @@
   <div id="result-popup" style="display:none; position:fixed; top:20%; left:10%; width:80%; background:#111; color:white; border:2px solid #444; z-index:50; padding:20px; text-align:center; border-radius:8px;">
     <h2 id="result-message"></h2>
     <p id="result-comment" style="margin-top:10px; font-style:italic; color:#ccc;"></p>
-    <button onclick="restartGame()" id="result-button" style="margin-top:20px;">Again</button>
+    <button onclick="restartGame()" id="result-button" style="margin-top:20px;">Again?</button>
   </div>
 <script>
   
