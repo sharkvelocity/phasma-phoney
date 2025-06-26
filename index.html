@@ -447,7 +447,7 @@ function confirmLoadout() {
 }
 
 
-      if (cmd.startsWith("guess ")) {
+      if (cmd.startsWith("guess")) {
         guessGhost(cmd.slice(6));
       } else if (cmd === "inventory") {
         log("You are holding: " + game.inventory.join(", "));
