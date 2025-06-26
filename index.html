@@ -17,23 +17,7 @@
       height: 100dvh;
     }
 
-    /* === SEIZURE WARNING === */
-    #seizure-warning {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: black;
-      color: white;
-      z-index: 999;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 30px;
-      opacity: 1;
-      transition: opacity 1.5s ease;
-    }
+    
 
     /* === TITLE SCREEN === */
     #title-screen {
@@ -208,16 +192,6 @@
   </style>
 </head>
 <body>
-  <!-- === SEIZURE WARNING === -->
-  <div id="seizure-warning">
-    <h2 style="color:#f55;">⚠ Seizure Warning</h2>
-    <p style="max-width:500px; line-height:1.5em;">
-      This game contains flashing lights, rapid animations, and sudden visual effects that may trigger seizures for people with photosensitive epilepsy.<br><br>
-      Viewer discretion is advised.
-    </p>
-    <button onclick="seizureAcknowledged()" style="margin-top:30px; padding:10px 20px; font-size:1em; background:#222; color:white; border:1px solid #555; border-radius:6px; cursor:pointer;">Yes</button>
-  </div>
-
   <!-- === TITLE SCREEN === -->
   <div id="title-screen">
     <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/logo.png" alt="Phasma‑Phoney Logo" />
@@ -704,22 +678,6 @@ function openJournal() {
     logDiv.scrollTop = logDiv.scrollHeight;
   }
 
-  window.addEventListener("DOMContentLoaded", () => {
-    if (sessionStorage.getItem("seizureAcknowledged")) {
-      document.getElementById("seizure-warning").style.display = "none";
-      startTitleScreen();
-    }
-  });
-
- function acknowledgeSeizureWarning() {
-  sessionStorage.setItem("seizureAcknowledged", "yes");
-  const warning = document.getElementById("seizure-warning");
-  warning.style.opacity = 0;
-  setTimeout(() => {
-    warning.style.display = "none";
-    startTitleScreen(); // or startGameFlow()
-  }, 1500);
-}
 
 
   function spawnSpiritParticles(count = 40) {
