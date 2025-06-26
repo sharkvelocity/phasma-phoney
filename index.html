@@ -388,18 +388,17 @@ const ghostBehaviors = {
   advanceTurn();
 }
 
-<script>
   function startTitleScreen() {
     const screen = document.getElementById("title-screen");
     screen.style.display = "flex";
-    screen.onclick = () => {
-      screen.style.opacity = 0;
-      setTimeout(() => {
-        screen.style.display = "none";
-        startGameFlow();
-      }, 2000);
-    };
-  }
+screen.onclick = () => {
+  screen.style.opacity = 0;
+  setTimeout(() => {
+    screen.style.display = "none";
+    adaWelcomeBack();  
+    startGameFlow();
+  }, 2000);
+};
 
   function startGameFlow() {
     const keys = Object.keys(ghostProfiles);
