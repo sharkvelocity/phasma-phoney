@@ -310,7 +310,18 @@ function startTitleScreen() {
   "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
   "Basement", "Attic", "Utility", "Hallway", "Dining Room"
 ];
-
+const game = {
+  ghost: null,
+  ghostRoom: null,
+  playerRoom: null,
+  inventory: [],
+  vanStock: {},
+  selectedEvidence: new Set(),
+  currentTurn: 0,
+  sanity: 100,
+  mimicForm: null,
+  nextMimicShift: 0
+};
 function startGameFlow() {
   const keys = Object.keys(ghostProfiles);
   game.ghost = keys[Math.floor(Math.random() * keys.length)];
