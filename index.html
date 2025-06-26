@@ -153,7 +153,32 @@ const game = {
 function startTitleScreen() {
   const screen = document.getElementById("title-screen");
   screen.style.display = "flex";
+  <div id="title-screen">
+    <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/logo.png" alt="Logo" />
+  </div>
+<script>
+const game = { ghost: null };
+function startTitleScreen() {
+  const screen = document.getElementById("title-screen");
+  setTimeout(() => {
+    screen.style.opacity = 0;
+    setTimeout(() => {
+      screen.style.display = "none";
+      startGameFlow();
+    }, 2000);
+  }, 3000);
+}
+function startGameFlow() {
+  alert("Game flow starts here.");
+}
 
+
+function startGameFlow() {
+  // Just to test
+  console.log("Game started!");
+  // Insert your actual startup logic here (loadout, van, ghost selection etc)
+}
+window.addEventListener("DOMContentLoaded", startTitleScreen);
   // Auto-fade after 3 seconds
   setTimeout(() => {
     screen.style.opacity = 0;
@@ -163,13 +188,6 @@ function startTitleScreen() {
     }, 2000);
   }, 3000);
 }
-
-function startGameFlow() {
-  // Just to test
-  console.log("Game started!");
-  // Insert your actual startup logic here (loadout, van, ghost selection etc)
-}
-
 // Wait for DOM before starting title sequence
 window.addEventListener("DOMContentLoaded", () => {
   startTitleScreen();
