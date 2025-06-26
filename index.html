@@ -201,7 +201,18 @@
     <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/logo.png" alt="Phasma‑Phoney Logo" />
   </div>
 <script>
-  
+  const game = {
+  ghost: null,
+  ghostRoom: null,
+  playerRoom: null,
+  inventory: [],
+  vanStock: {},
+  selectedEvidence: new Set(),
+  currentTurn: 0,
+  sanity: 100,
+  mimicForm: null,
+  nextMimicShift: 0
+};
   const ghostProfiles = {
     "Spirit": { evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"] },
     "Wraith": { evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S"] },
@@ -282,12 +293,12 @@ const ghostBehaviors = {
 ];
   function goToRoom(room) {
   if (game.playerRoom === room) {
-    log(`You're already in the ${room}.`);
+    log(You're already in the ${room}.);
     return;
   }
 
   game.playerRoom = room;
-  log(`You move cautiously into the ${room}.`);
+  log(You move cautiously into the ${room}.);
   advanceTurn();
 }
 
@@ -301,10 +312,9 @@ function startTitleScreen() {
     setTimeout(() => {
       screen.style.display = "none";
       startGameFlow();
-    }, 2000); // match transition duration
-  }, 3000); // how long to show logo before fade
+    }, 2000);
+  }, 3000);
 }
-
 
     const roomList = [
   "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
@@ -396,14 +406,14 @@ function confirmLoadout() {
   }
 }
 
-    log(`Current sanity: ${game.sanity}%`);
+    log(Current sanity: ${game.sanity}%);
   }
 
   function pickMimicForm() {
     const ghosts = Object.keys(ghostBehaviors).filter(g => g !== "Mimic");
     const newForm = ghosts[Math.floor(Math.random() * ghosts.length)];
     game.mimicForm = newForm;
-    log(`Mimic now imitates a ${newForm}.`);
+    log(Mimic now imitates a ${newForm}.);
   }
 
   function mimicGhostBehavior() {
@@ -414,48 +424,48 @@ function confirmLoadout() {
   }
 function log(msg) {
   const logDiv = document.getElementById("ada-log");
-  logDiv.innerHTML += `<div>> ${msg}</div>`;
+  logDiv.innerHTML += <div>> ${msg}</div>;
   logDiv.scrollTop = logDiv.scrollHeight;
 }
 
 function openInspect() {
-  document.getElementById("ada-submenu").innerHTML = `
+  document.getElementById("ada-submenu").innerHTML = 
     <button onclick="inspectRoom()">Inspect Room</button>
     <button onclick="inspectSanity()">Check Sanity</button>
-  `;
+  ;
 }
 
 function inspectRoom() {
-  log(`You inspect the ${game.playerRoom}.`);
+  log(You inspect the ${game.playerRoom}.);
   advanceTurn();
 }
 
 function inspectSanity() {
-  log(`Your sanity is at ${game.sanity}%.`);
+  log(Your sanity is at ${game.sanity}%.);
   advanceTurn();
 }
 
 function openUseMenu() {
   const usable = game.inventory.filter(i => i !== "Notebook" && i !== "Lighter");
   if (usable.length === 0) {
-    document.getElementById("ada-submenu").innerHTML = `<em>You have no usable items.</em>`;
+    document.getElementById("ada-submenu").innerHTML = <em>You have no usable items.</em>;
     return;
   }
 
   document.getElementById("ada-submenu").innerHTML = usable.map(i => 
-    `<button onclick="useItem('${i}')">${i}</button>`
+    <button onclick="useItem('${i}')">${i}</button>
   ).join('');
 }
 
 function useItem(item) {
-  log(`You used the ${item}.`);
+  log(You used the ${item}.);
   advanceTurn();
 }
 
 function openGuess() {
   const ghosts = Object.keys(ghostProfiles);
   document.getElementById("ada-submenu").innerHTML = ghosts.map(g => 
-    `<button onclick="guessGhost('${g}')">${g}</button>`
+    <button onclick="guessGhost('${g}')">${g}</button>
   ).join('');
 }
 
@@ -578,7 +588,7 @@ function openJournal() {
     vanDiv.innerHTML = "";
     Object.entries(game.vanStock).forEach(([item, count]) => {
       const btn = document.createElement("button");
-      btn.textContent = `${item} (${count})`;
+      btn.textContent = ${item} (${count});
       const disabled = count <= 0 || getEquippedCount() >= 3;
       btn.disabled = disabled;
       btn.onclick = () => {
@@ -616,10 +626,10 @@ function openJournal() {
     for (let i = 0; i < 15; i++) {
       const orb = document.createElement("div");
       orb.className = "orb";
-      orb.style.left = `${Math.random() * 100}vw`;
-      orb.style.top = `${Math.random() * 100}vh`;
-      orb.style.animationDuration = `${5 + Math.random() * 4}s`;
-      orb.style.opacity = `${0.3 + Math.random() * 0.6}`;
+      orb.style.left = ${Math.random() * 100}vw;
+      orb.style.top = ${Math.random() * 100}vh;
+      orb.style.animationDuration = ${5 + Math.random() * 4}s;
+      orb.style.opacity = ${0.3 + Math.random() * 0.6};
       container.appendChild(orb);
     }
     setTimeout(() => container.innerHTML = "", 5000);
@@ -627,7 +637,7 @@ function openJournal() {
 
   function log(msg) {
     const logDiv = document.getElementById("ada-log");
-    logDiv.innerHTML += `<div>> ${msg}</div>`;
+    logDiv.innerHTML += <div>> ${msg}</div>;
     logDiv.scrollTop = logDiv.scrollHeight;
   }
 
@@ -639,10 +649,10 @@ function openJournal() {
     for (let i = 0; i < count; i++) {
       const orb = document.createElement("div");
       orb.className = "orb";
-      orb.style.left = `${Math.random() * 100}vw`;
-      orb.style.top = `${Math.random() * 100}vh`;
-      orb.style.animationDuration = `${6 + Math.random() * 6}s`;
-      orb.style.opacity = `${0.2 + Math.random() * 0.5}`;
+      orb.style.left = ${Math.random() * 100}vw;
+      orb.style.top = ${Math.random() * 100}vh;
+      orb.style.animationDuration = ${6 + Math.random() * 6}s;
+      orb.style.opacity = ${0.2 + Math.random() * 0.5};
       container.appendChild(orb);
     }
   }
@@ -672,7 +682,7 @@ function setupMapPanel() {
     btn.textContent = room;
     btn.onclick = () => {
       game.playerRoom = room;
-      log(`You entered the ${room}.`);
+      log(You entered the ${room}.);
       if (room === game.ghostRoom) {
         log("ADA: You're in the ghost's room...");
         adaSpeak([
@@ -682,9 +692,9 @@ function setupMapPanel() {
         ]);
       } else {
         adaSpeak([
-          `You’re now in the ${room}.`,
-          `Scanning ${room}. No signs yet.`,
-          `Room change confirmed: ${room}.`
+          You’re now in the ${room}.,
+          Scanning ${room}. No signs yet.,
+          Room change confirmed: ${room}.
         ]);
       }
     };
