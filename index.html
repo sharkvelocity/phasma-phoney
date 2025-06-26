@@ -267,6 +267,12 @@
 
   <div id="ada-submenu" style="margin-top:10px; text-align:center;"></div>
 </div>
+<!-- === MAP INTERFACE === -->
+<div id="map-panel" style="position:fixed; bottom:90px; left:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
+  <strong>Map</strong>
+  <div id="room-buttons" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;"></div>
+  <small style="opacity:0.7;">Tap to explore rooms</small>
+</div>
 
   <!-- === EVIDENCE TRACKER === -->
   <div id="evidence-panel" style="position:fixed; top:10px; right:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
@@ -711,9 +717,10 @@ function openJournal() {
   warning.style.opacity = 0;
   setTimeout(() => {
     warning.style.display = "none";
-    startTitleScreen(); // or startGameFlow() depending on flow
+    startTitleScreen(); // or startGameFlow()
   }, 1500);
-};
+}
+
 
   function spawnSpiritParticles(count = 40) {
     const container = document.getElementById("spiritParticles");
@@ -740,5 +747,39 @@ function openJournal() {
       rain.appendChild(drop);
     }
   }
-</body>
+const roomList = [
+  "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
+  "Basement", "Attic", "Utility", "Hallway", "Dining Room"
+];
+
+// Called during setup
+function setupMapPanel() {
+  const map = document.getElementById("room-buttons");
+  map.innerHTML = "";
+  roomList.forEach(room => {
+    const btn = document.createElement("button");
+    btn.textContent = room;
+    btn.onclick = () => {
+      game.playerRoom = room;
+      log(`You entered the ${room}.`);
+      if (room === game.ghostRoom) {
+        log("ADA: You're in the ghost's room...");
+        adaSpeak([
+          "You're not alone in here...",
+          "This is the ghost's domain.",
+          "Careful... you’ve entered the active room."
+        ]);
+      } else {
+        adaSpeak([
+          `You’re now in the ${room}.`,
+          `Scanning ${room}. No signs yet.`,
+          `Room change confirmed: ${room}.`
+        ]);
+      }
+    };
+    map.appendChild(btn);
+  });
+}
+
+    </body>
 </html>
