@@ -704,19 +704,15 @@ function openJournal() {
     }
   });
 
-  function acknowledgeSeizureWarning() {
-    sessionStorage.setItem("seizureAcknowledged", "yes");
-    document.getElementById("seizure-warning").style.opacity = 0;
-    setTimeout(() => {
-      document.getElementById("seizure-warning").style.display = "none";
-      startTitleScreen();
-    }, 1500);
-  }
-
-  window.onload = () => {
-    spawnSpiritParticles();
-    spawnRain();
-  };
+ function acknowledgeSeizureWarning() {
+  sessionStorage.setItem("seizureAcknowledged", "yes");
+  const warning = document.getElementById("seizure-warning");
+  warning.style.opacity = 0;
+  setTimeout(() => {
+    warning.style.display = "none";
+    startTitleScreen(); // or startGameFlow() depending on flow
+  }, 1500);
+};
 
   function spawnSpiritParticles(count = 40) {
     const container = document.getElementById("spiritParticles");
