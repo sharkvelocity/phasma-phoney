@@ -352,17 +352,19 @@ const ghostBehaviors = {
   advanceTurn();
 }
 
-  function startTitleScreen() {
-    const screen = document.getElementById("title-screen");
-    screen.style.display = "flex";
-screen.onclick = () => {
-  screen.style.opacity = 0;
-  setTimeout(() => {
-    screen.style.display = "none";
-    adaWelcomeBack();  
-    startGameFlow();
-  }, 2000);
-};
+  // ===== TITLE SCREEN =====
+function startTitleScreen() {
+  const screen = document.getElementById("title-screen");
+  screen.style.display = "flex";
+  screen.onclick = () => {
+    screen.style.opacity = 0;
+    setTimeout(() => {
+      screen.style.display = "none";
+      startGameFlow();
+    }, 2000);
+  };
+}
+
 
     const roomList = [
   "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
@@ -680,7 +682,7 @@ function openJournal() {
 
 
 
-  function spawnSpiritParticles(count = 40) {
+  function spawnSpiritParticles(count = 10) {
     const container = document.getElementById("spiritParticles");
     container.innerHTML = "";
     for (let i = 0; i < count; i++) {
