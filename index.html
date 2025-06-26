@@ -54,7 +54,7 @@
       pointer-events: none;
     }
 
-    #background, #rain, #background-blocker, #lightning, #foreground, #fog-container, #spiritParticles {
+    #background, #rain, #background-blocker, #lightning, #foreground, #spiritParticles {
       position: absolute;
       width: 100%;
       height: 100%;
@@ -101,54 +101,6 @@
       background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/foreground.png') no-repeat center center;
       background-size: cover;
       z-index: 5;
-    }
-
-    /* === FOG CONTAINER === */
-    #fog-container {
-      z-index: 6;
-      pointer-events: none;
-    }
-
-    .fog-layer {
-      position: absolute;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 70%);
-      background-repeat: repeat;
-      filter: blur(4px);
-      opacity: 0.2;
-    }
-
-    .fog-layer.layer1 {
-      animation: fogDrift1 90s linear infinite;
-      z-index: 1;
-    }
-
-    .fog-layer.layer2 {
-      animation: fogDrift2 120s linear infinite;
-      opacity: 0.15;
-      z-index: 2;
-    }
-
-    .fog-layer.layer3 {
-      animation: fogDrift3 180s linear infinite;
-      opacity: 0.1;
-      z-index: 3;
-    }
-
-    @keyframes fogDrift1 {
-      0%   { transform: translate(0, 0); }
-      100% { transform: translate(-5%, -2%); }
-    }
-
-    @keyframes fogDrift2 {
-      0%   { transform: translate(0, 0); }
-      100% { transform: translate(-8%, 3%); }
-    }
-
-    @keyframes fogDrift3 {
-      0%   { transform: translate(0, 0); }
-      100% { transform: translate(-3%, -4%); }
     }
 
     /* === ORBS === */
@@ -204,11 +156,6 @@
     <div id="background-blocker"></div>
     <div id="lightning"></div>
     <div id="foreground"></div>
-    <div id="fog-container">
-      <div class="fog-layer layer1"></div>
-      <div class="fog-layer layer2"></div>
-      <div class="fog-layer layer3"></div>
-    </div>
     <div id="spiritParticles"></div>
   </div>
 
