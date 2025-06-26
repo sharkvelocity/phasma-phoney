@@ -445,25 +445,7 @@ function confirmLoadout() {
   log("Investigation begins. Find the haunted room and determine the ghost.");
   adaWelcome(); // 🔊 ADA speaks here
 }
-
-
-      if (cmd.startsWith("guess")) {
-        guessGhost(cmd.slice(6));
-      } else if (cmd === "inventory") {
-        log("You are holding: " + game.inventory.join(", "));
-      } else if (cmd === "use camera") {
-        if (game.ghost === "Mimic" && game.playerRoom === game.ghostRoom) {
-          showMimicOrbs();
-          log("You focus the camera... Orbs flicker in the air.");
-        } else {
-          log("You scan the room... but nothing shows.");
-        }
-      } else {
-        log("Unknown command.");
-      }
-
-      advanceTurn();
-    }
+  
 
   function advanceTurn() {
     game.currentTurn++;
