@@ -1,22 +1,41 @@
 <!DOCTYPE html>
 <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-    <title>Phasma‑Phoney</title>
+  <title>Phasma‑Phoney</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <style>
-   html, body {
-  margin: 0;
-  padding: 0;
-  background: black;
-  font-family: sans-serif;
-  overflow: hidden;
-  width: 100vw;
-  height: 100dvh;
-}
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      font-family: sans-serif;
+      overflow: hidden;
+      width: 100vw;
+      height: 100dvh;
+    }
 
-   
+    /* === SEIZURE WARNING === */
+    #seizure-warning {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: black;
+      color: white;
+      z-index: 999;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 30px;
+      opacity: 1;
+      transition: opacity 1.5s ease;
+    }
 
+    /* === TITLE SCREEN === */
     #title-screen {
       position: fixed;
       top: 0; left: 0;
@@ -29,23 +48,7 @@
       opacity: 1;
       transition: opacity 2s ease-in-out;
     }
-    
- #seizure-warning {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: black;
-      color: white;
-      z-index: 99;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-      padding: 30px;
-      opacity: 1;
-      transition: opacity 1.5s ease;
-    }
+
     #title-screen img {
       max-width: 80%;
       animation: pulse 5s infinite ease-in-out;
@@ -56,16 +59,18 @@
       50% { opacity: 1; transform: scale(1.04); }
     }
 
+    /* === LAYERED SCENE === */
     #main-scene {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 1;
-  overflow: hidden;
-}
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100dvh;
+      z-index: 1;
+      overflow: hidden;
+      pointer-events: none;
+    }
 
-    #background, #rain, #background-blocker, #lightning, #foreground, #fog, #spiritParticles {
+    #background, #rain, #background-blocker, #lightning, #foreground, #fog-container, #spiritParticles {
       position: absolute;
       width: 100%;
       height: 100%;
@@ -96,74 +101,77 @@
       100% { transform: translateY(100vh); opacity: 0; }
     }
 
-    #background-blocker { 
+    #background-blocker {
       background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/rainblock.png') no-repeat center center;
       background-size: cover;
       z-index: 3;
-      pointer-events: none;
     }
-    #lightning { 
-      background: white; opacity: 0; z-index: 4; pointer-events: none; 
+
+    #lightning {
+      background: white;
+      opacity: 0;
+      z-index: 4;
     }
+
     #foreground {
       background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/foreground.png') no-repeat center center;
       background-size: cover;
       z-index: 5;
+    }
+
+    /* === FOG CONTAINER === */
+    #fog-container {
+      z-index: 6;
       pointer-events: none;
     }
-#fog-container {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  z-index: 6;
-  pointer-events: none;
-  overflow: hidden;
-}
 
-.fog-layer {
-  position: absolute;
-  width: 200%;
-  height: 200%;
-  background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 70%);
-  background-repeat: repeat;
-  filter: blur(4px);
-  opacity: 0.2;
-}
+    .fog-layer {
+      position: absolute;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 70%);
+      background-repeat: repeat;
+      filter: blur(4px);
+      opacity: 0.2;
+    }
 
-.fog-layer.layer1 {
-  animation: fogDrift1 90s linear infinite;
-  z-index: 1;
-}
+    .fog-layer.layer1 {
+      animation: fogDrift1 90s linear infinite;
+      z-index: 1;
+    }
 
-.fog-layer.layer2 {
-  animation: fogDrift2 120s linear infinite;
-  opacity: 0.15;
-  z-index: 2;
-}
+    .fog-layer.layer2 {
+      animation: fogDrift2 120s linear infinite;
+      opacity: 0.15;
+      z-index: 2;
+    }
 
-.fog-layer.layer3 {
-  animation: fogDrift3 180s linear infinite;
-  opacity: 0.1;
-  z-index: 3;
-}
+    .fog-layer.layer3 {
+      animation: fogDrift3 180s linear infinite;
+      opacity: 0.1;
+      z-index: 3;
+    }
 
-@keyframes fogDrift1 {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(-5%, -2%); }
-}
+    @keyframes fogDrift1 {
+      0%   { transform: translate(0, 0); }
+      100% { transform: translate(-5%, -2%); }
+    }
 
-@keyframes fogDrift2 {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(-8%, 3%); }
-}
+    @keyframes fogDrift2 {
+      0%   { transform: translate(0, 0); }
+      100% { transform: translate(-8%, 3%); }
+    }
 
-@keyframes fogDrift3 {
-  0%   { transform: translate(0, 0); }
-  100% { transform: translate(-3%, -4%); }
-}
+    @keyframes fogDrift3 {
+      0%   { transform: translate(0, 0); }
+      100% { transform: translate(-3%, -4%); }
+    }
 
-
-    #spiritParticles { z-index: 7; pointer-events: none; }
+    /* === ORBS === */
+    #spiritParticles {
+      z-index: 7;
+      pointer-events: none;
+    }
 
     .orb {
       position: absolute;
@@ -175,17 +183,13 @@
       animation: floatOrb 8s infinite ease-in-out;
     }
 
-    @keyframes fogMove {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
-    }
-
     @keyframes floatOrb {
       0% { transform: translateY(0); opacity: 0.3; }
       50% { opacity: 1; }
       100% { transform: translateY(-100vh); opacity: 0; }
     }
 
+    /* === EVIDENCE PANEL === */
     #evidence-panel button {
       background: #222;
       color: white;
@@ -216,24 +220,24 @@
 
   <!-- === TITLE SCREEN === -->
   <div id="title-screen">
-    <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/Title.png" alt="Phasma‑Phoney Logo" />
+    <img src="title-logo.png" alt="Phasma‑Phoney Logo" />
   </div>
 
-  <!-- === LAYERED SCENE === -->
+  <!-- === MAIN SCENE LAYERS === -->
   <div id="main-scene">
-<div id="background"></div>
-<div id="rain"></div>
-<div id="background-blocker"></div>
-<div id="lightning"></div>
-<div id="foreground"></div>
-<div id="fog-container">
-  <div class="fog-layer layer1"></div>
-  <div class="fog-layer layer2"></div>
-  <div class="fog-layer layer3"></div>
-</div>
-<div id="spiritParticles"></div>
-
+    <div id="background"></div>
+    <div id="rain"></div>
+    <div id="background-blocker"></div>
+    <div id="lightning"></div>
+    <div id="foreground"></div>
+    <div id="fog-container">
+      <div class="fog-layer layer1"></div>
+      <div class="fog-layer layer2"></div>
+      <div class="fog-layer layer3"></div>
+    </div>
+    <div id="spiritParticles"></div>
   </div>
+
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen" style="display:none; color:white; padding:20px; position:absolute; z-index:10; background:black; width:100%; height:100%;">
     <h2>🎒 Your Inventory (max 3)</h2>
