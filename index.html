@@ -321,19 +321,9 @@
     "UV Flashlight", "Ghost Writing Book", "D.O.T.S", "Crucifix",
     "Salt", "Smudge", "Motion Sensor"
   ];
+  
 
-  const game = {
-    ghost: null,
-    ghostRoom: "Garage",
-    inventory: [],
-    vanStock: {},
-    selectedEvidence: new Set(),
-    sanity: 100,
-    currentTurn: 0,
-    nextMimicShift: 0,
-    mimicForm: null,
-    playerRoom: "Garage"
-  };
+
 
 const ghostBehaviors = {
   "Spirit":      { hint: () => log("You hear light footsteps pacing nearby.") },
@@ -394,16 +384,27 @@ screen.onclick = () => {
   }, 2000);
 };
 
-  function startGameFlow() {
-    const keys = Object.keys(ghostProfiles);
-    game.ghost = keys[Math.floor(Math.random() * keys.length)];
-    game.inventory = ["Notebook", "Lighter"];
-    game.vanStock = {};
-    allLoadoutItems.forEach(i => {
-      game.vanStock[i] = (i === "Smudge" ? 4 : i === "Salt" ? 3 : 1);
-    });
-    showLoadoutMenu();
-  }
+    const roomList = [
+  "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
+  "Basement", "Attic", "Utility", "Hallway", "Dining Room"
+];
+
+function startGameFlow() {
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+
+  game.ghostRoom = roomList[Math.floor(Math.random() * roomList.length)];
+  game.playerRoom = "Van"; // or first room depending on design
+
+  game.inventory = ["Notebook", "Lighter"];
+  game.vanStock = {};
+  allLoadoutItems.forEach(i => {
+    game.vanStock[i] = (i === "Smudge" ? 4 : i === "Salt" ? 3 : 1);
+  });
+
+  showLoadoutMenu();
+}
+
 function adaWelcome() {
   const greetings = [
     "Welcome back.",
