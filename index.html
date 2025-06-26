@@ -15,7 +15,22 @@
   height: 100dvh;
 }
 
-    #seizure-warning {
+   
+
+    #title-screen {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: black;
+      z-index: 100;
+      opacity: 1;
+      transition: opacity 2s ease-in-out;
+    }
+    
+ #seizure-warning {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
@@ -31,20 +46,6 @@
       opacity: 1;
       transition: opacity 1.5s ease;
     }
-
-    #title-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: black;
-      z-index: 100;
-      opacity: 1;
-      transition: opacity 2s ease-in-out;
-    }
-
     #title-screen img {
       max-width: 80%;
       animation: pulse 5s infinite ease-in-out;
