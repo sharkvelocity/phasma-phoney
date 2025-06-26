@@ -161,13 +161,6 @@
   100% { transform: translate(-3%, -4%); }
 }
 
-    #fog {
-      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/fog.png') repeat;
-      animation: fogMove 60s linear infinite;
-      opacity: 0.25;
-      z-index: 6;
-      pointer-events: none;
-    }
 
     #spiritParticles { z-index: 7; pointer-events: none; }
 
@@ -227,17 +220,18 @@
 
   <!-- === LAYERED SCENE === -->
   <div id="main-scene">
-    <div id="background"></div>
-    <div id="rain"></div>
-    <div id="background-blocker"></div>
-    <div id="lightning"></div>
-    <div id="foreground"></div>
-    <div id="fog-container">
+<div id="background"></div>
+<div id="rain"></div>
+<div id="background-blocker"></div>
+<div id="lightning"></div>
+<div id="foreground"></div>
+<div id="fog-container">
   <div class="fog-layer layer1"></div>
   <div class="fog-layer layer2"></div>
   <div class="fog-layer layer3"></div>
 </div>
-    <div id="spiritParticles"></div>
+<div id="spiritParticles"></div>
+
   </div>
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen" style="display:none; color:white; padding:20px; position:absolute; z-index:10; background:black; width:100%; height:100%;">
