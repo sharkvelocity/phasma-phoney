@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Phasma‑Phoney</title>
-  <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Phasma‑Phoney</title>
+<style>
     body {
       background: url('./House.png') no-repeat center center fixed;
       background-size: cover;
@@ -121,46 +122,44 @@
     }
   </style>
 </head>
-
 <body>
-  <h1>Phasma-Phoney</h1>
-  <button id="start-btn">Start Investigation</button>
+<h1>Phasma-Phoney</h1>
+<button id="start-btn">Start Investigation</button>
+<div class="hidden" id="game-screen">
+<div id="left-panel">
+<div id="option-buttons"></div>
+<button id="journal-btn">Journal</button>
+</div>
+<div id="center-panel">
+<div id="narrator-box">
+<div id="system-text">System: Ready.</div>
+<div id="narrator-thought">🧠 Your Thoughts...</div>
+</div>
+<div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
+<div id="main-readout">Awaiting The start of the Investigation...</div>
+<div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">Minimap loading...</div>
+</div>
+</div>
+<div class="screen hidden" id="journal-screen" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+<h2>Investigation Journal</h2>
+<textarea id="journal-entry" placeholder="For notes...Or to remember evidence" style="width:100%;height:120px;"></textarea>
+<h3>Evidence Checklist</h3>
+<div id="evidence-checklist" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;"></div>
+<p><strong>Possible Ghosts:</strong></p>
+<ul id="possible-ghosts"></ul>
+<button id="save-journal">Save</button>
+<button id="close-journal">Close</button>
+</div>
+<div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
+<h2>Select Your Loadout (Max 3 items)</h2>
+<div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
+<p id="loadout-selected">Selected: 0</p>
+<button id="confirm-loadout">Confirm</button>
+<button id="back-btn">Back</button>
+</div>
 
-  <div id="game-screen" class="hidden">
-    <div id="left-panel">
-      <div id="option-buttons"></div>
-      <button id="journal-btn">Journal</button>
-    </div>
-    <div id="center-panel">
-      <div id="narrator-box">
-        <div id="system-text">System: Ready.</div>
-        <div id="narrator-thought">🧠 Your Thoughts...</div>
-      </div>
-      <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
-      <div id="main-readout">Awaiting The start of the Investigation...</div>
-      <div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">Minimap loading...</div>
-    </div>
-  </div>
-
-  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
-    <h2>Investigation Journal</h2>
-    <textarea id="journal-entry" placeholder="For notes...Or to remember evidence" style="width:100%;height:120px;"></textarea>
-    <h3>Evidence Checklist</h3>
-    <div id="evidence-checklist" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;"></div>
-    <p><strong>Possible Ghosts:</strong></p>
-    <ul id="possible-ghosts"></ul>
-    <button id="save-journal">Save</button>
-    <button id="close-journal">Close</button>
-  </div>
-
-  <div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
-    <h2>Select Your Loadout (Max 3 items)</h2>
-    <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-    <p id="loadout-selected">Selected: 0</p>
-    <button id="confirm-loadout">Confirm</button>
-    <button id="back-btn">Back</button>  
-  </div>
-  <script>
+<!-- Logic Block: 1_weather_orbs -->
+<script>
 //=============================
 // 1. WEATHER & ORB EFFECTS
 //=============================
@@ -187,7 +186,8 @@ setInterval(() => {
   if (document.hasFocus()) spawnOrbs(Math.floor(Math.random() * 2) + 1);
 }, 5000);
 </script>
-<!-- 🔹 LOGIC BLOCK: MAP SYSTEM -->
+
+<!-- Logic Block: 2_map_system -->
 <script>
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
 let currentRoom = 'Foyer';
@@ -215,7 +215,7 @@ window.movePlayer = movePlayer;
 window.getCurrentRoom = getCurrentRoom;
 </script>
 
-<!-- 🔹 LOGIC BLOCK: INVENTORY / VAN SYSTEM -->
+<!-- Logic Block: 3_inventory_van -->
 <script>
 const consumables = ['Smudge Stick', 'Candle', 'Salt'];
 const alwaysWithYou = ['Lighter'];
@@ -314,7 +314,7 @@ function showRoomItems() {
 }
 </script>
 
-<!-- 🔹 LOGIC BLOCK: CURSED ITEMS & TAROT -->
+<!-- Logic Block: 4_cursed_tarot -->
 <script>
 const tarotCards = [
   '🃏 The Fool – Nothing happens.', '🪦 The Hanged Man – You feel your sanity drain rapidly.',
@@ -346,7 +346,7 @@ function drawTarotCard() {
 }
 </script>
 
-<!-- 🔹 LOGIC BLOCK: GHOST SYSTEM -->
+<!-- Logic Block: 5_ghost_system -->
 <script>
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
@@ -410,7 +410,8 @@ window.initializeGhost = initializeGhost;
 window.performBehavior = performBehavior;
 window.getCurrentGhost = getCurrentGhost;
 </script>
-<!-- 6. Journal System -->
+
+<!-- Logic Block: 6_journal_system -->
 <script>
 let journalNotes = '';
 
@@ -497,7 +498,7 @@ window.updateNotes = updateNotes;
 window.initializeJournal = initializeJournal;
 </script>
 
-<!-- 7. Ambient Narration & Visual Effects -->
+<!-- Logic Block: 7_narration_visuals -->
 <script>
 function displayNarratorThought(text) {
   const thoughtDiv = document.getElementById('narrator-thought');
@@ -666,7 +667,7 @@ function randomFrom(arr) {
 }
 </script>
 
-<!-- 8. Game Loop & Turn System -->
+<!-- Logic Block: 8_game_loop -->
 <script>
 function startGame() {
   resetStats();
@@ -686,7 +687,8 @@ function tickTurn() {
   narrateAmbience();
 }
 </script>
-<!-- 9. Button Rendering + Game Actions -->
+
+<!-- Logic Block: 9_button_rendering -->
 <script>
 function renderOptions() {
   const container = document.getElementById('option-buttons');
@@ -777,7 +779,7 @@ function renderOptions() {
 }
 </script>
 
-<!-- 10. DOMContentLoaded Hook -->
+<!-- Logic Block: 10_dom_content_loaded -->
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   const startBtn = document.getElementById('start-btn');
@@ -845,397 +847,9 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </script>
 
-  <script>
-// --- GHOST SYSTEM LOGIC BLOCK --- //
-
-const ghostTypes = [
-  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
-  'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
-  'Yurei', 'Oni', 'Hantu', 'Goryo', 'Myling',
-  'Onryo', 'The Twins', 'Raiju', 'Obake', 'The Mimic',
-  'Moroi', 'Deogen', 'Thaye', 'Succubus'
-];
-
-const ghostEvidenceMap = {
-  Spirit: ['EMF 5', 'Spirit Box', 'Ghost Writing'],
-  Wraith: ['EMF 5', 'Spirit Box', 'D.O.T.S'],
-  Phantom: ['Spirit Box', 'Fingerprints', 'D.O.T.S'],
-  Poltergeist: ['Spirit Box', 'Fingerprints', 'Ghost Writing'],
-  Banshee: ['Fingerprints', 'Ghost Orbs', 'D.O.T.S'],
-  Jinn: ['EMF 5', 'Fingerprints', 'Freezing Temps'],
-  Mare: ['Spirit Box', 'Ghost Orbs', 'Ghost Writing'],
-  Revenant: ['Ghost Orbs', 'Ghost Writing', 'Freezing Temps'],
-  Shade: ['EMF 5', 'Ghost Writing', 'Freezing Temps'],
-  Demon: ['Fingerprints', 'Ghost Writing', 'Freezing Temps'],
-  Yurei: ['Ghost Orbs', 'Freezing Temps', 'D.O.T.S'],
-  Oni: ['EMF 5', 'Freezing Temps', 'D.O.T.S'],
-  Hantu: ['Fingerprints', 'Ghost Orbs', 'Freezing Temps'],
-  Goryo: ['EMF 5', 'Fingerprints', 'D.O.T.S'],
-  Myling: ['EMF 5', 'Fingerprints', 'Ghost Writing'],
-  Onryo: ['Spirit Box', 'Ghost Orbs', 'Freezing Temps'],
-  The Twins: ['EMF 5', 'Spirit Box', 'Freezing Temps'],
-  Raiju: ['EMF 5', 'Ghost Orbs', 'D.O.T.S'],
-  Obake: ['EMF 5', 'Fingerprints', 'Ghost Orbs'],
-  The Mimic: ['Spirit Box', 'Fingerprints', 'Freezing Temps'],
-  Moroi: ['Spirit Box', 'Ghost Writing', 'Freezing Temps'],
-  Deogen: ['Spirit Box', 'Ghost Writing', 'D.O.T.S'],
-  Thaye: ['Ghost Orbs', 'Ghost Writing', 'D.O.T.S'],
-  Succubus: ['Spirit Box', 'Ghost Writing', 'EMF 5']
-};
-
-function generateGhostBehavior(type) {
-  const base = [
-    room => `You feel watched in the ${room}.`,
-    room => `A chill runs through the ${room}.`,
-    room => `The lights flicker briefly in the ${room}.`,
-    room => `You hear faint whispers in the ${room}.`,
-    room => `The air feels thick in the ${room}.`
-  ];
-
-  const custom = {
-    Poltergeist: [r => `Objects clatter violently in the ${r}.`],
-    Banshee: [r => `A piercing wail echoes through the ${r}.`],
-    Jinn: [r => `A surge of energy pulses through the ${r}.`],
-    Mare: [r => `Darkness creeps unnaturally in the ${r}.`],
-    Revenant: [r => `You sense something fast approaching in the ${r}.`],
-    Shade: [r => `Silence dominates the ${r}, too quiet.`],
-    Demon: [r => `You hear growling in the ${r}.`],
-    Yurei: [r => `A sorrowful presence hangs in the ${r}.`],
-    Oni: [r => `Loud footsteps stomp around the ${r}.`],
-    Hantu: [r => `Freezing winds swirl unnaturally in the ${r}.`],
-    Goryo: [r => `You glimpse a silhouette dart past in the ${r}.`],
-    Myling: [r => `Soft sobs fill the ${r}.`],
-    Onryo: [r => `Your lighter won't ignite in the ${r}.`],
-    The Twins: [r => `Two sets of footsteps echo in the ${r}.`],
-    Raiju: [r => `Your electronics buzz in the ${r}.`],
-    Obake: [r => `Fingerprints shift and warp in the ${r}.`],
-    The Mimic: [r => `You hear a sound that doesn’t match your evidence in the ${r}.`],
-    Moroi: [r => `Your breath fogs up as you speak in the ${r}.`],
-    Deogen: [r => `You feel eyes watching your every move in the ${r}.`],
-    Thaye: [r => `An ancient aura ages the air in the ${r}.`],
-    Succubus: [r => `A sultry whisper beckons in the ${r}.`]
-  };
-
-  return room => {
-    const pool = [...base, ...(custom[type] || [])];
-    return pool[Math.floor(Math.random() * pool.length)](room);
-  };
-}
-
-let ghost = null;
-
-function getRandomGhost() {
-  const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
-  return { type, behavior: generateGhostBehavior(type) };
-}
-
-function initializeGhost(g) { ghost = g; }
-function getCurrentGhost() { return ghost; }
-function performBehavior(room) {
-  return ghost?.behavior(room) || 'Nothing happens.';
-}
-function getGhostEvidence(type) {
-  return ghostEvidenceMap[type] || [];
-}
-
-// Expose
-window.getRandomGhost = getRandomGhost;
-window.initializeGhost = initializeGhost;
-window.getCurrentGhost = getCurrentGhost;
-window.performBehavior = performBehavior;
-window.getGhostEvidence = getGhostEvidence;
-</script>
+<!-- Logic Block: 11_webllm_jane -->
 <script>
-// --- JOURNAL SYSTEM LOGIC BLOCK --- //
-
-let journalNotes = '';
-
-function updateNotes(txt) {
-  journalNotes = txt;
-  displayNarratorText('📝 Notes saved.');
-}
-
-function initializeJournal() {
-  document.getElementById('journal-entry').value = journalNotes;
-  renderEvidenceChecklist();
-}
-
-<script>
-// --- JOURNAL SYSTEM: Evidence Checklist + Matching Ghosts -- //
-
-function renderEvidenceChecklist() {
-  const container = document.getElementById('evidence-checklist');
-  container.innerHTML = '';
-
-  const evidenceTypes = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
-
-  evidenceTypes.forEach(ev => {
-    const label = document.createElement('label');
-    label.style.display = 'inline-flex';
-    label.style.alignItems = 'center';
-    label.style.gap = '4px';
-
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.value = ev;
-    checkbox.onchange = updatePossibleGhosts;
-
-    label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(ev));
-    container.appendChild(label);
-  });
-}
-
-function updatePossibleGhosts() {
-  const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
-  const list = document.getElementById('possible-ghosts');
-  list.innerHTML = '';
-
-  if (selected.length === 0) {
-    list.innerHTML = '<li>All ghosts are possible</li>';
-    return;
-  }
-
-  const possible = ghostTypes.filter(type => {
-    const evidenceSet = getGhostEvidence(type);
-    return selected.every(ev => evidenceSet.includes(ev));
-  });
-
-  if (possible.length) {
-    possible.forEach(type => {
-      const li = document.createElement('li');
-      li.textContent = type;
-      list.appendChild(li);
-    });
-  } else {
-    list.innerHTML = '<li>No ghosts match this combination</li>';
-  }
-}
-  function updatePossibleGhosts() {
-  const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
-  const list = document.getElementById('possible-ghosts');
-  list.innerHTML = '';
-
-  if (selected.length === 0) {
-    list.innerHTML = '<li>All ghosts are possible</li>';
-    return;
-  }
-
-  const possible = ghostTypes.filter(type => {
-    const evidenceSet = getGhostEvidence(type);
-    return selected.every(sel => evidenceSet.includes(sel));
-  });
-
-  if (possible.length) {
-    possible.forEach(ghost => {
-      const li = document.createElement('li');
-      li.innerText = ghost;
-      list.appendChild(li);
-    });
-  } else {
-    list.innerHTML = '<li>No ghosts match this combination</li>';
-  }
-}
-
-// Expose
-window.updateNotes = updateNotes;
-window.initializeJournal = initializeJournal;
-</script>
-<script>
-// --- GAME START & LOOP LOGIC BLOCK --- //
-
-function startGame() {
-  resetStats();
-  const ghostData = getRandomGhost();
-  initializeGhost(ghostData);
-  initializeJournal();
-  updateHUD();
-  displayNarratorText("So it begins...");
-  renderOptions();
-}
-
-function tickTurn() {
-  turn++;
-  updateHUD();
-  const ghostResult = performGhostAction();
-  displayNarratorText(ghostResult);
-  narrateAmbience();
-}
-</script>
-
-<script>
-// --- HUD + NARRATION SYSTEM BLOCK --- //
-
-function updateHUD() {
-  const hud = document.getElementById('hud-status');
-  hud.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
-}
-
-function displayNarratorText(text) {
-  const thoughtDiv = document.getElementById('narrator-thought');
-  const readout = document.getElementById('main-readout');
-  thoughtDiv.innerText = text;
-  readout.innerText += `\n🧠 ${text}`;
-  readout.scrollTop = readout.scrollHeight;
-}
-
-function narrateItemThought(item) {
-  const thoughts = {
-    'Candle': ["I feel a little safer with a flame nearby.", "The candle flickers… is that wind or something else?", "This light might be all that stands between me and the dark."],
-    'Smudge Stick': ["Hope this keeps whatever it is at bay.", "The smoke curls like fingers. Protective… maybe.", "Old rituals for older things."],
-    'EMF Reader': ["This thing better beep at the right time.", "Still quiet… but that doesn’t mean safe.", "Waiting for the spike. Dreading it, too."],
-    'Spirit Box': ["I hate the sound it makes. Static and whispers.", "Every time it turns on, I brace myself.", "It’s talking. Or it’s trying to."],
-    'UV Light': ["Let’s see what hides in the dark.", "Invisible stains glow back at me. I shiver.", "Something touched that. Not long ago."],
-    'Thermometer': ["Come on, give me a drop.", "If it’s freezing in here, I’ll know soon.", "Cold spots mean company."],
-    'Parabolic Mic': ["What are you saying in silence?", "Just wind… or whispers?", "I’m listening. Maybe I shouldn’t be."],
-    'Camera': ["One flash might reveal too much.", "Say cheese, ghost.", "Click. Now to check what I caught."],
-    'Salt': ["Let’s see what steps through this.", "Hope this slows it down.", "Footprints would confirm I’m not alone."]
-  };
-  if (thoughts[item]) displayNarratorText(randomFrom(thoughts[item]));
-}
-
-function getAmbientByRoom(room) {
-  const map = {
-    'Foyer': ["The entryway feels colder than the outside air.", "Shoes are lined up neatly — untouched.", "Something waits beyond this welcome mat."],
-    'Living Room': ["Couch cushions sag, like they expect company.", "The TV screen reflects only shadows.", "A remote clicks on the table... by itself?"],
-    'Kitchen': ["Old dishes remain in the sink — freshly cold.", "The fridge hums, too steady for comfort.", "There’s a faint smell of something burned."],
-    'Dining Room': ["Chairs are pulled out — as if a meal was interrupted.", "Dust clings to the silverware like guilt.", "One place setting is disturbingly clean."],
-    'Bathroom': ["A faucet drips, despite being turned off.", "Your reflection wavers in the mirror slightly.", "The shower curtain sways with no breeze."],
-    'Bedroom': ["The bed is made... but the pillow’s indented.", "Something feels possessive about this room.", "Perfume still lingers in the air — faint and wrong."],
-    'Basement': ["The lightbulb flickers without pattern.", "Concrete sweats. Or bleeds.", "You hear something breathing behind the boiler."],
-    'Garage': ["Tools hang neatly. Some have moved.", "The smell of oil blends with something older.", "A workbench drawer is slightly ajar now."]
-  };
-  return map[room] || ["You feel watched from the corners of the room."];
-}
-
-function updateEnvironmentVisuals(room, action) {
-  document.body.classList.remove('lights-flicker', 'basement-fog', 'raining');
-  if (room === 'Living Room' && action === 'major activity') {
-    document.body.classList.add('lights-flicker');
-    setTimeout(() => document.body.classList.remove('lights-flicker'), 2000);
-  }
-  if (room === 'Basement' && ghostActivityLevel > 5) {
-    document.body.classList.add('basement-fog');
-  }
-}
-
-function narrateAmbience() {
-  const room = getCurrentRoom();
-  updateEnvironmentVisuals(room, lastAction);
-
-  const ambienceByAction = {
-    'idle': getAmbientByRoom(room),
-    'minor activity': [
-      "You freeze — listening for something more.",
-      "It wasn’t just the wind. Was it?",
-      "You glance toward the noise but see nothing.",
-      "Your mind replays the sound again and again."
-    ],
-    'major activity': [
-      "Your pulse rises — the room feels smaller now.",
-      "You tense, waiting for the next sound to follow.",
-      "You can’t help but scan the shadows twice.",
-      "It’s close. You know it’s close."
-    ],
-    'hunt': [
-      "Your instincts scream: run, now.",
-      "You feel your body move before your mind catches up.",
-      "Every sound is too loud. Every breath is too short.",
-      "You pray it didn’t see you. You’re not sure to whom."
-    ],
-    'cursed item': [
-      "Reality swims — colors wrong and wronger.",
-      "You grip something familiar to stay grounded.",
-      "It worked. Or it failed. You’re not sure.",
-      "Your hand tingles where the object rested."
-    ],
-    'evidence': [
-      "You jot the detail quickly, heart racing.",
-      "That confirms something. But what?",
-      "You fumble to log the clue before it fades.",
-      "Another piece... but is it a truth, or a trick?"
-    ]
-  };
-
-  const lines = ambienceByAction[lastAction] || getAmbientByRoom(room);
-  if (Math.random() < 0.4) displayNarratorText(`🧠 ${randomFrom(lines)}`);
-}
-
-function randomFrom(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-</script>
-<script>
-// --- BUTTON HOOKS & DOMContentLoaded --- //
-
 document.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.getElementById('start-btn');
-  const gameScreen = document.getElementById('game-screen');
-  const loadoutScreen = document.getElementById('loadout-screen');
-  const confirmBtn = document.getElementById('confirm-loadout');
-  const backBtn = document.getElementById('back-btn');
-  const journalBtn = document.getElementById('journal-btn');
-  const saveJournalBtn = document.getElementById('save-journal');
-  const closeJournalBtn = document.getElementById('close-journal');
-  const journalScreen = document.getElementById('journal-screen');
-
-  startBtn.onclick = () => {
-    const wantsLoadout = confirm("Do you want to select a loadout?");
-    if (wantsLoadout) {
-      showLoadoutMenu();
-      loadoutScreen.style.display = 'block';
-      startBtn.style.display = 'none';
-    } else {
-      gameScreen.classList.remove('hidden');
-      startBtn.style.display = 'none';
-      startGame();
-    }
-  };
-
-  confirmBtn.onclick = () => {
-    loadoutScreen.style.display = 'none';
-
-    if (isVanAccess) {
-      isVanAccess = false;
-      renderOptions();
-      return;
-    }
-
-    selectedLoadout.forEach(item => addItemToInventory(item));
-    gameScreen.classList.remove('hidden');
-    startGame();
-  };
-
-  backBtn.onclick = () => {
-    loadoutScreen.style.display = 'none';
-    if (isVanAccess) {
-      isVanAccess = false;
-      renderOptions();
-    } else {
-      startBtn.style.display = 'inline-block';
-    }
-  };
-
-  journalBtn.onclick = () => {
-    initializeJournal();
-    journalScreen.classList.remove('hidden');
-  };
-
-  saveJournalBtn.onclick = () => {
-    const text = document.getElementById('journal-entry').value;
-    updateNotes(text);
-    journalScreen.classList.add('hidden');
-  };
-
-  closeJournalBtn.onclick = () => {
-    journalScreen.classList.add('hidden');
-  };
-});
-</script>
-<script src="mlc-webllm/dist/webllm.min.js"></script>
-<script src="jane-narrator.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
     initJane();
   });
 
@@ -1244,5 +858,6 @@ document.addEventListener('DOMContentLoaded', () => {
     displayNarratorText("🧠 " + line);
   }
 </script>
+
 </body>
 </html>
