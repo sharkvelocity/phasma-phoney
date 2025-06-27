@@ -250,11 +250,19 @@ function updateFlipClock() {
 function endGame(won = false) {
   clearInterval(gameInterval);
   stopSounds();
-  document.getElementById('game-over').style.display = 'flex';
-  document.getElementById('end-title').textContent = won ? '🎉 You Win!' : '⏱️ Time's up!';
+  const gameOverScreen = document.getElementById('game-over');
+  gameOverScreen.style.display = 'flex';
+  document.getElementById('end-title').textContent = won ? '🎉 You Win!' : '⏱️ Time\'s up!';
   document.getElementById('final-score').textContent = `Final Score: ${score}`;
   document.getElementById('orbs-counted').textContent = `Orbs Captured: ${orbsCaptured}`;
   document.getElementById('orbs').innerHTML = '';
+
+  // Hide the game over screen and show score only after 3 seconds
+  setTimeout(() => {
+    gameOverScreen.style.display = 'none';
+    alert(`Final Score: ${score}
+Orbs Captured: ${orbsCaptured}`);
+  }, 3000);
 }
 
 function restartGame() {
