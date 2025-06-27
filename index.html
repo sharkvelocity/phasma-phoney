@@ -240,7 +240,21 @@ function endGame(won = false) {
 }
 
 function restartGame() {
-  location.reload();
+  // Reset game state
+  score = 0;
+  orbsCaptured = 0;
+  timeLeft = 60;
+  zoomLevel = 1;
+  zoomIndex = 0;
+  timerStarted = false;
+  isOn = false;
+  ticking = false;
+  heartbeat = false;
+  document.getElementById('game-over').style.display = 'none';
+  updateScore();
+  updateZoomVisual();
+  togglePower();
+  spawnOrbs();
 }
 
 function spawnOrbs() {
