@@ -66,9 +66,9 @@
   <div id="lens" class="vision-night"></div>
   <div id="lens-pointer"></div>
   <div id="controls">
-    <button class="btn" onclick="togglePower()">Power</button>
-    <button class="btn" onclick="toggleVision()">Toggle Vision</button>
-  </div>
+  <button class="btn" onclick="startGame()">Start</button>
+  <button class="btn" onclick="toggleVision()">Toggle Vision</button>
+</div>
   <div id="zoom-hud">Zoom: 1x</div>
   <div id="score-hud">Score: 0</div>
   <div id="flip-clock">
@@ -106,13 +106,31 @@ const flipMinOne = document.getElementById('min-one');
 const flipSecTen = document.getElementById('sec-ten');
 const flipSecOne = document.getElementById('sec-one');
 
-function togglePower() {
-  isOn = !isOn;
-  lens.style.display = isOn ? 'block' : 'none';
-  pointer.style.display = isOn ? 'block' : 'none';
-  zoomHud.style.display = isOn ? 'block' : 'none';
-  scoreHud.style.display = isOn ? 'block' : 'none';
-  if (isOn && !timerStarted) startTimer();
+function startGame() {
+  if (timerStarted) return;
+  const overlay = document.getElementById('countdown-overlay');
+  overlay.style.display = 'flex';
+  let countdown = 3;
+  overlay.textContent = countdown;
+  const countdownInterval = setInterval(() => {
+    countdown--;
+    if (countdown > 0) {
+      overlay.textContent = countdown;
+    } else {
+      clearInterval(countdownInterval);
+      overlay.style.display = 'none';
+      isOn = true;
+      lens.style.display = 'block';
+      pointer.style.display = 'block';
+      zoomHud.style.display = 'block';
+      scoreHud.style.display = 'block';
+      updateZoomVisual();
+      updateScore();
+      updateOrbsVisibility();
+      spawnOrbs();
+      startTimer();
+    }
+  }, 1000);
 }
 
 function toggleVision() {
@@ -283,5 +301,6 @@ function updateOrbsVisibility() {
 setInterval(spawnOrbs, 8000);
 spawnOrbs();
   </script>
+<div id="countdown-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:50;color:lime;display:none;align-items:center;justify-content:center;font-size:5em;font-family:monospace;"></div>
 </body>
 </html>
