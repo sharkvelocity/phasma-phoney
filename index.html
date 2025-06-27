@@ -26,6 +26,15 @@
       left: 0;
       z-index: 0;
     }
+    canvas.orb-layer {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      pointer-events: none;
+    }
     .hud {
       position: fixed;
       z-index: 10;
@@ -65,17 +74,6 @@
     }
     .vision-night { filter: hue-rotate(90deg) grayscale(0.1); }
     .vision-heat { filter: hue-rotate(270deg) saturate(2); }
-    .orb {
-      position: fixed;
-      width: 20px;
-      height: 20px;
-      border-radius: 50%;
-      opacity: 0;
-      pointer-events: auto;
-      z-index: 6;
-    }
-    .regular-orb { background: radial-gradient(circle, rgba(255,255,255,0.8), transparent 70%); }
-    .special-orb { background: radial-gradient(circle, rgba(0, 100, 255, 0.8), transparent 60%); }
     #controls {
       position: fixed;
       top: 10px;
@@ -97,8 +95,8 @@
 </head>
 <body>
   <div id="viewer"></div>
+  <canvas id="orb-canvas" class="orb-layer"></canvas>
   <div id="lens" class="vision-night"></div>
-  <div id="orbs"></div>
   <div id="controls">
     <button class="btn" onclick="startGame()">Start</button>
     <button class="btn" onclick="toggleVision()">Toggle Vision</button>
@@ -110,25 +108,30 @@
   <audio id="heartbeat-sound" preload="auto"><source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..." type="audio/mp3" /></audio>
   <script>
     let score = 0, multiplier = 1, timeLeft = 60, timerStarted = false, ticking = false, heartbeat = false;
-    let viewer;
+    let viewer, orbCanvas, orbCtx, orbs = [];
 
     document.addEventListener('DOMContentLoaded', () => {
+      orbCanvas = document.getElementById('orb-canvas');
+      orbCanvas.width = window.innerWidth;
+      orbCanvas.height = window.innerHeight;
+      orbCtx = orbCanvas.getContext('2d');
+
       viewer = new PhotoSphereViewer.Viewer({
         container: document.getElementById('viewer'),
         panorama: 'sky.webp',
         navbar: false,
         mousewheel: false,
         touchmoveTwoFingers: true,
-        defaultYaw: 'center',
-        loadingImg: null
+        defaultYaw: 'center'
       });
+
+      viewer.on('position-updated', renderOrbs);
     });
 
     function startGame() {
       if (timerStarted) return;
       timerStarted = true;
       updateScore();
-      spawnOrb();
       setInterval(spawnOrb, 3000);
       setInterval(() => {
         timeLeft--;
@@ -150,29 +153,58 @@
     }
 
     function spawnOrb() {
-      const orb = document.createElement('div');
       const isSpecial = Math.random() < 0.1;
-      orb.className = `orb ${isSpecial ? 'special-orb' : 'regular-orb'}`;
-      orb.style.left = Math.random() * 90 + 'vw';
-      orb.style.top = Math.random() * 80 + 'vh';
-      orb.style.opacity = 1;
-      orb.addEventListener('click', () => {
-        const basePoints = isSpecial ? 1000 : 100;
-        score += basePoints * multiplier;
-        multiplier++;
-        orb.remove();
-        updateScore();
-        showPopup(`+${basePoints * multiplier} x${multiplier - 1}`);
-      });
-      setTimeout(() => {
-        if (document.body.contains(orb)) {
-          orb.remove();
+      const yaw = Math.random() * 360 - 180;
+      const pitch = Math.random() * 90 - 45;
+      orbs.push({ yaw, pitch, isSpecial, age: 0 });
+    }
+
+    function renderOrbs() {
+      orbCtx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
+      const position = viewer.getPosition();
+      const size = orbCanvas.getBoundingClientRect();
+
+      orbs.forEach((orb, i) => {
+        orb.age++;
+        if (orb.age > 240) {
+          orbs.splice(i, 1);
           multiplier = 1;
           showPopup('Missed', 'red');
+          return;
         }
-      }, 4000);
-      document.getElementById('orbs').appendChild(orb);
+
+        const coords = viewer.dataHelper.sphericalCoordsToViewerCoords({ yaw: orb.yaw, pitch: orb.pitch });
+        if (!coords) return;
+
+        orbCtx.beginPath();
+        orbCtx.arc(coords.x, coords.y, 10, 0, Math.PI * 2);
+        orbCtx.fillStyle = orb.isSpecial ? 'rgba(0,100,255,0.6)' : 'rgba(255,255,255,0.6)';
+        orbCtx.fill();
+      });
     }
+
+    orbCanvas.addEventListener('click', e => {
+      const rect = orbCanvas.getBoundingClientRect();
+      const cx = e.clientX - rect.left;
+      const cy = e.clientY - rect.top;
+
+      orbs = orbs.filter(orb => {
+        const coords = viewer.dataHelper.sphericalCoordsToViewerCoords({ yaw: orb.yaw, pitch: orb.pitch });
+        if (!coords) return true;
+        const dx = coords.x - cx;
+        const dy = coords.y - cy;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        if (dist < 20) {
+          const basePoints = orb.isSpecial ? 1000 : 100;
+          score += basePoints * multiplier;
+          multiplier++;
+          updateScore();
+          showPopup(`+${basePoints * multiplier} x${multiplier - 1}`);
+          return false;
+        }
+        return true;
+      });
+    });
 
     function toggleVision() {
       const lens = document.getElementById('lens');
