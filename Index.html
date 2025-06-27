@@ -1,176 +1,158 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Phasma‑Phoney</title>
   <style>
-body {
-  background: url('./House.png') no-repeat center center fixed;
-  background-size: cover;
-  color: white;
-  font-family: sans-serif;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  overflow: hidden;
-}
-h1 {
-  margin-top: 40px;
-  font-size: 2.5em;
-  color: cyan;
-  text-shadow: 0 0 10px cyan;
-}
-    
-button {
-  background: #222;
-  color: white;
-  border: 1px solid #666;
-  padding: 10px;
-  margin: 5px;
-  cursor: pointer;
-}
-#start-btn {
-  font-size: 16px;
-  margin-top: 20px;
-}
-
-.hidden {
-  display: none;
-}
- 
-.orb {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 50%;
-  box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.15);
-  opacity: 0;
-  animation-name: drift, fadeGlow;
-  animation-timing-function: ease-in-out, ease-in-out;
-  animation-iteration-count: 1, 1;
-  pointer-events: none;
-}
-
-@keyframes drift {
-  from { transform: translate(0, 0); }
-  to { transform: translate(var(--dx), var(--dy)); }
-}
-
-@keyframes fadeGlow {
-  0% { opacity: 0; }
-  30% { opacity: 0.5; }
-  60% { opacity: 0.8; }
-  100% { opacity: 0.2; }
-}
-
-#game-screen {
-  display: flex;
-  width: 100vw;
-  height: 100vh;
-  justify-content: space-between;
-  padding: 10px; 
-}
-
-#narrator-box {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  width: 90%;
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-}
-
-#system-text, #narrator-thought {
-  flex: 1;
-  background: #222;
-  padding: 8px;
-  border: 1px solid #333;
-  min-height: 60px;
-  overflow-wrap: break-word;
-}
-
-#left-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  height: 100%;
-}
-
-#right-panel {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-}
-
-#center-panel {
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 10px;
-  overflow-y: auto;
-}
-
-#main-readout {
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
-  max-height: 300px; /* Limit height */
-  overflow-y: auto;  /* Scroll within box */
-  white-space: pre-wrap;
-  flex-shrink: 0;
-}
-    
-#hud-status {
-  background: #111;
-  padding: 10px;
-  margin: 5px;
-  border: 1px solid #444;
-  width: 90%;
-}    
+    body {
+      background: url('./House.png') no-repeat center center fixed;
+      background-size: cover;
+      color: white;
+      font-family: sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow: hidden;
+    }
+    h1 {
+      margin-top: 40px;
+      font-size: 2.5em;
+      color: cyan;
+      text-shadow: 0 0 10px cyan;
+    }
+    button {
+      background: #222;
+      color: white;
+      border: 1px solid #666;
+      padding: 10px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    #start-btn {
+      font-size: 16px;
+      margin-top: 20px;
+    }
+    .hidden {
+      display: none;
+    }
+    #game-screen {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      justify-content: space-between;
+      padding: 10px;
+    }
+    #left-panel, #right-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding: 10px;
+      height: 100%;
+    }
+    #center-panel {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 10px;
+      overflow-y: auto;
+    }
+    #narrator-box {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      width: 90%;
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+    }
+    #system-text, #narrator-thought {
+      flex: 1;
+      background: #222;
+      padding: 8px;
+      border: 1px solid #333;
+      min-height: 60px;
+      overflow-wrap: break-word;
+    }
+    #main-readout {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+      max-height: 300px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      flex-shrink: 0;
+    }
+    #hud-status {
+      background: #111;
+      padding: 10px;
+      margin: 5px;
+      border: 1px solid #444;
+      width: 90%;
+    }
+    .orb {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 50%;
+      box-shadow: 0 0 8px 4px rgba(255, 255, 255, 0.15);
+      opacity: 0;
+      animation-name: drift, fadeGlow;
+      animation-timing-function: ease-in-out;
+      animation-iteration-count: 1;
+      pointer-events: none;
+    }
+    @keyframes drift {
+      from { transform: translate(0, 0); }
+      to { transform: translate(var(--dx), var(--dy)); }
+    }
+    @keyframes fadeGlow {
+      0% { opacity: 0; }
+      30% { opacity: 0.5; }
+      60% { opacity: 0.8; }
+      100% { opacity: 0.2; }
+    }
   </style>
 </head>
-  <body>
-    <h1>Phasma-Phoney</h1> 
-      <button id="start-btn">Start Investigation</button>
-    <div id="game-screen" class="hidden">
+
+<body>
+  <h1>Phasma-Phoney</h1>
+  <button id="start-btn">Start Investigation</button>
+
+  <div id="game-screen" class="hidden">
     <div id="left-panel">
-    <div id="option-buttons"></div>
+      <div id="option-buttons"></div>
       <button id="journal-btn">Journal</button>
     </div>
-      <div id="center-panel">
-        <div id="narrator-box">
-          <div id="system-text">System: Ready.</div>
-          <div id="narrator-thought">🧠 Your Thoughts...</div>
-        </div>
-          </script>
+    <div id="center-panel">
+      <div id="narrator-box">
+        <div id="system-text">System: Ready.</div>
+        <div id="narrator-thought">🧠 Your Thoughts...</div>
+      </div>
       <div id="hud-status">Sanity: 100% XP: 0 Inventory: none</div>
       <div id="main-readout">Awaiting The start of the Investigation...</div>
-      </div></div>
-    <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
+      <div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">Minimap loading...</div>
+    </div>
+  </div>
+
+  <div id="journal-screen" class="screen hidden" style="position:absolute;top:10%;left:10%;width:80%;background:#111;padding:12px;border:2px solid #666;z-index:999;">
     <h2>Investigation Journal</h2>
     <textarea id="journal-entry" placeholder="For notes...Or to remember evidence" style="width:100%;height:120px;"></textarea>
-    <br/>
     <h3>Evidence Checklist</h3>
-<div id="evidence-checklist" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;"></div>
-<p><strong>Possible Ghosts:</strong></p>
-<ul id="possible-ghosts"></ul>
-      
+    <div id="evidence-checklist" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px;"></div>
+    <p><strong>Possible Ghosts:</strong></p>
+    <ul id="possible-ghosts"></ul>
     <button id="save-journal">Save</button>
     <button id="close-journal">Close</button>
   </div>
-    
+
   <div id="loadout-screen" style="display:none; position:absolute; top:10%; left:10%; width:80%; background:#111; padding:12px; border:2px solid #666; z-index:999;">
     <h2>Select Your Loadout (Max 3 items)</h2>
     <div id="loadout-options" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
@@ -178,33 +160,22 @@ button {
     <button id="confirm-loadout">Confirm</button>
     <button id="back-btn">Back</button>  
   </div>
-
-    
-<script>
-  
-  function spawnOrbs(count = 6) {
+  <script>
+//=============================
+// 1. WEATHER & ORB EFFECTS
+//=============================
+function spawnOrbs(count = 6) {
   for (let i = 0; i < count; i++) {
     const orb = document.createElement('div');
     orb.className = 'orb';
-
-    // Set random start position
     orb.style.left = Math.random() * 100 + 'vw';
     orb.style.top = Math.random() * 100 + 'vh';
-
-    // Random drift direction and distance
-    const dx = (Math.random() - 0.5) * 150 + 'px';
-    const dy = (Math.random() - 0.5) * 150 + 'px';
-    orb.style.setProperty('--dx', dx);
-    orb.style.setProperty('--dy', dy);
-
-    // Duration and delay for animation
+    orb.style.setProperty('--dx', (Math.random() - 0.5) * 150 + 'px');
+    orb.style.setProperty('--dy', (Math.random() - 0.5) * 150 + 'px');
     const duration = 10 + Math.random() * 10;
     orb.style.animationDuration = `${duration}s, ${duration}s`;
     orb.style.animationDelay = `0s, ${Math.random() * 4}s`;
-
     document.body.appendChild(orb);
-
-    // Fade out and remove the orb after it completes
     setTimeout(() => {
       orb.style.transition = 'opacity 2s ease-out';
       orb.style.opacity = 0;
@@ -212,402 +183,11 @@ button {
     }, duration * 1000);
   }
 }
-
-// Keep spawning orbs periodically
 setInterval(() => {
   if (document.hasFocus()) spawnOrbs(Math.floor(Math.random() * 2) + 1);
 }, 5000);
 </script>
-<script>
-
-  
-//-- Mechanics System --\\
-
-  
-let sanity = 100, xp = 0, currentHunt = false, ghostActivityLevel = 0, cursedItemsUsed = 0;
-let evidenceDiscovered = [], turn = 0, lastAction = '';
-
-const tarotCards = [
-  '🃏 The Fool – Nothing happens.', '🪦 The Hanged Man – You feel your sanity drain rapidly.',
-  '☀️ The Sun – Sanity fully restored!', '🌑 The Moon – Sanity drops to 0!',
-  '🧙 The Hermit – The ghost is temporarily trapped.',
-  '🎡 The Wheel of Fortune – Sanity shifts unpredictably.',
-  '💀 Death – A hunt begins instantly!', '👹 The Devil – The ghost manifests nearby.',
-  '🗼 The Tower – A crash rings out. The ghost moves to your room.',
-  '👼 The High Priestess – You sense a protective spirit.'
-];
-
-function getSanity() { return sanity; }
-function adjustSanity(amount) {
-  sanity = Math.max(0, Math.min(100, sanity + amount));
-}
-function getXP() { return xp; }
-function addXP(amount) { xp += amount; }
-function isHunting() { return currentHunt; }
-function triggerHunt() {
-  currentHunt = true; ghostActivityLevel = 10;
-  adjustSanity(-25); lastAction = 'hunt';
-  return '🚨 Hunt started! You hear footsteps racing toward you!';
-}
-function endHunt() {
-  currentHunt = false; ghostActivityLevel = 0;
-  return '💨 The hunt ends. Silence returns.';
-}
-function performGhostAction() {
-  const roll = Math.random();
-  if (roll < 0.1) return triggerHunt();
-  else if (roll < 0.3) {
-    ghostActivityLevel = 6;
-    adjustSanity(-10);
-    lastAction = 'major activity';
-    return '⚡ Flickering lights. The air feels heavy.';
-  } else if (roll < 0.6) {
-    ghostActivityLevel = 3;
-    lastAction = 'minor activity';
-    return '👣 Footsteps echo somewhere nearby.';
-  } else {
-    ghostActivityLevel = 1;
-    lastAction = 'idle';
-    return '🕯️ Nothing yet. Stay vigilant.';
-  }
-}
-function discoverEvidence(e) {
-  if (!evidenceDiscovered.includes(e)) {
-    evidenceDiscovered.push(e);
-    addXP(10);
-    return `🔍 You recorded new evidence: ${e}`;
-  }
-  return `📝 Already documented: ${e}`;
-}
-function getEvidence() { return evidenceDiscovered; }
-function useCursedItem(name) {
-  cursedItemsUsed++;
-  adjustSanity(-20);
-  let result = `🔮 You use the ${name}. Reality ripples through the air...`;
-  if (name.toLowerCase().includes('tarot')) result += '\n' + drawTarotCard();
-  lastAction = 'cursed item';
-  return result;
-}
-function drawTarotCard() {
-  const card = tarotCards[Math.floor(Math.random() * tarotCards.length)];
-  if (card.includes('sanity drain')) adjustSanity(-30);
-  if (card.includes('fully restored')) adjustSanity(100 - sanity);
-  if (card.includes('drops to 0')) sanity = 0;
-  if (card.includes('hunt')) triggerHunt();
-  if (card.includes('manifest')) ghostActivityLevel = 7;
-  if (card.includes('moves to your room')) ghostActivityLevel = 8;
-  return `🃏 Tarot card drawn: ${card}`;
-}
-function getStats() {
-  return { sanity, xp, evidenceDiscovered: [...evidenceDiscovered], cursedItemsUsed, turns: turn, ghostActivityLevel, lastAction };
-}
-function resetStats() {
-  sanity = 100; xp = 0; currentHunt = false; ghostActivityLevel = 0;
-  evidenceDiscovered = []; cursedItemsUsed = 0; turn = 0; lastAction = '';
-}
-window.getSanity = getSanity;
-window.adjustSanity = adjustSanity;
-window.getXP = getXP;
-window.addXP = addXP;
-window.triggerHunt = triggerHunt;
-window.performGhostAction = performGhostAction;
-window.getEvidence = getEvidence;
-window.useCursedItem = useCursedItem;
-window.resetStats = resetStats;
-window.getStats = getStats;
-</script>
-<script>
-function guessMenu() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-
-  const guessInput = document.createElement('input');
-  guessInput.placeholder = "Enter ghost type";
-  guessInput.style.marginBottom = '10px';
-
-  const submitBtn = document.createElement('button');
-  submitBtn.innerText = "Submit Guess";
-  submitBtn.onclick = () => {
-    const guess = guessInput.value.trim();
-    const actual = getCurrentGhost().type;
-    if (guess.toLowerCase() === actual.toLowerCase()) {
-      displayNarratorText(`🎯 Correct! It was a ${actual}. You've solved the mystery.`);
-      addXP(50);
-    } else {
-      displayNarratorText(`❌ Incorrect. It was a ${actual}. Better luck next time.`);
-      adjustSanity(-20);
-    }
-    renderOptions();
-  };
-
-  const backBtn = document.createElement('button');
-  backBtn.innerText = "Back";
-  backBtn.onclick = renderOptions;
-
-  container.appendChild(guessInput);
-  container.appendChild(submitBtn);
-  container.appendChild(backBtn);
-}
-</style>
-
-        <script>
-// --- INVENTORY & VAN SYSTEM --- //
-
-const consumables = ['Smudge Stick', 'Candle', 'Salt'];
-const alwaysWithYou = ['Lighter'];
-const inventory = {};
-const vanInventory = {
-  'Smudge Stick': 4,
-  'Salt': 3,
-  'Candle': 4,
-  'EMF Reader': 1,
-  'Spirit Box': 1,
-  'Crucifix': 1,
-  'UV Light': 1,
-  'Thermometer': 1,
-  'Parabolic Mic': 1,
-  'Proximity Sensor': 1,
-  'Camera': 1,
-  'Ghost Writing Book': 1
-};
-
-let isVanAccess = false;
-let selectedLoadout = [];
-const roomItems = {};
-
-const evidenceToolMap = {
-  'EMF Reader': 'EMF 5',
-  'Spirit Box': 'Spirit Box',
-  'UV Light': 'Fingerprints',
-  'Thermometer': 'Freezing Temps',
-  'Camera': 'Ghost Orbs',
-  'Ghost Writing Book': 'Ghost Writing',
-  'Parabolic Mic': 'Whispers',
-  'Salt': 'Footprints'
-};
-
-const allItems = Object.keys(vanInventory);
-
-function getInventory() {
-  return Object.keys(inventory).concat(alwaysWithYou);
-}
-
-function updateHUD() {
-  const status = document.getElementById('hud-status');
-  status.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
-}
-
-function addItemToInventory(item) {
-  const total = Object.values(inventory).reduce((a, b) => a + b, 0);
-  if (total >= 3) return displayNarratorText('❌ You can only carry 3 items.');
-  inventory[item] = 1;
-  updateHUD();
-}
-
-function useItem(item, room, ghostType) {
-  if (!inventory[item]) return `❌ You don’t have a ${item}.`;
-
-  let result = `🧪 You used the ${item} in the ${room}.`;
-
-  if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
-    result += `\n🌀 The ${ghostType} becomes angry!`;
-  }
-
-  const evidence = evidenceToolMap[item];
-  if (evidence) {
-    const success = Math.random() < 0.6;
-    if (success) {
-      result += `\n🔍 You detect something...`;
-      result += `\n${discoverEvidence(evidence)}`;
-      lastAction = 'evidence';
-    } else {
-      result += `\n🕯️ It’s quiet. Maybe try again later.`;
-      lastAction = 'idle';
-    }
-  }
-
-  if (consumables.includes(item)) {
-    delete inventory[item]; // Consumed
-    updateHUD();
-  }
-
-  return result;
-}
-
-function dropItem(item) {
-  const room = getCurrentRoom();
-  if (!inventory[item]) return `❌ You don’t have a ${item} to drop.`;
-
-  if (!roomItems[room]) roomItems[room] = [];
-  roomItems[room].push(item);
-  delete inventory[item];
-  updateHUD();
-  return `📦 You placed the ${item} in the ${room}.`;
-}
-
-function pickUpItem(item) {
-  const room = getCurrentRoom();
-  if (!roomItems[room] || !roomItems[room].includes(item)) return `❌ No ${item} found here.`;
-
-  const total = Object.values(inventory).reduce((a, b) => a + b, 0);
-  if (total >= 3) return `❌ Your hands are full.`;
-
-  inventory[item] = 1;
-  roomItems[room] = roomItems[room].filter(i => i !== item);
-  updateHUD();
-  return `🎒 You picked up the ${item}.`;
-}
-
-function showRoomItems() {
-  const room = getCurrentRoom();
-  const items = roomItems[room] || [];
-  return items.length ? `🗂️ Items here: ${items.join(', ')}` : '📭 The room is empty.';
-}
-
-function dropItemMenu() {
-  const items = Object.keys(inventory);
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-
-  if (!items.length) {
-    displayNarratorText("🎒 You have nothing to drop.");
-    renderOptions();
-    return;
-  }
-
-  items.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = `Drop ${item}`;
-    btn.onclick = () => {
-      const msg = dropItem(item);
-      displayNarratorText(msg);
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
-}
-
-function pickupMenu() {
-  const room = getCurrentRoom();
-  const itemsHere = roomItems[room] || [];
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-
-  if (!itemsHere.length) {
-    displayNarratorText("😅 There's nothing here to pick up.");
-    renderOptions();
-    return;
-  }
-
-  itemsHere.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = `Pick up ${item}`;
-    btn.onclick = () => {
-      const msg = pickUpItem(item);
-      displayNarratorText(msg);
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
-}
-
-function showLoadoutMenu() {
-  const container = document.getElementById('loadout-options');
-  container.innerHTML = '';
-  selectedLoadout = [];
-
-  allItems.forEach(item => {
-    const btn = document.createElement('button');
-    btn.innerText = item;
-    btn.onclick = () => {
-      if (selectedLoadout.includes(item)) {
-        selectedLoadout = selectedLoadout.filter(i => i !== item);
-        btn.style.backgroundColor = '';
-      } else if (selectedLoadout.length < 3) {
-        selectedLoadout.push(item);
-        btn.style.backgroundColor = 'green';
-      }
-      document.getElementById('loadout-selected').innerText = `Selected: ${selectedLoadout.length}`;
-    };
-    container.appendChild(btn);
-  });
-}
-
-function openVanMenu() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-  const inv = Object.keys(inventory);
-
-  // Return items (non-consumables only)
-  inv.forEach(item => {
-    if (consumables.includes(item)) return;
-    const btn = document.createElement('button');
-    btn.innerText = `Return ${item} to Van`;
-    btn.onclick = () => {
-      delete inventory[item];
-      vanInventory[item] = (vanInventory[item] || 0) + 1;
-      displayNarratorText(`🔁 You return the ${item} to the van.`);
-      updateHUD();
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  // Take items from van
-  Object.entries(vanInventory).forEach(([item, qty]) => {
-    if (qty <= 0) return;
-    const total = Object.values(inventory).reduce((a, b) => a + b, 0);
-    if (total >= 3) return;
-    const btn = document.createElement('button');
-    btn.innerText = `Take ${item} (${qty} left)`;
-    btn.onclick = () => {
-      inventory[item] = 1;
-      vanInventory[item]--;
-      displayNarratorText(`🎒 You take a ${item} from the van.`);
-      updateHUD();
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
-}
-</script>
-
-<!-- 4. Map System -->
-<div id="minimap" style="background:#111; border:1px solid #444; color:white; padding:8px; margin:5px; width:90%; font-size:0.9em;">
-  Minimap loading...
-</div>
-  <script>
-  function renderMinimap() {
-  const mapDisplay = document.getElementById('minimap');
-  const room = getCurrentRoom();
-  const connections = roomMap[room];
-  
-  let output = `📍 <strong>${room}</strong><br/>`;
-  output += `You can go: `;
-
-  const exits = ['North', 'East', 'South', 'West']
-    .filter(dir => connections?.[dir])
-    .map(dir => `<span style="color:cyan">${dir} → ${connections[dir]}</span>`);
-
-  output += exits.length ? exits.join(', ') : '<em>nowhere</em>';
-  mapDisplay.innerHTML = output;
-}
-  </script>
+<!-- 🔹 LOGIC BLOCK: MAP SYSTEM -->
 <script>
 const rooms = ['Foyer', 'Living Room', 'Kitchen', 'Dining Room', 'Bathroom', 'Bedroom', 'Basement', 'Garage'];
 let currentRoom = 'Foyer';
@@ -630,21 +210,143 @@ function movePlayer(direction) {
   adjustSanity(-2);
   return `🚪 You move ${direction} into the ${destination}.`;
 }
-
-function getCurrentRoom() {
-  return currentRoom;
-}
-
+function getCurrentRoom() { return currentRoom; }
 window.movePlayer = movePlayer;
 window.getCurrentRoom = getCurrentRoom;
 </script>
 
+<!-- 🔹 LOGIC BLOCK: INVENTORY / VAN SYSTEM -->
+<script>
+const consumables = ['Smudge Stick', 'Candle', 'Salt'];
+const alwaysWithYou = ['Lighter'];
+const inventory = {};
+const vanInventory = {
+  'Smudge Stick': 4,
+  'Salt': 3,
+  'Candle': 4,
+  'EMF Reader': 1,
+  'Spirit Box': 1,
+  'Crucifix': 1,
+  'UV Light': 1,
+  'Thermometer': 1,
+  'Parabolic Mic': 1,
+  'Proximity Sensor': 1,
+  'Camera': 1,
+  'Ghost Writing Book': 1
+};
 
-      
-<!-- 5. Ghost System -->
+let selectedLoadout = [], isVanAccess = false;
+const roomItems = {};
 
+const evidenceToolMap = {
+  'EMF Reader': 'EMF 5',
+  'Spirit Box': 'Spirit Box',
+  'UV Light': 'Fingerprints',
+  'Thermometer': 'Freezing Temps',
+  'Camera': 'Ghost Orbs',
+  'Ghost Writing Book': 'Ghost Writing',
+  'Parabolic Mic': 'Whispers',
+  'Salt': 'Footprints'
+};
 
-      
+const allItems = Object.keys(vanInventory);
+function getInventory() { return Object.keys(inventory).concat(alwaysWithYou); }
+function updateHUD() {
+  const hud = document.getElementById('hud-status');
+  hud.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
+}
+function addItemToInventory(item) {
+  const total = Object.values(inventory).reduce((a, b) => a + b, 0);
+  if (total >= 3) return displayNarratorText('❌ You can only carry 3 items.');
+  inventory[item] = 1;
+  updateHUD();
+}
+function useItem(item, room, ghostType) {
+  if (!inventory[item]) return `❌ You don’t have a ${item}.`;
+  let result = `🧪 You used the ${item} in the ${room}.`;
+
+  if (['Spirit', 'Demon', 'Yurei', 'Succubus'].includes(ghostType) && item === 'Smudge Stick') {
+    result += `\n🌀 The ${ghostType} becomes angry!`;
+  }
+
+  const evidence = evidenceToolMap[item];
+  if (evidence) {
+    const success = Math.random() < 0.6;
+    if (success) {
+      result += `\n🔍 You detect something...`;
+      result += `\n${discoverEvidence(evidence)}`;
+      lastAction = 'evidence';
+    } else {
+      result += `\n🕯️ It’s quiet. Maybe try again later.`;
+      lastAction = 'idle';
+    }
+  }
+
+  if (consumables.includes(item)) {
+    delete inventory[item];
+    updateHUD();
+  }
+  return result;
+}
+function dropItem(item) {
+  const room = getCurrentRoom();
+  if (!inventory[item]) return `❌ You don’t have a ${item} to drop.`;
+  if (!roomItems[room]) roomItems[room] = [];
+  roomItems[room].push(item);
+  delete inventory[item];
+  updateHUD();
+  return `📦 You placed the ${item} in the ${room}.`;
+}
+function pickUpItem(item) {
+  const room = getCurrentRoom();
+  if (!roomItems[room] || !roomItems[room].includes(item)) return `❌ No ${item} found here.`;
+  const total = Object.values(inventory).reduce((a, b) => a + b, 0);
+  if (total >= 3) return `❌ Your hands are full.`;
+  inventory[item] = 1;
+  roomItems[room] = roomItems[room].filter(i => i !== item);
+  updateHUD();
+  return `🎒 You picked up the ${item}.`;
+}
+function showRoomItems() {
+  const room = getCurrentRoom();
+  const items = roomItems[room] || [];
+  return items.length ? `🗂️ Items here: ${items.join(', ')}` : '📭 The room is empty.';
+}
+</script>
+
+<!-- 🔹 LOGIC BLOCK: CURSED ITEMS & TAROT -->
+<script>
+const tarotCards = [
+  '🃏 The Fool – Nothing happens.', '🪦 The Hanged Man – You feel your sanity drain rapidly.',
+  '☀️ The Sun – Sanity fully restored!', '🌑 The Moon – Sanity drops to 0!',
+  '🧙 The Hermit – The ghost is temporarily trapped.',
+  '🎡 The Wheel of Fortune – Sanity shifts unpredictably.',
+  '💀 Death – A hunt begins instantly!', '👹 The Devil – The ghost manifests nearby.',
+  '🗼 The Tower – A crash rings out. The ghost moves to your room.',
+  '👼 The High Priestess – You sense a protective spirit.'
+];
+
+function useCursedItem(name) {
+  cursedItemsUsed++;
+  adjustSanity(-20);
+  let result = `🔮 You use the ${name}. Reality ripples through the air...`;
+  if (name.toLowerCase().includes('tarot')) result += '\n' + drawTarotCard();
+  lastAction = 'cursed item';
+  return result;
+}
+function drawTarotCard() {
+  const card = tarotCards[Math.floor(Math.random() * tarotCards.length)];
+  if (card.includes('sanity drain')) adjustSanity(-30);
+  if (card.includes('fully restored')) adjustSanity(100 - getSanity());
+  if (card.includes('drops to 0')) sanity = 0;
+  if (card.includes('hunt')) triggerHunt();
+  if (card.includes('manifest')) ghostActivityLevel = 7;
+  if (card.includes('moves to your room')) ghostActivityLevel = 8;
+  return `🃏 Tarot card drawn: ${card}`;
+}
+</script>
+
+<!-- 🔹 LOGIC BLOCK: GHOST SYSTEM -->
 <script>
 const ghostTypes = [
   'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
@@ -700,9 +402,7 @@ function generateGhostBehavior(type) {
 
 let ghost = null;
 function initializeGhost(g) { ghost = g; }
-function performBehavior(room) {
-  return ghost?.behavior(room) || 'Nothing happens.';
-}
+function performBehavior(room) { return ghost?.behavior(room) || 'Nothing happens.'; }
 function getCurrentGhost() { return ghost; }
 
 window.getRandomGhost = getRandomGhost;
@@ -710,12 +410,7 @@ window.initializeGhost = initializeGhost;
 window.performBehavior = performBehavior;
 window.getCurrentGhost = getCurrentGhost;
 </script>
-
-
-      
 <!-- 6. Journal System -->
-
-    
 <script>
 let journalNotes = '';
 
@@ -726,7 +421,7 @@ function updateNotes(txt) {
 
 function initializeJournal() {
   document.getElementById('journal-entry').value = journalNotes;
-  renderEvidenceChecklist(); // <-- Call checklist on open
+  renderEvidenceChecklist();
 }
 
 const allEvidence = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
@@ -793,287 +488,17 @@ function updatePossibleGhosts() {
     selected.every(sel => ev.includes(sel))
   ).map(([ghost]) => ghost);
 
-  if (possible.length) {
-    possible.forEach(ghost => {
-      const li = document.createElement('li');
-      li.innerText = ghost;
-      list.appendChild(li);
-    });
-  } else {
-    list.innerHTML = '<li>No ghosts match this combination</li>';
-  }
+  list.innerHTML = possible.length
+    ? possible.map(g => `<li>${g}</li>`).join('')
+    : '<li>No ghosts match this combination</li>';
 }
 
 window.updateNotes = updateNotes;
 window.initializeJournal = initializeJournal;
 </script>
-    
-    <script>
 
-      
-
-
-//-- Game Logic + Button Rendering --\\
-
-    
-function startGame() {
-  resetStats();
-  ghost = getRandomGhost();
-  initializeGhost(ghost);
-  initializeJournal();
-  updateHUD();
-  displayNarratorText("So it begins...");
-  renderOptions();
-}
-</script>
-      <script>
-function tickTurn() {
-  turn++;
-  updateHUD();
-  const ghostResult = performGhostAction();
-  displayNarratorText(ghostResult);
-  narrateAmbience();
-}
-</script>
+<!-- 7. Ambient Narration & Visual Effects -->
 <script>
-
- <script>
-function renderOptions() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-
-  const btn = (label, handler) => {
-    const b = document.createElement('button');
-    b.innerText = label;
-    b.onclick = handler;
-    container.appendChild(b);
-  };
-
-  // Move Button (inline sub-menu)
-  btn('Move', () => {
-    container.innerHTML = '';
-    const directions = ['North', 'East', 'South', 'West'];
-
-    directions.forEach(dir => {
-      const dirBtn = document.createElement('button');
-      dirBtn.innerText = `Go ${dir}`;
-      dirBtn.onclick = () => {
-        const result = movePlayer(dir);
-        displayNarratorText(result);
-        tickTurn();
-        renderMinimap(); // update map
-        renderOptions();
-      };
-      container.appendChild(dirBtn);
-    });
-
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
-  });
-
-  // Investigate
-  btn('Investigate', () => {
-    const msg = performBehavior(getCurrentRoom());
-    adjustSanity(-5);
-    displayNarratorText(msg);
-    tickTurn();
-    renderMinimap();
-  });
-
-  // Use Item Menu
-  btn('Use Item', () => {
-    const items = getInventory();
-    container.innerHTML = '';
-
-    if (!items.length) {
-      displayNarratorText("🧳 You have no items.");
-      renderOptions();
-      return;
-    }
-
-    items.forEach(item => {
-      const itemBtn = document.createElement('button');
-      itemBtn.innerText = `Use ${item}`;
-      itemBtn.onclick = () => {
-        const msg = useItem(item, getCurrentRoom(), getCurrentGhost().type);
-        displayNarratorText(msg);
-        narrateItemThought(item);
-        tickTurn();
-        renderMinimap();
-        renderOptions();
-      };
-      container.appendChild(itemBtn);
-    });
-
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
-  });
-
-  // Drop, Pickup, Guess
-  btn('Drop Item', dropItemMenu);
-  btn('Pick Up Item', pickupMenu);
-  btn('Guess Ghost', guessMenu);
-
-  // Return to Van → reuse loadout screen
-  btn('Return to Van', () => {
-    isVanAccess = true;
-    showLoadoutMenu();
-    document.getElementById('loadout-screen').style.display = 'block';
-  });
-
-  renderMinimap(); // always update minimap after options render
-}
-</script> 
-//-- BUTTONS --\\
-
-    
-function renderOptions() {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-
-  const btn = (label, handler) => {
-    const b = document.createElement('button');
-    b.innerText = label;
-    b.onclick = handler;
-    container.appendChild(b);
-  };
-btn('Move', () => {
-  const container = document.getElementById('option-buttons');
-  container.innerHTML = '';
-
-  const directions = ['North', 'East', 'South', 'West'];
-  directions.forEach(dir => {
-    const btn = document.createElement('button');
-    btn.innerText = `Go ${dir}`;
-    btn.onclick = () => {
-      const result = movePlayer(dir);
-      displayNarratorText(result);
-      narrateAmbience();
-      tickTurn();
-      renderOptions();
-    };
-    container.appendChild(btn);
-  });
-
-  const back = document.createElement('button');
-  back.innerText = 'Back';
-  back.onclick = renderOptions;
-  container.appendChild(back);
-});
-  btn('Investigate', () => {
-    const msg = performBehavior(getCurrentRoom());
-    adjustSanity(-5);
-    displayNarratorText(msg);
-    tickTurn();
-  });
-
-  btn('Use Item', () => {
-    const items = getInventory();
-    container.innerHTML = '';
-
-    if (!items.length) {
-      displayNarratorText("🧳 You have no items.");
-      renderOptions();
-      return;
-    }
-    
-
-    items.forEach(item => {
-      const btn = document.createElement('button');
-      btn.innerText = `Use ${item}`;
-      btn.onclick = () => {
-        const msg = useItem(item, getCurrentRoom(), ghost.type);
-        displayNarratorText(msg);
-        narrateItemThought(item);
-        tickTurn();
-        renderOptions();
-      };
-      container.appendChild(btn);
-    });
-
-    const back = document.createElement('button');
-    back.innerText = 'Back';
-    back.onclick = renderOptions;
-    container.appendChild(back);
-  });
-
-  btn('Drop Item', dropItemMenu);
-  btn('Pick Up Item', pickupMenu);
-  btn('Move', moveMenu);
-  btn('Guess Ghost', guessMenu);
-  btn('Return to Van', showVanLoadout);
-}
-</script>
-  <script>
-document.addEventListener('DOMContentLoaded', () => {
-  const startBtn = document.getElementById('start-btn');
-  const gameScreen = document.getElementById('game-screen');
-  const loadoutScreen = document.getElementById('loadout-screen');
-  const confirmBtn = document.getElementById('confirm-loadout');
-  const backBtn = document.getElementById('back-btn');
-  const journalBtn = document.getElementById('journal-btn');
-  const saveJournalBtn = document.getElementById('save-journal');
-  const closeJournalBtn = document.getElementById('close-journal');
-  const journalScreen = document.getElementById('journal-screen');
-
-  startBtn.onclick = () => {
-    const wantsLoadout = confirm("Do you want to select a loadout?");
-    if (wantsLoadout) {
-      showLoadoutMenu();
-      loadoutScreen.style.display = 'block';
-      startBtn.style.display = 'none';
-    } else {
-      gameScreen.classList.remove('hidden');
-      startBtn.style.display = 'none';
-      startGame();
-    }
-  };
-confirmBtn.onclick = () => {
-  document.getElementById('loadout-screen').style.display = 'none';
-
-  if (isVanAccess) {
-    isVanAccess = false; // reset flag
-    renderOptions();
-    return;
-  }
-
-  selectedLoadout.forEach(item => addItemToInventory(item));
-  document.getElementById('game-screen').classList.remove('hidden');
-  startGame();
-};
-
-backBtn.onclick = () => {
-  document.getElementById('loadout-screen').style.display = 'none';
-
-  if (isVanAccess) {
-    isVanAccess = false;
-    renderOptions(); // just go back to game
-  } else {
-    document.getElementById('start-btn').style.display = 'inline-block';
-  }
-};
-
-journalBtn.onclick = () => {
-    initializeJournal();
-    journalScreen.classList.remove('hidden');
-  };
-
-  saveJournalBtn.onclick = () => {
-    const text = document.getElementById('journal-entry').value;
-    updateNotes(text);
-    journalScreen.classList.add('hidden');
-  };
-
-  closeJournalBtn.onclick = () => {
-    journalScreen.classList.add('hidden');
-  };
-});
-</script>
-      <script>
 function displayNarratorThought(text) {
   const thoughtDiv = document.getElementById('narrator-thought');
   const readout = document.getElementById('main-readout');
@@ -1240,5 +665,584 @@ function randomFrom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
 </script>
-  </body>
+
+<!-- 8. Game Loop & Turn System -->
+<script>
+function startGame() {
+  resetStats();
+  ghost = getRandomGhost();
+  initializeGhost(ghost);
+  initializeJournal();
+  updateHUD();
+  displayNarratorText("So it begins...");
+  renderOptions();
+}
+
+function tickTurn() {
+  turn++;
+  updateHUD();
+  const ghostResult = performGhostAction();
+  displayNarratorText(ghostResult);
+  narrateAmbience();
+}
+</script>
+<!-- 9. Button Rendering + Game Actions -->
+<script>
+function renderOptions() {
+  const container = document.getElementById('option-buttons');
+  container.innerHTML = '';
+
+  const btn = (label, handler) => {
+    const b = document.createElement('button');
+    b.innerText = label;
+    b.onclick = handler;
+    container.appendChild(b);
+  };
+
+  // Move Button (submenu)
+  btn('Move', () => {
+    container.innerHTML = '';
+    ['North', 'East', 'South', 'West'].forEach(dir => {
+      const dirBtn = document.createElement('button');
+      dirBtn.innerText = `Go ${dir}`;
+      dirBtn.onclick = () => {
+        const result = movePlayer(dir);
+        displayNarratorText(result);
+        tickTurn();
+        renderMinimap();
+        renderOptions();
+      };
+      container.appendChild(dirBtn);
+    });
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    container.appendChild(back);
+  });
+
+  // Investigate
+  btn('Investigate', () => {
+    const msg = performBehavior(getCurrentRoom());
+    adjustSanity(-5);
+    displayNarratorText(msg);
+    tickTurn();
+    renderMinimap();
+  });
+
+  // Use Item
+  btn('Use Item', () => {
+    const items = getInventory();
+    container.innerHTML = '';
+
+    if (!items.length) {
+      displayNarratorText("🧳 You have no items.");
+      renderOptions();
+      return;
+    }
+
+    items.forEach(item => {
+      const itemBtn = document.createElement('button');
+      itemBtn.innerText = `Use ${item}`;
+      itemBtn.onclick = () => {
+        const msg = useItem(item, getCurrentRoom(), getCurrentGhost().type);
+        displayNarratorText(msg);
+        narrateItemThought(item);
+        tickTurn();
+        renderMinimap();
+        renderOptions();
+      };
+      container.appendChild(itemBtn);
+    });
+
+    const back = document.createElement('button');
+    back.innerText = 'Back';
+    back.onclick = renderOptions;
+    container.appendChild(back);
+  });
+
+  // Item Interactions
+  btn('Drop Item', dropItemMenu);
+  btn('Pick Up Item', pickupMenu);
+  btn('Guess Ghost', guessMenu);
+
+  // Van Interaction
+  btn('Return to Van', () => {
+    isVanAccess = true;
+    showLoadoutMenu();
+    document.getElementById('loadout-screen').style.display = 'block';
+  });
+
+  // Always update minimap
+  renderMinimap();
+}
+</script>
+
+<!-- 10. DOMContentLoaded Hook -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-btn');
+  const gameScreen = document.getElementById('game-screen');
+  const loadoutScreen = document.getElementById('loadout-screen');
+  const confirmBtn = document.getElementById('confirm-loadout');
+  const backBtn = document.getElementById('back-btn');
+  const journalBtn = document.getElementById('journal-btn');
+  const saveJournalBtn = document.getElementById('save-journal');
+  const closeJournalBtn = document.getElementById('close-journal');
+  const journalScreen = document.getElementById('journal-screen');
+
+  startBtn.onclick = () => {
+    const wantsLoadout = confirm("Do you want to select a loadout?");
+    if (wantsLoadout) {
+      showLoadoutMenu();
+      loadoutScreen.style.display = 'block';
+      startBtn.style.display = 'none';
+    } else {
+      gameScreen.classList.remove('hidden');
+      startBtn.style.display = 'none';
+      startGame();
+    }
+  };
+
+  confirmBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    gameScreen.classList.remove('hidden');
+    startGame();
+  };
+
+  backBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+    } else {
+      startBtn.style.display = 'inline-block';
+    }
+  };
+
+  journalBtn.onclick = () => {
+    initializeJournal();
+    journalScreen.classList.remove('hidden');
+  };
+
+  saveJournalBtn.onclick = () => {
+    const text = document.getElementById('journal-entry').value;
+    updateNotes(text);
+    journalScreen.classList.add('hidden');
+  };
+
+  closeJournalBtn.onclick = () => {
+    journalScreen.classList.add('hidden');
+  };
+});
+</script>
+
+  <script>
+// --- GHOST SYSTEM LOGIC BLOCK --- //
+
+const ghostTypes = [
+  'Spirit', 'Wraith', 'Phantom', 'Poltergeist', 'Banshee',
+  'Jinn', 'Mare', 'Revenant', 'Shade', 'Demon',
+  'Yurei', 'Oni', 'Hantu', 'Goryo', 'Myling',
+  'Onryo', 'The Twins', 'Raiju', 'Obake', 'The Mimic',
+  'Moroi', 'Deogen', 'Thaye', 'Succubus'
+];
+
+const ghostEvidenceMap = {
+  Spirit: ['EMF 5', 'Spirit Box', 'Ghost Writing'],
+  Wraith: ['EMF 5', 'Spirit Box', 'D.O.T.S'],
+  Phantom: ['Spirit Box', 'Fingerprints', 'D.O.T.S'],
+  Poltergeist: ['Spirit Box', 'Fingerprints', 'Ghost Writing'],
+  Banshee: ['Fingerprints', 'Ghost Orbs', 'D.O.T.S'],
+  Jinn: ['EMF 5', 'Fingerprints', 'Freezing Temps'],
+  Mare: ['Spirit Box', 'Ghost Orbs', 'Ghost Writing'],
+  Revenant: ['Ghost Orbs', 'Ghost Writing', 'Freezing Temps'],
+  Shade: ['EMF 5', 'Ghost Writing', 'Freezing Temps'],
+  Demon: ['Fingerprints', 'Ghost Writing', 'Freezing Temps'],
+  Yurei: ['Ghost Orbs', 'Freezing Temps', 'D.O.T.S'],
+  Oni: ['EMF 5', 'Freezing Temps', 'D.O.T.S'],
+  Hantu: ['Fingerprints', 'Ghost Orbs', 'Freezing Temps'],
+  Goryo: ['EMF 5', 'Fingerprints', 'D.O.T.S'],
+  Myling: ['EMF 5', 'Fingerprints', 'Ghost Writing'],
+  Onryo: ['Spirit Box', 'Ghost Orbs', 'Freezing Temps'],
+  The Twins: ['EMF 5', 'Spirit Box', 'Freezing Temps'],
+  Raiju: ['EMF 5', 'Ghost Orbs', 'D.O.T.S'],
+  Obake: ['EMF 5', 'Fingerprints', 'Ghost Orbs'],
+  The Mimic: ['Spirit Box', 'Fingerprints', 'Freezing Temps'],
+  Moroi: ['Spirit Box', 'Ghost Writing', 'Freezing Temps'],
+  Deogen: ['Spirit Box', 'Ghost Writing', 'D.O.T.S'],
+  Thaye: ['Ghost Orbs', 'Ghost Writing', 'D.O.T.S'],
+  Succubus: ['Spirit Box', 'Ghost Writing', 'EMF 5']
+};
+
+function generateGhostBehavior(type) {
+  const base = [
+    room => `You feel watched in the ${room}.`,
+    room => `A chill runs through the ${room}.`,
+    room => `The lights flicker briefly in the ${room}.`,
+    room => `You hear faint whispers in the ${room}.`,
+    room => `The air feels thick in the ${room}.`
+  ];
+
+  const custom = {
+    Poltergeist: [r => `Objects clatter violently in the ${r}.`],
+    Banshee: [r => `A piercing wail echoes through the ${r}.`],
+    Jinn: [r => `A surge of energy pulses through the ${r}.`],
+    Mare: [r => `Darkness creeps unnaturally in the ${r}.`],
+    Revenant: [r => `You sense something fast approaching in the ${r}.`],
+    Shade: [r => `Silence dominates the ${r}, too quiet.`],
+    Demon: [r => `You hear growling in the ${r}.`],
+    Yurei: [r => `A sorrowful presence hangs in the ${r}.`],
+    Oni: [r => `Loud footsteps stomp around the ${r}.`],
+    Hantu: [r => `Freezing winds swirl unnaturally in the ${r}.`],
+    Goryo: [r => `You glimpse a silhouette dart past in the ${r}.`],
+    Myling: [r => `Soft sobs fill the ${r}.`],
+    Onryo: [r => `Your lighter won't ignite in the ${r}.`],
+    The Twins: [r => `Two sets of footsteps echo in the ${r}.`],
+    Raiju: [r => `Your electronics buzz in the ${r}.`],
+    Obake: [r => `Fingerprints shift and warp in the ${r}.`],
+    The Mimic: [r => `You hear a sound that doesn’t match your evidence in the ${r}.`],
+    Moroi: [r => `Your breath fogs up as you speak in the ${r}.`],
+    Deogen: [r => `You feel eyes watching your every move in the ${r}.`],
+    Thaye: [r => `An ancient aura ages the air in the ${r}.`],
+    Succubus: [r => `A sultry whisper beckons in the ${r}.`]
+  };
+
+  return room => {
+    const pool = [...base, ...(custom[type] || [])];
+    return pool[Math.floor(Math.random() * pool.length)](room);
+  };
+}
+
+let ghost = null;
+
+function getRandomGhost() {
+  const type = ghostTypes[Math.floor(Math.random() * ghostTypes.length)];
+  return { type, behavior: generateGhostBehavior(type) };
+}
+
+function initializeGhost(g) { ghost = g; }
+function getCurrentGhost() { return ghost; }
+function performBehavior(room) {
+  return ghost?.behavior(room) || 'Nothing happens.';
+}
+function getGhostEvidence(type) {
+  return ghostEvidenceMap[type] || [];
+}
+
+// Expose
+window.getRandomGhost = getRandomGhost;
+window.initializeGhost = initializeGhost;
+window.getCurrentGhost = getCurrentGhost;
+window.performBehavior = performBehavior;
+window.getGhostEvidence = getGhostEvidence;
+</script>
+<script>
+// --- JOURNAL SYSTEM LOGIC BLOCK --- //
+
+let journalNotes = '';
+
+function updateNotes(txt) {
+  journalNotes = txt;
+  displayNarratorText('📝 Notes saved.');
+}
+
+function initializeJournal() {
+  document.getElementById('journal-entry').value = journalNotes;
+  renderEvidenceChecklist();
+}
+
+<script>
+// --- JOURNAL SYSTEM: Evidence Checklist + Matching Ghosts -- //
+
+function renderEvidenceChecklist() {
+  const container = document.getElementById('evidence-checklist');
+  container.innerHTML = '';
+
+  const evidenceTypes = ['EMF 5', 'Spirit Box', 'Fingerprints', 'Ghost Orbs', 'Ghost Writing', 'Freezing Temps', 'D.O.T.S'];
+
+  evidenceTypes.forEach(ev => {
+    const label = document.createElement('label');
+    label.style.display = 'inline-flex';
+    label.style.alignItems = 'center';
+    label.style.gap = '4px';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.value = ev;
+    checkbox.onchange = updatePossibleGhosts;
+
+    label.appendChild(checkbox);
+    label.appendChild(document.createTextNode(ev));
+    container.appendChild(label);
+  });
+}
+
+function updatePossibleGhosts() {
+  const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
+  const list = document.getElementById('possible-ghosts');
+  list.innerHTML = '';
+
+  if (selected.length === 0) {
+    list.innerHTML = '<li>All ghosts are possible</li>';
+    return;
+  }
+
+  const possible = ghostTypes.filter(type => {
+    const evidenceSet = getGhostEvidence(type);
+    return selected.every(ev => evidenceSet.includes(ev));
+  });
+
+  if (possible.length) {
+    possible.forEach(type => {
+      const li = document.createElement('li');
+      li.textContent = type;
+      list.appendChild(li);
+    });
+  } else {
+    list.innerHTML = '<li>No ghosts match this combination</li>';
+  }
+}
+  function updatePossibleGhosts() {
+  const selected = Array.from(document.querySelectorAll('#evidence-checklist input:checked')).map(cb => cb.value);
+  const list = document.getElementById('possible-ghosts');
+  list.innerHTML = '';
+
+  if (selected.length === 0) {
+    list.innerHTML = '<li>All ghosts are possible</li>';
+    return;
+  }
+
+  const possible = ghostTypes.filter(type => {
+    const evidenceSet = getGhostEvidence(type);
+    return selected.every(sel => evidenceSet.includes(sel));
+  });
+
+  if (possible.length) {
+    possible.forEach(ghost => {
+      const li = document.createElement('li');
+      li.innerText = ghost;
+      list.appendChild(li);
+    });
+  } else {
+    list.innerHTML = '<li>No ghosts match this combination</li>';
+  }
+}
+
+// Expose
+window.updateNotes = updateNotes;
+window.initializeJournal = initializeJournal;
+</script>
+<script>
+// --- GAME START & LOOP LOGIC BLOCK --- //
+
+function startGame() {
+  resetStats();
+  const ghostData = getRandomGhost();
+  initializeGhost(ghostData);
+  initializeJournal();
+  updateHUD();
+  displayNarratorText("So it begins...");
+  renderOptions();
+}
+
+function tickTurn() {
+  turn++;
+  updateHUD();
+  const ghostResult = performGhostAction();
+  displayNarratorText(ghostResult);
+  narrateAmbience();
+}
+</script>
+
+<script>
+// --- HUD + NARRATION SYSTEM BLOCK --- //
+
+function updateHUD() {
+  const hud = document.getElementById('hud-status');
+  hud.innerText = `Turn: ${turn} | Sanity: ${getSanity()}% | XP: ${getXP()} | Inventory: ${getInventory().join(', ') || 'none'}`;
+}
+
+function displayNarratorText(text) {
+  const thoughtDiv = document.getElementById('narrator-thought');
+  const readout = document.getElementById('main-readout');
+  thoughtDiv.innerText = text;
+  readout.innerText += `\n🧠 ${text}`;
+  readout.scrollTop = readout.scrollHeight;
+}
+
+function narrateItemThought(item) {
+  const thoughts = {
+    'Candle': ["I feel a little safer with a flame nearby.", "The candle flickers… is that wind or something else?", "This light might be all that stands between me and the dark."],
+    'Smudge Stick': ["Hope this keeps whatever it is at bay.", "The smoke curls like fingers. Protective… maybe.", "Old rituals for older things."],
+    'EMF Reader': ["This thing better beep at the right time.", "Still quiet… but that doesn’t mean safe.", "Waiting for the spike. Dreading it, too."],
+    'Spirit Box': ["I hate the sound it makes. Static and whispers.", "Every time it turns on, I brace myself.", "It’s talking. Or it’s trying to."],
+    'UV Light': ["Let’s see what hides in the dark.", "Invisible stains glow back at me. I shiver.", "Something touched that. Not long ago."],
+    'Thermometer': ["Come on, give me a drop.", "If it’s freezing in here, I’ll know soon.", "Cold spots mean company."],
+    'Parabolic Mic': ["What are you saying in silence?", "Just wind… or whispers?", "I’m listening. Maybe I shouldn’t be."],
+    'Camera': ["One flash might reveal too much.", "Say cheese, ghost.", "Click. Now to check what I caught."],
+    'Salt': ["Let’s see what steps through this.", "Hope this slows it down.", "Footprints would confirm I’m not alone."]
+  };
+  if (thoughts[item]) displayNarratorText(randomFrom(thoughts[item]));
+}
+
+function getAmbientByRoom(room) {
+  const map = {
+    'Foyer': ["The entryway feels colder than the outside air.", "Shoes are lined up neatly — untouched.", "Something waits beyond this welcome mat."],
+    'Living Room': ["Couch cushions sag, like they expect company.", "The TV screen reflects only shadows.", "A remote clicks on the table... by itself?"],
+    'Kitchen': ["Old dishes remain in the sink — freshly cold.", "The fridge hums, too steady for comfort.", "There’s a faint smell of something burned."],
+    'Dining Room': ["Chairs are pulled out — as if a meal was interrupted.", "Dust clings to the silverware like guilt.", "One place setting is disturbingly clean."],
+    'Bathroom': ["A faucet drips, despite being turned off.", "Your reflection wavers in the mirror slightly.", "The shower curtain sways with no breeze."],
+    'Bedroom': ["The bed is made... but the pillow’s indented.", "Something feels possessive about this room.", "Perfume still lingers in the air — faint and wrong."],
+    'Basement': ["The lightbulb flickers without pattern.", "Concrete sweats. Or bleeds.", "You hear something breathing behind the boiler."],
+    'Garage': ["Tools hang neatly. Some have moved.", "The smell of oil blends with something older.", "A workbench drawer is slightly ajar now."]
+  };
+  return map[room] || ["You feel watched from the corners of the room."];
+}
+
+function updateEnvironmentVisuals(room, action) {
+  document.body.classList.remove('lights-flicker', 'basement-fog', 'raining');
+  if (room === 'Living Room' && action === 'major activity') {
+    document.body.classList.add('lights-flicker');
+    setTimeout(() => document.body.classList.remove('lights-flicker'), 2000);
+  }
+  if (room === 'Basement' && ghostActivityLevel > 5) {
+    document.body.classList.add('basement-fog');
+  }
+}
+
+function narrateAmbience() {
+  const room = getCurrentRoom();
+  updateEnvironmentVisuals(room, lastAction);
+
+  const ambienceByAction = {
+    'idle': getAmbientByRoom(room),
+    'minor activity': [
+      "You freeze — listening for something more.",
+      "It wasn’t just the wind. Was it?",
+      "You glance toward the noise but see nothing.",
+      "Your mind replays the sound again and again."
+    ],
+    'major activity': [
+      "Your pulse rises — the room feels smaller now.",
+      "You tense, waiting for the next sound to follow.",
+      "You can’t help but scan the shadows twice.",
+      "It’s close. You know it’s close."
+    ],
+    'hunt': [
+      "Your instincts scream: run, now.",
+      "You feel your body move before your mind catches up.",
+      "Every sound is too loud. Every breath is too short.",
+      "You pray it didn’t see you. You’re not sure to whom."
+    ],
+    'cursed item': [
+      "Reality swims — colors wrong and wronger.",
+      "You grip something familiar to stay grounded.",
+      "It worked. Or it failed. You’re not sure.",
+      "Your hand tingles where the object rested."
+    ],
+    'evidence': [
+      "You jot the detail quickly, heart racing.",
+      "That confirms something. But what?",
+      "You fumble to log the clue before it fades.",
+      "Another piece... but is it a truth, or a trick?"
+    ]
+  };
+
+  const lines = ambienceByAction[lastAction] || getAmbientByRoom(room);
+  if (Math.random() < 0.4) displayNarratorText(`🧠 ${randomFrom(lines)}`);
+}
+
+function randomFrom(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+</script>
+<script>
+// --- BUTTON HOOKS & DOMContentLoaded --- //
+
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById('start-btn');
+  const gameScreen = document.getElementById('game-screen');
+  const loadoutScreen = document.getElementById('loadout-screen');
+  const confirmBtn = document.getElementById('confirm-loadout');
+  const backBtn = document.getElementById('back-btn');
+  const journalBtn = document.getElementById('journal-btn');
+  const saveJournalBtn = document.getElementById('save-journal');
+  const closeJournalBtn = document.getElementById('close-journal');
+  const journalScreen = document.getElementById('journal-screen');
+
+  startBtn.onclick = () => {
+    const wantsLoadout = confirm("Do you want to select a loadout?");
+    if (wantsLoadout) {
+      showLoadoutMenu();
+      loadoutScreen.style.display = 'block';
+      startBtn.style.display = 'none';
+    } else {
+      gameScreen.classList.remove('hidden');
+      startBtn.style.display = 'none';
+      startGame();
+    }
+  };
+
+  confirmBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+      return;
+    }
+
+    selectedLoadout.forEach(item => addItemToInventory(item));
+    gameScreen.classList.remove('hidden');
+    startGame();
+  };
+
+  backBtn.onclick = () => {
+    loadoutScreen.style.display = 'none';
+    if (isVanAccess) {
+      isVanAccess = false;
+      renderOptions();
+    } else {
+      startBtn.style.display = 'inline-block';
+    }
+  };
+
+  journalBtn.onclick = () => {
+    initializeJournal();
+    journalScreen.classList.remove('hidden');
+  };
+
+  saveJournalBtn.onclick = () => {
+    const text = document.getElementById('journal-entry').value;
+    updateNotes(text);
+    journalScreen.classList.add('hidden');
+  };
+
+  closeJournalBtn.onclick = () => {
+    journalScreen.classList.add('hidden');
+  };
+});
+</script>
+<script src="mlc-webllm/dist/webllm.min.js"></script>
+<script src="jane-narrator.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initJane();
+  });
+
+  async function ghostNarrationFromJane(context) {
+    const line = await askJane(context);
+    displayNarratorText("🧠 " + line);
+  }
+</script>
+</body>
 </html>
