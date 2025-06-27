@@ -2,763 +2,194 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phasma‑Phoney</title>
+  <title>Camera Vision UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
       margin: 0;
-      padding: 0;
-      background: black;
-      font-family: sans-serif;
-      overflow: hidden;
-      width: 100vw;
-      height: 100dvh;
-    }
-
-    /* === TITLE SCREEN === */
-    #title-screen {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: black;
-      z-index: 100;
-      opacity: 1;
-      transition: opacity 2s ease-in-out;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 0.9; transform: scale(1); }
-      50% { opacity: 1; transform: scale(1.04); }
-    }
-
-    /* === LAYERED SCENE === */
-    #main-scene {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100dvh;
-      z-index: 1;
-      overflow: hidden;
-      pointer-events: none;
-    }
-
-    #background, #rain, #background-blocker, #lightning, #foreground, #spiritParticles {
-      position: absolute;
-      width: 100%;
       height: 100%;
-    }
-
-    #background {
-      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/background.png') no-repeat center center;
-      background-size: cover;
-      z-index: 1;
-    }
-
-    #rain {
-      z-index: 2;
-      pointer-events: none;
       overflow: hidden;
+      background: black;
+      font-family: monospace;
     }
 
-    .raindrop {
+    body.on #screen-overlay {
+      display: block;
+    }
+
+    #camera-container {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      background: #000;
+    }
+
+    #camera-scene {
       position: absolute;
-      width: 2px;
-      height: 12px;
-      background: rgba(255, 255, 255, 0.2);
-      animation: fall 0.6s linear infinite;
+      width: 150vw;
+      height: 150vh;
+      background: url('https://images.unsplash.com/photo-1606112219348-204d7d8b94ee?fit=crop&w=1600&q=80') center/cover no-repeat;
+      transform: translate(-25vw, -25vh);
+      transition: filter 0.3s ease;
     }
 
-    @keyframes fall {
-      0% { transform: translateY(-100vh); opacity: 0.8; }
-      100% { transform: translateY(100vh); opacity: 0; }
+    /* Night Vision / Heat Vision Filters */
+    .vision-night {
+      filter: brightness(1.5) contrast(1.2) grayscale(0.2) hue-rotate(90deg);
     }
 
-    #background-blocker {
-      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/rainblock.png') no-repeat center center;
-      background-size: cover;
-      z-index: 3;
+    .vision-heat {
+      filter: contrast(2) saturate(3) hue-rotate(270deg);
     }
 
-    #lightning {
-      background: white;
-      opacity: 0;
-      z-index: 4;
-    }
-
-    #foreground {
-      background: url('https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/foreground.png') no-repeat center center;
-      background-size: cover;
-      z-index: 5;
-    }
-
-    /* === ORBS === */
-    #spiritParticles {
-      z-index: 7;
+    #screen-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       pointer-events: none;
+      z-index: 10;
+      display: none;
     }
 
-    .orb {
+    /* UI overlay effects: grid, grain, flicker */
+    #screen-overlay::before {
+      content: "";
       position: absolute;
-      width: 8px;
-      height: 8px;
-      background: white;
-      border-radius: 50%;
-      opacity: 0.7;
-      animation: floatOrb 8s infinite ease-in-out;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image: repeating-linear-gradient(to bottom, rgba(0,255,0,0.05), rgba(0,255,0,0.05) 1px, transparent 1px, transparent 2px);
+      mix-blend-mode: screen;
+      animation: flicker 0.2s infinite alternate;
     }
 
-    @keyframes floatOrb {
-      0% { transform: translateY(0); opacity: 0.3; }
-      50% { opacity: 1; }
-      100% { transform: translateY(-100vh); opacity: 0; }
+    @keyframes flicker {
+      from { opacity: 0.85; }
+      to { opacity: 1; }
     }
 
-    /* === EVIDENCE PANEL === */
-    #evidence-panel button {
-      background: #222;
-      color: white;
-      border: 1px solid #666;
-      padding: 6px;
+    #controls {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      background: rgba(0,0,0,0.6);
+      color: lime;
+      border: 1px solid lime;
+      padding: 5px 10px;
       cursor: pointer;
-      border-radius: 4px;
+      font-size: 14px;
     }
 
-    #evidence-panel button.selected {
-      background: #0f0;
-      color: black;
-      font-weight: bold;
-      border-color: #0f0;
+    .zoom-indicator {
+      position: absolute;
+      bottom: 10px;
+      right: 10px;
+      color: lime;
+      font-size: 14px;
+      background: rgba(0,0,0,0.5);
+      padding: 4px 8px;
+      border: 1px solid lime;
+      z-index: 20;
     }
   </style>
 </head>
 <body>
-  
+
+<div id="camera-container">
+  <div id="camera-scene" class="vision-night"></div>
+  <div id="screen-overlay"></div>
+
+  <div id="controls">
+    <button class="btn" onclick="togglePower()">Power</button>
+    <button class="btn" onclick="toggleVision()">Toggle Vision</button>
+    <button class="btn" onclick="zoomIn()">Zoom In</button>
+    <button class="btn" onclick="zoomOut()">Zoom Out</button>
+  </div>
+
+  <div class="zoom-indicator" id="zoom-level">Zoom: 1x</div>
+</div>
+
 <script>
-const game = {
-  ghost: null,
-  ghostRoom: null,
-  playerRoom: null,
-  inventory: [],
-  vanStock: {},
-  selectedEvidence: new Set(),
-  currentTurn: 0,
-  sanity: 100,
-  mimicForm: null,
-  nextMimicShift: 0
-};
+  let isOn = false;
+  let currentVision = 'night';
+  let zoom = 1;
+  const maxZoom = 2.5;
+  const minZoom = 0.5;
 
-function startTitleScreen() {
-  const screen = document.getElementById("title-screen");
-  screen.style.display = "flex";
-  <div id="title-screen">
-    <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/logo.png" alt="Logo" />
-  </div>
-<script>
-const game = { ghost: null };
-function startTitleScreen() {
-  const screen = document.getElementById("title-screen");
-  setTimeout(() => {
-    screen.style.opacity = 0;
-    setTimeout(() => {
-      screen.style.display = "none";
-      startGameFlow();
-    }, 2000);
-  }, 3000);
-}
-function startGameFlow() {
-  alert("Game flow starts here.");
-}
+  const body = document.body;
+  const scene = document.getElementById('camera-scene');
+  const overlay = document.getElementById('screen-overlay');
+  const zoomLabel = document.getElementById('zoom-level');
 
-
-function startGameFlow() {
-  // Just to test
-  console.log("Game started!");
-  // Insert your actual startup logic here (loadout, van, ghost selection etc)
-}
-window.addEventListener("DOMContentLoaded", startTitleScreen);
-  // Auto-fade after 3 seconds
-  setTimeout(() => {
-    screen.style.opacity = 0;
-    setTimeout(() => {
-      screen.style.display = "none";
-      startGameFlow(); // ⚠️ make sure this function exists
-    }, 2000);
-  }, 3000);
-}
-// Wait for DOM before starting title sequence
-window.addEventListener("DOMContentLoaded", () => {
-  startTitleScreen();
-});
-
-  <!-- === MAIN SCENE LAYERS === -->
-  <div id="main-scene">
-    <div id="background"></div>
-    <div id="rain"></div>
-    <div id="background-blocker"></div>
-    <div id="lightning"></div>
-    <div id="foreground"></div>
-    <div id="spiritParticles"></div>
-  </div>
-
-  <!-- === LOADOUT SCREEN === -->
-  <div id="loadout-screen" style="display:none; color:white; padding:20px; position:absolute; z-index:10; background:black; width:100%; height:100%;">
-    <h2>🎒 Your Inventory (max 3)</h2>
-    <div id="equipped-items" class="item-grid"></div>
-    <hr style="margin: 20px 0; border-color: #555;" />
-    <h2>🚐 Van Inventory</h2>
-    <div id="van-items" class="item-grid"></div>
-    <button onclick="confirmLoadout()" style="margin-top:20px;">Close Van</button>
-  </div>
-<!-- === ROOM MAP === -->
-<div id="room-map">
-  <div class="room" onclick="goToRoom('Garage')">Garage</div>
-  <div class="room" onclick="goToRoom('Living Room')">Living Room</div>
-  <div class="room" onclick="goToRoom('Kitchen')">Kitchen</div>
-  <div class="room" onclick="goToRoom('Basement')">Basement</div>
-  <div class="room" onclick="goToRoom('Attic')">Attic</div>
-</div>
- <!-- === ADA INTERFACE PANEL === -->
-<div id="ada-modal" style="display:none; position:fixed; bottom:0; left:0; right:0; background:#111; color:white; padding:10px; font-size:0.9em; z-index:20;">
-  <div id="ada-log" style="max-height:140px; overflow-y:auto; font-family:monospace; margin-bottom:8px;"></div>
-<div id="ada-buttons" style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
-  <button onclick="openInspect()">🔍 Inspect</button>
-  <button onclick="openUseMenu()">🛠️ Use</button>
-  <button onclick="openGuess()">👻 Guess</button>
-  <button onclick="openJournal()">📓 Journal</button>
-</div>
-
-  <div id="ada-submenu" style="margin-top:10px; text-align:center;"></div>
-</div>
-<!-- === MAP INTERFACE === -->
-<div id="map-panel" style="position:fixed; bottom:90px; left:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
-  <strong>Map</strong>
-  <div id="room-buttons" style="display:flex; flex-wrap:wrap; gap:5px; margin-top:5px;"></div>
-  <small style="opacity:0.7;">Tap to explore rooms</small>
-</div>
-
-  <!-- === EVIDENCE TRACKER === -->
-  <div id="evidence-panel" style="position:fixed; top:10px; right:10px; background:#111; color:white; padding:10px; z-index:25; border:1px solid #444; border-radius:6px;">
-    <strong>Evidence</strong>
-    <div id="evidence-buttons" style="display:flex; flex-direction:column; gap:5px; margin-top:5px;"></div>
-    <small style="opacity:0.7;">Click to toggle</small>
-  </div>
-
-  <!-- === RESULT SCREEN === -->
-  <div id="result-popup" style="display:none; position:fixed; top:20%; left:10%; width:80%; background:#111; color:white; border:2px solid #444; z-index:50; padding:20px; text-align:center; border-radius:8px;">
-    <h2 id="result-message"></h2>
-    <p id="result-comment" style="margin-top:10px; font-style:italic; color:#ccc;"></p>
-    <button onclick="restartGame()" id="result-button" style="margin-top:20px;">Again?</button>
-  </div>
-  <!-- === TITLE SCREEN === -->
-  <div id="title-screen">
-    <img src="https://raw.githubusercontent.com/sharkvelocity/phasma-phoney/refs/heads/Main/logo.png" alt="Phasma‑Phoney Logo" />
-  </div>
-<script>
-  const game = {
-  ghost: null,
-  ghostRoom: null,
-  playerRoom: null,
-  inventory: [],
-  vanStock: {},
-  selectedEvidence: new Set(),
-  currentTurn: 0,
-  sanity: 100,
-  mimicForm: null,
-  nextMimicShift: 0
-};
-  const ghostProfiles = {
-    "Spirit": { evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"] },
-    "Wraith": { evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S"] },
-    "Phantom": { evidence: ["Spirit Box", "Fingerprints", "D.O.T.S"] },
-    "Poltergeist": { evidence: ["Spirit Box", "Fingerprints", "Ghost Writing"] },
-    "Banshee": { evidence: ["Fingerprints", "Orbs", "D.O.T.S"] },
-    "Jinn": { evidence: ["EMF Level 5", "Fingerprints", "Freezing Temps"] },
-    "Mare": { evidence: ["Spirit Box", "Ghost Writing", "Orbs"] },
-    "Revenant": { evidence: ["Ghost Writing", "Orbs", "Freezing Temps"] },
-    "Shade": { evidence: ["EMF Level 5", "Ghost Writing", "Freezing Temps"] },
-    "Demon": { evidence: ["Fingerprints", "Ghost Writing", "Freezing Temps"] },
-    "Yurei": { evidence: ["Freezing Temps", "Orbs", "D.O.T.S"] },
-    "Oni": { evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S"] },
-    "Yokai": { evidence: ["Spirit Box", "Orbs", "D.O.T.S"] },
-    "Hantu": { evidence: ["Fingerprints", "Orbs", "Freezing Temps"] },
-    "Goryo": { evidence: ["EMF Level 5", "Fingerprints", "D.O.T.S"] },
-    "Myling": { evidence: ["EMF Level 5", "Fingerprints", "Ghost Writing"] },
-    "Onryo": { evidence: ["Spirit Box", "Orbs", "Freezing Temps"] },
-    "The Twins": { evidence: ["EMF Level 5", "Spirit Box", "Freezing Temps"] },
-    "Raiju": { evidence: ["EMF Level 5", "Orbs", "D.O.T.S"] },
-    "Obake": { evidence: ["EMF Level 5", "Fingerprints", "Orbs"] },
-    "Mimic": { evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"], mimicOrbs: true },
-    "Moroi": { evidence: ["Spirit Box", "Ghost Writing", "Freezing Temps"] },
-    "Deogen": { evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] },
-    "Thaye": { evidence: ["Ghost Writing", "Orbs", "D.O.T.S"] },
-    "The Nightmare": { evidence: ["Freezing Temps", "Ghost Writing", "Orbs"] }
-  };
-
-  const evidenceTypes = [
-    "EMF Level 5", "Spirit Box", "Fingerprints",
-    "Ghost Writing", "Freezing Temps", "D.O.T.S", "Orbs"
-  ];
-
-  const allLoadoutItems = [
-    "EMF Reader", "Spirit Box", "Thermometer", "Camera",
-    "UV Flashlight", "Ghost Writing Book", "D.O.T.S", "Crucifix",
-    "Salt", "Smudge", "Motion Sensor"
-  ];
-  
-
-
-
-const ghostBehaviors = {
-  "Spirit":      { hint: () => log("You hear light footsteps pacing nearby.") },
-  "Wraith":      { hint: () => log("A chill runs down your spine just now.") },
-  "Phantom":     { hint: () => { log("Your thought you seen something for a moment, or not."); game.sanity -= 10; }},
-  "Poltergeist": { hint: () => log("A can rolls into the darkness from a nearby table.") },
-  "Banshee":     { hint: () => log("Its not a shade. It just did a singing event...") },
-  "Jinn":        { hint: () => log("A click in the distance and the microwave beeps.") },
-  "Mare":        { hint: () => log("a growl is heard but, you can't see where.") },
-  "Revenant":    { hint: () => log("You hear something behind you, it sounds like..RUN.... ") },
-  "Shade":       { hint: () => log("ghost fart, its not an Oni.") },
-  "Demon":       { hint: () => log("An echo? A laugh?") },
-  "Yurei":       { hint: () => { log("A slam then a pressure falls over you. You feel drained."); game.sanity -= 5; }},
-  "Oni":         { hint: () => log("A painting clatters to the ground!") },
-  "Yokai":       { hint: () => log("gotta stay calm, quite, it might here you.") },
-  "Hantu":       { hint: () => log("drafty, usually not an issue in summer.") },
-  "Goryo":       { hint: () => log("sounds angry, glad it hasn't killed me, might be an oni?") },
-  "Myling":      { hint: () => log("Something is walking... but it may have been the wind.") },
-  "Onryo":       { hint: () => log("A candle flickers softly before going out") },
-  "The Twins":   { hint: () => log("Two distinct sounds echo from different rooms.") },
-  "Raiju":       { hint: () => log("THUMP THUMP. you hear a heart beat.. close..") },
-  "Obake":       { hint: () => log("A fingerprint looks... off. Misshapen.") },
-  "Mimic":       { hint: () => mimicGhostBehavior() },
-  "Moroi":       { hint: () => log("You feel a chill run down your spine.") },
-  "Deogen":      { hint: () => log("You feel like it knows where you are...") },
-  "Thaye":       { hint: () => log("You know something is wrong, I see it everywhere I go.") },
-  "The Nightmare": { hint: () => log("Something prevents your gear from working...") }
-};
-  const ambientBehaviors = [
-  () => log("The lights buzz faintly."),
-  () => log("You hear creaking from upstairs."),
-  () => log("A cold breeze drifts through the hall."),
-  () => log("A shadow moves — was it real?"),
-  () => log("You hear faint static in your gear."),
-  () => log("Nothing happens... but it *feels* wrong."),
-  () => log("A soft knocking... or maybe just pipes.")
-];
-  function goToRoom(room) {
-  if (game.playerRoom === room) {
-    log(You're already in the ${room}.);
-    return;
+  function togglePower() {
+    isOn = !isOn;
+    body.classList.toggle('on', isOn);
   }
 
-  game.playerRoom = room;
-  log(You move cautiously into the ${room}.);
-  advanceTurn();
-}
-
-function startTitleScreen() {
-  const screen = document.getElementById("title-screen");
-  screen.style.display = "flex";
-
-  // Auto-fade after 3 seconds
-  setTimeout(() => {
-    screen.style.opacity = 0;
-    setTimeout(() => {
-      screen.style.display = "none";
-      startGameFlow();
-    }, 2000);
-  }, 3000);
-}
-
-    const roomList = [
-  "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
-  "Basement", "Attic", "Utility", "Hallway", "Dining Room"
-];
-const game = {
-  ghost: null,
-  ghostRoom: null,
-  playerRoom: null,
-  inventory: [],
-  vanStock: {},
-  selectedEvidence: new Set(),
-  currentTurn: 0,
-  sanity: 100,
-  mimicForm: null,
-  nextMimicShift: 0
-};
-function startGameFlow() {
-  const keys = Object.keys(ghostProfiles);
-  game.ghost = keys[Math.floor(Math.random() * keys.length)];
-
-  game.ghostRoom = roomList[Math.floor(Math.random() * roomList.length)];
-  game.playerRoom = "Van"; // or first room depending on design
-
-  game.inventory = ["Notebook", "Lighter"];
-  game.vanStock = {};
-  allLoadoutItems.forEach(i => {
-    game.vanStock[i] = (i === "Smudge" ? 4 : i === "Salt" ? 3 : 1);
-  });
-
-  showLoadoutMenu();
-}
-
-function adaWelcome() {
-  const greetings = [
-    "Welcome back.",
-    "System Malfunction. Clearing out the clutter before I go. Time to get Obaked",
-    "Good to see you again, i've got a job for you.",
-    "Alots happened since you where out.",
-    "Be careful out thier. Proceed with caution.",
-    "Let's begin."
-  ];
-
-  const line = greetings[Math.floor(Math.random() * greetings.length)];
-
-  const utter = new SpeechSynthesisUtterance(line);
-  utter.pitch = 1;
-  utter.rate = 0.92;
-  utter.volume = 0.9;
-
-  const voices = speechSynthesis.getVoices().filter(v => /female|Google US English/i.test(v.name));
-  if (voices.length) utter.voice = voices[0];
-
-  window.speechSynthesis.cancel();
-  window.speechSynthesis.speak(utter);
-}
-
-function confirmLoadout() {
-  if (!game.inventory.includes("Notebook")) game.inventory.push("Notebook");
-  if (!game.inventory.includes("Lighter")) game.inventory.push("Lighter");
-
-  document.getElementById("loadout-screen").style.display = "none";
-  document.getElementById("ada-modal").style.display = "block";
-
-  setupEvidencePanel();
-  log("Investigation begins. Find the haunted room and determine the ghost.");
-  adaWelcome(); // 🔊 ADA speaks here
-}
-  
-
-  function advanceTurn() {
-    game.currentTurn++;
-
-    if (game.ghost === "Mimic") {
-  if (game.nextMimicShift === 0 || game.currentTurn >= game.nextMimicShift) {
-    pickMimicForm();
-    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-  }
-  mimicGhostBehavior();
-} else {
-  const rand = Math.random();
-  if (rand < 0.3) {
-    // 30% chance to show ghost hint
-    ghostBehaviors[game.ghost].hint();
-  } else {
-    // Otherwise, ambient event
-    const ambient = ambientBehaviors[Math.floor(Math.random() * ambientBehaviors.length)];
-    ambient();
-  }
-}
-
-    log(Current sanity: ${game.sanity}%);
-  }
-
-  function pickMimicForm() {
-    const ghosts = Object.keys(ghostBehaviors).filter(g => g !== "Mimic");
-    const newForm = ghosts[Math.floor(Math.random() * ghosts.length)];
-    game.mimicForm = newForm;
-    log(Mimic now imitates a ${newForm}.);
-  }
-
-  function mimicGhostBehavior() {
-    if (game.mimicForm && ghostBehaviors[game.mimicForm]) {
-      const behavior = ghostBehaviors[game.mimicForm];
-      if (behavior.action) behavior.action();
-    }
-  }
-function log(msg) {
-  const logDiv = document.getElementById("ada-log");
-  logDiv.innerHTML += <div>> ${msg}</div>;
-  logDiv.scrollTop = logDiv.scrollHeight;
-}
-
-function openInspect() {
-  document.getElementById("ada-submenu").innerHTML = 
-    <button onclick="inspectRoom()">Inspect Room</button>
-    <button onclick="inspectSanity()">Check Sanity</button>
-  ;
-}
-
-function inspectRoom() {
-  log(You inspect the ${game.playerRoom}.);
-  advanceTurn();
-}
-
-function inspectSanity() {
-  log(Your sanity is at ${game.sanity}%.);
-  advanceTurn();
-}
-
-function openUseMenu() {
-  const usable = game.inventory.filter(i => i !== "Notebook" && i !== "Lighter");
-  if (usable.length === 0) {
-    document.getElementById("ada-submenu").innerHTML = <em>You have no usable items.</em>;
-    return;
-  }
-
-  document.getElementById("ada-submenu").innerHTML = usable.map(i => 
-    <button onclick="useItem('${i}')">${i}</button>
-  ).join('');
-}
-
-function useItem(item) {
-  log(You used the ${item}.);
-  advanceTurn();
-}
-
-function openGuess() {
-  const ghosts = Object.keys(ghostProfiles);
-  document.getElementById("ada-submenu").innerHTML = ghosts.map(g => 
-    <button onclick="guessGhost('${g}')">${g}</button>
-  ).join('');
-}
-
-
-
-function openJournal() {
-  log("You consult the journal for clues...");
-  advanceTurn();
-}
-
-  function guessGhost(name) {
-    const correct = name.toLowerCase() === game.ghost.toLowerCase();
-    const dead = false;
-    endInvestigation(correct, dead);
-  }
-
-  function endInvestigation(correct, dead) {
-    const popup = document.getElementById("result-popup");
-    const msg = document.getElementById("result-message");
-    const comment = document.getElementById("result-comment");
-    const btn = document.getElementById("result-button");
-
-    if (dead) {
-      msg.textContent = "You died.";
-      comment.textContent = getInsult();
-      btn.className = "lose";
-      document.getElementById("fail-sound").play();
-    } else if (correct) {
-      msg.textContent = "You correctly identified the ghost!";
-      comment.textContent = getPraise();
-      btn.className = "win";
-      document.getElementById("win-sound").play();
+  function toggleVision() {
+    if (!isOn) return;
+    if (currentVision === 'night') {
+      currentVision = 'heat';
+      scene.classList.remove('vision-night');
+      scene.classList.add('vision-heat');
     } else {
-      msg.textContent = "You were wrong.";
-      comment.textContent = getInsult();
-      btn.className = "lose";
-      document.getElementById("fail-sound").play();
-    }
-
-    popup.style.display = "block";
-  }
-
-  function restartGame() {
-    document.getElementById("result-popup").style.display = "none";
-    startGameFlow();
-  }
-
-  function getPraise() {
-    return [
-      "Flawless deduction.",
-      "That ghost didn't stand a chance.",
-      "You're a natural.",
-      "Even ADA is impressed.",
-      "Legendary hunting."
-    ][Math.floor(Math.random() * 5)];
-  }
-
-  function getInsult() {
-    return [
-      "The ghost played you.",
-      "Wrong again. Yikes.",
-      "You may want to quit.",
-      "Maybe let ADA guess next time.",
-      "Utter embarrassment."
-    ][Math.floor(Math.random() * 5)];
-  }
-
-  function setupEvidencePanel() {
-    const container = document.getElementById("evidence-buttons");
-    container.innerHTML = "";
-    evidenceTypes.forEach(type => {
-      const btn = document.createElement("button");
-      btn.textContent = type;
-      btn.onclick = () => {
-        if (game.selectedEvidence.has(type)) {
-          game.selectedEvidence.delete(type);
-          btn.classList.remove("selected");
-        } else {
-          game.selectedEvidence.add(type);
-          btn.classList.add("selected");
-        }
-        updateEvidenceMatch();
-      };
-      container.appendChild(btn);
-    });
-  }
-
-  function updateEvidenceMatch() {
-    const matches = Object.entries(ghostProfiles).filter(([name, data]) => {
-      for (let e of game.selectedEvidence) {
-        if (!data.evidence.includes(e)) return false;
-      }
-      return true;
-    });
-    log("Possible ghosts: " + matches.map(([n]) => n).join(", "));
-  }
-
-  function showLoadoutMenu() {
-    game.inventory = game.inventory.filter(i => i === "Notebook" || i === "Lighter");
-    renderEquipped();
-    renderVan();
-    document.getElementById("loadout-screen").style.display = "block";
-  }
-
-  function renderEquipped() {
-    const eqDiv = document.getElementById("equipped-items");
-    eqDiv.innerHTML = "";
-    game.inventory.forEach((item, index) => {
-      if (item === "Notebook" || item === "Lighter") return;
-      const btn = document.createElement("button");
-      btn.textContent = item;
-      btn.onclick = () => unequipItem(index);
-      eqDiv.appendChild(btn);
-    });
-    renderVan();
-  }
-
-  function renderVan() {
-    const vanDiv = document.getElementById("van-items");
-    vanDiv.innerHTML = "";
-    Object.entries(game.vanStock).forEach(([item, count]) => {
-      const btn = document.createElement("button");
-      btn.textContent = ${item} (${count});
-      const disabled = count <= 0 || getEquippedCount() >= 3;
-      btn.disabled = disabled;
-      btn.onclick = () => {
-        if (getEquippedCount() < 3) equipItem(item);
-      };
-      vanDiv.appendChild(btn);
-    });
-  }
-
-  function getEquippedCount() {
-    return game.inventory.filter(i => i !== "Notebook" && i !== "Lighter").length;
-  }
-
-  function equipItem(item) {
-    if (getEquippedCount() >= 3) return;
-    if (game.vanStock[item] > 0) {
-      game.inventory.push(item);
-      game.vanStock[item]--;
-      renderEquipped();
+      currentVision = 'night';
+      scene.classList.remove('vision-heat');
+      scene.classList.add('vision-night');
     }
   }
 
-  function unequipItem(index) {
-    const item = game.inventory[index];
-    if (item !== "Notebook" && item !== "Lighter") {
-      game.vanStock[item] = (game.vanStock[item] || 0) + 1;
-      game.inventory.splice(index, 1);
-      renderEquipped();
+  function zoomIn() {
+    if (!isOn || zoom >= maxZoom) return;
+    zoom = Math.min(maxZoom, zoom + 0.1);
+    updateZoom();
+  }
+
+  function zoomOut() {
+    if (!isOn || zoom <= minZoom) return;
+    zoom = Math.max(minZoom, zoom - 0.1);
+    updateZoom();
+  }
+
+  function updateZoom() {
+    scene.style.transform = `scale(${zoom}) translate(${(-25/zoom)}vw, ${(-25/zoom)}vh)`;
+    zoomLabel.textContent = `Zoom: ${zoom.toFixed(1)}x`;
+  }
+
+  // Parallax movement
+  let originX = window.innerWidth / 2;
+  let originY = window.innerHeight / 2;
+
+  function updateParallax(x, y) {
+    if (!isOn) return;
+    const dx = (x - originX) / originX;
+    const dy = (y - originY) / originY;
+    const offsetX = dx * 10;
+    const offsetY = dy * 10;
+    scene.style.transform = `scale(${zoom}) translate(calc(${-25 / zoom}vw + ${offsetX}px), calc(${-25 / zoom}vh + ${offsetY}px))`;
+  }
+
+  document.addEventListener('mousemove', e => updateParallax(e.clientX, e.clientY));
+  document.addEventListener('touchmove', e => {
+    if (e.touches.length > 0) {
+      updateParallax(e.touches[0].clientX, e.touches[0].clientY);
     }
-  }
-
-  function showMimicOrbs() {
-    const container = document.getElementById("spiritParticles");
-    container.innerHTML = "";
-    for (let i = 0; i < 15; i++) {
-      const orb = document.createElement("div");
-      orb.className = "orb";
-      orb.style.left = ${Math.random() * 100}vw;
-      orb.style.top = ${Math.random() * 100}vh;
-      orb.style.animationDuration = ${5 + Math.random() * 4}s;
-      orb.style.opacity = ${0.3 + Math.random() * 0.6};
-      container.appendChild(orb);
-    }
-    setTimeout(() => container.innerHTML = "", 5000);
-  }
-
-  function log(msg) {
-    const logDiv = document.getElementById("ada-log");
-    logDiv.innerHTML += <div>> ${msg}</div>;
-    logDiv.scrollTop = logDiv.scrollHeight;
-  }
-
-
-
-  function spawnSpiritParticles(count = 10) {
-    const container = document.getElementById("spiritParticles");
-    container.innerHTML = "";
-    for (let i = 0; i < count; i++) {
-      const orb = document.createElement("div");
-      orb.className = "orb";
-      orb.style.left = ${Math.random() * 100}vw;
-      orb.style.top = ${Math.random() * 100}vh;
-      orb.style.animationDuration = ${6 + Math.random() * 6}s;
-      orb.style.opacity = ${0.2 + Math.random() * 0.5};
-      container.appendChild(orb);
-    }
-  }
-
-  function spawnRain(count = 100) {
-    const rain = document.getElementById("rain");
-    rain.innerHTML = "";
-    for (let i = 0; i < count; i++) {
-      const drop = document.createElement("div");
-      drop.className = "raindrop";
-      drop.style.left = Math.random() * 100 + "vw";
-      drop.style.animationDelay = Math.random() + "s";
-      rain.appendChild(drop);
-    }
-  }
-const roomList = [
-  "Garage", "Living Room", "Kitchen", "Bedroom", "Bathroom",
-  "Basement", "Attic", "Utility", "Hallway", "Dining Room"
-];
-
-// Called during setup
-function setupMapPanel() {
-  const map = document.getElementById("room-buttons");
-  map.innerHTML = "";
-  roomList.forEach(room => {
-    const btn = document.createElement("button");
-    btn.textContent = room;
-    btn.onclick = () => {
-      game.playerRoom = room;
-      log(You entered the ${room}.);
-      if (room === game.ghostRoom) {
-        log("ADA: You're in the ghost's room...");
-        adaSpeak([
-          "You're not alone in here...",
-          "This is the ghost's domain.",
-          "Careful... you’ve entered the active room."
-        ]);
-      } else {
-        adaSpeak([
-          You’re now in the ${room}.,
-          Scanning ${room}. No signs yet.,
-          Room change confirmed: ${room}.
-        ]);
-      }
-    };
-    map.appendChild(btn);
   });
-}
-window.addEventListener("DOMContentLoaded", () => {
-  startTitleScreen(); // or startGameFlow()
-});
-    </body>
+
+  // Allow scroll zooming
+  document.addEventListener('wheel', e => {
+    if (!isOn) return;
+    if (e.deltaY < 0) zoomIn();
+    else zoomOut();
+  });
+</script>
+
+</body>
 </html>
