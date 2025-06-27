@@ -21,7 +21,7 @@
       left: 0;
       width: 300vw;
       height: 100vh;
-      background-image: url('https://upload.wikimedia.org/wikipedia/commons/thumb/d/d7/Panorama_forest.jpg/2560px-Panorama_forest.jpg');
+      background-image: url('sky.webp');
       background-size: cover;
       background-repeat: repeat-x;
       background-position: center;
@@ -127,10 +127,6 @@
       box-shadow: 0 0 4px lime;
       animation: flip 0.4s ease-in-out;
     }
-    @keyframes flip {
-      0% { transform: rotateX(90deg); opacity: 0; }
-      100% { transform: rotateX(0deg); opacity: 1; }
-    }
   </style>
 </head>
 <body>
@@ -152,13 +148,134 @@
     <div class="digit" id="sec-one">0</div>
   </div>
   <div id="countdown-overlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:50;color:lime;display:none;align-items:center;justify-content:center;font-size:5em;font-family:monospace;"></div>
-  <!-- You would include your script logic below -->
+  <div id="feedback-popup" style="position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);padding:20px 40px;background:rgba(0,0,0,0.8);border:2px solid lime;color:lime;font-size:2em;font-family:monospace;z-index:99;display:none;pointer-events:none;"></div>
+  <div id="flash" style="position:fixed;top:0;left:0;width:100vw;height:100vh;background:white;opacity:0;z-index:98;pointer-events:none;"></div>
+  <audio id="tick-sound" preload="auto"><source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..." type="audio/mp3" /></audio>
+  <audio id="heartbeat-sound" preload="auto"><source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..." type="audio/mp3" /></audio>
   <script>
+    let score = 0, multiplier = 1, timeLeft = 60, timerStarted = false, ticking = false, heartbeat = false;
+    const flash = document.getElementById('flash');
+    const tickSound = document.getElementById('tick-sound');
+    const heartbeatSound = document.getElementById('heartbeat-sound');
+    const scoreHud = document.getElementById('score-hud');
+
     document.addEventListener('mousemove', (e) => {
       const percentX = e.clientX / window.innerWidth;
       const offset = percentX * 100;
       document.getElementById('panorama').style.backgroundPosition = `${offset}% center`;
+      document.getElementById('lens-pointer').style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px)`;
     });
+
+    function startGame() {
+      if (timerStarted) return;
+      const overlay = document.getElementById('countdown-overlay');
+      let count = 3;
+      overlay.textContent = count;
+      overlay.style.display = 'flex';
+      const countdown = setInterval(() => {
+        count--;
+        if (count > 0) {
+          overlay.textContent = count;
+        } else {
+          clearInterval(countdown);
+          overlay.style.display = 'none';
+          startTimer();
+          setInterval(spawnOrb, 3000);
+        }
+      }, 1000);
+    }
+
+    function toggleVision() {
+      const lens = document.getElementById('lens');
+      lens.classList.toggle('vision-night');
+      lens.classList.toggle('vision-heat');
+    }
+
+    function triggerFlash() {
+      flash.style.opacity = 1;
+      setTimeout(() => flash.style.opacity = 0, 150);
+    }
+
+    function showPopup(text, color = 'lime') {
+      const popup = document.getElementById('feedback-popup');
+      popup.style.color = color;
+      popup.textContent = text;
+      popup.style.display = 'block';
+      setTimeout(() => popup.style.display = 'none', 1000);
+    }
+
+    function spawnOrb() {
+      const container = document.getElementById('orbs');
+      const orb = document.createElement('div');
+      const isSpecial = Math.random() < 0.1;
+      orb.className = `orb ${isSpecial ? 'special-orb' : 'regular-orb'}`;
+      orb.style.left = Math.random() * 90 + 'vw';
+      orb.style.top = Math.random() * 80 + 'vh';
+      orb.style.opacity = 1;
+      container.appendChild(orb);
+      orb.style.pointerEvents = 'auto';
+
+      setTimeout(() => {
+        if (document.body.contains(orb)) {
+          orb.remove();
+          multiplier = 1;
+          showPopup('Missed', 'red');
+        }
+      }, 4000);
+
+      orb.addEventListener('click', () => {
+        const basePoints = isSpecial ? 1000 : 100;
+        score += basePoints * multiplier;
+        multiplier++;
+        orb.remove();
+        triggerFlash();
+        updateScore();
+        showPopup(`+${basePoints * multiplier} x${multiplier - 1}`);
+      });
+    }
+
+    function updateScore() {
+      scoreHud.textContent = `Score: ${score}`;
+    }
+
+    function startTimer() {
+      timerStarted = true;
+      updateFlipClock();
+      setInterval(() => {
+        timeLeft--;
+        updateFlipClock();
+        if (timeLeft <= 0) {
+          showPopup(`Final Score: ${score}`, 'cyan');
+          stopSounds();
+        }
+        if (timeLeft <= 10 && !heartbeat) {
+          stopSounds();
+          heartbeat = true;
+          heartbeatSound.loop = true;
+          heartbeatSound.play();
+        } else if (timeLeft <= 20 && !ticking) {
+          tickSound.loop = true;
+          tickSound.play();
+          ticking = true;
+        }
+      }, 1000);
+    }
+
+    function stopSounds() {
+      tickSound.pause();
+      heartbeatSound.pause();
+      ticking = false;
+      heartbeat = false;
+    }
+
+    function updateFlipClock() {
+      const minutes = Math.floor(timeLeft / 60);
+      const seconds = timeLeft % 60;
+      document.getElementById('min-ten').textContent = Math.floor(minutes / 10);
+      document.getElementById('min-one').textContent = minutes % 10;
+      document.getElementById('sec-ten').textContent = Math.floor(seconds / 10);
+      document.getElementById('sec-one').textContent = seconds % 10;
+    }
   </script>
 </body>
 </html>
