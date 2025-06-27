@@ -10,8 +10,8 @@
       padding: 0;
       width: 100vw;
       height: 100vh;
-      background: black;
       overflow: hidden;
+      background: black;
       font-family: monospace;
       cursor: none;
     }
@@ -23,10 +23,9 @@
       height: 100vh;
       background-image: url('sky.webp');
       background-size: cover;
-      background-repeat: repeat-x;
-      background-position: center;
+      background-repeat: no-repeat;
       z-index: 0;
-      transition: background-position 0.1s linear;
+      transition: transform 0.1s linear;
     }
     .orb {
       position: fixed;
@@ -64,7 +63,6 @@
       z-index: 6;
       backdrop-filter: brightness(1.4) contrast(1.4);
       mix-blend-mode: screen;
-      box-shadow: none;
       transition: filter 0.2s;
     }
     .vision-night { filter: hue-rotate(90deg) grayscale(0.1); }
@@ -161,8 +159,8 @@
 
     document.addEventListener('mousemove', (e) => {
       const percentX = e.clientX / window.innerWidth;
-      const offset = percentX * 100;
-      document.getElementById('panorama').style.backgroundPosition = `${offset}% center`;
+      const offset = -percentX * (window.innerWidth * 2);
+      document.getElementById('panorama').style.transform = `translateX(${offset}px)`;
       document.getElementById('lens-pointer').style.transform = `translate(${e.clientX - 10}px, ${e.clientY - 10}px)`;
     });
 
