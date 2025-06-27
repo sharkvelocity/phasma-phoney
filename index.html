@@ -5,8 +5,27 @@
   <title>Ghost Orb Capture</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    html, body { margin: 0; height: 100%; overflow: hidden; background: black; font-family: monospace; cursor: none; }
-    .layer { position: fixed; top: 0; left: 0; width: 120vw; height: 120vh; background-size: cover; background-position: center; z-index: 0; transition: transform 0.1s linear; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      overflow: hidden;
+      font-family: monospace;
+      cursor: none;
+    }
+    .layer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 120vw;
+      height: 120vh;
+      background-size: cover;
+      background-position: center;
+      z-index: 0;
+      transition: transform 0.1s linear;
+    }
     #layer-back { background-image: url('https://i.imgur.com/z0a6H0n.jpg'); z-index: 1; }
     #layer-mid { background-image: url('https://i.imgur.com/YCVwB91.png'); z-index: 2; }
     #layer-front { background-image: url('https://i.imgur.com/zKMkqOS.png'); z-index: 3; }
@@ -15,7 +34,7 @@
     .special-orb { background: radial-gradient(circle, rgba(0, 100, 255, 0.8), transparent 60%); animation: floatSpecial 1.2s infinite ease-in-out alternate; }
     @keyframes float { 0% { transform: translateY(0px) scale(1); } 100% { transform: translateY(-15px) scale(1.1); } }
     @keyframes floatSpecial { 0% { transform: translateY(0px) scale(1); opacity: 1; } 100% { transform: translateY(-20px) scale(1.3); opacity: 0.2; } }
-    #lens { position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none; z-index: 6; backdrop-filter: brightness(1.4) contrast(1.4); mix-blend-mode: screen; box-shadow: 0 0 30px 10px rgba(0,255,0,0.3); transition: width 0.3s, height 0.3s, filter 0.2s; }
+    #lens { position: fixed; top: 0; left: 0; border-radius: 50%; pointer-events: none; z-index: 6; backdrop-filter: brightness(1.4) contrast(1.4); mix-blend-mode: screen; box-shadow: 0 0 30px 10px rgba(0,255,0,0.3); transition: width 0.3s, height 0.3s, filter 0.2s; width: 200px; height: 200px; }
     .vision-night { filter: hue-rotate(90deg) grayscale(0.1); }
     .vision-heat { filter: hue-rotate(270deg) saturate(2); }
     #lens-pointer { position: fixed; width: 20px; height: 20px; background: rgba(255,255,255,0.2); border: 2px solid lime; border-radius: 50%; z-index: 7; pointer-events: none; }
@@ -40,32 +59,215 @@
   </style>
 </head>
 <body>
-  <div id="game-canvas"></div>
-  <div id="game-over">
-    <h1 id="end-title">Time's Up!</h1>
-    <p id="final-score"></p>
-    <p id="orbs-counted"></p>
-    <button id="restart-btn" onclick="restartGame()">Restart</button>
+  <div id="layer-back" class="layer"></div>
+  <div id="layer-mid" class="layer"></div>
+  <div id="layer-front" class="layer"></div>
+  <div id="orbs"></div>
+  <div id="lens" class="vision-night"></div>
+  <div id="lens-pointer"></div>
+  <div id="controls">
+    <button class="btn" onclick="togglePower()">Power</button>
+    <button class="btn" onclick="toggleVision()">Toggle Vision</button>
+  </div>
+  <div id="zoom-hud">Zoom: 1x</div>
+  <div id="score-hud">Score: 0</div>
+  <div id="flip-clock">
+    <div class="digit" id="min-ten">0</div>
+    <div class="digit" id="min-one">6</div>
+    <div class="digit">:</div>
+    <div class="digit" id="sec-ten">0</div>
+    <div class="digit" id="sec-one">0</div>
   </div>
   <div id="flash"></div>
+  <div id="scan-text">SCAN</div>
+  <div id="game-over">
+    <div id="end-title">⏱️ Time's up!</div>
+    <div id="final-score"></div>
+    <div id="orbs-counted"></div>
+    <button id="restart-btn" onclick="restartGame()">Restart</button>
+  </div>
+  <audio id="tick-sound" preload="auto"><source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..." type="audio/mp3" /></audio>
+  <audio id="heartbeat-sound" preload="auto"><source src="data:audio/mp3;base64,//uQxAAAAAAAAAAAAAAAAAAAAAAAWGluZwAAAA8AAAACAAACcQCA..." type="audio/mp3" /></audio>
   <script>
-    function triggerFlash() {
-      const flash = document.getElementById("flash");
-      flash.classList.remove("flash-active");
-      void flash.offsetWidth; // reflow trick
-      flash.classList.add("flash-active");
-    }
+let isOn = false, currentVision = 'night';
+let zoomLevel = 1, zoomIndex = 0;
+const zoomSteps = [1, 1.5, 2, 2.5, 3];
+let score = 0, orbsCaptured = 0, timeLeft = 60, timerStarted = false;
+let gameInterval, lastTap = 0, ticking = false, heartbeat = false;
 
-    function showGameOver(score, orbs) {
-      document.getElementById("end-title").textContent = score >= 5000 ? "🎉 You Win!" : "⏱️ Time's Up!";
-      document.getElementById("final-score").textContent = `Final Score: ${score}`;
-      document.getElementById("orbs-counted").textContent = `Orbs Captured: ${orbs}`;
-      document.getElementById("game-over").style.display = "flex";
-    }
+const lens = document.getElementById('lens');
+const pointer = document.getElementById('lens-pointer');
+const zoomHud = document.getElementById('zoom-hud');
+const scoreHud = document.getElementById('score-hud');
+const tickSound = document.getElementById('tick-sound');
+const heartbeatSound = document.getElementById('heartbeat-sound');
+const flipMinTen = document.getElementById('min-ten');
+const flipMinOne = document.getElementById('min-one');
+const flipSecTen = document.getElementById('sec-ten');
+const flipSecOne = document.getElementById('sec-one');
 
-    function restartGame() {
-      location.reload();
+function togglePower() {
+  isOn = !isOn;
+  lens.style.display = isOn ? 'block' : 'none';
+  pointer.style.display = isOn ? 'block' : 'none';
+  zoomHud.style.display = isOn ? 'block' : 'none';
+  scoreHud.style.display = isOn ? 'block' : 'none';
+  if (isOn && !timerStarted) startTimer();
+}
+
+function toggleVision() {
+  if (!isOn) return;
+  currentVision = (currentVision === 'night') ? 'heat' : 'night';
+  lens.classList.toggle('vision-night', currentVision === 'night');
+  lens.classList.toggle('vision-heat', currentVision === 'heat');
+  updateOrbsVisibility();
+}
+
+function updateZoomVisual() {
+  zoomHud.textContent = `Zoom: ${zoomLevel.toFixed(1)}x`;
+  const lensSize = 200 + (zoomLevel - 1) * 100;
+  lens.style.width = `${lensSize}px`;
+  lens.style.height = `${lensSize}px`;
+}
+
+function moveLens(x, y) {
+  if (!isOn) return;
+  const lensSize = parseFloat(lens.style.width || '200px');
+  const half = lensSize / 2;
+  lens.style.transform = `translate(${x - half}px, ${y - half}px)`;
+  pointer.style.transform = `translate(${x - 10}px, ${y - 10}px)`;
+}
+
+document.addEventListener('mousemove', e => moveLens(e.clientX, e.clientY));
+document.addEventListener('click', e => tryCapture(e.clientX, e.clientY));
+document.addEventListener('dblclick', () => isOn && cycleZoom());
+
+document.addEventListener('touchstart', e => {
+  const now = Date.now();
+  if (now - lastTap < 300) {
+    cycleZoom();
+    lastTap = 0;
+  } else {
+    tryCapture(e.touches[0].clientX, e.touches[0].clientY);
+    lastTap = now;
+  }
+});
+
+function tryCapture(x, y) {
+  if (!isOn) return;
+  const lensRect = lens.getBoundingClientRect();
+  const centerX = lensRect.left + lensRect.width / 2;
+  const centerY = lensRect.top + lensRect.height / 2;
+  document.querySelectorAll('.orb').forEach(orb => {
+    const rect = orb.getBoundingClientRect();
+    const dx = (rect.left + rect.width / 2) - centerX;
+    const dy = (rect.top + rect.height / 2) - centerY;
+    const dist = Math.sqrt(dx * dx + dy * dy);
+    const maxDist = lensRect.width / 2;
+    const proximity = 1 - Math.min(dist / maxDist, 1);
+    const isSpecial = orb.classList.contains('special-orb');
+    const valid = (isSpecial && currentVision === 'heat') || (!isSpecial && currentVision === 'night');
+    if (dist < maxDist && valid) {
+      let orbScore = isSpecial ? 1000 : Math.floor(proximity * 100 * zoomLevel);
+      let bonusTime = isSpecial ? 50 : Math.floor(orbScore / 20);
+      score += orbScore;
+      timeLeft += bonusTime;
+      orbsCaptured++;
+      updateScore();
+      orb.remove();
+      if (timeLeft > 20) stopSounds();
+      if (score >= 5000) endGame(true);
+      triggerFlash();
     }
+  });
+}
+
+function cycleZoom() {
+  if (!isOn) return;
+  zoomIndex = (zoomIndex + 1) % zoomSteps.length;
+  zoomLevel = zoomSteps[zoomIndex];
+  updateZoomVisual();
+}
+
+function updateScore() {
+  scoreHud.textContent = `Score: ${score}`;
+}
+
+function startTimer() {
+  timerStarted = true;
+  updateFlipClock();
+  gameInterval = setInterval(() => {
+    timeLeft--;
+    updateFlipClock();
+    if (timeLeft <= 0) endGame(false);
+    if (timeLeft <= 10 && !heartbeat) {
+      stopSounds();
+      heartbeat = true;
+      heartbeatSound.loop = true;
+      heartbeatSound.play();
+    } else if (timeLeft <= 20 && !ticking) {
+      tickSound.loop = true;
+      tickSound.play();
+      ticking = true;
+    }
+  }, 1000);
+}
+
+function stopSounds() {
+  tickSound.pause();
+  heartbeatSound.pause();
+  ticking = false;
+  heartbeat = false;
+}
+
+function updateFlipClock() {
+  const minutes = Math.floor(timeLeft / 60);
+  const seconds = timeLeft % 60;
+  flipMinTen.textContent = Math.floor(minutes / 10);
+  flipMinOne.textContent = minutes % 10;
+  flipSecTen.textContent = Math.floor(seconds / 10);
+  flipSecOne.textContent = seconds % 10;
+}
+
+function endGame(won = false) {
+  clearInterval(gameInterval);
+  stopSounds();
+  document.getElementById('game-over').style.display = 'flex';
+  document.getElementById('end-title').textContent = won ? '🎉 You Win!' : '⏱️ Time's up!';
+  document.getElementById('final-score').textContent = `Final Score: ${score}`;
+  document.getElementById('orbs-counted').textContent = `Orbs Captured: ${orbsCaptured}`;
+  document.getElementById('orbs').innerHTML = '';
+}
+
+function restartGame() {
+  location.reload();
+}
+
+function spawnOrbs() {
+  const container = document.getElementById('orbs');
+  container.innerHTML = '';
+  const count = Math.floor(Math.random() * 2) + 2;
+  for (let i = 0; i < count; i++) {
+    const orb = document.createElement('div');
+    const isSpecial = Math.random() < 0.1;
+    orb.className = `orb ${isSpecial ? 'special-orb' : 'regular-orb'}`;
+    orb.style.left = Math.random() * 90 + 'vw';
+    orb.style.top = Math.random() * 80 + 'vh';
+    container.appendChild(orb);
+  }
+  updateOrbsVisibility();
+}
+
+function updateOrbsVisibility() {
+  document.querySelectorAll('.orb').forEach(orb => {
+    const isSpecial = orb.classList.contains('special-orb');
+    const visible = isSpecial ? currentVision === 'heat' : currentVision === 'night';
+    orb.style.opacity = (isOn && visible) ? 1 : 0;
+  });
+}
+
+setInterval(spawnOrbs, 8000);
+spawnOrbs();
   </script>
 </body>
 </html>
