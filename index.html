@@ -180,9 +180,21 @@
     Confirm Loadout
   </button>
 </div>
-
+    <script>
+// === Start Loadout Trigger Function ===
+function startLoadout() {
+  document.getElementById("title-screen").style.display = "none";
+  showLoadoutMenu();
+}
+</script>
 
 <script>
+function startLoadout() {
+  document.getElementById("title-screen").style.display = "none";
+  showLoadoutMenu(); // This is already defined and populates the loadout UI
+}
+
+
 // === Item Use Modal ===
 function openItemUsePopup() {
   const list = document.getElementById("item-use-list");
