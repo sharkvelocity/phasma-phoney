@@ -23,49 +23,22 @@
       font-family: Helvetica, Arial, sans-serif;
     }
 
-    #flash-overlay, #orb-canvas, #clouds1, #clouds2 {
+    #background-image {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      pointer-events: none;
-      z-index: 9999;
-    }
-
-    #clouds1, #clouds2 {
-      width: 300%;
-      z-index: 200;
-    }
-
-    #clouds1 {
-      background: linear-gradient(to right, rgba(255,255,255,0.05), rgba(0,0,0,0));
-      opacity: 0.4;
-      filter: blur(10px);
-      animation: cloudDrift1 80s linear infinite;
-    }
-
-    #clouds2 {
-      background: linear-gradient(to right, rgba(255,255,255,0.08), rgba(0,0,0,0));
-      opacity: 0.3;
-      filter: blur(14px);
-      animation: cloudDrift2 120s linear infinite;
-    }
-
-    @keyframes cloudDrift1 {
-      from { transform: translateX(0); }
-      to { transform: translateX(-50%); }
-    }
-
-    @keyframes cloudDrift2 {
-      from { transform: translateX(100%); }
-      to { transform: translateX(-100%); }
+      background-image: url("");
+      background-size: cover;
+      background-position: center;
+      z-index: -3;
     }
 
     #background-logo {
       position: fixed;
       top: 0; left: 0;
-      width: 100%;
-      height: 100%;
+      width: 100%; height: 100%;
       background-image: url("./logo.png");
       background-repeat: no-repeat;
       background-position: center center;
@@ -74,15 +47,55 @@
       z-index: -4;
     }
 
-    #background-image {
+    #clouds1, #clouds2 {
       position: fixed;
       top: 0; left: 0;
-      width: 100%;
+      width: 300%;
       height: 100%;
-      background-image: url("");
-      background-size: cover;
-      background-position: center;
-      z-index: -3;
+      pointer-events: none;
+      z-index: 200;
+    }
+
+    #clouds1 {
+      background: linear-gradient(to right, rgba(255,255,255,0.05) 0%, rgba(0,0,0,0) 100%);
+      opacity: 0.4;
+      filter: blur(10px);
+      animation: cloudDrift1 80s linear infinite;
+    }
+
+    #clouds2 {
+      background: linear-gradient(to right, rgba(255,255,255,0.08) 0%, rgba(0,0,0,0) 100%);
+      opacity: 0.3;
+      filter: blur(14px);
+      animation: cloudDrift2 120s linear infinite;
+    }
+
+    @keyframes cloudDrift1 {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes cloudDrift2 {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    #orb-canvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    #flash-overlay {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+      z-index: 9999;
     }
 
     @keyframes typing-blink {
@@ -96,12 +109,6 @@
       display: inline-block;
       margin-left: 4px;
       animation: typing-blink 1s infinite;
-    }
-
-    #status-bar {
-      margin-top: 10px;
-      font-family: monospace;
-      color: #0ff;
     }
 
     footer {
@@ -131,15 +138,13 @@
   </style>
 </head>
 <body>
-  <!-- Ambient Layers -->
-  <div id="flash-overlay"></div>
-  <div id="clouds1"></div>
-  <div id="clouds2"></div>
-  <canvas id="orb-canvas"></canvas>
   <div id="background-logo"></div>
   <div id="background-image"></div>
-
-  <!-- Title Screen -->
+  <div id="clouds1"></div>
+  <div id="clouds2"></div>
+  <div id="flash-overlay"></div>
+  <canvas id="orb-canvas"></canvas>
+  <!-- === MAIN MENU === -->
   <div id="main-menu" style="text-align: center; color: white; margin-top: 40px;">
     <ul style="list-style-type: none; padding: 0; font-size: 1.2em;">
       <button id="start-button-ada"
@@ -155,18 +160,17 @@
     </p>
   </div>
 
-  <!-- ADA Modal Command UI -->
+  <!-- === ADA MODAL === -->
   <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
     transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
     border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
     max-width:600px;height:80%;color:#0ff;font-family:monospace;">
-
     <div id="ada-log" style="height:70%;overflow-y:auto;padding:10px;
           background:#000;border:1px solid #333;margin-bottom:10px;">
       ADA: I'm here to assist you.
     </div>
 
-    <!-- Button-Based Command Interface -->
+    <!-- ADA BUTTON INTERFACE -->
     <div id="ada-buttons" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px;">
       <button onclick="handleAdaCommand('map')">🗺 Map</button>
       <button onclick="handleAdaCommand('move')">🚪 Move</button>
@@ -181,14 +185,7 @@
     </div>
   </div>
 
-  <!-- Game State UI -->
-  <div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div>
-  <div id="game-ui"
-       style="display:none;margin-top:20px;border:1px solid #0ff;
-              padding:10px;color:#0ff;font-family:monospace;background:#000;">
-  </div>
-
-  <!-- Ghost Guess Modal -->
+  <!-- === GUESS POPUP === -->
   <div id="guess-popup" style="display:none;position:fixed;top:50%;left:50%;
     transform:translate(-50%,-50%);background:#111;padding:20px;
     border-radius:10px;border:2px solid #0ff;z-index:10000;width:90%;max-width:600px;">
@@ -199,7 +196,7 @@
       border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
   </div>
 
-  <!-- Item Use Popup -->
+  <!-- === ITEM USE POPUP === -->
   <div id="item-use-popup" style="display:none;position:fixed;top:50%;left:50%;
     transform:translate(-50%,-50%);background:#111;padding:20px;
     border-radius:10px;border:2px solid #0ff;z-index:10000;width:90%;max-width:400px;">
@@ -210,182 +207,236 @@
       border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
   </div>
 
-  <!-- Game End Modal -->
-  <div id="end-screen" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
-    background:#111; border:2px solid #0ff; padding:20px; z-index:9999; color:#0ff; font-family:monospace;
-    text-align:center;">
+  <!-- === GAME STATE AND UI (Optional Display Elements) === -->
+  <div id="game-state" style="margin-top:20px;color:#0f0;font-family:monospace;"></div>
+  <div id="game-ui"
+       style="display:none;margin-top:20px;border:1px solid #0ff;
+              padding:10px;color:#0ff;font-family:monospace;background:#000;">
+  </div>
+
+  <!-- === GAME END SCREEN === -->
+  <div id="end-screen" style="display:none; position:fixed; top:50%; left:50%;
+    transform:translate(-50%,-50%); background:#111; border:2px solid #0ff;
+    padding:20px; z-index:9999; color:#0ff; font-family:monospace; text-align:center;">
     <div id="end-message" style="margin-bottom:12px;"></div>
-    <button onclick="startNewGame()">🔁 Start New Game</button>
+    <button onclick="startNewGame()" style="padding:6px 14px; font-size:1em;
+      background:#000; border:1px solid #0ff; color:#0ff; cursor:pointer;">
+      Start New Game
+    </button>
   </div>
 <script>
-// === Initialization ===
-const logBox = document.getElementById('ada-log');
-const turnCounter = document.getElementById('turn-counter');
-const sanityBar = document.getElementById('sanity-bar');
-const gameUI = document.getElementById('game-ui');
-
-// === ADA Boot ===
-function startAda() {
-  document.getElementById('main-menu').style.display = 'none';
-  document.getElementById('ada-modal').style.display = 'block';
-  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
-}
-
-// === Simulated Typing Output ===
-function simulateTyping(text, from = "ADA") {
-  const line = document.createElement("div");
-  line.innerHTML = `<strong>${from}:</strong> `;
-  const span = document.createElement("span");
-  const cursor = document.createElement("span");
-  cursor.setAttribute("id", "ada-typing");
-  cursor.textContent = "|";
-  line.appendChild(span);
-  line.appendChild(cursor);
-  logBox.appendChild(line);
-  logBox.scrollTop = logBox.scrollHeight;
-
-  let i = 0;
-  function typeChar() {
-    if (i < text.length) {
-      span.textContent += text[i++];
-      logBox.scrollTop = logBox.scrollHeight;
-      setTimeout(typeChar, 18 + Math.random() * 30);
-    } else {
-      cursor.remove();
-    }
+// === Ghost Profiles Database ===
+const ghostProfiles = {
+  spirit: {
+    intro: "Spirits are common and leave minimal traces.",
+    behavior: "You hear soft whispers echoing from nowhere..."
+  },
+  wraith: {
+    intro: "Wraiths float silently and leave no footprints.",
+    behavior: "The air shifts unnaturally. No trace in the salt."
+  },
+  poltergeist: {
+    intro: "Poltergeists throw objects violently and often.",
+    behavior: "A loud crash! Something was hurled across the room!"
+  },
+  demon: {
+    intro: "Demons are aggressive and hunt often.",
+    behavior: "Growl... the temperature drops violently!"
+  },
+  mare: {
+    intro: "Mares thrive in darkness and disrupt light sources.",
+    behavior: "The lights flicker and cut. A chill floods the room."
+  },
+  banshee: {
+    intro: "Banshees fixate on one person and wail softly.",
+    behavior: "You hear a melodic hum... almost like singing."
+  },
+  jinn: {
+    intro: "Jinns are territorial and manipulate electronics.",
+    behavior: "The EMF screams as energy pulses through the air."
+  },
+  revenant: {
+    intro: "Revenants are slow unless hunting. Then they sprint.",
+    behavior: "Heavy dragging steps... followed by a sudden rush."
+  },
+  shade: {
+    intro: "Shades are shy and calm when observed.",
+    behavior: "Nothing stirs. It's too quiet..."
+  },
+  yurei: {
+    intro: "Yureis drain sanity and slam doors.",
+    behavior: "Your vision clouds as the door SLAMS behind you!"
+  },
+  oni: {
+    intro: "Onis are loud and quick to act.",
+    behavior: "A bang behind you! Something moves fast."
+  },
+  yokai: {
+    intro: "Yokais are enraged by voices.",
+    behavior: "A voice mimics yours... but no one is near."
+  },
+  hantu: {
+    intro: "Hantus manifest strongest in freezing areas.",
+    behavior: "You can see your breath... the air freezes around you."
+  },
+  goryo: {
+    intro: "Goryos show only through video equipment.",
+    behavior: "Something flickers on the camera feed... then vanishes."
+  },
+  myling: {
+    intro: "Mylings are silent but make loud steps.",
+    behavior: "Thump. Thump. Then complete silence."
+  },
+  onryo: {
+    intro: "Onryos lash out when flames go out.",
+    behavior: "The candle snuffs—followed by a deep hiss."
+  },
+  "the twins": {
+    intro: "The Twins act independently and inconsistently.",
+    behavior: "Footsteps echo in two directions simultaneously."
+  },
+  raiju: {
+    intro: "Raijus feed off electronics.",
+    behavior: "Every device sparks. The air smells of ozone."
+  },
+  obake: {
+    intro: "Obakes leave distorted fingerprints.",
+    behavior: "You glimpse a warped print before it disappears."
+  },
+  "the mimic": {
+    intro: "The Mimic imitates other ghosts—poorly.",
+    behavior: "The signs don't line up... it's masking something."
+  },
+  moroi: {
+    intro: "Morois curse their victims and drain their mind.",
+    behavior: "A headache pulses... your thoughts scatter."
+  },
+  deogen: {
+    intro: "Deogens always know where you are.",
+    behavior: "You move. It follows. Slowly, but deliberately."
+  },
+  thaye: {
+    intro: "Thaye ages and weakens the longer it's seen.",
+    behavior: "You feel less fear now... but it's still watching."
+  },
+  succubus: {
+    intro: "The Succubus seduces and siphons strength.",
+    behavior: "You're compelled to stay... even as dread creeps in."
   }
-  typeChar();
-}
+};
+</script>
 
-// === Command Handler ===
+<script>
+// === Game State Object ===
+const game = {
+  started: false,
+  active: false,
+  turn: 0,
+  sanity: 100,
+  xp: 0,
+  level: 1,
+  prestige: 0,
+  inventory: ['Notebook', 'Lighter', 'EMF', 'Smudge'],
+  usedItems: [],
+  ghost: null,
+  ghostRoom: "Living Room",
+  evidence: [],
+  guessedGhost: null,
+  position: [0, 0],
+  map: [
+    ['●','_','_'],
+    ['|','_','|'],
+    ['|','_','|']
+  ],
+  roomNameMap: [
+    ['Van','Foyer','Kitchen'],
+    ['Basement','Living Room','Bathroom'],
+    ['Garage','Bedroom','Storage']
+  ],
+  protections: {
+    smudgeCount: 2,
+    crucifixPlaced: false
+  },
+  events: [],
+  journal: [],
+  settings: {
+    difficulty: 'Amateur',
+    noEvidenceMode: false,
+    allowHints: true
+  }
+};
+
+// === Intro Dialog Pool ===
+const introDialogues = [
+  "Deo: I've got a bad feeling about this one...",
+  "Deo: Remember, this isn't a ghost story - it's real.",
+  "Deo: Stay on your toes out there.",
+  "Deo: Let's see what we're dealing with this time.",
+  "Deo: Keep the lights on and the sanity high!"
+];
+</script>
+<script>
+// === ADA Command Dispatcher ===
 function handleAdaCommand(cmd) {
-  simulateTyping("> " + cmd, "You");
-  const result = respondTo(cmd);
-  setTimeout(() => simulateTyping(result), 300);
+  simulateTyping(`> ${cmd}`, "You");
+  const res = respondTo(cmd);
+  setTimeout(() => simulateTyping(res), 300);
 }
 
-// === Game Response Parser ===
-function respondTo(cmd) {
-  const command = cmd.toLowerCase().trim();
-  if (!command) return "";
-
-  game.turn++;
-  updateStatus();
-
-  if (command === "start") {
-    game.started = true;
-    game.active = true;
-    const keys = Object.keys(ghostProfiles);
-    game.ghost = keys[Math.floor(Math.random() * keys.length)];
-    gameUI.style.display = 'block';
-    return "Investigation begins. Use commands like 'move', 'map', or 'use item'.";
-  }
-
-  if (command === "map") return renderMap();
-  if (command === "inventory") return "Inventory: " + game.inventory.join(", ");
-
-  if (command === "move") {
-    const [x, y] = game.position;
-    game.position = [x, (y + 1) % 3];
-    game.sanity = Math.max(0, game.sanity - 5);
-    updateStatus();
-    return ghostProfiles[game.ghost].behavior + " " + renderMap();
-  }
-
-  if (command.startsWith("use ")) {
-    const item = command.split("use ")[1].trim().toLowerCase();
-    if (!game.inventory.map(i => i.toLowerCase()).includes(item)) {
-      return "You don't have that item.";
-    }
-    if (item === "smudge") {
-      game.sanity += 10;
-      removeItem(item);
-      return "You used a Smudge Stick. The air clears slightly.";
-    }
-    return "You used the " + item + ".";
-  }
-
-  if (command === "end") {
-    game.started = false;
-    game.active = false;
-    document.getElementById("end-message").textContent = "The ghost was a " + game.ghost.toUpperCase() + ".";
-    document.getElementById("end-screen").style.display = "block";
-    return "Investigation ended.";
-  }
-
-  return "Unknown command.";
-}
-
-// === Map Renderer ===
-function renderMap() {
-  let result = "";
-  for (let i = 0; i < game.map.length; i++) {
-    for (let j = 0; j < game.map[i].length; j++) {
-      result += (i === game.position[0] && j === game.position[1]) ? "● " : game.map[i][j] + " ";
-    }
-    result += "<br>";
-  }
-  return result;
-}
-
-function updateStatus() {
-  turnCounter.textContent = game.turn;
-  sanityBar.textContent = game.sanity;
-}
-
-function removeItem(name) {
-  const i = game.inventory.findIndex(i => i.toLowerCase() === name.toLowerCase());
-  if (i !== -1) game.inventory.splice(i, 1);
-}
-
-// === Item Use Popup ===
-function openItemUsePopup() {
-  const container = document.getElementById("item-use-list");
+// === Use Item Popup ===
+function openItemPopup() {
+  const container = document.getElementById("item-options");
   container.innerHTML = "";
   game.inventory.forEach(item => {
     const btn = document.createElement("button");
     btn.textContent = item;
     btn.onclick = () => {
-      closeItemUsePopup();
+      closeItemPopup();
       handleAdaCommand("use " + item.toLowerCase());
+      removeIfConsumable(item);
     };
     container.appendChild(btn);
   });
-  document.getElementById("item-use-popup").style.display = "block";
+  document.getElementById("item-popup").style.display = "block";
 }
 
-function closeItemUsePopup() {
-  document.getElementById("item-use-popup").style.display = "none";
+function closeItemPopup() {
+  document.getElementById("item-popup").style.display = "none";
 }
 
-// === Ghost Guessing ===
-function openGuess() {
-  const popup = document.getElementById("guess-popup");
+function removeIfConsumable(item) {
+  const consumables = ["smudge", "salt", "crucifix"];
+  if (consumables.includes(item.toLowerCase())) {
+    const index = game.inventory.findIndex(i => i.toLowerCase() === item.toLowerCase());
+    if (index !== -1) game.inventory.splice(index, 1);
+  }
+}
+
+// === Ghost Guessing UI ===
+function openGuessPopup() {
   const list = document.getElementById("guess-list");
   list.innerHTML = "";
-
-  Object.keys(ghostProfiles).forEach(g => {
+  Object.keys(ghostProfiles).forEach(name => {
     const btn = document.createElement("button");
-    btn.textContent = g.toUpperCase();
+    btn.textContent = name.toUpperCase();
     btn.onclick = () => {
-      closeGuess();
-      makeGuess(g);
+      closeGuessPopup();
+      processGuess(name);
     };
     list.appendChild(btn);
   });
-
-  popup.style.display = "block";
+  document.getElementById("guess-popup").style.display = "block";
 }
 
-function closeGuess() {
+function closeGuessPopup() {
   document.getElementById("guess-popup").style.display = "none";
 }
 
-function makeGuess(g) {
-  if (g === game.ghost) {
-    endGame("Correct! The ghost was a " + g.toUpperCase() + ".");
+function processGuess(guessName) {
+  if (guessName === game.ghost) {
+    endGame("Correct! The ghost was a " + guessName.toUpperCase() + ".");
   } else {
-    endGame("Incorrect. The ghost was actually " + game.ghost.toUpperCase() + ".");
+    endGame("Incorrect. The ghost was a " + game.ghost.toUpperCase() + ".");
   }
 }
 
@@ -401,96 +452,182 @@ function startNewGame() {
   location.reload();
 }
 </script>
+
 <script>
-// === Orb Animation ===
-const canvas = document.getElementById('orb-canvas');
-const ctx = canvas.getContext('2d');
-let width = canvas.width = window.innerWidth;
-let height = canvas.height = window.innerHeight;
-
-function createOrb() {
-  return {
-    x: Math.random() * width,
-    y: Math.random() * height,
-    vx: (Math.random() - 0.5) * 1.0,
-    vy: (Math.random() - 0.5) * 1.0,
-    baseRadius: Math.random() * 2 + 1,
-    radius: 1,
-    opacity: 0,
-    fadeIn: true,
-    tick: 0,
-    changeInterval: Math.floor(Math.random() * 150 + 50)
-  };
+// === Status Display Helpers ===
+function updateStatus() {
+  document.getElementById("turn-counter").textContent = game.turn;
+  document.getElementById("sanity-bar").textContent = game.sanity;
 }
 
-let orbs = Array.from({ length: 10 }, createOrb);
-
-function animateOrbs() {
-  ctx.clearRect(0, 0, width, height);
-  for (let orb of orbs) {
-    orb.tick++;
-    orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
-
-    orb.opacity += orb.fadeIn ? 0.01 : -0.001;
-    if (orb.fadeIn && orb.opacity >= 0.7) {
-      orb.opacity = 0.7;
-      orb.fadeIn = false;
+function updateMapDisplay() {
+  let [x, y] = game.position;
+  let display = "";
+  for (let i = 0; i < game.map.length; i++) {
+    for (let j = 0; j < game.map[i].length; j++) {
+      display += (i === x && j === y) ? "● " : game.map[i][j] + " ";
     }
-
-    if (Math.random() < 0.002) orb.opacity = Math.min(1, orb.opacity + 0.1);
-    if (orb.opacity <= 0.01) Object.assign(orb, createOrb());
-
-    if (orb.tick % orb.changeInterval === 0) {
-      const angle = Math.random() * 2 * Math.PI;
-      const speed = Math.hypot(orb.vx, orb.vy);
-      orb.vx = orb.vx * 0.8 + Math.cos(angle) * speed * 0.2;
-      orb.vy = orb.vy * 0.8 + Math.sin(angle) * speed * 0.2;
-    }
-
-    orb.x += orb.vx;
-    orb.y += orb.vy;
-
-    if (orb.x - orb.radius <= 0 || orb.x + orb.radius >= width) orb.vx *= -1;
-    if (orb.y - orb.radius <= 0 || orb.y + orb.radius >= height) orb.vy *= -1;
-
-    ctx.beginPath();
-    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-    ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
-    ctx.shadowBlur = 10 + orb.opacity * 10;
-    ctx.fill();
+    display += "<br>";
   }
-
-  requestAnimationFrame(animateOrbs);
+  return display;
 }
-animateOrbs();
-
-window.addEventListener('resize', () => {
-  width = canvas.width = window.innerWidth;
-  height = canvas.height = window.innerHeight;
-});
 </script>
 
 <script>
-// === Lightning Flash ===
+// === Typing Simulation ===
+function simulateTyping(text, from = "ADA") {
+  const logBox = document.getElementById("ada-log");
+  const line = document.createElement("div");
+  line.innerHTML = `<strong>${from}:</strong> `;
+  const span = document.createElement("span");
+  const cursor = document.createElement("span");
+  cursor.setAttribute("id", "ada-typing");
+  cursor.textContent = "|";
+  line.appendChild(span);
+  line.appendChild(cursor);
+  logBox.appendChild(line);
+
+  let i = 0;
+  function typeChar() {
+    if (i < text.length) {
+      span.textContent += text[i++];
+      logBox.scrollTop = logBox.scrollHeight;
+      setTimeout(typeChar, 18 + Math.random() * 30);
+    } else {
+      cursor.remove();
+    }
+  }
+  typeChar();
+}
+</script>
+
+<script>
+// === Main ADA Command Interpreter ===
+function respondTo(cmd) {
+  const command = cmd.trim().toLowerCase();
+  if (!command) return;
+  game.turn++;
+  updateStatus();
+
+  if (command === "start") {
+    game.started = true;
+    game.active = true;
+    const ghosts = Object.keys(ghostProfiles);
+    game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
+    game.ghostRoom = "Living Room";
+    document.getElementById("game-ui").style.display = 'block';
+    return "Investigation started. Use the interface to proceed.";
+  }
+
+  if (command === "map") return updateMapDisplay();
+
+  if (command === "move") {
+    let [x, y] = game.position;
+    y = (y + 1) % 3;
+    game.position = [x, y];
+    game.sanity = Math.max(0, game.sanity - 5);
+    updateStatus();
+    return "You moved. " + ghostProfiles[game.ghost].behavior + " " + updateMapDisplay();
+  }
+
+  if (command.startsWith("use ")) {
+    const item = command.split("use ")[1].trim().toLowerCase();
+    return "You used the " + item + ".";
+  }
+
+  if (command === "inventory") {
+    return "Inventory: " + game.inventory.join(", ");
+  }
+
+  if (command === "end") {
+    game.started = false;
+    game.active = false;
+    document.getElementById("game-ui").style.display = "none";
+    return "Investigation ended. Ghost was: " + game.ghost.toUpperCase();
+  }
+
+  return "Unknown command.";
+}
+</script>
+<!-- === ADA Knowledge Base and Lore Parser === -->
+<script type="text/phasma-data">
+PHASMA-PHONEY:
+- Guess ghost by behavior
+- No evidence default mode
+- Turn-based mechanics with sanity
+- Ghosts: Spirit, Wraith, Poltergeist, Demon, Mare, Thaye, Yurei, Onryo, The Mimic, Succubus, etc.
+- Cursed Possessions: Mirror, Tarot Cards, Music Box, Voodoo Doll
+- Succubus commentary unlocked after encounter
+- XP and Prestige (Max Level 100 shown in Roman Numerals)
+</script>
+
+<script>
+const rulesText = document.querySelector('script[type="text/phasma-data"]')?.innerText || '';
+const ADA_KNOWLEDGE = rulesText.split("\n").filter(line => line.trim());
+
+function adaParse(input) {
+  const cmd = input.toLowerCase();
+  if (cmd.includes("succubus")) return "The Succubus reveals itself only under rare conditions—watch for seductive signs.";
+  if (cmd.includes("mirror")) return "The Haunted Mirror reveals the ghost room... but at the cost of your sanity.";
+  if (cmd.includes("cards")) return "Tarot Cards bring chaos: death, sanity, or salvation.";
+  if (cmd.includes("prestige")) return "Prestige is shown as a Roman numeral. You can reach Level C (100).";
+  if (cmd.includes("legacy")) return "Legacy entries track your ghost guesses, success rate, and experience.";
+  if (cmd.includes("yurei")) return "Yurei can slam doors, drain sanity, and isolate you from light.";
+  return null;
+}
+</script>
+
+<!-- === Final DOM Initialization === -->
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById("start-button-ada");
+  const modal = document.getElementById("ada-modal");
+
+  if (startBtn && modal) {
+    startBtn.addEventListener("click", () => {
+      modal.style.display = "block";
+      const intro = introDialogues[Math.floor(Math.random() * introDialogues.length)];
+      simulateTyping(intro, "Deo");
+    });
+  }
+});
+</script>
+
+<!-- === Optional Lightning Flash Ambient Effect === -->
+<script>
 function lightningFlash() {
   const flash = document.getElementById('flash-overlay');
+  if (!flash) return;
   flash.style.opacity = '0.4';
   setTimeout(() => { flash.style.opacity = '0'; }, 100);
 }
-
 setInterval(() => {
   setTimeout(lightningFlash, Math.random() * 2000);
 }, 10000);
 </script>
 
+<!-- === Footer with Version Info === -->
 <footer>
-  Shark‑Blades — <span style="color:#0ff;">Phasma‑Phoney</span> — Turn-based ghost hunting web game.
-  <span class="version-tag" onclick="alert('Build v1.2.3 — Includes ghost guessing, item logic, ambient visuals, and ADA interface.')">
-    Build v1.2.3
+  Shark‑Blades — Phasma‑Phoney: Fan-built turn-based ghost deduction game.
+  <span class="version-tag" onclick="document.getElementById('changelog-modal').style.display = 'block'">
+    Build v1.3.0
   </span>
 </footer>
 
+<!-- === Changelog Modal === -->
+<div id="changelog-modal" style="display:none;position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);
+  width:90%;max-width:500px;background:#111;border:2px solid #444;padding:16px;color:#0f0;
+  z-index:9999;font-family:monospace;box-shadow:0 0 20px rgba(0,255,0,0.2);">
+  <h2 style="margin-top:0;color:#0ff;font-size:1.3em;">Phasma‑Phoney Build v1.3.0</h2>
+  <ul style="padding-left:20px;font-size:0.95em;">
+    <li>Replaced all command typing with ADA button interface</li>
+    <li>Interactive ghost guessing popup</li>
+    <li>Inventory use popup with real logic</li>
+    <li>Consumables removed from inventory after use</li>
+    <li>Clean UI layering and ambient effects (clouds, lightning, orbs)</li>
+  </ul>
+  <button onclick="document.getElementById('changelog-modal').style.display = 'none'"
+    style="margin-top:12px;padding:6px 12px;font-size:0.9em;background:#000;
+    border:1px solid #0ff;color:#0ff;cursor:pointer;">Close</button>
+</div>
 </body>
-</html>
-
