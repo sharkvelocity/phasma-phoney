@@ -71,6 +71,12 @@
       z-index: -4;
     }
     #title-screen {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
       position: fixed;
       top: 0; left: 0;
       width: 100vw;
@@ -115,13 +121,13 @@
 <div id="background-logo"></div>
 <!-- Title Screen -->
 <div id="title-screen">
-<img alt="PhasmaPhoney" src="./logo.png" style="max-width: 80%; margin-bottom: 30px;"/>
+<img alt="PhasmaPhoney" src="./logo.png" style="max-width: 400px; margin-bottom: 20px;"/>
 <button onclick="showLoadoutMenu()">Start Investigation</button>
 <p style="margin-top: 10px; font-style: italic;">Deo: “Hope your guesswork's better than your flashlight.”</p>
 </div>
 <!-- Loadout Screen -->
 <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
-       background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
+       background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;">
 <h2 style="text-align:center;">Select Your Loadout (Pick 3 Items)</h2>
 <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:20px 0;">
 <!-- Items populated by script -->
@@ -243,6 +249,7 @@ const game = {
 // === Loadout Functions ===
 
   function showLoadoutMenu() {
+  document.getElementById("title-screen").style.display = "none";
   const container = document.getElementById("item-selection");
   container.innerHTML = "";
   allLoadoutItems.forEach(item => {
