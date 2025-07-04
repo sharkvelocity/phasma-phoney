@@ -272,8 +272,17 @@ function confirmLoadout() {
   document.getElementById("loadout-screen").style.display = "none";
   startInvestigation(); // calls the real game logic
 }
-</script>
-<script>
+  function startInvestigation() {
+  game.started = true;
+  game.active = true;
+  game.turn = 0;
+  game.sanity = 100;
+  game.ghost = Object.keys(ghostProfiles)[Math.floor(Math.random() * Object.keys(ghostProfiles).length)];
+  game.ghostRoom = game.roomNameMap[1][1]; // middle room (Living Room)
+  document.getElementById("ada-modal").style.display = "block";
+  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
+}
+
 // === ADA Command Handler + Typing Simulation ===
 function simulateTyping(text, from = "ADA") {
   const line = document.createElement("div");
