@@ -121,11 +121,16 @@ Section [10]: Final Footer and Cleanup
 <div id="title-screen" style="position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:black;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:5000;">
-  <img src="./logo.png" alt="PhasmaPhoney" style="max-width:80%;margin-bottom:30px;" />
-  <button onclick="showLoadoutMenu()">Start Investigation</button>
+  <!-- Start Investigation Button centered above the logo -->
+  <button onclick="showLoadoutMenu()" style="position: absolute; top: 40%; z-index: 5001; font-family: monospace; background: #111; color: #0ff; border: 1px solid #0ff; padding: 10px 20px; cursor: pointer;">
+    Start Investigation
+  </button>
+  
+  <!-- Logo -->
+  <img src="./logo.png" alt="PhasmaPhoney" style="max-width:80%; margin-top: 60px;" />
+  
   <p style="margin-top:10px;font-style:italic;">Deo: “Hope your guesswork's better than your flashlight.”</p>
 </div>
-
 <!-- Section [2]: Loadout Screen and Setup -->
 <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
