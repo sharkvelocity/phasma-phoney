@@ -148,7 +148,6 @@
     </div>
     <button onclick="move('down')" style="margin-top:4px;">⬇️</button>
   </div>
-
   <div id="status-bar">
     Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
   </div>
@@ -389,9 +388,10 @@ function startInvestigation() {
   simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
   updateStatus();
   updateRoomLabel();
+  mimicForm: null,
+nextMimicShift: 0,
 }
 
-// === Compass Movement ===
 function move(dir) {
   let [x, y] = game.position;
   if (dir === 'up') x = Math.max(0, x - 1);
@@ -431,6 +431,7 @@ function handleAdaCommand(cmd) {
     } else {
       simulateTyping("Evidence already recorded.");
     }
+    if (game.sanity <= 50) simulateTyping("⚠️ Your sanity is getting low...");
 
     const matches = getPossibleGhosts();
     if (matches.length === 0) {
@@ -445,7 +446,6 @@ function handleAdaCommand(cmd) {
 
   setTimeout(() => simulateTyping(respondTo(cmd)), 300);
 }
-
 
 // === Ghost Guess Modal ===
 function openGuess() {
@@ -564,7 +564,31 @@ animateOrbs();
 window.addEventListener('resize', () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
-});
+});function checkForHunt() {
+  if (game.sanity > 40 || !game.active) return;
+
+  const huntChance = Math.random();
+  const aggressive = ["demon", "oni", "moroi", "the mimic"];
+  const huntThreshold = aggressive.includes(game.ghost) ? 0.3 : 0.1;
+
+  if (huntChance < huntThreshold) {
+    if (game.inventory.includes("Crucifix")) {
+      simulateTyping("⚡ The ghost tried to hunt but your Crucifix protected you!");
+      game.inventory = game.inventory.filter(i => i !== "Crucifix");
+      return;
+    } else if (game.inventory.includes("Smudge")) {
+      simulateTyping("⚡ You burned a Smudge Stick just in time! The ghost backed off.");
+      game.inventory = game.inventory.filter(i => i !== "Smudge");
+      return;
+    } else {
+      simulateTyping("💀 The ghost is hunting...");
+      setTimeout(() => {
+        simulateTyping("You were caught and killed.");
+        endGame("☠️ You died during a hunt. The ghost was " + game.ghost.toUpperCase() + ".");
+      }, 1500);
+    }
+  }
+}
 </script>
 <footer>
   Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.2
