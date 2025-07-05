@@ -22,8 +22,10 @@
     }
     #flash-overlay, #orb-canvas, #clouds1, #clouds2 {
       position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
       pointer-events: none;
     }
     #flash-overlay {
@@ -57,7 +59,8 @@
     }
     #background-logo {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
       background: url("./logo.png") center center no-repeat;
@@ -67,7 +70,9 @@
     }
     footer {
       position: fixed;
-      bottom: 0; left: 0; right: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       text-align: center;
       padding: 10px 0;
       font-size: 0.9em;
@@ -96,17 +101,12 @@
 <div id="title-screen" style="position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:black;display:flex;flex-direction:column;align-items:center;justify-content:center;
   z-index:5000;">
-  <!-- Start Investigation Button centered above the logo -->
-  <button onclick="showLoadoutMenu()" style="position: absolute; top: 40%; z-index: 5001; font-family: monospace; background: #111; color: #0ff; border: 1px solid #0ff; padding: 10px 20px; cursor: pointer;">
-    Start Investigation
-  </button>
-  
-  <!-- Logo -->
-  <img src="./logo.png" alt="PhasmaPhoney" style="max-width:80%; margin-top: 60px;" />
-  
+  <img src="./logo.png" alt="PhasmaPhoney" style="max-width:80%;margin-bottom:30px;" />
+  <button onclick="showLoadoutMenu()">Start Investigation</button>
   <p style="margin-top:10px;font-style:italic;">Deo: “Hope your guesswork's better than your flashlight.”</p>
 </div>
-<!-- Section [2]: Loadout Screen and Setup -->
+
+<!-- Loadout Screen -->
 <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
   <h2 style="text-align:center;">Select Your Loadout (Pick 3 Items)</h2>
@@ -115,14 +115,13 @@
     <button onclick="confirmLoadout()" style="padding:10px 20px;font-size:16px;">Confirm</button>
   </div>
 </div>
-<!-- ADA Modal (hidden initially) -->
+
+<!-- ADA Modal -->
 <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
   border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
   max-width:600px;height:80%;color:#0ff;font-family:monospace;display:flex;
   flex-direction:column;align-items:center;">
-</div>
-
 
   <div id="room-label" style="margin-bottom:6px;font-weight:bold;">
     Current room: <span id="room-name">Van</span>
@@ -150,10 +149,12 @@
     </div>
     <button onclick="move('down')" style="margin-top:4px;">⬇️</button>
   </div>
+
   <div id="status-bar">
     Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
   </div>
 </div>
+
 <!-- Item Use Popup -->
 <div id="item-use-popup" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -163,6 +164,7 @@
   <button onclick="closeItemUsePopup()" style="margin-top:12px;background:#000;
     border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
 </div>
+
 <!-- Ghost Guessing Modal -->
 <div id="guess-popup" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -173,6 +175,7 @@
   <button onclick="closeGuess()" style="margin-top:12px;background:#000;
     border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
 </div>
+
 <!-- End Screen -->
 <div id="end-screen" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -182,7 +185,57 @@
   <button onclick="startNewGame()" style="background:#000;border:1px solid #0ff;
     color:#0ff;padding:6px 16px;cursor:pointer;">🔁 Start New Game</button>
 </div>
+
 <script>
+  const allLoadoutItems = [
+    "EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt",
+    "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"
+  ];
+
+  const evidenceTypes = [
+    "EMF Level 5", "Spirit Box", "Fingerprints",
+    "Ghost Writing", "Freezing Temps", "D.O.T.S", "Orbs"
+  ];
+
+  const game = {
+    started: false,
+    active: false,
+    turn: 0,
+    sanity: 100,
+    inventory: ["Notebook", "Lighter"],
+    vanStock: {},
+    usedItems: [],
+    ghost: null,
+    ghostRoom: "Living Room",
+    position: [0, 0],
+    evidence: [],
+    guessedGhost: null,
+    mimicForm: null,
+    nextMimicShift: 0,
+    roomNameMap: [
+      ["Van", "Foyer", "Kitchen"],
+      ["Basement", "Living Room", "Bathroom"],
+      ["Garage", "Bedroom", "Storage"]
+    ],
+    protections: {
+      smudgeCount: 2,
+      crucifixPlaced: false
+    },
+    events: [],
+    journal: []
+  };
+
+  const introDialogues = [
+    "Deo: I've got a bad feeling about this one...",
+    "Deo: This isn’t a story—it’s real. Stay alert.",
+    "Deo: Watch the shadows. They’re watching you.",
+    "Deo: Let’s see what kind of ghost we’ve drawn.",
+    "Deo: Hope your guesswork’s better than your flashlight."
+  ];
+</script>
+
+<script>
+// === Game Data ===
 const allLoadoutItems = [
   "EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt",
   "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"
@@ -220,6 +273,8 @@ const game = {
   events: [],
   journal: []
 };
+
+// === Ghost Profiles ===
 const ghostProfiles = {
   spirit: { behavior: "You hear faint whispers behind you.", evidence: ["Spirit Box", "Ghost Writing", "EMF Level 5"] },
   wraith: { behavior: "No footprints follow the noise...", evidence: ["Spirit Box", "D.O.T.S", "EMF Level 5"] },
@@ -247,8 +302,8 @@ const ghostProfiles = {
   phantom: { behavior: "It vanishes when caught on camera.", evidence: ["Spirit Box", "D.O.T.S", "Fingerprints"] },
   succubus: { behavior: "A seductive chill brushes your skin.", evidence: ["Ghost Writing", "Orbs", "Spirit Box"] }
 };
-</script>
-<script>
+
+// === Show Loadout Screen ===
 function showLoadoutMenu() {
   const container = document.getElementById("item-selection");
   container.innerHTML = "";
@@ -267,11 +322,13 @@ function showLoadoutMenu() {
   document.getElementById("loadout-screen").style.display = "block";  // Show loadout screen
 }
 
+// === Loadout Check Limit ===
 function limitLoadoutCheck() {
   const selected = document.querySelectorAll('#item-selection input:checked');
   if (selected.length > 3) this.checked = false;
 }
 
+// === Confirm Loadout ===
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
@@ -287,6 +344,8 @@ function confirmLoadout() {
   document.getElementById("loadout-screen").style.display = "none";
   startInvestigation();
 }
+
+// === Start Investigation ===
 function startInvestigation() {
   game.started = true;
   game.active = true;
@@ -309,8 +368,8 @@ function startInvestigation() {
   updateStatus();
   updateRoomLabel();
 }
-</script>
-<script>
+
+// === Movement ===
 function move(dir) {
   let [x, y] = game.position;
   if (dir === 'up') x = Math.max(0, x - 1);
@@ -331,11 +390,13 @@ function move(dir) {
   advanceTurn();
 }
 
+// === Update Room Label ===
 function updateRoomLabel() {
   const [x, y] = game.position;
   document.getElementById("room-name").textContent = game.roomNameMap[x][y];
 }
 
+// === Simulate ADA Typing ===
 function simulateTyping(text, from = "ADA") {
   const log = document.getElementById("ada-log");
   const line = document.createElement("div");
@@ -343,7 +404,8 @@ function simulateTyping(text, from = "ADA") {
   log.appendChild(line);
   log.scrollTop = log.scrollHeight;
 }
-// === ADA Command Handling ===
+
+// === Handle ADA Commands ===
 function handleAdaCommand(cmd) {
   simulateTyping("> " + cmd, "You");
 
@@ -373,8 +435,7 @@ function handleAdaCommand(cmd) {
 
   setTimeout(() => simulateTyping(respondTo(cmd)), 300);
 }
-</script>
-<script>
+
 // === ADA Response Handling ===
 function respondTo(cmd) {
   const command = cmd.trim().toLowerCase();
@@ -394,8 +455,7 @@ function respondTo(cmd) {
 
   return "Unknown command.";
 }
-</script>
-<script>
+
 // === Ghost Guessing System ===
 function openGuess() {
   const list = document.getElementById("guess-list");
@@ -437,8 +497,7 @@ function endGame(message) {
 function startNewGame() {
   location.reload();
 }
-</script>
-<script>
+
 // === Evidence Tracking and Ghost Matching ===
 function getPossibleGhosts() {
   return Object.entries(ghostProfiles)
@@ -471,8 +530,7 @@ function updateMimicForm() {
     simulateTyping("Deo: I think the Mimic has changed again...");
   }
 }
-</script>
-<script>
+
 // === Sanity Based Hunt System ===
 function checkForHunt() {
   if (!game.active || game.sanity > 40) return;
@@ -495,8 +553,7 @@ function checkForHunt() {
     }
   }
 }
-</script>
-<script>
+
 // === Lightning Flash ===
 function lightningFlash() {
   const flash = document.getElementById('flash-overlay');
@@ -563,20 +620,9 @@ window.addEventListener('resize', () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
 });
-/* === [10] FINAL GAME FOOTER AND CLEANUP === */
 </script>
 <footer>
   Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.3
 </footer>
-
-<script>
-// Additional Final Script Setup or Cleanup
-window.addEventListener("DOMContentLoaded", () => {
-  // Initialize any final game state or UI tweaks
-  document.getElementById("title-screen").style.display = "flex";
-  document.getElementById("ada-modal").style.display = "none";
-  // Load any necessary resources like sound, graphics, or data if required
-});
-</script>
 </body>
 </html>
