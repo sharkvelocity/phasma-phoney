@@ -63,12 +63,20 @@
     }
     button {
       position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
       font-family: monospace;
       background: #111;
       color: #0ff;
       border: 1px solid #0ff;
       padding: 6px 12px;
       cursor: pointer;
+    }
+    button:hover {
+      background-color: #444;
+      transform: scale(1.05);
     }
   </style>
 </head>
@@ -89,15 +97,14 @@
 <!-- Loadout Screen -->
 <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:#000;color:#0ff;z-index:5001;padding:20px;font-family:monospace;overflow-y:auto;">
-  <h2 style="text-align:center;">Select Your Loadout (Pick 3 Items)
-  </h2>
+  <h2 style="text-align:center;">Select Your Loadout (Pick 3 Items)</h2>
   <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:20px 0;">
   </div>
   <div style="text-align:center;margin-top:20px;">
-    <button onclick="confirmLoadout()" style="padding:10px 20px;font-size:16px;">Confirm
-    </button>
+    <button onclick="confirmLoadout()" style="padding:10px 20px;font-size:16px;">Confirm</button>
   </div>
 </div>  
+
 <!-- ADA Modal -->
 <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);z-index:4999;background:#111;padding:20px;
@@ -223,13 +230,8 @@ const game = {
 
 // Function to randomly pick a ghost room
 function setRandomGhostRoom() {
-  // Flatten the roomNameMap into a single array of all rooms
-  const allRooms = game.roomNameMap.flat();
-  
-  // Randomly pick one of the available rooms
+  const allRooms = game.roomNameMap.flat().filter(room => room !== "Van"); // Exclude "Van"
   const randomIndex = Math.floor(Math.random() * allRooms.length);
-  
-  // Set the ghost room to the randomly chosen room
   game.ghostRoom = allRooms[randomIndex];
 }
 
@@ -258,171 +260,15 @@ function startInvestigation() {
   simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
   updateStatus();
   updateRoomLabel();
-  protections: {
-    smudgeCount: 2,
-    crucifixPlaced: false
-  },
-  events: [],
-  journal: []
-};
-</script>
-<script>
-// Evidence behaviors for all types (subtle clues)
-const evidenceBehaviors = {
-  "Spirit Box": [
-    { behavior: "You hear faint static buzzing in the air, like a distant radio, but nothing you can quite catch." },
-    { behavior: "There's an unsettling silence, but something about the air feels charged, like it's waiting." },
-    { behavior: "A soft whisper seems to echo in your ears, too quiet to decipher but present enough to cause discomfort." }
-  ],
-
-  "Ghost Writing": [
-    { behavior: "You feel the faintest brush of air, like something moved through the space, but there’s nothing there." },
-    { behavior: "A distant scribble sound echoes softly, almost like the rustling of paper in a quiet room." },
-    { behavior: "You hear a scratching noise that seems to come from nowhere, leaving the room feeling colder." }
-  ],
-
-  "EMF Level 5": [
-    { behavior: "The hairs on your neck stand up, as though something is nearby, but you can’t quite place it." },
-    { behavior: "A sudden wave of unease washes over you, but it’s hard to pinpoint the cause." },
-    { behavior: "The air feels dense around you, and you can’t shake the feeling that something's interfering with your senses." }
-  ],
-
-  "D.O.T.S": [
-    { behavior: "You feel a shift in the room, like a flicker in the corner of your eye, but when you look, nothing is there." },
-    { behavior: "There’s a strange energy in the air, as though something is lurking just beyond your perception." },
-    { behavior: "A subtle shimmer, almost imperceptible, brushes the edges of your vision, but it's gone before you can focus." }
-  ],
-
-  "Fingerprints": [
-    { behavior: "A strange texture seems to linger on the surface near you, though nothing is physically present." },
-    { behavior: "You feel a cold sensation brush past you, as though someone just touched the surface, but no one is near." },
-    { behavior: "There’s a subtle residue, like something left a mark, but it’s too faint to make out." }
-  ],
-
-  "Orbs": [
-    { behavior: "A strange shift in the atmosphere leaves you feeling uneasy, but you can’t pinpoint the cause." },
-    { behavior: "There’s an odd sensation in the air, like something brushed past you, but there’s nothing visible." },
-    { behavior: "You feel a subtle change in temperature, like a cold draft, but there’s no apparent source of the breeze." }
-  ],
-
-  "Freezing Temps": [
-    { behavior: "A chill begins to settle in the air, creeping slowly and making the room feel unnaturally cold." },
-    { behavior: "The temperature drops so suddenly, it feels like the room’s temperature has plummeted for no reason." },
-    { behavior: "You shiver, a coldness creeping along your skin, though no visible source of the chill is found." }
-  ]
-};
-
-// Ghost Profiles with linked evidence types and their behaviors
-const ghostProfiles = {
-  spirit: { evidence: ["Spirit Box", "Ghost Writing", "EMF Level 5"] },
-  wraith: { evidence: ["Spirit Box", "D.O.T.S", "EMF Level 5"] },
-  poltergeist: { evidence: ["Spirit Box", "Ghost Writing", "Fingerprints"] },
-  banshee: { evidence: ["D.O.T.S", "Fingerprints", "Orbs"] },
-  jinn: { evidence: ["EMF Level 5", "Freezing Temps", "Fingerprints"] },
-  mare: { evidence: ["Spirit Box", "Ghost Writing", "Orbs"] },
-  revenant: { evidence: ["Ghost Writing", "Orbs", "Freezing Temps"] },
-  shade: { evidence: ["Ghost Writing", "Freezing Temps", "EMF Level 5"] },
-  demon: { evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"] },
-  yurei: { evidence: ["Freezing Temps", "D.O.T.S", "Orbs"] },
-  oni: { evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S"] },
-  yokai: { evidence: ["Spirit Box", "D.O.T.S", "Orbs"] },
-  hantu: { evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"] },
-  goryo: { evidence: ["EMF Level 5", "D.O.T.S", "Fingerprints"] },
-  myling: { evidence: ["Ghost Writing", "EMF Level 5", "Fingerprints"] },
-  onryo: { evidence: ["Freezing Temps", "Spirit Box", "Orbs"] },
-  "the twins": { evidence: ["Spirit Box", "Freezing Temps", "EMF Level 5"] },
-  raiju: { evidence: ["EMF Level 5", "D.O.T.S", "Orbs"] },
-  obake: { evidence: ["EMF Level 5", "Orbs", "Fingerprints"] },
-  "the mimic": { evidence: ["Spirit Box", "Freezing Temps", "Fingerprints"] },
-  moroi: { evidence: ["Freezing Temps", "Ghost Writing", "Spirit Box"] },
-  deogen: { evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] },
-  thaye: { evidence: ["Ghost Writing", "Orbs", "D.O.T.S"] },
-  phantom: { evidence: ["Spirit Box", "D.O.T.S", "Fingerprints"] },
-  succubus: { evidence: ["Ghost Writing", "Orbs", "Spirit Box"] }
-};
-
-// Function to retrieve behaviors for a given ghost's evidence
-function getEvidenceBehaviors(ghost) {
-  const ghostData = ghostProfiles[ghost];
-  if (!ghostData) return [];
-
-  return ghostData.evidence.map(evidenceType => evidenceBehaviors[evidenceType]);
-}
-</script>
-<script>
-// === Show Loadout Screen ===
-function showLoadoutMenu() {
-  const container = document.getElementById("item-selection");
-  container.innerHTML = "";
-  allLoadoutItems.forEach(item => {
-    const label = document.createElement("label");
-    label.style = "color:#0ff;font-family:monospace;";
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = item;
-    checkbox.onchange = limitLoadoutCheck;
-    label.appendChild(checkbox);
-    label.append(" " + item);
-    container.appendChild(label);
-  });
-  document.getElementById("title-screen").style.display = "none";  // Hide title screen
-  document.getElementById("loadout-screen").style.display = "block";  // Show loadout screen
 }
 
-// === Loadout Check Limit ===
-function limitLoadoutCheck() {
-  const selected = document.querySelectorAll('#item-selection input:checked');
-  if (selected.length > 3) this.checked = false;
-}
-
-// === Confirm Loadout ===
-function confirmLoadout() {
-  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
-  if (selected.length > 3) return alert("Max 3 items.");
-
-  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
-
-  const remaining = allLoadoutItems.filter(i => !game.inventory.includes(i));
-  game.vanStock = {};
-  remaining.forEach(name => {
-    game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
-  });
-
-  document.getElementById("loadout-screen").style.display = "none";
-  startInvestigation();
-}
-
-// === Start Investigation ===
-function startInvestigation() {
-  game.started = true;
-  game.active = true;
-  game.turn = 0;
-  game.sanity = 100;
-  const keys = Object.keys(ghostProfiles);
-  game.ghost = keys[Math.floor(Math.random() * keys.length)];
-  game.ghostRoom = game.roomNameMap[1][1];
-  game.position = [0, 0];
-
-  if (game.ghost === "the mimic") {
-    const pool = keys.filter(g => g !== "the mimic");
-    game.mimicForm = pool[Math.floor(Math.random() * pool.length)];
-    game.nextMimicShift = 3 + Math.floor(Math.random() * 4);
-    simulateTyping("Deo: I suspect a Mimic... watch for shifting signs.");
-  }
-
-  document.getElementById("ada-modal").style.display = "flex";
-  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
-  updateStatus();
-  updateRoomLabel();
-}
-
-// === Movement ===
+// Movement Function
 function move(dir) {
   let [x, y] = game.position;
   if (dir === 'up') x = Math.max(0, x - 1);
-  if (dir === 'down') x = Math.min(2, x + 1);
+  if (dir === 'down') x = Math.min(game.roomNameMap.length - 1, x + 1);
   if (dir === 'left') y = Math.max(0, y - 1);
-  if (dir === 'right') y = Math.min(2, y + 1);
+  if (dir === 'right') y = Math.min(game.roomNameMap[0].length - 1, y + 1);
   game.position = [x, y];
   updateRoomLabel();
 
@@ -437,22 +283,13 @@ function move(dir) {
   advanceTurn();
 }
 
-// === Update Room Label ===
+// Update Room Label
 function updateRoomLabel() {
   const [x, y] = game.position;
   document.getElementById("room-name").textContent = game.roomNameMap[x][y];
 }
 
-// === Simulate ADA Typing ===
-function simulateTyping(text, from = "ADA") {
-  const log = document.getElementById("ada-log");
-  const line = document.createElement("div");
-  line.innerHTML = `<strong>${from}:</strong> <span>${text}</span>`;
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
-}
-
-// === Handle ADA Commands ===
+// Handle ADA Commands
 function handleAdaCommand(cmd) {
   simulateTyping("> " + cmd, "You");
 
@@ -482,6 +319,7 @@ function handleAdaCommand(cmd) {
 
   setTimeout(() => simulateTyping(respondTo(cmd)), 300);
 }
+
 
 // === ADA Response Handling ===
 function respondTo(cmd) {
