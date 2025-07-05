@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,11 +6,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="author" content="Shark-Blades" />
   <meta name="description" content="Turn-based ghost hunting strategy game based on Phasmophobia." />
-  <meta name="keywords" content="PhasmaPhoney, Phasmophobia, ghost, game, ADA, investigation" />
+  <meta name="keywords" content="PhasmaPhoney, Phasmophobia, ghost, ADA, investigation, game" />
   <meta property="og:type" content="game" />
   <meta property="og:site_name" content="PhasmaPhoney" />
   <meta name="google-site-verification" content="2zaxjMijj2SXwFDx3Fe6sQUNzXXZiAAkAP92q6ZFWSg" />
-
   <style>
     html, body {
       margin: 0;
@@ -23,59 +21,70 @@
       color: #0ff;
       overflow: hidden;
     }
+
     #flash-overlay, #orb-canvas, #clouds1, #clouds2 {
       position: fixed;
       top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100vw; height: 100vh;
       pointer-events: none;
     }
+
     #flash-overlay {
       background: white;
       opacity: 0;
       z-index: 9999;
     }
+
     #orb-canvas {
       z-index: 199;
     }
+
     #clouds1, #clouds2 {
       z-index: 200;
       background-repeat: repeat-x;
       background-size: cover;
     }
+
     #clouds1 {
       background: linear-gradient(to right, rgba(255,255,255,0.05), rgba(0,0,0,0));
       opacity: 0.4;
       animation: cloudDrift1 80s linear infinite;
     }
+
     #clouds2 {
       background: linear-gradient(to right, rgba(255,255,255,0.08), rgba(0,0,0,0));
       opacity: 0.3;
       animation: cloudDrift2 120s linear infinite;
     }
+
     @keyframes cloudDrift1 {
       0% { transform: translateX(0); }
       100% { transform: translateX(-50%); }
     }
+
     @keyframes cloudDrift2 {
       0% { transform: translateX(100%); }
       100% { transform: translateX(-100%); }
     }
+
     #background-logo {
       position: fixed;
-      top: 0; left: 0;
+      top: 0;
+      left: 0;
       width: 100%;
       height: 100%;
-      background: url("./logo.png") center center no-repeat;
+      background-image: url("./logo.png");
+      background-repeat: no-repeat;
+      background-position: center center;
       background-size: contain;
       opacity: 0.1;
       z-index: -4;
     }
+
     #title-screen {
       position: fixed;
       top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
+      width: 100vw; height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -83,6 +92,7 @@
       background: black;
       z-index: 5000;
     }
+
     #title-screen button {
       font-size: 24px;
       padding: 16px 32px;
@@ -91,18 +101,18 @@
       border: 2px solid #444;
       cursor: pointer;
     }
+
     footer {
       position: fixed;
       bottom: 0;
       left: 0;
-      width: 100%;
-      background: #111;
-      color: #0ff;
-      text-align: center;
+      right: 0;
+      padding: 8px;
       font-size: 0.9em;
+      color: #0ff;
+      background: #000;
       z-index: 3000;
-      padding: 5px 0;
-      font-family: monospace;
+      text-align: center;
     }
   </style>
 </head>
@@ -116,57 +126,629 @@
   <div id="title-screen">
     <img src="./logo.png" alt="PhasmaPhoney" style="max-width: 80%; margin-bottom: 30px;" />
     <button onclick="startLoadout()">Start Investigation</button>
-    <p style="margin-top: 10px; font-style: italic;">Deo: “Hope your guesswork's better than your flashlight.”</p>
+    <p style="margin-top: 10px; font-style: italic;">
+      Deo: “Hope your guesswork’s better than your flashlight.”
+    </p>
   </div>
 
-  <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
+  <footer>
+    Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.1
+  </footer>
+  <!-- Loadout Screen -->
+  <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
+       background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
     <h2 style="text-align:center;">Select Your Loadout (Pick 3 Items)</h2>
-    <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:20px 0;"></div>
+    <div id="item-selection" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin:20px 0;">
+      <!-- Dynamically populated -->
+    </div>
     <div style="text-align:center;margin-top:20px;">
       <button onclick="confirmLoadout()" style="padding:10px 20px;font-size:16px;">Confirm</button>
     </div>
   </div>
 
-  <footer>
-    Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.0
-  </footer>
+  <!-- ADA Command Modal -->
+  <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
+       transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
+       border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
+       max-width:600px;height:80%;color:#0ff;font-family:monospace;">
+    <div id="ada-log" style="height:70%;overflow-y:auto;padding:10px;
+          background:#000;border:1px solid #333;margin-bottom:10px;">
+      ADA: Investigation interface activated.
+    </div>
 
-  <script>
-    function startLoadout() {
-      document.getElementById("title-screen").style.display = "none";
-      document.getElementById("loadout-screen").style.display = "block";
-      showLoadoutMenu();
+    <!-- ADA Buttons Interface -->
+    <div id="ada-buttons" style="display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin-bottom:10px;">
+      <button onclick="handleAdaCommand('map')">🗺 Map</button>
+      <button onclick="handleAdaCommand('move')">🚪 Move</button>
+      <button onclick="openItemUsePopup()">🎒 Use Item</button>
+      <button onclick="handleAdaCommand('inventory')">📦 Inventory</button>
+      <button onclick="openGuess()">👻 Guess Ghost</button>
+      <button onclick="handleAdaCommand('end')">🚫 End</button>
+    </div>
+
+    <div id="status-bar">
+      Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
+    </div>
+  </div>
+
+  <!-- Item Use Modal -->
+  <div id="item-use-popup" style="display:none;position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
+    border:2px solid #0ff;z-index:10000;width:90%;max-width:400px;">
+    <h2 style="color:#0ff;text-align:center;">Select an item to use</h2>
+    <div id="item-use-list" style="margin-top:12px;display:flex;flex-direction:column;gap:8px;"></div>
+    <button onclick="closeItemUsePopup()" style="margin-top:12px;background:#000;
+      border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
+  </div>
+
+  <!-- Ghost Guessing Modal -->
+  <div id="guess-popup" style="display:none;position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
+    border:2px solid #0ff;z-index:10000;width:90%;max-width:600px;">
+    <h2 style="color:#0ff;text-align:center;">Who do you think the ghost is?</h2>
+    <div id="guess-list" style="max-height:300px;overflow-y:auto;display:grid;
+      grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:6px;margin-top:12px;"></div>
+    <button onclick="closeGuess()" style="margin-top:12px;background:#000;
+      border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
+  </div>
+
+  <!-- End Screen -->
+  <div id="end-screen" style="display:none;position:fixed;top:50%;left:50%;
+    transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
+    border:2px solid #0ff;z-index:10000;width:90%;max-width:500px;text-align:center;
+    font-family:monospace;color:#0ff;">
+    <div id="end-message" style="margin-bottom:16px;"></div>
+    <button onclick="startNewGame()" style="background:#000;border:1px solid #0ff;
+      color:#0ff;padding:6px 16px;cursor:pointer;">🔁 Start New Game</button>
+  </div>
+<script>
+// === All Loadout Items ===
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt", 
+  "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"
+];
+
+// === Game State ===
+const game = {
+  started: false,
+  active: false,
+  turn: 0,
+  sanity: 100,
+  inventory: ["Notebook", "Lighter"],
+  vanStock: {},
+  ghost: null,
+  ghostRoom: "Living Room",
+  guessedGhost: null,
+  evidence: [],
+  protections: {
+    smudgeCount: 2,
+    crucifixPlaced: false
+  },
+  map: [
+    ['●','_','_'],
+    ['|','_','|'],
+    ['|','_','|']
+  ],
+  roomNameMap: [
+    ['Van','Foyer','Kitchen'],
+    ['Basement','Living Room','Bathroom'],
+    ['Garage','Bedroom','Storage']
+  ]
+};
+
+// === Ghost Profiles (25 total) ===
+const ghostProfiles = {
+  spirit: { intro: "Spirits are common and quiet.", behavior: "You hear faint whispers behind you." },
+  wraith: { intro: "Wraiths float and avoid salt.", behavior: "No footprints follow the noise..." },
+  poltergeist: { intro: "Poltergeists hurl objects violently.", behavior: "Crash! Something hits the wall!" },
+  banshee: { intro: "Banshees target one person relentlessly.", behavior: "A distant lullaby drifts through the air..." },
+  jinn: { intro: "Jinns are territorial and fast.", behavior: "Electronics surge with static!" },
+  mare: { intro: "Mares thrive in darkness.", behavior: "Lights go out and a chill follows." },
+  revenant: { intro: "Revenants move fast when hunting.", behavior: "Heavy steps speed up suddenly!" },
+  shade: { intro: "Shades are shy and quiet.", behavior: "Silence deeper than normal surrounds you." },
+  demon: { intro: "Demons attack often and early.", behavior: "Growl... the air turns hostile!" },
+  yurei: { intro: "Yureis drain sanity and slam doors.", behavior: "The door slams shut violently." },
+  oni: { intro: "Onis are active and strong.", behavior: "A burst of movement rushes past!" },
+  yokai: { intro: "Yokais react to voices.", behavior: "Echoes mimic your voice from behind." },
+  hantu: { intro: "Hantus thrive in cold.", behavior: "Your breath freezes midair." },
+  goryo: { intro: "Goryos show only through video.", behavior: "The screen flickers with a faint shape." },
+  myling: { intro: "Mylings are silent killers.", behavior: "Loud steps. Then... silence." },
+  onryo: { intro: "Onryos react to extinguished fire.", behavior: "The candle goes out—then a hiss!" },
+  "the twins": { intro: "The Twins act unpredictably.", behavior: "Noise erupts from two places at once!" },
+  raiju: { intro: "Raijus gain strength from electronics.", behavior: "Everything buzzes unnaturally loud!" },
+  obake: { intro: "Obakes leave smudged prints.", behavior: "A distorted handprint fades fast." },
+  "the mimic": { intro: "The Mimic mimics other ghosts.", behavior: "Inconsistent signs surround you..." },
+  moroi: { intro: "Morois curse and weaken you.", behavior: "A headache grows as whispers crawl in." },
+  deogen: { intro: "Deogens know where you are.", behavior: "It tracks you—slowly, but always." },
+  thaye: { intro: "Thaye ages over time.", behavior: "Its presence feels... older, calmer." },
+  phantom: { intro: "Phantoms disappear when looked at.", behavior: "It vanishes the moment you focus on it." },
+  mimic: { intro: "The Mimic mimics other ghosts.", behavior: "Inconsistent signs suggest mimicry." },
+  succubus: { intro: "The Succubus lures and terrifies.", behavior: "A seductive chill brushes your skin." }
+};
+
+const introDialogues = [
+  "Deo: I've got a bad feeling about this one...",
+  "Deo: This isn’t a story—it’s real. Stay alert.",
+  "Deo: Watch the shadows. They’re watching you.",
+  "Deo: Let’s see what kind of ghost we’ve drawn.",
+  "Deo: Hope your guesswork’s better than your flashlight."
+];
+
+// === Show Loadout Menu ===
+function showLoadoutMenu() {
+  const container = document.getElementById("item-selection");
+  container.innerHTML = "";
+  allLoadoutItems.forEach(item => {
+    const label = document.createElement("label");
+    label.style = "color:#0ff;font-family:monospace;";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = item;
+    checkbox.onchange = limitLoadoutCheck;
+    label.appendChild(checkbox);
+    label.append(" " + item);
+    container.appendChild(label);
+  });
+  document.getElementById("loadout-screen").style.display = "block";
+}
+
+function limitLoadoutCheck() {
+  const selected = document.querySelectorAll('#item-selection input:checked');
+  if (selected.length > 3) this.checked = false;
+}
+
+function confirmLoadout() {
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
+  if (selected.length > 3) return alert("Max 3 items.");
+  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
+  const remaining = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  remaining.forEach(name => {
+    game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
+  });
+  document.getElementById("loadout-screen").style.display = "none";
+  startInvestigation();
+}
+
+function startInvestigation() {
+  const ghostKeys = Object.keys(ghostProfiles);
+  game.ghost = ghostKeys[Math.floor(Math.random() * ghostKeys.length)];
+  game.ghostRoom = game.roomNameMap[1][1]; // Living Room default
+  game.started = true;
+  game.active = true;
+  game.turn = 0;
+  game.sanity = 100;
+  updateStatus();
+  document.getElementById("ada-modal").style.display = "block";
+  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
+}
+</script>
+<script>
+// === Status Display ===
+function updateStatus() {
+  document.getElementById("turn-counter").textContent = game.turn;
+  document.getElementById("sanity-bar").textContent = game.sanity;
+}
+
+// === ADA Typing Simulation ===
+function simulateTyping(text, from = "ADA") {
+  const log = document.getElementById("ada-log");
+  const line = document.createElement("div");
+  line.innerHTML = `<strong>${from}:</strong> `;
+  const span = document.createElement("span");
+  const cursor = document.createElement("span");
+  cursor.setAttribute("id", "ada-typing");
+  cursor.textContent = "|";
+  span.textContent = "";
+  line.appendChild(span);
+  line.appendChild(cursor);
+  log.appendChild(line);
+  let i = 0;
+  function typeChar() {
+    if (i < text.length) {
+      span.textContent += text[i++];
+      log.scrollTop = log.scrollHeight;
+      setTimeout(typeChar, 20 + Math.random() * 20);
+    } else {
+      cursor.remove();
+    }
+  }
+  typeChar();
+}
+
+// === ADA Command Router ===
+function handleAdaCommand(cmd) {
+  simulateTyping("> " + cmd, "You");
+  const result = respondTo(cmd);
+  setTimeout(() => simulateTyping(result), 300);
+}
+
+// === Map Display ===
+function updateMapDisplay() {
+  let output = "";
+  for (let i = 0; i < game.map.length; i++) {
+    for (let j = 0; j < game.map[i].length; j++) {
+      output += (i === game.position[0] && j === game.position[1]) ? "● " : game.map[i][j] + " ";
+    }
+    output += "\n";
+  }
+  return output;
+}
+
+// === Respond To Command ===
+function respondTo(cmd) {
+  const command = cmd.trim().toLowerCase();
+  if (!command) return;
+  if (!game.started || !game.active) return "The investigation hasn't started yet.";
+  game.turn++;
+  game.sanity = Math.max(0, game.sanity - 5);
+  updateStatus();
+
+  if (command === "map") return updateMapDisplay();
+
+  if (command === "move") {
+    let [x, y] = game.position;
+    y = (y + 1) % 3;
+    game.position = [x, y];
+    const room = game.roomNameMap[x][y];
+    const ghostRoom = game.ghostRoom;
+    const behavior = (room === ghostRoom) ? ghostProfiles[game.ghost].behavior : "Nothing unusual here.";
+    return `You moved to ${room}.\n${behavior}`;
+  }
+
+  if (command === "inventory") {
+    return "You have: " + game.inventory.join(", ");
+  }
+
+  if (command.startsWith("use ")) {
+    const item = command.slice(4).trim();
+    return useGameItem(item);
+  }
+
+  if (command.startsWith("add evidence ")) {
+    const ev = command.replace("add evidence ", "").trim();
+    if (!ev) return "Specify which evidence to add.";
+    if (!game.evidence.includes(ev)) {
+      game.evidence.push(ev);
+      return `${ev} added to your journal.`;
+    }
+    return `${ev} already recorded.`;
+  }
+
+  if (command === "end") {
+    game.started = false;
+    game.active = false;
+    return `Investigation complete. The ghost was ${game.ghost.toUpperCase()}.`;
+  }
+
+  return "Unknown command. Try: move, map, inventory, use [item], guess, end.";
+}
+
+// === Game Item Use Logic ===
+function useGameItem(item) {
+  const itemLower = item.toLowerCase();
+  if (!game.inventory.map(i => i.toLowerCase()).includes(itemLower)) {
+    return `You don't have a ${item}.`;
+  }
+
+  switch (itemLower) {
+    case "smudge":
+      if (game.protections.smudgeCount > 0) {
+        game.protections.smudgeCount--;
+        if (game.protections.smudgeCount === 0) {
+          game.inventory = game.inventory.filter(i => i.toLowerCase() !== "smudge");
+        }
+        return "You used a Smudge Stick. The area feels momentarily safer.";
+      } else {
+        return "You're out of Smudge Sticks.";
+      }
+    case "emf":
+      return "The EMF reader lights up... something's here.";
+    case "spirit box":
+      return "You hear static... and a faint whisper responds.";
+    case "thermometer":
+      return "Temperature is low. Might be freezing in this room.";
+    case "camera":
+      return "You snap a photo... something glows faintly.";
+    default:
+      return `You used the ${item}.`;
+  }
+}
+</script>
+<script>
+// === Open Ghost Guess Modal ===
+function openGuess() {
+  const popup = document.getElementById("guess-popup");
+  const list = document.getElementById("guess-list");
+  list.innerHTML = "";
+  Object.keys(ghostProfiles).forEach(name => {
+    const btn = document.createElement("button");
+    btn.textContent = name.toUpperCase();
+    btn.style.padding = "6px 12px";
+    btn.style.cursor = "pointer";
+    btn.style.border = "1px solid #0ff";
+    btn.style.background = "#000";
+    btn.style.color = "#0ff";
+    btn.onclick = () => {
+      closeGuess();
+      processGuess(name);
+    };
+    list.appendChild(btn);
+  });
+  popup.style.display = "block";
+}
+
+// === Close Guess Popup ===
+function closeGuess() {
+  document.getElementById("guess-popup").style.display = "none";
+}
+
+// === Process Ghost Guess ===
+function processGuess(guessName) {
+  game.guessedGhost = guessName;
+  const correct = (guessName === game.ghost);
+  const message = correct
+    ? `✅ Correct! The ghost was ${guessName.toUpperCase()}.`
+    : `❌ Incorrect. The ghost was ${game.ghost.toUpperCase()}.`;
+  simulateTyping(message);
+  game.started = false;
+  game.active = false;
+  document.getElementById("end-message").textContent = message;
+  document.getElementById("end-screen").style.display = "block";
+}
+
+// === End Game and Restart ===
+function endGame(message) {
+  simulateTyping(message);
+  game.started = false;
+  game.active = false;
+  document.getElementById("end-message").textContent = message;
+  document.getElementById("end-screen").style.display = "block";
+}
+
+function startNewGame() {
+  location.reload();
+}
+
+// === Open Item Use Popup ===
+function openItemUsePopup() {
+  const list = document.getElementById("item-use-list");
+  list.innerHTML = "";
+  game.inventory.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.style.padding = "6px 12px";
+    btn.style.cursor = "pointer";
+    btn.style.border = "1px solid #0ff";
+    btn.style.background = "#000";
+    btn.style.color = "#0ff";
+    btn.onclick = () => {
+      closeItemUsePopup();
+      handleAdaCommand("use " + item);
+      if (["smudge", "salt", "crucifix"].includes(item.toLowerCase())) {
+        game.inventory = game.inventory.filter(i => i !== item);
+      }
+    };
+    list.appendChild(btn);
+  });
+  document.getElementById("item-use-popup").style.display = "block";
+}
+
+// === Close Item Use Popup ===
+function closeItemUsePopup() {
+  document.getElementById("item-use-popup").style.display = "none";
+}
+</script>
+<script>
+// === DOM READY / START BUTTON ===
+document.addEventListener('DOMContentLoaded', () => {
+  const startBtn = document.getElementById("start-button-ada");
+  const adaModal = document.getElementById("ada-modal");
+  const turnCounter = document.getElementById("turn-counter");
+  const sanityBar = document.getElementById("sanity-bar");
+  const logBox = document.getElementById("ada-log");
+
+  window.updateStatus = function updateStatus() {
+    turnCounter.textContent = game.turn;
+    sanityBar.textContent = game.sanity;
+  };
+
+  window.simulateTyping = function simulateTyping(text, from = "ADA") {
+    const line = document.createElement("div");
+    line.innerHTML = `<strong>${from}:</strong> `;
+    const span = document.createElement("span");
+    line.appendChild(span);
+    const cursor = document.createElement("span");
+    cursor.setAttribute("id", "ada-typing");
+    cursor.textContent = "|";
+    line.appendChild(cursor);
+    logBox.appendChild(line);
+    let i = 0;
+    function type() {
+      if (i < text.length) {
+        span.textContent += text[i++];
+        logBox.scrollTop = logBox.scrollHeight;
+        setTimeout(type, 18 + Math.random() * 30);
+      } else {
+        cursor.remove();
+      }
+    }
+    type();
+  };
+
+  window.handleAdaCommand = function handleAdaCommand(cmd) {
+    simulateTyping(`> ${cmd}`, "You");
+    const result = respondTo(cmd);
+    setTimeout(() => simulateTyping(result), 300);
+  };
+
+  window.startLoadout = function () {
+    document.getElementById("title-screen").style.display = "none";
+    showLoadoutMenu();
+    document.getElementById("loadout-screen").style.display = "block";
+  };
+});
+</script>
+
+<script>
+// === Lightning Flash ===
+function lightningFlash() {
+  const flash = document.getElementById('flash-overlay');
+  if (!flash) return;
+  flash.style.opacity = '0.4';
+  setTimeout(() => {
+    flash.style.opacity = '0';
+  }, 100);
+}
+setInterval(() => {
+  setTimeout(lightningFlash, Math.random() * 2000);
+}, 10000);
+</script>
+
+<script>
+// === Floating Spirit Particles ===
+const canvas = document.getElementById('orb-canvas');
+const ctx = canvas.getContext('2d');
+let width = canvas.width = window.innerWidth;
+let height = canvas.height = window.innerHeight;
+
+function createOrb() {
+  return {
+    x: Math.random() * width,
+    y: Math.random() * height,
+    vx: (Math.random() - 0.5) * 0.8,
+    vy: (Math.random() - 0.5) * 0.8,
+    baseRadius: Math.random() * 2 + 1,
+    radius: 1,
+    opacity: 0,
+    fadeIn: true,
+    tick: 0,
+    changeInterval: Math.floor(Math.random() * 100 + 50)
+  };
+}
+
+let orbs = Array.from({ length: 12 }, createOrb);
+
+function animateOrbs() {
+  ctx.clearRect(0, 0, width, height);
+  orbs.forEach((orb, i) => {
+    orb.tick++;
+    orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
+
+    // Fade logic
+    if (orb.fadeIn) {
+      orb.opacity += 0.01;
+      if (orb.opacity >= 0.7) orb.fadeIn = false;
+    } else {
+      orb.opacity -= 0.001;
     }
 
-    function showLoadoutMenu() {
-      const items = ["EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt", "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"];
-      const container = document.getElementById("item-selection");
-      container.innerHTML = "";
-      items.forEach(item => {
-        const label = document.createElement("label");
-        label.style = "margin:5px;color:#0ff;";
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = item;
-        checkbox.onchange = limitLoadoutCheck;
-        label.appendChild(checkbox);
-        label.append(" " + item);
-        container.appendChild(label);
-      });
+    if (orb.opacity <= 0.01) {
+      orbs[i] = createOrb();
+      return;
     }
 
-    function limitLoadoutCheck() {
-      const selected = document.querySelectorAll('#item-selection input:checked');
-      if (selected.length > 3) this.checked = false;
+    // Change drift
+    if (orb.tick % orb.changeInterval === 0) {
+      let angle = Math.random() * Math.PI * 2;
+      let speed = Math.sqrt(orb.vx ** 2 + orb.vy ** 2);
+      orb.vx = Math.cos(angle) * speed;
+      orb.vy = Math.sin(angle) * speed;
     }
 
-    function confirmLoadout() {
-      const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
-      if (selected.length > 3) return alert("Max 3 items.");
-      alert("Loadout confirmed: " + selected.map(cb => cb.value).join(", ") + ". Starting game...");
-      document.getElementById("loadout-screen").style.display = "none";
-      // Start main investigation logic here
-    }
-  </script>
+    // Move and bounce
+    orb.x += orb.vx;
+    orb.y += orb.vy;
+    if (orb.x <= 0 || orb.x >= width) orb.vx *= -1;
+    if (orb.y <= 0 || orb.y >= height) orb.vy *= -1;
+
+    // Draw orb
+    ctx.beginPath();
+    ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+    ctx.shadowColor = `rgba(255,255,255,${orb.opacity * 0.6})`;
+    ctx.shadowBlur = 10 + orb.opacity * 10;
+    ctx.fill();
+  });
+  requestAnimationFrame(animateOrbs);
+}
+animateOrbs();
+
+window.addEventListener('resize', () => {
+  width = canvas.width = window.innerWidth;
+  height = canvas.height = window.innerHeight;
+});
+</script>
+<footer>
+  Shark‑Blades — Phasma‑Phoney Prototype Web Build
+  <span class="version-tag" onclick="document.getElementById('changelog-modal').style.display = 'block'">
+    Build v1.4.1
+  </span>
+</footer>
+
+<!-- CHANGELOG MODAL -->
+<div id="changelog-modal" style="display:none;position:fixed;top:50%;left:50%;
+  transform:translate(-50%,-50%);background:#111;padding:20px;
+  border:2px solid #0ff;border-radius:10px;z-index:9999;color:#0ff;
+  font-family:monospace;width:90%;max-width:500px;text-align:left;">
+  <h2 style="margin-top:0;color:#0ff;">Phasma‑Phoney v1.4.1</h2>
+  <ul style="padding-left:20px;font-size:0.95em;">
+    <li>✅ Interactive ADA UI (button-based)</li>
+    <li>✅ Full ghost guessing modal</li>
+    <li>✅ Animated floating spirit particles (orbs)</li>
+    <li>✅ Lightning flash effects every few seconds</li>
+    <li>✅ Item use interface + consumable tracking</li>
+    <li>✅ End-game result + "Start New Game" logic</li>
+    <li>✅ Loadout screen & van stock system</li>
+    <li>✅ Mimic orb-only behavior (visual, not evidence)</li>
+    <li>✅ Ghost behavior/intro split from game logic</li>
+  </ul>
+  <button onclick="document.getElementById('changelog-modal').style.display = 'none'"
+          style="margin-top:12px;background:#000;border:1px solid #0ff;
+                 color:#0ff;padding:6px 12px;cursor:pointer;">
+    Close
+  </button>
+</div>
+
+<script>
+// === GHOST PROFILES (25) ===
+const ghostProfiles = {
+  spirit: { intro: "Spirits are common and quiet.", behavior: "You hear faint whispers behind you." },
+  wraith: { intro: "Wraiths float and avoid salt.", behavior: "No footprints follow the noise..." },
+  poltergeist: { intro: "Poltergeists hurl objects violently.", behavior: "Crash! Something hits the wall!" },
+  banshee: { intro: "Banshees target one person relentlessly.", behavior: "A distant lullaby drifts through the air..." },
+  jinn: { intro: "Jinns are territorial and fast.", behavior: "Electronics surge with static!" },
+  mare: { intro: "Mares thrive in darkness.", behavior: "Lights go out and a chill follows." },
+  revenant: { intro: "Revenants move fast when hunting.", behavior: "Heavy steps speed up suddenly!" },
+  shade: { intro: "Shades are shy and quiet.", behavior: "Silence deeper than normal surrounds you." },
+  demon: { intro: "Demons attack often and early.", behavior: "Growl... the air turns hostile!" },
+  yurei: { intro: "Yureis drain sanity and slam doors.", behavior: "The door slams shut violently." },
+  oni: { intro: "Onis are active and strong.", behavior: "A burst of movement rushes past!" },
+  yokai: { intro: "Yokais react to voices.", behavior: "Echoes mimic your voice from behind." },
+  hantu: { intro: "Hantus thrive in cold.", behavior: "Your breath freezes midair." },
+  goryo: { intro: "Goryos show only through video.", behavior: "The screen flickers with a faint shape." },
+  myling: { intro: "Mylings are silent killers.", behavior: "Loud steps. Then... silence." },
+  onryo: { intro: "Onryos react to extinguished fire.", behavior: "The candle goes out—then a hiss!" },
+  "the twins": { intro: "The Twins act unpredictably.", behavior: "Noise erupts from two places at once!" },
+  raiju: { intro: "Raijus gain strength from electronics.", behavior: "Everything buzzes unnaturally loud!" },
+  obake: { intro: "Obakes leave smudged prints.", behavior: "A distorted handprint fades fast." },
+  "the mimic": { intro: "The Mimic mimics other ghosts. Orbs may appear—but are not real evidence.", behavior: "Inconsistent signs surround you..." },
+  moroi: { intro: "Morois curse and weaken you.", behavior: "A headache grows as whispers crawl in." },
+  deogen: { intro: "Deogens know where you are.", behavior: "It tracks you—slowly, but always." },
+  thaye: { intro: "Thaye ages over time.", behavior: "Its presence feels... older, calmer." },
+  phantom: { intro: "Phantoms vanish when photographed.", behavior: "Your camera glitches... was that a shadow?" },
+  mimic: { intro: "The Mimic mimics other ghosts.", behavior: "Signs feel... familiar, but wrong." },
+  succubus: { intro: "The Succubus lures and terrifies.", behavior: "A seductive chill brushes your skin." }
+};
+
+// === ADA INTRO DIALOGUES ===
+const introDialogues = [
+  "Deo: I've got a bad feeling about this one...",
+  "Deo: This isn’t a story—it’s real. Stay alert.",
+  "Deo: Watch the shadows. They’re watching you.",
+  "Deo: Let’s see what kind of ghost we’ve drawn.",
+  "Deo: Hope your guesswork’s better than your flashlight."
+];
+</script>
+
 </body>
 </html>
