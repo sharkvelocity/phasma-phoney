@@ -1,27 +1,3 @@
-/* === 
-Section [1]: Initialization and Title Screen Setup
-
-Section [2]: Loadout Screen and Setup
-
-Section [3]: ADA Modal (Main interface for interaction)
-
-Section [4]: Compass Controls and Player Movement
-
-Section [5]: Evidence Tracking and Suggestion System
-
-Section [6]: Ghost Profiles and Interaction
-
-Section [7]: ADA Command Handling and Ghost Guessing System
-
-Section [8]: Evidence Tracking, Mimic Logic, and Sanity Based Hunt System
-
-Section [9]: Ambient Effects, Lightning, Orbs, and Resizing
-
-Section [10]: Final Footer and Cleanup
-
- === */
-
-/* === Section [1]: Initialization and Title Screen Setup === */
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,7 +85,6 @@ Section [10]: Final Footer and Cleanup
     }
   </style>
 </head>
-/* === Title Screen and canvas === */
 <body>
 <div id="clouds1"></div>
 <div id="clouds2"></div>
@@ -208,7 +183,6 @@ Section [10]: Final Footer and Cleanup
     color:#0ff;padding:6px 16px;cursor:pointer;">🔁 Start New Game</button>
 </div>
 <script>
-// === Game Data ===
 const allLoadoutItems = [
   "EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt",
   "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"
@@ -246,8 +220,6 @@ const game = {
   events: [],
   journal: []
 };
-
-// === Ghost Profiles ===
 const ghostProfiles = {
   spirit: { behavior: "You hear faint whispers behind you.", evidence: ["Spirit Box", "Ghost Writing", "EMF Level 5"] },
   wraith: { behavior: "No footprints follow the noise...", evidence: ["Spirit Box", "D.O.T.S", "EMF Level 5"] },
@@ -277,7 +249,6 @@ const ghostProfiles = {
 };
 </script>
 <script>
-// === Loadout ===
 function showLoadoutMenu() {
   const container = document.getElementById("item-selection");
   container.innerHTML = "";
@@ -316,8 +287,6 @@ function confirmLoadout() {
   document.getElementById("loadout-screen").style.display = "none";
   startInvestigation();
 }
-
-// === Start Game ===
 function startInvestigation() {
   game.started = true;
   game.active = true;
@@ -342,7 +311,6 @@ function startInvestigation() {
 }
 </script>
 <script>
-// === Movement ===
 function move(dir) {
   let [x, y] = game.position;
   if (dir === 'up') x = Math.max(0, x - 1);
@@ -375,8 +343,6 @@ function simulateTyping(text, from = "ADA") {
   log.appendChild(line);
   log.scrollTop = log.scrollHeight;
 }
-</script>
-<script>
 // === ADA Command Handling ===
 function handleAdaCommand(cmd) {
   simulateTyping("> " + cmd, "You");
