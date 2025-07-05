@@ -21,7 +21,7 @@ Section [10]: Final Footer and Cleanup
 
  === */
 
-/* === [1] HEAD & STYLES === */
+/* === Section [1]: Initialization and Title Screen Setup === */
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -109,7 +109,7 @@ Section [10]: Final Footer and Cleanup
     }
   </style>
 </head>
-/* === [2] BACKGROUND LAYERS & TITLE SCREEN === */
+/* === Title Screen and canvas === */
 <body>
 <div id="clouds1"></div>
 <div id="clouds2"></div>
@@ -126,7 +126,7 @@ Section [10]: Final Footer and Cleanup
   <p style="margin-top:10px;font-style:italic;">Deo: “Hope your guesswork's better than your flashlight.”</p>
 </div>
 
-<!-- Loadout Screen -->
+<!-- Section [2]: Loadout Screen and Setup -->
 <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
   <h2 style="text-align:center;">Select Your Loadout (Pick 3 Items)</h2>
@@ -135,13 +135,16 @@ Section [10]: Final Footer and Cleanup
     <button onclick="confirmLoadout()" style="padding:10px 20px;font-size:16px;">Confirm</button>
   </div>
 </div>
-/* === [3] ADA INTERFACE PANEL === */
-<!-- ADA Modal -->
+
+/* === Section [3]: ADA Modal (Main interface for interaction) === */
+<!-- ADA Modal (hidden initially) -->
 <div id="ada-modal" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);z-index:9999;background:#111;padding:20px;
   border-radius:10px;box-shadow:0 0 20px rgba(0,0,0,0.8);width:90%;
   max-width:600px;height:80%;color:#0ff;font-family:monospace;display:flex;
   flex-direction:column;align-items:center;">
+</div>
+
 
   <div id="room-label" style="margin-bottom:6px;font-weight:bold;">
     Current room: <span id="room-name">Van</span>
@@ -169,12 +172,10 @@ Section [10]: Final Footer and Cleanup
     </div>
     <button onclick="move('down')" style="margin-top:4px;">⬇️</button>
   </div>
-
   <div id="status-bar">
     Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
   </div>
 </div>
-/* === [4] POPUPS (Item Use, Ghost Guess, End Screen) === */
 <!-- Item Use Popup -->
 <div id="item-use-popup" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -184,7 +185,6 @@ Section [10]: Final Footer and Cleanup
   <button onclick="closeItemUsePopup()" style="margin-top:12px;background:#000;
     border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
 </div>
-
 <!-- Ghost Guessing Modal -->
 <div id="guess-popup" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -195,7 +195,6 @@ Section [10]: Final Footer and Cleanup
   <button onclick="closeGuess()" style="margin-top:12px;background:#000;
     border:1px solid #0ff;color:#0ff;padding:6px 12px;cursor:pointer;">Cancel</button>
 </div>
-
 <!-- End Screen -->
 <div id="end-screen" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -205,7 +204,6 @@ Section [10]: Final Footer and Cleanup
   <button onclick="startNewGame()" style="background:#000;border:1px solid #0ff;
     color:#0ff;padding:6px 16px;cursor:pointer;">🔁 Start New Game</button>
 </div>
-/* === [5] GAME DATA AND GHOST PROFILES === */
 <script>
 // === Game Data ===
 const allLoadoutItems = [
@@ -275,7 +273,6 @@ const ghostProfiles = {
   succubus: { behavior: "A seductive chill brushes your skin.", evidence: ["Ghost Writing", "Orbs", "Spirit Box"] }
 };
 </script>
-/* === [6] GAME FLOW (Loadout, Investigation, Movement) === */
 <script>
 // === Loadout ===
 function showLoadoutMenu() {
@@ -292,8 +289,8 @@ function showLoadoutMenu() {
     label.append(" " + item);
     container.appendChild(label);
   });
-  document.getElementById("title-screen").style.display = "none";
-  document.getElementById("loadout-screen").style.display = "block";
+  document.getElementById("title-screen").style.display = "none";  // Hide title screen
+  document.getElementById("loadout-screen").style.display = "block";  // Show loadout screen
 }
 
 function limitLoadoutCheck() {
@@ -340,7 +337,8 @@ function startInvestigation() {
   updateStatus();
   updateRoomLabel();
 }
-
+</script>
+<script>
 // === Movement ===
 function move(dir) {
   let [x, y] = game.position;
@@ -374,7 +372,7 @@ function simulateTyping(text, from = "ADA") {
   log.appendChild(line);
   log.scrollTop = log.scrollHeight;
 }
-/* === [7] ADA COMMAND HANDLING AND GHOST GUESSING SYSTEM === */
+</script>
 <script>
 // === ADA Command Handling ===
 function handleAdaCommand(cmd) {
@@ -403,9 +401,11 @@ function handleAdaCommand(cmd) {
     return;
   }
 
+
   setTimeout(() => simulateTyping(respondTo(cmd)), 300);
 }
-
+</script>
+<script>
 // === ADA Response Handling ===
 function respondTo(cmd) {
   const command = cmd.trim().toLowerCase();
@@ -425,7 +425,8 @@ function respondTo(cmd) {
 
   return "Unknown command.";
 }
-
+</script>
+<script>
 // === Ghost Guessing System ===
 function openGuess() {
   const list = document.getElementById("guess-list");
@@ -467,7 +468,7 @@ function endGame(message) {
 function startNewGame() {
   location.reload();
 }
-/* === [8] EVIDENCE TRACKING, MIMIC LOGIC, AND SANITY BASED HUNT SYSTEM === */
+</script>
 <script>
 // === Evidence Tracking and Ghost Matching ===
 function getPossibleGhosts() {
@@ -501,7 +502,8 @@ function updateMimicForm() {
     simulateTyping("Deo: I think the Mimic has changed again...");
   }
 }
-
+</script>
+<script>
 // === Sanity Based Hunt System ===
 function checkForHunt() {
   if (!game.active || game.sanity > 40) return;
@@ -524,7 +526,7 @@ function checkForHunt() {
     }
   }
 }
-/* === [9] AMBIENT EFFECTS, LIGHTNING, ORBS, AND RESIZING === */
+</script>
 <script>
 // === Lightning Flash ===
 function lightningFlash() {
@@ -593,6 +595,7 @@ window.addEventListener('resize', () => {
   height = canvas.height = window.innerHeight;
 });
 /* === [10] FINAL GAME FOOTER AND CLEANUP === */
+</script>
 <footer>
   Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.3
 </footer>
