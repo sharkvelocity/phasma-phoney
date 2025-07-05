@@ -416,59 +416,36 @@ function updateRoomLabel() {
 }
 
 // === ADA Interaction ===
-function simulateTyping(text, from = "ADA") {
-  const log = document.getElementById("ada-log");
-  const line = document.createElement("div");
-  line.innerHTML = `<strong>${from}:</strong> <span>${text}</span>`;
-  log.appendChild(line);
-  log.scrollTop = log.scrollHeight;
-}
-
 function handleAdaCommand(cmd) {
   simulateTyping("> " + cmd, "You");
+
+  if (cmd.toLowerCase().startsWith("add evidence ")) {
+    const ev = cmd.slice(13).trim();
+    if (!evidenceTypes.includes(ev)) {
+      simulateTyping("Unknown evidence type. Try: " + evidenceTypes.join(", "));
+      return;
+    }
+    if (!game.evidence.includes(ev)) {
+      game.evidence.push(ev);
+      simulateTyping("Evidence added: " + ev);
+    } else {
+      simulateTyping("Evidence already recorded.");
+    }
+
+    const matches = getPossibleGhosts();
+    if (matches.length === 0) {
+      simulateTyping("No ghost matches all current evidence.");
+    } else {
+      simulateTyping(`Possible ghost${matches.length > 1 ? "s" : ""}: ${matches.join(", ")}`);
+    }
+
+    advanceTurn();
+    return;
+  }
+
   setTimeout(() => simulateTyping(respondTo(cmd)), 300);
 }
 
-function respondTo(cmd) {
-  const command = cmd.trim().toLowerCase();
-  if (!game.started || !game.active) return "The investigation hasn't started.";
-  game.turn++;
-  game.sanity = Math.max(0, game.sanity - 5);
-  updateStatus();
-
-  if (command === "map") return "Map system active.";
-  if (command === "inventory") return game.inventory.length ? "You have: " + game.inventory.join(", ") : "You have no items.";
-  if (command === "end") {
-    game.started = false;
-    game.active = false;
-    document.getElementById("ada-modal").style.display = "none";
-    return "Investigation ended.";
-  }
-  return "Unknown command.";
-}
-
-// === Item Use Popup ===
-function openItemUsePopup() {
-  const list = document.getElementById("item-use-list");
-  list.innerHTML = "";
-  game.inventory.forEach(item => {
-    const btn = document.createElement("button");
-    btn.textContent = item;
-    btn.style.padding = "6px 12px";
-    btn.onclick = () => {
-      closeItemUsePopup();
-      handleAdaCommand("use " + item);
-      if (["smudge", "salt", "crucifix"].includes(item.toLowerCase())) {
-        game.inventory = game.inventory.filter(i => i !== item);
-      }
-    };
-    list.appendChild(btn);
-  });
-  document.getElementById("item-use-popup").style.display = "block";
-}
-function closeItemUsePopup() {
-  document.getElementById("item-use-popup").style.display = "none";
-}
 
 // === Ghost Guess Modal ===
 function openGuess() {
@@ -589,7 +566,6 @@ window.addEventListener('resize', () => {
   height = canvas.height = window.innerHeight;
 });
 </script>
-
 <footer>
   Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.2
 </footer>
