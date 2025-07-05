@@ -219,33 +219,108 @@ const game = {
 
 // === Ghost Profiles ===
 const ghostProfiles = {
-  spirit: { intro: "Spirits are common and quiet.", behavior: "You hear faint whispers behind you." },
-  wraith: { intro: "Wraiths float and avoid salt.", behavior: "No footprints follow the noise..." },
-  poltergeist: { intro: "Poltergeists hurl objects violently.", behavior: "Crash! Something hits the wall!" },
-  banshee: { intro: "Banshees target one person relentlessly.", behavior: "A distant lullaby drifts through the air..." },
-  jinn: { intro: "Jinns are territorial and fast.", behavior: "Electronics surge with static!" },
-  mare: { intro: "Mares thrive in darkness.", behavior: "Lights go out and a chill follows." },
-  revenant: { intro: "Revenants move fast when hunting.", behavior: "Heavy steps speed up suddenly!" },
-  shade: { intro: "Shades are shy and quiet.", behavior: "Silence deeper than normal surrounds you." },
-  demon: { intro: "Demons attack often and early.", behavior: "Growl... the air turns hostile!" },
-  yurei: { intro: "Yureis drain sanity and slam doors.", behavior: "The door slams shut violently." },
-  oni: { intro: "Onis are active and strong.", behavior: "A burst of movement rushes past!" },
-  yokai: { intro: "Yokais react to voices.", behavior: "Echoes mimic your voice from behind." },
-  hantu: { intro: "Hantus thrive in cold.", behavior: "Your breath freezes midair." },
-  goryo: { intro: "Goryos show only through video.", behavior: "The screen flickers with a faint shape." },
-  myling: { intro: "Mylings are silent killers.", behavior: "Loud steps. Then... silence." },
-  onryo: { intro: "Onryos react to extinguished fire.", behavior: "The candle goes out—then a hiss!" },
-  "the twins": { intro: "The Twins act unpredictably.", behavior: "Noise erupts from two places at once!" },
-  raiju: { intro: "Raijus gain strength from electronics.", behavior: "Everything buzzes unnaturally loud!" },
-  obake: { intro: "Obakes leave smudged prints.", behavior: "A distorted handprint fades fast." },
-  "the mimic": { intro: "The Mimic mimics other ghosts.", behavior: "Inconsistent signs surround you..." },
-  moroi: { intro: "Morois curse and weaken you.", behavior: "A headache grows as whispers crawl in." },
-  deogen: { intro: "Deogens know where you are.", behavior: "It tracks you—slowly, but always." },
-  thaye: { intro: "Thaye ages over time.", behavior: "Its presence feels... older, calmer." },
-  phantom: { intro: "Phantoms vanish when looked at.", behavior: "It vanishes when caught on camera." },
-  mimic: { intro: "Mimic imitates others and shows orbs (not real evidence).", behavior: "The signs are deceptive and shifting." },
-  succubus: { intro: "The Succubus lures and terrifies.", behavior: "A seductive chill brushes your skin." }
+  spirit: {
+    behavior: "You hear faint whispers behind you.",
+    evidence: ["Spirit Box", "Ghost Writing", "EMF Level 5"]
+  },
+  wraith: {
+    behavior: "No footprints follow the noise...",
+    evidence: ["Spirit Box", "D.O.T.S", "EMF Level 5"]
+  },
+  poltergeist: {
+    behavior: "Crash! Something hits the wall!",
+    evidence: ["Spirit Box", "Ghost Writing", "Fingerprints"]
+  },
+  banshee: {
+    behavior: "A distant lullaby drifts through the air...",
+    evidence: ["D.O.T.S", "Fingerprints", "Orbs"]
+  },
+  jinn: {
+    behavior: "Electronics surge with static!",
+    evidence: ["EMF Level 5", "Freezing Temps", "Fingerprints"]
+  },
+  mare: {
+    behavior: "Lights go out and a chill follows.",
+    evidence: ["Spirit Box", "Ghost Writing", "Orbs"]
+  },
+  revenant: {
+    behavior: "Heavy steps speed up suddenly!",
+    evidence: ["Ghost Writing", "Orbs", "Freezing Temps"]
+  },
+  shade: {
+    behavior: "Silence deeper than normal surrounds you.",
+    evidence: ["Ghost Writing", "Freezing Temps", "EMF Level 5"]
+  },
+  demon: {
+    behavior: "Growl... the air turns hostile!",
+    evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"]
+  },
+  yurei: {
+    behavior: "The door slams shut violently.",
+    evidence: ["Freezing Temps", "D.O.T.S", "Orbs"]
+  },
+  oni: {
+    behavior: "A burst of movement rushes past!",
+    evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S"]
+  },
+  yokai: {
+    behavior: "Echoes mimic your voice from behind.",
+    evidence: ["Spirit Box", "D.O.T.S", "Orbs"]
+  },
+  hantu: {
+    behavior: "Your breath freezes midair.",
+    evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"]
+  },
+  goryo: {
+    behavior: "The screen flickers with a faint shape.",
+    evidence: ["EMF Level 5", "D.O.T.S", "Fingerprints"]
+  },
+  myling: {
+    behavior: "Loud steps. Then... silence.",
+    evidence: ["Ghost Writing", "EMF Level 5", "Fingerprints"]
+  },
+  onryo: {
+    behavior: "The candle goes out—then a hiss!",
+    evidence: ["Freezing Temps", "Spirit Box", "Orbs"]
+  },
+  "the twins": {
+    behavior: "Noise erupts from two places at once!",
+    evidence: ["Spirit Box", "Freezing Temps", "EMF Level 5"]
+  },
+  raiju: {
+    behavior: "Everything buzzes unnaturally loud!",
+    evidence: ["EMF Level 5", "D.O.T.S", "Orbs"]
+  },
+  obake: {
+    behavior: "A distorted handprint fades fast.",
+    evidence: ["EMF Level 5", "Orbs", "Fingerprints"]
+  },
+  "the mimic": {
+    behavior: "Inconsistent signs surround you...",
+    evidence: ["Spirit Box", "Freezing Temps", "Fingerprints"] // Shows Orbs visually
+  },
+  moroi: {
+    behavior: "A headache grows as whispers crawl in.",
+    evidence: ["Freezing Temps", "Ghost Writing", "Spirit Box"]
+  },
+  deogen: {
+    behavior: "It tracks you—slowly, but always.",
+    evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"]
+  },
+  thaye: {
+    behavior: "Its presence feels... older, calmer.",
+    evidence: ["Ghost Writing", "Orbs", "D.O.T.S"]
+  },
+  phantom: {
+    behavior: "It vanishes when caught on camera.",
+    evidence: ["Spirit Box", "D.O.T.S", "Fingerprints"]
+  },
+  succubus: {
+    behavior: "A seductive chill brushes your skin.",
+    evidence: ["Ghost Writing", "Orbs", "Spirit Box"]
+  }
 };
+
   </script>
   <script>
 const introDialogues = [
