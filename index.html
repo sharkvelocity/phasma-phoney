@@ -105,6 +105,7 @@
   <button onclick="showLoadoutMenu()">Start Investigation</button>
   <p style="margin-top:10px;font-style:italic;">Deo: “Hope your guesswork's better than your flashlight.”</p>
 </div>
+
 <!-- Loadout Screen -->
 <div id="loadout-screen" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;
   background:#000;color:#0ff;z-index:5000;padding:20px;font-family:monospace;overflow-y:auto;">
@@ -148,11 +149,11 @@
     </div>
     <button onclick="move('down')" style="margin-top:4px;">⬇️</button>
   </div>
+
   <div id="status-bar">
     Turn: <span id="turn-counter">0</span> | Sanity: <span id="sanity-bar">100</span>%
   </div>
 </div>
-
 <!-- Item Use Popup -->
 <div id="item-use-popup" style="display:none;position:fixed;top:50%;left:50%;
   transform:translate(-50%,-50%);background:#111;padding:20px;border-radius:10px;
@@ -183,11 +184,18 @@
   <button onclick="startNewGame()" style="background:#000;border:1px solid #0ff;
     color:#0ff;padding:6px 16px;cursor:pointer;">🔁 Start New Game</button>
 </div>
-  <script>
-// === Loadout Options ===
+
+<!-- Script Setup -->
+<script>
+// === Game Data ===
 const allLoadoutItems = [
   "EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt",
   "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"
+];
+
+const evidenceTypes = [
+  "EMF Level 5", "Spirit Box", "Fingerprints",
+  "Ghost Writing", "Freezing Temps", "D.O.T.S", "Orbs"
 ];
 
 const game = {
@@ -203,6 +211,8 @@ const game = {
   position: [0, 0],
   evidence: [],
   guessedGhost: null,
+  mimicForm: null,
+  nextMimicShift: 0,
   roomNameMap: [
     ["Van", "Foyer", "Kitchen"],
     ["Basement", "Living Room", "Bathroom"],
@@ -216,112 +226,6 @@ const game = {
   journal: []
 };
 
-// === Ghost Profiles ===
-const ghostProfiles = {
-  spirit: {
-    behavior: "You hear faint whispers behind you.",
-    evidence: ["Spirit Box", "Ghost Writing", "EMF Level 5"]
-  },
-  wraith: {
-    behavior: "No footprints follow the noise...",
-    evidence: ["Spirit Box", "D.O.T.S", "EMF Level 5"]
-  },
-  poltergeist: {
-    behavior: "Crash! Something hits the wall!",
-    evidence: ["Spirit Box", "Ghost Writing", "Fingerprints"]
-  },
-  banshee: {
-    behavior: "A distant lullaby drifts through the air...",
-    evidence: ["D.O.T.S", "Fingerprints", "Orbs"]
-  },
-  jinn: {
-    behavior: "Electronics surge with static!",
-    evidence: ["EMF Level 5", "Freezing Temps", "Fingerprints"]
-  },
-  mare: {
-    behavior: "Lights go out and a chill follows.",
-    evidence: ["Spirit Box", "Ghost Writing", "Orbs"]
-  },
-  revenant: {
-    behavior: "Heavy steps speed up suddenly!",
-    evidence: ["Ghost Writing", "Orbs", "Freezing Temps"]
-  },
-  shade: {
-    behavior: "Silence deeper than normal surrounds you.",
-    evidence: ["Ghost Writing", "Freezing Temps", "EMF Level 5"]
-  },
-  demon: {
-    behavior: "Growl... the air turns hostile!",
-    evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"]
-  },
-  yurei: {
-    behavior: "The door slams shut violently.",
-    evidence: ["Freezing Temps", "D.O.T.S", "Orbs"]
-  },
-  oni: {
-    behavior: "A burst of movement rushes past!",
-    evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S"]
-  },
-  yokai: {
-    behavior: "Echoes mimic your voice from behind.",
-    evidence: ["Spirit Box", "D.O.T.S", "Orbs"]
-  },
-  hantu: {
-    behavior: "Your breath freezes midair.",
-    evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"]
-  },
-  goryo: {
-    behavior: "The screen flickers with a faint shape.",
-    evidence: ["EMF Level 5", "D.O.T.S", "Fingerprints"]
-  },
-  myling: {
-    behavior: "Loud steps. Then... silence.",
-    evidence: ["Ghost Writing", "EMF Level 5", "Fingerprints"]
-  },
-  onryo: {
-    behavior: "The candle goes out—then a hiss!",
-    evidence: ["Freezing Temps", "Spirit Box", "Orbs"]
-  },
-  "the twins": {
-    behavior: "Noise erupts from two places at once!",
-    evidence: ["Spirit Box", "Freezing Temps", "EMF Level 5"]
-  },
-  raiju: {
-    behavior: "Everything buzzes unnaturally loud!",
-    evidence: ["EMF Level 5", "D.O.T.S", "Orbs"]
-  },
-  obake: {
-    behavior: "A distorted handprint fades fast.",
-    evidence: ["EMF Level 5", "Orbs", "Fingerprints"]
-  },
-  "the mimic": {
-    behavior: "Inconsistent signs surround you...",
-    evidence: ["Spirit Box", "Freezing Temps", "Fingerprints"] // Shows Orbs visually
-  },
-  moroi: {
-    behavior: "A headache grows as whispers crawl in.",
-    evidence: ["Freezing Temps", "Ghost Writing", "Spirit Box"]
-  },
-  deogen: {
-    behavior: "It tracks you—slowly, but always.",
-    evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"]
-  },
-  thaye: {
-    behavior: "Its presence feels... older, calmer.",
-    evidence: ["Ghost Writing", "Orbs", "D.O.T.S"]
-  },
-  phantom: {
-    behavior: "It vanishes when caught on camera.",
-    evidence: ["Spirit Box", "D.O.T.S", "Fingerprints"]
-  },
-  succubus: {
-    behavior: "A seductive chill brushes your skin.",
-    evidence: ["Ghost Writing", "Orbs", "Spirit Box"]
-  }
-};
-
-  </script>
-  <script>
 const introDialogues = [
   "Deo: I've got a bad feeling about this one...",
   "Deo: This isn’t a story—it’s real. Stay alert.",
@@ -329,11 +233,38 @@ const introDialogues = [
   "Deo: Let’s see what kind of ghost we’ve drawn.",
   "Deo: Hope your guesswork’s better than your flashlight."
 ];
-
-// Continue below in Part 4...
 </script>
 <script>
-// === Loadout ===
+// === Ghost Profiles ===
+const ghostProfiles = {
+  spirit: { behavior: "You hear faint whispers behind you.", evidence: ["Spirit Box", "Ghost Writing", "EMF Level 5"] },
+  wraith: { behavior: "No footprints follow the noise...", evidence: ["Spirit Box", "D.O.T.S", "EMF Level 5"] },
+  poltergeist: { behavior: "Crash! Something hits the wall!", evidence: ["Spirit Box", "Ghost Writing", "Fingerprints"] },
+  banshee: { behavior: "A distant lullaby drifts through the air...", evidence: ["D.O.T.S", "Fingerprints", "Orbs"] },
+  jinn: { behavior: "Electronics surge with static!", evidence: ["EMF Level 5", "Freezing Temps", "Fingerprints"] },
+  mare: { behavior: "Lights go out and a chill follows.", evidence: ["Spirit Box", "Ghost Writing", "Orbs"] },
+  revenant: { behavior: "Heavy steps speed up suddenly!", evidence: ["Ghost Writing", "Orbs", "Freezing Temps"] },
+  shade: { behavior: "Silence deeper than normal surrounds you.", evidence: ["Ghost Writing", "Freezing Temps", "EMF Level 5"] },
+  demon: { behavior: "Growl... the air turns hostile!", evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"] },
+  yurei: { behavior: "The door slams shut violently.", evidence: ["Freezing Temps", "D.O.T.S", "Orbs"] },
+  oni: { behavior: "A burst of movement rushes past!", evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S"] },
+  yokai: { behavior: "Echoes mimic your voice from behind.", evidence: ["Spirit Box", "D.O.T.S", "Orbs"] },
+  hantu: { behavior: "Your breath freezes midair.", evidence: ["Freezing Temps", "Ghost Writing", "Fingerprints"] },
+  goryo: { behavior: "The screen flickers with a faint shape.", evidence: ["EMF Level 5", "D.O.T.S", "Fingerprints"] },
+  myling: { behavior: "Loud steps. Then... silence.", evidence: ["Ghost Writing", "EMF Level 5", "Fingerprints"] },
+  onryo: { behavior: "The candle goes out—then a hiss!", evidence: ["Freezing Temps", "Spirit Box", "Orbs"] },
+  "the twins": { behavior: "Noise erupts from two places at once!", evidence: ["Spirit Box", "Freezing Temps", "EMF Level 5"] },
+  raiju: { behavior: "Everything buzzes unnaturally loud!", evidence: ["EMF Level 5", "D.O.T.S", "Orbs"] },
+  obake: { behavior: "A distorted handprint fades fast.", evidence: ["EMF Level 5", "Orbs", "Fingerprints"] },
+  "the mimic": { behavior: "Inconsistent signs surround you...", evidence: ["Spirit Box", "Freezing Temps", "Fingerprints"] },
+  moroi: { behavior: "A headache grows as whispers crawl in.", evidence: ["Freezing Temps", "Ghost Writing", "Spirit Box"] },
+  deogen: { behavior: "It tracks you—slowly, but always.", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] },
+  thaye: { behavior: "Its presence feels... older, calmer.", evidence: ["Ghost Writing", "Orbs", "D.O.T.S"] },
+  phantom: { behavior: "It vanishes when caught on camera.", evidence: ["Spirit Box", "D.O.T.S", "Fingerprints"] },
+  succubus: { behavior: "A seductive chill brushes your skin.", evidence: ["Ghost Writing", "Orbs", "Spirit Box"] }
+};
+
+// === Game Flow ===
 function showLoadoutMenu() {
   const container = document.getElementById("item-selection");
   container.innerHTML = "";
@@ -373,7 +304,6 @@ function confirmLoadout() {
   startInvestigation();
 }
 
-// === Start Game ===
 function startInvestigation() {
   game.started = true;
   game.active = true;
@@ -384,14 +314,19 @@ function startInvestigation() {
   game.ghostRoom = game.roomNameMap[1][1];
   game.position = [0, 0];
 
+  if (game.ghost === "the mimic") {
+    const pool = keys.filter(g => g !== "the mimic");
+    game.mimicForm = pool[Math.floor(Math.random() * pool.length)];
+    game.nextMimicShift = 3 + Math.floor(Math.random() * 4);
+    simulateTyping("Deo: I suspect a Mimic... watch for shifting signs.");
+  }
+
   document.getElementById("ada-modal").style.display = "flex";
   simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
   updateStatus();
   updateRoomLabel();
-  mimicForm: null,
-nextMimicShift: 0,
 }
-
+<script>
 function move(dir) {
   let [x, y] = game.position;
   if (dir === 'up') x = Math.max(0, x - 1);
@@ -399,15 +334,17 @@ function move(dir) {
   if (dir === 'left') y = Math.max(0, y - 1);
   if (dir === 'right') y = Math.min(2, y + 1);
   game.position = [x, y];
-
   updateRoomLabel();
+
   const room = game.roomNameMap[x][y];
   const isGhostRoom = room === game.ghostRoom;
-  const activity = isGhostRoom ? ghostProfiles[game.ghost].behavior : "You feel watched, but nothing happens.";
+  const profile = (game.ghost === "the mimic" && game.mimicForm)
+    ? ghostProfiles[game.mimicForm]
+    : ghostProfiles[game.ghost];
+  const activity = isGhostRoom ? profile.behavior : "You feel watched, but nothing happens.";
+
   simulateTyping(`You moved to ${room}. ${activity}`);
-  game.turn++;
-  game.sanity = Math.max(0, game.sanity - 5);
-  updateStatus();
+  advanceTurn();
 }
 
 function updateRoomLabel() {
@@ -415,7 +352,14 @@ function updateRoomLabel() {
   document.getElementById("room-name").textContent = game.roomNameMap[x][y];
 }
 
-// === ADA Interaction ===
+function simulateTyping(text, from = "ADA") {
+  const log = document.getElementById("ada-log");
+  const line = document.createElement("div");
+  line.innerHTML = `<strong>${from}:</strong> <span>${text}</span>`;
+  log.appendChild(line);
+  log.scrollTop = log.scrollHeight;
+}
+
 function handleAdaCommand(cmd) {
   simulateTyping("> " + cmd, "You");
 
@@ -431,15 +375,13 @@ function handleAdaCommand(cmd) {
     } else {
       simulateTyping("Evidence already recorded.");
     }
-    if (game.sanity <= 50) simulateTyping("⚠️ Your sanity is getting low...");
 
     const matches = getPossibleGhosts();
-    if (matches.length === 0) {
-      simulateTyping("No ghost matches all current evidence.");
-    } else {
-      simulateTyping(`Possible ghost${matches.length > 1 ? "s" : ""}: ${matches.join(", ")}`);
-    }
+    simulateTyping(matches.length === 0
+      ? "No ghost matches all current evidence."
+      : `Possible ghost${matches.length > 1 ? "s" : ""}: ${matches.join(", ")}`);
 
+    if (game.sanity <= 50) simulateTyping("⚠️ Your sanity is getting low...");
     advanceTurn();
     return;
   }
@@ -447,58 +389,83 @@ function handleAdaCommand(cmd) {
   setTimeout(() => simulateTyping(respondTo(cmd)), 300);
 }
 
-// === Ghost Guess Modal ===
-function openGuess() {
-  const list = document.getElementById("guess-list");
-  list.innerHTML = "";
-  Object.keys(ghostProfiles).forEach(ghost => {
-    const btn = document.createElement("button");
-    btn.textContent = ghost.toUpperCase();
-    btn.onclick = () => {
-      closeGuess();
-      processGuess(ghost);
-    };
-    list.appendChild(btn);
-  });
-  document.getElementById("guess-popup").style.display = "block";
-}
-function closeGuess() {
-  document.getElementById("guess-popup").style.display = "none";
-}
-function processGuess(guess) {
-  if (!game.started) return;
-  const correct = guess === game.ghost;
-  const resultMsg = correct
-    ? `✅ Correct! The ghost was ${guess.toUpperCase()}.`
-    : `❌ Incorrect. The ghost was ${game.ghost.toUpperCase()}.`;
-  endGame(resultMsg);
+function respondTo(cmd) {
+  const command = cmd.trim().toLowerCase();
+  if (!game.started || !game.active) return "The investigation hasn't started.";
+  advanceTurn();
+
+  if (command === "map") return "Map system active.";
+  if (command === "inventory") return game.inventory.length
+    ? "You have: " + game.inventory.join(", ")
+    : "You have no items.";
+  if (command === "end") {
+    game.started = false;
+    game.active = false;
+    document.getElementById("ada-modal").style.display = "none";
+    return "Investigation ended.";
+  }
+
+  return "Unknown command.";
 }
 
-// === Game End ===
-function endGame(message) {
-  simulateTyping(message);
-  document.getElementById("end-message").textContent = message;
-  document.getElementById("end-screen").style.display = "block";
-  game.started = false;
-  game.active = false;
+function getPossibleGhosts() {
+  return Object.entries(ghostProfiles)
+    .filter(([ghost, profile]) =>
+      game.evidence.every(ev => profile.evidence.includes(ev)))
+    .map(([ghost]) => ghost);
 }
-function startNewGame() {
-  location.reload();
-}
-</script>
 
-<!-- Ambient Effects -->
-<script>
-// === Lightning Flash ===
-function lightningFlash() {
-  const flash = document.getElementById('flash-overlay');
-  if (!flash) return;
-  flash.style.opacity = '0.4';
-  setTimeout(() => flash.style.opacity = '0', 100);
+function advanceTurn() {
+  game.turn++;
+  game.sanity = Math.max(0, game.sanity - 5);
+  updateStatus();
+  updateMimicForm();
+  checkForHunt();
 }
-setInterval(() => setTimeout(lightningFlash, Math.random() * 2000), 10000);
 
-// === Spirit Orb Canvas ===
+function updateStatus() {
+  document.getElementById("turn-counter").textContent = game.turn;
+  document.getElementById("sanity-bar").textContent = game.sanity;
+}
+
+function updateMimicForm() {
+  if (game.ghost !== "the mimic") return;
+  if (game.turn >= game.nextMimicShift) {
+    const options = Object.keys(ghostProfiles).filter(g => g !== "the mimic");
+    const newForm = options[Math.floor(Math.random() * options.length)];
+    game.mimicForm = newForm;
+    game.nextMimicShift = game.turn + 3 + Math.floor(Math.random() * 4);
+    simulateTyping("Deo: I think the Mimic has changed again...");
+  }
+}
+
+function checkForHunt() {
+  if (!game.active || game.sanity > 40) return;
+  const aggressive = ["demon", "oni", "moroi", "the mimic"];
+  const chance = Math.random();
+  const threshold = aggressive.includes(game.ghost) ? 0.3 : 0.1;
+  if (chance < threshold) {
+    if (game.inventory.includes("Crucifix")) {
+      simulateTyping("⚡ The ghost tried to hunt but your Crucifix protected you!");
+      game.inventory = game.inventory.filter(i => i !== "Crucifix");
+    } else if (game.inventory.includes("Smudge")) {
+      simulateTyping("⚡ You burned a Smudge Stick just in time! The ghost backed off.");
+      game.inventory = game.inventory.filter(i => i !== "Smudge");
+    } else {
+      simulateTyping("💀 The ghost is hunting...");
+      setTimeout(() => {
+        simulateTyping("You were caught and killed.");
+        endGame("☠️ You died during a hunt. The ghost was " + game.ghost.toUpperCase() + ".");
+      }, 1500);
+    }
+  }
+}
+
+// Ghost Guessing System (already defined in Part 2)
+// Item Use Popup (already defined in Part 2)
+// Game End Logic (already defined in Part 2)
+
+// === Ambient Orbs & Lightning ===
 const canvas = document.getElementById('orb-canvas');
 const ctx = canvas.getContext('2d');
 let width = canvas.width = window.innerWidth;
@@ -525,18 +492,9 @@ function animateOrbs() {
   orbs.forEach((orb, i) => {
     orb.tick++;
     orb.radius = orb.baseRadius + Math.sin(orb.tick / 30) * 0.5;
-
-    if (orb.fadeIn) {
-      orb.opacity += 0.01;
-      if (orb.opacity >= 0.7) orb.fadeIn = false;
-    } else {
-      orb.opacity -= 0.001;
-    }
-
-    if (orb.opacity <= 0.01) {
-      orbs[i] = createOrb();
-      return;
-    }
+    orb.opacity += orb.fadeIn ? 0.01 : -0.001;
+    if (orb.opacity >= 0.7) orb.fadeIn = false;
+    if (orb.opacity <= 0.01) orbs[i] = createOrb();
 
     if (orb.tick % orb.changeInterval === 0) {
       const angle = Math.random() * 2 * Math.PI;
@@ -547,7 +505,6 @@ function animateOrbs() {
 
     orb.x += orb.vx;
     orb.y += orb.vy;
-
     if (orb.x <= 0 || orb.x >= width) orb.vx *= -1;
     if (orb.y <= 0 || orb.y >= height) orb.vy *= -1;
 
@@ -564,35 +521,19 @@ animateOrbs();
 window.addEventListener('resize', () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
-});function checkForHunt() {
-  if (game.sanity > 40 || !game.active) return;
+});
 
-  const huntChance = Math.random();
-  const aggressive = ["demon", "oni", "moroi", "the mimic"];
-  const huntThreshold = aggressive.includes(game.ghost) ? 0.3 : 0.1;
-
-  if (huntChance < huntThreshold) {
-    if (game.inventory.includes("Crucifix")) {
-      simulateTyping("⚡ The ghost tried to hunt but your Crucifix protected you!");
-      game.inventory = game.inventory.filter(i => i !== "Crucifix");
-      return;
-    } else if (game.inventory.includes("Smudge")) {
-      simulateTyping("⚡ You burned a Smudge Stick just in time! The ghost backed off.");
-      game.inventory = game.inventory.filter(i => i !== "Smudge");
-      return;
-    } else {
-      simulateTyping("💀 The ghost is hunting...");
-      setTimeout(() => {
-        simulateTyping("You were caught and killed.");
-        endGame("☠️ You died during a hunt. The ghost was " + game.ghost.toUpperCase() + ".");
-      }, 1500);
-    }
-  }
+function lightningFlash() {
+  const flash = document.getElementById('flash-overlay');
+  if (!flash) return;
+  flash.style.opacity = '0.4';
+  setTimeout(() => flash.style.opacity = '0', 100);
 }
+setInterval(() => setTimeout(lightningFlash, Math.random() * 2000), 10000);
 </script>
+
 <footer>
-  Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.2
+  Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.3
 </footer>
 </body>
 </html>
-
