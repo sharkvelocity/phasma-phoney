@@ -210,7 +210,7 @@ const game = {
   vanStock: {},
   usedItems: [],
   ghost: null,
-  ghostRoom: "Living Room",
+  ghostRoom: "", // Set this to an empty string initially, will be assigned randomly
   position: [0, 0],
   evidence: [],
   guessedGhost: null,
@@ -220,7 +220,46 @@ const game = {
     ["Van", "Foyer", "Kitchen"],
     ["Basement", "Living Room", "Bathroom"],
     ["Garage", "Bedroom", "Storage"]
-  ],
+  ]
+};
+
+// Function to randomly pick a ghost room
+function setRandomGhostRoom() {
+  // Flatten the roomNameMap into a single array of all rooms
+  const allRooms = game.roomNameMap.flat();
+  
+  // Randomly pick one of the available rooms
+  const randomIndex = Math.floor(Math.random() * allRooms.length);
+  
+  // Set the ghost room to the randomly chosen room
+  game.ghostRoom = allRooms[randomIndex];
+}
+
+// Initialize the game and assign a random ghost room
+function startInvestigation() {
+  game.started = true;
+  game.active = true;
+  game.turn = 0;
+  game.sanity = 100;
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+
+  // Randomly assign the ghost's room
+  setRandomGhostRoom();
+
+  game.position = [0, 0];
+
+  if (game.ghost === "the mimic") {
+    const pool = keys.filter(g => g !== "the mimic");
+    game.mimicForm = pool[Math.floor(Math.random() * pool.length)];
+    game.nextMimicShift = 3 + Math.floor(Math.random() * 4);
+    simulateTyping("Deo: I suspect a Mimic... watch for shifting signs.");
+  }
+
+  document.getElementById("ada-modal").style.display = "flex";
+  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
+  updateStatus();
+  updateRoomLabel();
   protections: {
     smudgeCount: 2,
     crucifixPlaced: false
@@ -228,6 +267,7 @@ const game = {
   events: [],
   journal: []
 };
+</script>
 <script>
 // Evidence behaviors for all types (subtle clues)
 const evidenceBehaviors = {
