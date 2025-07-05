@@ -501,6 +501,108 @@ window.addEventListener('resize', () => {
   width = canvas.width = window.innerWidth;
   height = canvas.height = window.innerHeight;
 });
+const allLoadoutItems = [
+  "EMF", "Spirit Box", "Thermometer", "Crucifix", "Salt",
+  "Smudge", "Camera", "UV Light", "D.O.T.S", "Ghost Writing Book", "Motion Sensor"
+];
+
+const evidenceTypes = [
+  "EMF Level 5", "Spirit Box", "Fingerprints",
+  "Ghost Writing", "Freezing Temps", "D.O.T.S", "Orbs"
+];
+
+const game = {
+  started: false,
+  active: false,
+  turn: 0,
+  sanity: 100,
+  inventory: ["Notebook", "Lighter"],
+  vanStock: {},
+  usedItems: [],
+  ghost: null,
+  ghostRoom: "", // Set this to an empty string initially, will be assigned randomly
+  position: [0, 0],
+  evidence: [],
+  guessedGhost: null,
+  mimicForm: null,
+  nextMimicShift: 0,
+  roomNameMap: [
+    ["Van", "Foyer", "Kitchen"],
+    ["Basement", "Living Room", "Bathroom"],
+    ["Garage", "Bedroom", "Storage"]
+  ]
+};
+
+// Function to randomly pick a ghost room
+function setRandomGhostRoom() {
+  const allRooms = game.roomNameMap.flat().filter(room => room !== "Van"); // Exclude "Van"
+  const randomIndex = Math.floor(Math.random() * allRooms.length);
+  game.ghostRoom = allRooms[randomIndex];
+}
+
+// Initialize the game and assign a random ghost room
+function startInvestigation() {
+  game.started = true;
+  game.active = true;
+  game.turn = 0;
+  game.sanity = 100;
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+
+  // Randomly assign the ghost's room
+  setRandomGhostRoom();
+
+  game.position = [0, 0];
+
+  document.getElementById("ada-modal").style.display = "flex";
+  simulateTyping(introDialogues[Math.floor(Math.random() * introDialogues.length)], "Deo");
+  updateStatus();
+  updateRoomLabel();
+}
+
+// Show Loadout Menu
+function showLoadoutMenu() {
+  document.getElementById("title-screen").style.display = "none";  // Hide title screen
+  document.getElementById("loadout-screen").style.display = "block";  // Show loadout screen
+
+  const container = document.getElementById("item-selection");
+  container.innerHTML = "";
+  allLoadoutItems.forEach(item => {
+    const label = document.createElement("label");
+    label.style = "color:#0ff;font-family:monospace;";
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.value = item;
+    checkbox.onchange = limitLoadoutCheck;
+    label.appendChild(checkbox);
+    label.append(" " + item);
+    container.appendChild(label);
+  });
+}
+
+// Limit loadout to 3 items
+function limitLoadoutCheck() {
+  const selected = document.querySelectorAll('#item-selection input:checked');
+  if (selected.length > 3) this.checked = false;
+}
+
+// Confirm Loadout
+function confirmLoadout() {
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
+  if (selected.length > 3) return alert("Max 3 items.");
+
+  game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
+
+  const remaining = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  game.vanStock = {};
+  remaining.forEach(name => {
+    game.vanStock[name] = (name === "Smudge" ? 4 : name === "Salt" ? 3 : 1);
+  });
+
+  document.getElementById("loadout-screen").style.display = "none";
+  startInvestigation();
+}
+
 </script>
 <footer>
   Shark‑Blades — Phasma‑Phoney Prototype Web Build v1.4.5
