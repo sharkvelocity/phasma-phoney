@@ -269,13 +269,15 @@
 
 <script>
   // === DOM REFERENCES ===
+  document.addEventListener("DOMContentLoaded", () => {
+
   const startBtn = document.getElementById('startButton');
   const modal = document.getElementById('gameModal');
   const loadoutScreen = document.getElementById('loadout-screen');
   const gameUI = document.getElementById('game-ui');
   const gameLog = document.getElementById('game-log');
   const gameOptions = document.getElementById('game-options');
-  gameUI.style.display = "none";
+  gameUI.style.display = "flex";
   startBtn.onclick = () => {
   startBtn.style.display = "none";
   modal.style.display = "flex";
@@ -285,7 +287,7 @@
   let voiceMuted = true;
   document.getElementById("toggle-voice").onclick = () => {
     voiceMuted = !voiceMuted;
-    document.getElementById("toggle-voice").textContent = voiceMuted ? "🔇 Voice: OFF" : "🔊 Voice: ON";
+    document.getElementById("toggle-voice").textContent = voiceMuted ? "🔊 Voice: ON" : "🔇 Voice: OFF";
   };
 
   // === LOG OUTPUT + VOICE ===
@@ -429,14 +431,14 @@ if (selected.length > 3) {
   loadoutScreen.style.display = 'none';
   gameUI.style.display = 'flex';
 
-  log("🎒 Loadout confirmed: " + selected.join(', '));
-  log("📓 Notebook and 🔥 Lighter are always with you.");
-  log("🚐 You are in the van. Your investigation begins.");
+  log("Loadout confirmed: " + selected.join(', '));
+  log("Notebook and Lighter are always with you.");
+  log("You are in the van. Your investigation begins.");
 
   // 🔧 FIX — Start ghost logic
-  startInvestigation();
-};
 
+};
+  
 
   // === GHOST DEFINITIONS ===
   const ghostProfiles = [
@@ -510,7 +512,7 @@ if (selected.length > 3) {
       btn.textContent = room;
       btn.onclick = () => {
         game.playerRoom = room;
-        log("🚪 You moved to the " + room + ".");
+        log("You moved to the " + room + ".");
         if (room === game.ghostRoom) log("👻 This room feels different...");
         renderActionButtons();
       };
@@ -643,18 +645,6 @@ function openVanSwapUI(held, vanCopy) {
     }
   });
   gameOptions.appendChild(vanArea);
-
-  const confirmBtn = document.createElement("button");
-  confirmBtn.textContent = "Confirm";
-  confirmBtn.style.marginTop = "16px";
-  confirmBtn.onclick = () => {
-    game.inventory = [...held, "Notebook", "Lighter"];
-    game.vanStock = { ...vanCopy };
-    log("✅ Loadout updated.");
-    renderActionButtons();
-  };
-  gameOptions.appendChild(confirmBtn);
-}
 
   const confirmBtn = document.createElement("button");
   confirmBtn.textContent = "Confirm";
@@ -871,6 +861,7 @@ function openVanSwapUI(held, vanCopy) {
     width = orbCanvas.width = window.innerWidth;
     height = orbCanvas.height = window.innerHeight;
   });
+});
 </script>
 </body>
 </html>
