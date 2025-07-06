@@ -277,7 +277,7 @@
   gameUI.style.display = "none";
   startBtn.onclick = () => {
   startBtn.style.display = "none";
-  modal.style.display = "block";
+  modal.style.display = "flex";
 };
 
   // === SPEECH MUTE ===
@@ -426,7 +426,7 @@ if (selected.length > 3) {
   game.inventory.push("Notebook", "Lighter");
 
   loadoutScreen.style.display = 'none';
-  gameUI.style.display = 'block';
+  gameUI.style.display = 'flex';
 
   log("🎒 Loadout confirmed: " + selected.join(', '));
   log("📓 Notebook and 🔥 Lighter are always with you.");
