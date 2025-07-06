@@ -51,6 +51,7 @@
       opacity: 0;
       pointer-events: none;
       z-index: 9999;
+      transition: opacity 0.2s ease-in-out;
     }
 
     #orb-canvas {
@@ -115,7 +116,21 @@
   </div>
 
   <!-- FOOTER -->
-  <footer>Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer>
+  <footer>Shark-Blades — This is my Text based envisioning of the ghost hunting game Phasmophobia.<button id="toggle-voice" style="
+  position: fixed;
+  top: 12px;
+  right: 12px;
+  z-index: 9999;
+  padding: 6px 12px;
+  background: #111;
+  color: white;
+  border: 1px solid #888;
+  font-family: monospace;
+  font-size: 14px;
+  cursor: pointer;
+">
+  🔊 Voice: ON
+</button></footer>
   <!-- ADA MODAL GAME MENU -->
   <div id="gameModal" style="
     display: none;
@@ -134,13 +149,10 @@
     text-align: center;
   ">
     <div id="mainMenu">
-      <button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
-      <button id="ghostTalk" style="margin:10px; padding:10px 30px; font-size:18px;">Ghost Talk</button>
-      <button id="memories" style="margin:10px; padding:10px 30px; font-size:18px;">Memories</button>
+      <button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start</button>
       <button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
       <button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
     </div>
-
     <div id="ui" style="display:none; margin-top:20px;">
       <div id="log" style="text-align: left;"></div>
     </div>
@@ -168,54 +180,59 @@
     <h2 style="text-align:center;">Rules</h2>
     <pre>
 - Correctly identify ghosts by behavior.
-- Turn system with sanity loss and hunt danger.
-- Each ghost has unique evidence and personality.
-- Some ghosts show signs only under specific conditions.
-- The Mimic can show orbs visually but mimics other ghosts every few turns.
-- You may only carry 3 tools at once (Notebook and Lighter excluded).
-- Items can be dropped and returned to via the van.
-- Use crucifix or smudge to avoid death during a hunt.
+- Turn-based sanity, mimicry, and hunt danger.
+- Each ghost has unique evidence & quirks.
+- Mimic shows orbs and mimics others every few turns.
+- Drop tools in any room; return to pick them up.
+- Swap tools at van anytime (max 3 in hand).
+- Crucifix and Smudge prevent hunts — once.
+- Notebook and Lighter are always carried.
     </pre>
     <div style="text-align:center; margin-top:10px;">
       <button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
     </div>
   </div>
+  
+  <!-- LIVE SWAP LOADOUT SCREEN -->
+  
+<div id="loadout-screen" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 600px;
+  background-color: #111;
+  color: white;
+  padding: 30px;
+  border: 2px solid #444;
+  z-index: 2000;
+  font-family: monospace;
+  border-radius: 10px;
+  text-align: center;
+">
+  <h2>Select Your Loadout</h2>
+  <p style="font-size: 0.9em;">You may hold up to 3 tools. Notebook and Lighter are always with you.</p>
 
-  <!-- LOADOUT SELECTION -->
-  <div id="loadout-screen" style="
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    background-color: #111;
-    color: white;
-    padding: 30px;
-    border: 2px solid #444;
-    z-index: 2000;
-    font-family: monospace;
-    border-radius: 10px;
-  ">
-    <h2 style="text-align:center;">Select Your Loadout</h2>
-    <form id="item-selection" style="margin-top: 20px;">
-      <label><input type="checkbox" name="items" value="EMF"> EMF Reader</label><br>
-      <label><input type="checkbox" name="items" value="Spirit Box"> Spirit Box</label><br>
-      <label><input type="checkbox" name="items" value="Camera"> Camera</label><br>
-      <label><input type="checkbox" name="items" value="UV Light"> UV Light</label><br>
-      <label><input type="checkbox" name="items" value="D.O.T.S"> D.O.T.S Projector</label><br>
-      <label><input type="checkbox" name="items" value="Thermometer"> Thermometer</label><br>
-      <label><input type="checkbox" name="items" value="Book"> Ghost Writing Book</label><br>
-      <label><input type="checkbox" name="items" value="Smudge"> Smudge Stick</label><br>
-      <label><input type="checkbox" name="items" value="Crucifix"> Crucifix</label><br>
-      <label><input type="checkbox" name="items" value="Salt"> Salt</label><br>
-    </form>
-    <p style="font-size: 0.85em; margin-top: 10px; color: #ccc;">You may select up to 3 items. Notebook and Lighter are always with you.</p>
-    <div style="text-align: center; margin-top: 20px;">
-      <button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
-      <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
+  <div style="display:flex; justify-content:space-between; margin-top:20px;">
+    <!-- Player Inventory -->
+    <div style="flex:1; text-align:left;">
+      <strong>Holding:</strong>
+      <div id="held-items" style="margin-top:8px;"></div>
+    </div>
+
+    <!-- Van Inventory -->
+    <div style="flex:1; text-align:right;">
+      <strong>Van Inventory:</strong>
+      <div id="van-items" style="margin-top:8px;"></div>
     </div>
   </div>
+
+  <div style="margin-top: 20px;">
+    <button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
+    <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
+  </div>
+</div>
 
   <!-- INVESTIGATION UI -->
   <div id="game-ui" style="
@@ -237,7 +254,86 @@
     <div id="game-options" style="margin-top: 20px;"></div>
   </div>
 <script>
-  // === DOM REFERENCES ===
+  const allLoadoutItems = [
+    "EMF", "Spirit Box", "Camera", "UV Light", "D.O.T.S",
+    "Thermometer", "Book", "Smudge", "Crucifix", "Salt"
+  ];
+
+  let tempInventory = [];
+  let tempVan = [...allLoadoutItems];
+
+  function renderLoadoutUI() {
+    const heldDiv = document.getElementById('held-items');
+    const vanDiv = document.getElementById('van-items');
+    heldDiv.innerHTML = '';
+    vanDiv.innerHTML = '';
+
+    tempInventory.forEach(item => {
+      const btn = document.createElement('button');
+      btn.textContent = item;
+      btn.style.margin = '4px';
+      btn.onclick = () => {
+        tempInventory = tempInventory.filter(i => i !== item);
+        tempVan.push(item);
+        renderLoadoutUI();
+      };
+      heldDiv.appendChild(btn);
+    });
+
+    if (tempInventory.length === 0) heldDiv.innerHTML = '<em>None</em>';
+
+    tempVan.forEach(item => {
+      const btn = document.createElement('button');
+      btn.textContent = item;
+      btn.style.margin = '4px';
+      btn.onclick = () => {
+        if (tempInventory.length >= 3) {
+          alert("You may only carry 3 tools.");
+          return;
+        }
+        tempVan = tempVan.filter(i => i !== item);
+        tempInventory.push(item);
+        renderLoadoutUI();
+      };
+      vanDiv.appendChild(btn);
+    });
+  }
+
+  document.getElementById('startNewGame').onclick = () => {
+    tempInventory = [];
+    tempVan = [...allLoadoutItems];
+    renderLoadoutUI();
+    document.getElementById('gameModal').style.display = 'none';
+    document.getElementById('loadout-screen').style.display = 'block';
+  };
+
+  document.getElementById('cancel-loadout').onclick = () => {
+    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('gameModal').style.display = 'block';
+  };
+
+  document.getElementById('confirm-loadout').onclick = () => {
+    if (tempInventory.length > 3) {
+      alert("You can only carry 3 items.");
+      return;
+    }
+
+    game.inventory = [...tempInventory, "Notebook", "Lighter"];
+    game.vanStock = {};
+    tempVan.forEach(item => {
+      game.vanStock[item] = (item === "Smudge" ? 2 : item === "Salt" ? 3 : 1);
+    });
+
+    document.getElementById('loadout-screen').style.display = 'none';
+    document.getElementById('game-ui').style.display = 'block';
+
+    log("🎒 Loadout confirmed: " + tempInventory.join(', '));
+    log("📓 Notebook and 🔥 Lighter are always with you.");
+    log("🚐 You are in the van. Your investigation begins.");
+    startInvestigation();
+  };
+
+  // === DOM ELEMENTS ===
   const startBtn = document.getElementById('startButton');
   const modal = document.getElementById('gameModal');
   const loadoutScreen = document.getElementById('loadout-screen');
@@ -245,7 +341,7 @@
   const gameLog = document.getElementById('game-log');
   const gameOptions = document.getElementById('game-options');
 
-  // === STATE OBJECT ===
+  // === GAME STATE ===
   const game = {
     inventory: [],
     vanStock: {},
@@ -258,22 +354,41 @@
     turn: 0,
     foundEvidence: [],
     started: false,
-    droppedItems: {}, // roomName: [items]
+    droppedItems: {}, // { roomName: [items] }
     activeHunt: false,
     crucifixUsed: false,
     smudgeUsed: false
   };
 
-  // === LOG FUNCTION ===
-  function log(msg) {
-    const line = document.createElement('div');
-    line.textContent = 'ADA: ' + msg;
-    line.style.marginBottom = '8px';
-    line.style.whiteSpace = 'pre-wrap';
-    gameLog.appendChild(line);
-    gameLog.scrollTop = gameLog.scrollHeight;
-  }
+  // === ADA LOG + VOICE ===
+  let voiceMuted = false;
 
+function log(msg) {
+  const line = document.createElement('div');
+  line.textContent = 'ADA: ' + msg;
+  line.style.marginBottom = '8px';
+  line.style.whiteSpace = 'pre-wrap';
+  gameLog.appendChild(line);
+  gameLog.scrollTop = gameLog.scrollHeight;
+
+  if (!voiceMuted) {
+    const speak = new SpeechSynthesisUtterance(msg);
+    const voices = speechSynthesis.getVoices();
+
+    // Prefer specific feminine voices
+    speak.voice =
+      voices.find(v => v.name.includes("Google UK English Female")) ||
+      voices.find(v => v.name.includes("Samantha")) ||
+      voices.find(v => v.name.toLowerCase().includes("female")) ||
+      voices.find(v => v.default);
+
+    speechSynthesis.speak(speak);
+  }
+}
+document.getElementById("toggle-voice").onclick = () => {
+  voiceMuted = !voiceMuted;
+  document.getElementById("toggle-voice").textContent = voiceMuted ? "🔇 Voice: OFF" : "🔊 Voice: ON";
+};
   // === UI FLOW ===
   startBtn.onclick = () => {
     startBtn.style.display = 'none';
@@ -303,7 +418,7 @@
     document.getElementById('rulesPopup').style.display = 'none';
   };
 
-  // === LOADOUT CONFIRM ===
+  // === LOADOUT CONFIRMATION ===
   document.getElementById('confirm-loadout').onclick = () => {
     const selected = Array.from(document.querySelectorAll('#item-selection input:checked')).map(i => i.value);
     if (selected.length > 3) {
@@ -311,7 +426,6 @@
       return;
     }
 
-    // Store inventory
     game.inventory = [...selected];
     game.vanStock = {};
     game.foundEvidence = [];
@@ -323,7 +437,7 @@
     game.crucifixUsed = false;
     game.smudgeUsed = false;
 
-    // Fill van with all unused tools
+    // Add unused tools to van
     const allTools = ["EMF", "Spirit Box", "Camera", "UV Light", "D.O.T.S", "Thermometer", "Book", "Smudge", "Crucifix", "Salt"];
     allTools.forEach(tool => {
       if (!game.inventory.includes(tool)) {
@@ -331,7 +445,7 @@
       }
     });
 
-    // Add static tools
+    // Always include
     game.inventory.push("Notebook", "Lighter");
 
     loadoutScreen.style.display = 'none';
@@ -365,17 +479,17 @@
     { name: "The Twins", evidence: ["EMF", "Spirit Box", "Freezing"] },
     { name: "Raiju", evidence: ["EMF", "Ghost Orb", "D.O.T.S"] },
     { name: "Obake", evidence: ["EMF", "Fingerprints", "Ghost Orb"] },
-    { name: "The Mimic", evidence: ["Spirit Box", "Fingerprints", "Freezing"] }, // fake orb always shows
+    { name: "The Mimic", evidence: ["Spirit Box", "Fingerprints", "Freezing"] }, // shows orbs visually
     { name: "Moroi", evidence: ["Spirit Box", "Ghost Writing", "Freezing"] },
     { name: "Deogen", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] },
     { name: "Thaye", evidence: ["Ghost Orb", "Ghost Writing", "D.O.T.S"] }
   ];
 
-  const rooms = ["Van", "Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
+  const rooms = ["Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
 
   function startInvestigation() {
     game.currentGhost = ghostProfiles[Math.floor(Math.random() * ghostProfiles.length)];
-    game.ghostRoom = rooms[Math.floor(Math.random() * (rooms.length - 1)) + 1];
+    game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
     game.turn = 1;
     game.foundEvidence = [];
     game.mimicForm = null;
@@ -388,31 +502,33 @@
     const opts = gameOptions;
     opts.innerHTML = "";
 
-    const buttons = [
+    const actions = [
       { label: "Move", handler: openMoveMenu },
+      { label: "Access Van", handler: openVanSwap },
       { label: "Use Item", handler: openItemMenu },
       { label: "Guess Ghost", handler: openGuessMenu },
+      { label: "Drop Item", handler: openDropMenu },
       { label: "End Turn", handler: endTurn }
     ];
 
-    buttons.forEach(btn => {
-      const b = document.createElement("button");
-      b.textContent = btn.label;
-      b.style.margin = "6px";
-      b.onclick = btn.handler;
-      opts.appendChild(b);
+    actions.forEach(a => {
+      const btn = document.createElement("button");
+      btn.textContent = a.label;
+      btn.style.margin = "6px";
+      btn.onclick = a.handler;
+      opts.appendChild(btn);
     });
   }
 
   function openMoveMenu() {
-    gameOptions.innerHTML = "<p>Select a room to move to:</p>";
-    rooms.forEach(r => {
+    gameOptions.innerHTML = "<p>Choose a room to enter:</p>";
+    rooms.forEach(room => {
       const btn = document.createElement("button");
-      btn.textContent = r;
+      btn.textContent = room;
       btn.onclick = () => {
-        game.playerRoom = r;
-        log("🚪 You moved to the " + r + ".");
-        if (r === game.ghostRoom) log("👻 This room feels colder...");
+        game.playerRoom = room;
+        log("🚪 You moved to the " + room + ".");
+        if (room === game.ghostRoom) log("👻 Something feels off here...");
         renderActionButtons();
       };
       gameOptions.appendChild(btn);
@@ -430,27 +546,94 @@
         } else {
           log("❌ Wrong. It was actually a " + game.currentGhost.name + ".");
         }
-        gameOptions.innerHTML = "<button onclick='location.reload()'>Restart Game</button>";
+        gameOptions.innerHTML = "<button onclick='location.reload()'>Restart</button>";
       };
       gameOptions.appendChild(btn);
     });
+  }
+
+  function openDropMenu() {
+    gameOptions.innerHTML = "<p>Select item to drop here:</p>";
+    game.inventory.forEach(i => {
+      if (i !== "Notebook" && i !== "Lighter") {
+        const btn = document.createElement("button");
+        btn.textContent = i;
+        btn.onclick = () => {
+          game.inventory = game.inventory.filter(x => x !== i);
+          if (!game.droppedItems[game.playerRoom]) game.droppedItems[game.playerRoom] = [];
+          game.droppedItems[game.playerRoom].push(i);
+          log("🗑️ You dropped " + i + " in the " + game.playerRoom + ".");
+          renderActionButtons();
+        };
+        gameOptions.appendChild(btn);
+      }
+    });
+  }
+
+  function openVanSwap() {
+    if (game.playerRoom !== "Van") {
+      log("You must return to the Van to swap inventory.");
+      return;
+    }
+
+    gameOptions.innerHTML = "<p>Swap items with the van (3 max held):</p>";
+    const allHeld = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
+
+    const dropBox = document.createElement("div");
+    dropBox.innerHTML = "<p>Drop from your hand:</p>";
+    allHeld.forEach(i => {
+      const b = document.createElement("button");
+      b.textContent = "Drop " + i;
+      b.onclick = () => {
+        game.inventory = game.inventory.filter(x => x !== i);
+        game.vanStock[i] = (game.vanStock[i] || 0) + 1;
+        log("📦 Returned " + i + " to the van.");
+        openVanSwap();
+      };
+      dropBox.appendChild(b);
+    });
+    gameOptions.appendChild(dropBox);
+
+    const vanBox = document.createElement("div");
+    vanBox.innerHTML = "<p>Take from van:</p>";
+    Object.entries(game.vanStock).forEach(([item, count]) => {
+      if (count > 0) {
+        const b = document.createElement("button");
+        b.textContent = `${item} (${count})`;
+        b.onclick = () => {
+          const hand = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
+          if (hand.length >= 3) {
+            log("❌ You can only hold 3 tools.");
+            return;
+          }
+          game.inventory.push(item);
+          game.vanStock[item]--;
+          if (game.vanStock[item] <= 0) delete game.vanStock[item];
+          log("🛠️ Took " + item + " from the van.");
+          openVanSwap();
+        };
+        vanBox.appendChild(b);
+      }
+    });
+    gameOptions.appendChild(vanBox);
   }
 
   function openItemMenu() {
-    gameOptions.innerHTML = "<p>Select an item to use:</p>";
-    game.inventory.forEach(i => {
-      const btn = document.createElement("button");
-      btn.textContent = i;
-      btn.onclick = () => {
-        useItem(i);
+    gameOptions.innerHTML = "<p>Use which item?</p>";
+    game.inventory.forEach(item => {
+      const b = document.createElement("button");
+      b.textContent = item;
+      b.onclick = () => {
+        useItem(item);
         renderActionButtons();
       };
-      gameOptions.appendChild(btn);
+      gameOptions.appendChild(b);
     });
   }
-
+</script>
+<script>
   function useItem(item) {
-    const evMap = {
+    const map = {
       "EMF": "EMF",
       "Spirit Box": "Spirit Box",
       "Camera": "Ghost Orb",
@@ -460,80 +643,79 @@
       "Book": "Ghost Writing"
     };
 
-    const ev = evMap[item];
-    const inGhostRoom = (game.playerRoom === game.ghostRoom);
-    const isMimic = game.currentGhost.name === "The Mimic";
-    const mimicEvidence = game.mimicForm ? game.mimicForm.evidence : [];
+    const ev = map[item];
+    const inRoom = game.playerRoom === game.ghostRoom;
+    const ghost = game.currentGhost;
+    const isMimic = ghost.name === "The Mimic";
+    const evidenceList = (isMimic && game.mimicForm) ? game.mimicForm.evidence : ghost.evidence;
 
-    const evidenceList = (isMimic && game.mimicForm) ? mimicEvidence : game.currentGhost.evidence;
-
-    if (item === "Camera" && isMimic && inGhostRoom) {
-      log("📸 You see a ghost orb... but it feels unnatural.");
-    }
-
-    if (!inGhostRoom) {
-      log("🧍 You use the " + item + ", but nothing happens.");
+    if (!inRoom && ev) {
+      log(`📟 You used ${item}, but the room is quiet.`);
       return;
     }
 
-    if (evidenceList.includes(ev)) {
+    if (item === "Camera" && inRoom && isMimic) {
+      log("📸 You see a ghost orb... but something seems fake about it.");
+    }
+
+    if (ev && evidenceList.includes(ev)) {
       if (!game.foundEvidence.includes(ev)) {
         game.foundEvidence.push(ev);
-        log("✅ Evidence confirmed: " + ev);
+        log(`✅ Evidence found: ${ev}`);
       } else {
-        log("You’ve already found that evidence.");
+        log(`${ev} already confirmed.`);
       }
+    } else if (ev) {
+      log(`${item} shows nothing unusual.`);
     } else {
-      log(item + " shows no useful reading.");
+      log(`${item} can't be used for direct evidence.`);
     }
   }
-</script>
-<script>
+
   function endTurn() {
     game.turn++;
-    game.sanity -= Math.floor(Math.random() * 6 + 3); // Lose 3–8 sanity per turn
+    game.sanity -= Math.floor(Math.random() * 5 + 2);
     if (game.sanity < 0) game.sanity = 0;
-    log(`🌀 Turn ${game.turn} complete. Sanity: ${game.sanity}%`);
+    log(`🌀 Turn ${game.turn}. Sanity: ${game.sanity}%`);
 
-    // Ambient Narration
-    const ambients = [
-      "A cold chill passes your neck...",
-      "You hear distant footsteps...",
-      "The walls creak with age...",
-      "A soft hum echoes from nowhere...",
-      "Your breath hangs in the air."
-    ];
-    if (Math.random() < 0.6) {
-      log("🌫️ " + ambients[Math.floor(Math.random() * ambients.length)]);
-    }
-
-    // Mimic mimicry shift
+    // Mimic form switching
     if (game.currentGhost.name === "The Mimic") {
       game.mimicShift--;
       if (game.mimicShift <= 0) {
-        let pool = ghostProfiles.filter(g => g.name !== "The Mimic");
-        game.mimicForm = pool[Math.floor(Math.random() * pool.length)];
+        const others = ghostProfiles.filter(g => g.name !== "The Mimic");
+        game.mimicForm = others[Math.floor(Math.random() * others.length)];
         game.mimicShift = 3 + Math.floor(Math.random() * 4);
-        log("🌀 Something about the ghost's behavior seems to shift...");
+        log("🌀 The ghost's behavior subtly changes...");
       }
     }
 
-    // Hunt Logic
-    const huntChance = (100 - game.sanity) / 100; // e.g. 60 sanity = 0.4
-    const isInGhostRoom = game.playerRoom === game.ghostRoom;
+    // Ambient narration
+    const ambients = [
+      "A cold breeze brushes your neck.",
+      "You hear distant shuffling.",
+      "The lights flicker momentarily.",
+      "Something moves just out of sight.",
+      "A whisper echoes from behind the walls."
+    ];
+    if (Math.random() < 0.7) {
+      log("🌫️ " + ambients[Math.floor(Math.random() * ambients.length)]);
+    }
 
-    if (isInGhostRoom && Math.random() < huntChance) {
-      log("🔦 Your flashlight begins flickering...");
-      log("👻 The ghost is hunting!");
+    // Hunt check
+    const huntChance = (100 - game.sanity) / 100;
+    const inRoom = game.playerRoom === game.ghostRoom;
+
+    if (inRoom && Math.random() < huntChance) {
+      log("🔦 Your flashlight flickers. The ghost is hunting!");
 
       if (!game.crucifixUsed && game.inventory.includes("Crucifix")) {
         game.crucifixUsed = true;
-        log("🕯️ Your crucifix flares and burns — a hunt was prevented!");
+        log("🕯️ Your crucifix burns red hot. A hunt was stopped.");
       } else if (!game.smudgeUsed && game.inventory.includes("Smudge")) {
         game.smudgeUsed = true;
-        log("💨 You burn a smudge stick! The ghost recoils and vanishes!");
+        log("💨 You burn a smudge stick. The ghost fades away.");
       } else {
-        log("💀 You feel the breath of death. The ghost has caught you.");
+        log("💀 A shadow rushes toward you. You are dead.");
         gameOptions.innerHTML = "<button onclick='location.reload()'>Restart</button>";
         return;
       }
@@ -542,14 +724,7 @@
     renderActionButtons();
   }
 
-  // Start game logic immediately after confirm
-  document.getElementById('confirm-loadout').addEventListener('click', () => {
-    setTimeout(() => {
-      if (game.started) startInvestigation();
-    }, 400);
-  });
-
-  // === Lightning Flash ===
+  // Lightning Flash
   function lightningFlash() {
     const flash = document.getElementById('flash-overlay');
     flash.style.opacity = '0.4';
@@ -557,10 +732,10 @@
   }
 
   setInterval(() => {
-    if (Math.random() < 0.5) lightningFlash();
-  }, 15000);
+    if (Math.random() < 0.4) lightningFlash();
+  }, 12000);
 
-  // === Floating Orbs ===
+  // Floating Orbs
   const orbCanvas = document.getElementById('orb-canvas');
   const ctx = orbCanvas.getContext('2d');
   let width = orbCanvas.width = window.innerWidth;
@@ -570,36 +745,51 @@
     return {
       x: Math.random() * width,
       y: Math.random() * height,
-      vx: (Math.random() - 0.5),
-      vy: (Math.random() - 0.5),
-      radius: Math.random() * 2 + 1,
+      vx: (Math.random() - 0.5) * 0.2,  // slower
+      vy: (Math.random() - 0.5) * 0.2,
+      radius: Math.random() * 3 + 1,  // 1–4px size
       opacity: 0,
-      fadeIn: true,
-      tick: 0
+      fadingIn: true,
+      life: Math.random() * 600 + 300, // 5–15 seconds
+      age: 0
     };
   }
 
-  let orbs = Array.from({ length: 15 }, createOrb);
+  let orbs = Array.from({ length: 20 }, createOrb);
 
   function animateOrbs() {
     ctx.clearRect(0, 0, width, height);
-    orbs.forEach(orb => {
-      orb.tick++;
-      orb.radius += Math.sin(orb.tick / 30) * 0.1;
-      orb.opacity += orb.fadeIn ? 0.01 : -0.005;
-      if (orb.opacity > 0.5) orb.fadeIn = false;
-      if (orb.opacity <= 0) Object.assign(orb, createOrb());
+    orbs.forEach((orb, i) => {
+      orb.age++;
+
+      // Floating motion
       orb.x += orb.vx;
       orb.y += orb.vy;
+
       if (orb.x < 0 || orb.x > width) orb.vx *= -1;
       if (orb.y < 0 || orb.y > height) orb.vy *= -1;
+
+      // Fading animation
+      if (orb.fadingIn) {
+        orb.opacity += 0.005;
+        if (orb.opacity >= 0.5) orb.fadingIn = false;
+      } else {
+        orb.opacity -= 0.003;
+        if (orb.opacity <= 0.05 && Math.random() < 0.02) orb.fadingIn = true;
+      }
+
+      // Redraw orb
       ctx.beginPath();
       ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-      ctx.shadowBlur = 10;
+      ctx.fillStyle = `rgba(255, 255, 255, ${orb.opacity})`;
+      ctx.shadowBlur = 8;
       ctx.shadowColor = "white";
       ctx.fill();
+
+      // Lifecycle
+      if (orb.age > orb.life) orbs[i] = createOrb();
     });
+
     requestAnimationFrame(animateOrbs);
   }
 
