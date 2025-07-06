@@ -223,24 +223,49 @@
     </div>
   </div>
   <!-- INVESTIGATION UI -->
-  <div id="game-ui" style="
-    display: none;
-    position: absolute;
-    top: 15%;
-    left: 5%;
-    width: 90%;
-    height: 70%;
-    background-color: rgba(0, 0, 0, 0.9);
+<!-- INVESTIGATION UI -->
+<div id="game-ui" style="
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 500px;
+  background-color: rgba(0, 0, 0, 0.9);
+  color: #0ff;
+  font-family: monospace;
+  z-index: 1500;
+  border: 1px solid #0ff;
+  border-radius: 10px;
+  box-shadow: 0 0 10px #0ff;
+  display: flex;
+  flex-direction: column;
+">
+  <!-- Log output -->
+  <div id="game-log" style="
+    flex: 1;
     padding: 20px;
     overflow-y: auto;
-    color: #0ff;
-    font-family: monospace;
-    z-index: 1500;
-    border: 1px solid #0ff;
-  ">
-    <div id="game-log" style="max-height: 100%; overflow-y: auto; padding-right: 10px;"></div>
-    <div id="game-options" style="margin-top: 20px;"></div>
-  </div>
+    font-size: 14px;
+    line-height: 1.4;
+    border-bottom: 1px solid #0ff;
+  "></div>
+
+  <!-- Divider (optional visual cue) -->
+  <!-- Could use a <hr> if more visible styling is desired -->
+
+  <!-- Command buttons -->
+  <div id="game-options" style="
+    padding: 16px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    background-color: #000;
+  "></div>
+</div>
+
 
 <script>
   // === DOM REFERENCES ===
@@ -492,14 +517,19 @@ document.getElementById('confirm-loadout').onclick = () => {
   }
 
 function openVanSwap() {
-  if (game.playerRoom !== "Van") {
-    log("You must return to the van to access stored tools.");
+  // ✅ Allow once per turn OR always from the van
+  if (game.vanAccessedThisTurn && game.playerRoom !== "Van") {
+    log("🚫 You’ve already accessed the van this turn. Return physically to use it again.");
     return;
   }
 
-  // Temp copies to work with
-  let held = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
-  let vanCopy = { ...game.vanStock };
+  game.vanAccessedThisTurn = true;
+
+  // Use actual game state
+  const held = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
+  const vanCopy = { ...game.vanStock };
+  openVanSwapUI(held, vanCopy);
+}
 
   gameOptions.innerHTML = "<p>Van Inventory Swap — Select Tools (max 3)</p>";
 
@@ -712,9 +742,9 @@ function openVanSwapUI(held, vanCopy) {
   }
 
   function endTurn() {
-    game.turn++;
-    game.sanity -= Math.floor(Math.random() * 6 + 3);
-    if (game.sanity < 0) game.sanity = 0;
+  game.turn++;
+  game.vanAccessedThisTurn = false; // 🔄 reset van access per turn
+  game.sanity -= Math.floor(Math.random() * 6 + 3);
     log(`🌀 Turn ${game.turn}. Sanity: ${game.sanity}%`);
 
     // Mimic mimicry
