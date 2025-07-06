@@ -254,15 +254,18 @@
   <!-- Divider (optional visual cue) -->
   <!-- Could use a <hr> if more visible styling is desired -->
 
-  <!-- Command buttons -->
-  <div id="game-options" style="
-    padding: 16px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 10px;
-    background-color: #000;
-  "></div>
+<!-- Command buttons -->
+<div id="game-options" style="
+  padding: 16px;
+  min-height: 100px;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background-color: #000;
+  border-top: 1px solid #0ff;
+"></div>
 </div>
 
 
@@ -475,7 +478,7 @@ if (selected.length > 3) {
     game.mimicForm = null;
     game.mimicShift = 3 + Math.floor(Math.random() * 4);
     game.droppedItems = {};
-    log("🧠 Investigation started. Evidence must be gathered.");
+    log("Investigation started. Evidence must be gathered.");
     renderActionButtons();
   }
 
@@ -489,7 +492,7 @@ if (selected.length > 3) {
       { label: "Use Item", handler: openItemMenu },
       { label: "Drop Item", handler: openDropMenu },
       { label: "Guess Ghost", handler: openGuessMenu },
-      { label: "End Turn", handler: endTurn }
+      { label: "Wait", handler: endTurn }
     ];
 
     actions.forEach(a => {
