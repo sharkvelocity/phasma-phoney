@@ -222,7 +222,6 @@
       <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
     </div>
   </div>
-  <!-- INVESTIGATION UI -->
 <!-- INVESTIGATION UI -->
 <div id="game-ui" style="
   display: none;
@@ -275,7 +274,8 @@
   const gameUI = document.getElementById('game-ui');
   const gameLog = document.getElementById('game-log');
   const gameOptions = document.getElementById('game-options');
-startBtn.onclick = () => {
+  gameUI.style.display = "none";
+  startBtn.onclick = () => {
   startBtn.style.display = "none";
   modal.style.display = "block";
 };
@@ -396,11 +396,12 @@ startBtn.onclick = () => {
 <script>
   // === CONFIRM LOADOUT ===
 document.getElementById('confirm-loadout').onclick = () => {
-  const selected = Array.from(document.querySelectorAll('#item-selection input:checked')).map(i => i.value);
-  if (selected.length > 3) {
-    alert("You may only carry 3 tools.");
-    return;
-  }
+  const selected = [...tempInventory];
+if (selected.length > 3) {
+  alert("You may only carry 3 tools.");
+  return;
+}
+
 
   // Store inventory
   game.inventory = [...selected];
