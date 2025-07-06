@@ -284,7 +284,7 @@
 };
 
   // === SPEECH MUTE ===
-  let voiceMuted = false;
+  let voiceMuted = true;
   document.getElementById("toggle-voice").onclick = () => {
     voiceMuted = !voiceMuted;
     document.getElementById("toggle-voice").textContent = voiceMuted ? "🔇 Voice: OFF" : "🔊 Voice: ON";
@@ -645,6 +645,18 @@ function openVanSwapUI(held, vanCopy) {
     }
   });
   gameOptions.appendChild(vanArea);
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.textContent = "Confirm";
+  confirmBtn.style.marginTop = "16px";
+  confirmBtn.onclick = () => {
+    game.inventory = [...held, "Notebook", "Lighter"];
+    game.vanStock = { ...vanCopy };
+    log("✅ Loadout updated.");
+    renderActionButtons();
+  };
+  gameOptions.appendChild(confirmBtn);
+}
 
   const confirmBtn = document.createElement("button");
   confirmBtn.textContent = "Confirm";
