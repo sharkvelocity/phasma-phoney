@@ -366,26 +366,46 @@
 </script>
 <script>
   // === CONFIRM LOADOUT ===
-  document.getElementById('confirm-loadout').onclick = () => {
-    if (tempInventory.length > 3) {
-      alert("You can only carry 3 items.");
-      return;
+document.getElementById('confirm-loadout').onclick = () => {
+  const selected = Array.from(document.querySelectorAll('#item-selection input:checked')).map(i => i.value);
+  if (selected.length > 3) {
+    alert("You may only carry 3 tools.");
+    return;
+  }
+
+  // Store inventory
+  game.inventory = [...selected];
+  game.vanStock = {};
+  game.foundEvidence = [];
+  game.droppedItems = {};
+  game.sanity = 100;
+  game.turn = 0;
+  game.started = true;
+  game.playerRoom = "Van";
+  game.crucifixUsed = false;
+  game.smudgeUsed = false;
+
+  // Fill van with remaining
+  const allTools = ["EMF", "Spirit Box", "Camera", "UV Light", "D.O.T.S", "Thermometer", "Book", "Smudge", "Crucifix", "Salt"];
+  allTools.forEach(tool => {
+    if (!game.inventory.includes(tool)) {
+      game.vanStock[tool] = (tool === "Smudge" ? 2 : tool === "Salt" ? 3 : 1);
     }
+  });
 
-    game.inventory = [...tempInventory, "Notebook", "Lighter"];
-    game.vanStock = {};
-    tempVan.forEach(item => {
-      game.vanStock[item] = (item === "Smudge" ? 2 : item === "Salt" ? 3 : 1);
-    });
+  game.inventory.push("Notebook", "Lighter");
 
-    loadoutScreen.style.display = 'none';
-    gameUI.style.display = 'block';
+  loadoutScreen.style.display = 'none';
+  gameUI.style.display = 'block';
 
-    log("🎒 Loadout confirmed: " + tempInventory.join(', '));
-    log("📓 Notebook and 🔥 Lighter are always with you.");
-    log("🚐 You are in the van. Your investigation begins.");
-    startInvestigation();
-  };
+  log("🎒 Loadout confirmed: " + selected.join(', '));
+  log("📓 Notebook and 🔥 Lighter are always with you.");
+  log("🚐 You are in the van. Your investigation begins.");
+
+  // 🔧 FIX — Start ghost logic
+  startInvestigation();
+};
+
 
   // === GHOST DEFINITIONS ===
   const ghostProfiles = [
