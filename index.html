@@ -250,6 +250,10 @@
   const gameUI = document.getElementById('game-ui');
   const gameLog = document.getElementById('game-log');
   const gameOptions = document.getElementById('game-options');
+startBtn.onclick = () => {
+  startBtn.style.display = "none";
+  modal.style.display = "block";
+};
 
   // === SPEECH MUTE ===
   let voiceMuted = false;
