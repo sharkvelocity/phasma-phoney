@@ -491,50 +491,138 @@ document.getElementById('confirm-loadout').onclick = () => {
     });
   }
 
-  function openVanSwap() {
-    if (game.playerRoom !== "Van") {
-      log("You must return to the van to access stored tools.");
-      return;
-    }
-    gameOptions.innerHTML = "<p>Swap tools (3 max):</p>";
-
-    const held = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
-
-    gameOptions.appendChild(document.createTextNode("Holding: "));
-    held.forEach(i => {
-      const btn = document.createElement("button");
-      btn.textContent = i;
-      btn.onclick = () => {
-        game.inventory = game.inventory.filter(x => x !== i);
-        game.vanStock[i] = (game.vanStock[i] || 0) + 1;
-        log("🔃 Returned " + i + " to the van.");
-        openVanSwap();
-      };
-      gameOptions.appendChild(btn);
-    });
-
-    gameOptions.appendChild(document.createElement("br"));
-    gameOptions.appendChild(document.createTextNode("Van: "));
-    Object.entries(game.vanStock).forEach(([item, count]) => {
-      if (count > 0) {
-        const btn = document.createElement("button");
-        btn.textContent = `${item} (${count})`;
-        btn.onclick = () => {
-          const tools = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
-          if (tools.length >= 3) {
-            log("❌ You can only carry 3 tools.");
-            return;
-          }
-          game.inventory.push(item);
-          game.vanStock[item]--;
-          if (game.vanStock[item] <= 0) delete game.vanStock[item];
-          log("🛠️ Took " + item + " from the van.");
-          openVanSwap();
-        };
-        gameOptions.appendChild(btn);
-      }
-    });
+function openVanSwap() {
+  if (game.playerRoom !== "Van") {
+    log("You must return to the van to access stored tools.");
+    return;
   }
+
+  // Temp copies to work with
+  let held = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
+  let vanCopy = { ...game.vanStock };
+
+  gameOptions.innerHTML = "<p>Van Inventory Swap — Select Tools (max 3)</p>";
+
+  const heldLabel = document.createElement("div");
+  heldLabel.innerHTML = "<strong>Holding:</strong>";
+  gameOptions.appendChild(heldLabel);
+
+  const heldArea = document.createElement("div");
+  held.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.onclick = () => {
+      held = held.filter(i => i !== item);
+      vanCopy[item] = (vanCopy[item] || 0) + 1;
+      openVanSwapUI(held, vanCopy);
+    };
+    heldArea.appendChild(btn);
+  });
+  if (held.length === 0) heldArea.innerHTML = "<em>None</em>";
+  gameOptions.appendChild(heldArea);
+
+  const spacer = document.createElement("div");
+  spacer.style.margin = "10px 0";
+  gameOptions.appendChild(spacer);
+
+  const vanLabel = document.createElement("div");
+  vanLabel.innerHTML = "<strong>Van:</strong>";
+  gameOptions.appendChild(vanLabel);
+
+  const vanArea = document.createElement("div");
+  Object.entries(vanCopy).forEach(([item, count]) => {
+    if (count > 0) {
+      const btn = document.createElement("button");
+      btn.textContent = `${item} (${count})`;
+      btn.onclick = () => {
+        if (held.length >= 3) {
+          log("❌ You can only hold 3 items.");
+          return;
+        }
+        held.push(item);
+        vanCopy[item]--;
+        if (vanCopy[item] <= 0) delete vanCopy[item];
+        openVanSwapUI(held, vanCopy);
+      };
+      vanArea.appendChild(btn);
+    }
+  });
+  gameOptions.appendChild(vanArea);
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.textContent = "Confirm";
+  confirmBtn.style.marginTop = "16px";
+  confirmBtn.onclick = () => {
+    game.inventory = [...held, "Notebook", "Lighter"];
+    game.vanStock = { ...vanCopy };
+    log("✅ Loadout updated.");
+    renderActionButtons();
+  };
+  gameOptions.appendChild(confirmBtn);
+}
+
+function openVanSwapUI(held, vanCopy) {
+  // Clear and re-render
+  gameOptions.innerHTML = "";
+  gameOptions.appendChild(document.createTextNode("Van Inventory Swap — Select Tools (max 3)"));
+
+  const heldLabel = document.createElement("div");
+  heldLabel.innerHTML = "<br><strong>Holding:</strong>";
+  gameOptions.appendChild(heldLabel);
+
+  const heldArea = document.createElement("div");
+  held.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.onclick = () => {
+      held = held.filter(i => i !== item);
+      vanCopy[item] = (vanCopy[item] || 0) + 1;
+      openVanSwapUI(held, vanCopy);
+    };
+    heldArea.appendChild(btn);
+  });
+  if (held.length === 0) heldArea.innerHTML = "<em>None</em>";
+  gameOptions.appendChild(heldArea);
+
+  const spacer = document.createElement("div");
+  spacer.style.margin = "10px 0";
+  gameOptions.appendChild(spacer);
+
+  const vanLabel = document.createElement("div");
+  vanLabel.innerHTML = "<strong>Van:</strong>";
+  gameOptions.appendChild(vanLabel);
+
+  const vanArea = document.createElement("div");
+  Object.entries(vanCopy).forEach(([item, count]) => {
+    if (count > 0) {
+      const btn = document.createElement("button");
+      btn.textContent = `${item} (${count})`;
+      btn.onclick = () => {
+        if (held.length >= 3) {
+          log("❌ You can only hold 3 items.");
+          return;
+        }
+        held.push(item);
+        vanCopy[item]--;
+        if (vanCopy[item] <= 0) delete vanCopy[item];
+        openVanSwapUI(held, vanCopy);
+      };
+      vanArea.appendChild(btn);
+    }
+  });
+  gameOptions.appendChild(vanArea);
+
+  const confirmBtn = document.createElement("button");
+  confirmBtn.textContent = "Confirm";
+  confirmBtn.style.marginTop = "16px";
+  confirmBtn.onclick = () => {
+    game.inventory = [...held, "Notebook", "Lighter"];
+    game.vanStock = { ...vanCopy };
+    log("✅ Loadout updated.");
+    renderActionButtons();
+  };
+  gameOptions.appendChild(confirmBtn);
+}
 
   function openDropMenu() {
     gameOptions.innerHTML = "<p>Drop which item here?</p>";
