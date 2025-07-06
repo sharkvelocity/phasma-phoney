@@ -280,7 +280,7 @@
   gameUI.style.display = "flex";
   startBtn.onclick = () => {
   startBtn.style.display = "none";
-  modal.style.display = "flex";
+  modal.style.display = "block";
 };
 
   // === SPEECH MUTE ===
@@ -429,13 +429,11 @@ if (selected.length > 3) {
   game.inventory.push("Notebook", "Lighter");
 
   loadoutScreen.style.display = 'none';
-  gameUI.style.display = 'flex';
+  gameUI.style.display = 'block';
 
   log("Loadout confirmed: " + selected.join(', '));
   log("Notebook and Lighter are always with you.");
   log("You are in the van. Your investigation begins.");
-
-  // 🔧 FIX — Start ghost logic
 
 };
   
@@ -470,7 +468,7 @@ if (selected.length > 3) {
 
   const rooms = ["Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
 
-  function startInvestigation() {
+   {
     game.currentGhost = ghostProfiles[Math.floor(Math.random() * ghostProfiles.length)];
     game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
     game.turn = 1;
@@ -483,6 +481,8 @@ if (selected.length > 3) {
   }
 
   // === ACTION BUTTONS ===
+  renderActionButtons();
+gameUI.style.display = 'flex';
   function renderActionButtons() {
     const opts = gameOptions;
     opts.innerHTML = "";
@@ -750,7 +750,7 @@ function openVanSwapUI(held, vanCopy) {
   game.vanAccessedThisTurn = false; // 🔄 reset van access per turn
   game.sanity -= Math.floor(Math.random() * 6 + 3);
     log(`🌀 Turn ${game.turn}. Sanity: ${game.sanity}%`);
-
+  renderActionButtons();
     // Mimic mimicry
     if (game.currentGhost.name === "The Mimic") {
       game.mimicShift--;
@@ -791,7 +791,7 @@ function openVanSwapUI(held, vanCopy) {
       }
     }
 
-    renderActionButtons();
+  
   }
 
   // Lightning Flash
@@ -861,7 +861,8 @@ function openVanSwapUI(held, vanCopy) {
     width = orbCanvas.width = window.innerWidth;
     height = orbCanvas.height = window.innerHeight;
   });
-});
+}); 
+  startInvestigation();
 </script>
 </body>
 </html>
