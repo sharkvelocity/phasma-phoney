@@ -1,4 +1,3 @@
-<!-- === fix the ghost orbs, the background image the layout sizing and fix the startup issues === -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,15 +55,18 @@
       background: rgba(0, 0, 0, 0.2);
     }
 
-    #main-scene {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-      z-index: 1;
-    }
+   #main-scene {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  z-index: 0;
+}
+
 
     #title-screen {
       position: fixed;
@@ -465,24 +467,54 @@ function confirmLoadout() {
   // 🔥 START THE GAME
   startInvestigation();
 }
+const houseMap = {
+  "Van": { North: "Foyer" },
+  "Foyer": { North: "Living Room", South: "Van" },
+  "Living Room": { South: "Foyer", West: "Hallway" },
+  "Hallway": { East: "Living Room", North: "Bathroom", South: "Master Bedroom" },
+  "Bathroom": { South: "Hallway" },
+  "Master Bedroom": { North: "Hallway", East: "Garage" },
+  "Garage": { West: "Master Bedroom" },
+  "Dining Room": { East: "Kitchen", South: "Basement Stairs" },
+  "Kitchen": { West: "Dining Room" },
+  "Basement Stairs": { North: "Dining Room", Down: "Basement" },
+  "Basement": { Up: "Basement Stairs" },
+  "Kids Bedroom": { East: "Foyer" }
+};
 
-
+<!-- === GAME START LOGIC === -->
 
 // === START INVESTIGATION ===
 function startInvestigation() {
-  game.ghost = randomGhost();
-  game.ghostRoom = randomRoom();
-  game.weather = Math.random() < 0.5 ? "Rain" : "Clear";
+  const keys = Object.keys(ghostProfiles);
+  game.ghost = keys[Math.floor(Math.random() * keys.length)];
+  game.ghostRoom = game.ghost === "Goryo"
+    ? Object.keys(houseMap).find(r => !r.includes("Van"))
+    : Object.keys(houseMap)[Math.floor(Math.random() * Object.keys(houseMap).length)];
+
+  game.currentTurn = 1;
+  game.sanity = 100;
+  game.playerRoom = "Van";
+  game.facing = "North";
+  game.placedItems = {};
+  game.usedItems = {};
+  game.huntCooldown = 0;
+
+  updateMap();
   updateHUD();
-  renderActionButtons();
+  updateInventoryDisplay();
+
   document.getElementById("game-ui").style.display = "block";
   document.getElementById("ada-modal").style.display = "block";
-  log(`Investigation begins. Weather: ${game.weather}`);
-  if (game.weather === "Rain") startRain();
+
+  log("Your investigation begins...");
+  speak("Your investigation begins.");
+
   startOrbs();
   startLightning();
-  advanceTurn();
+  renderActionButtons();
 }
+
 
 function randomGhost() {
   const keys = Object.keys(ghostProfiles).filter(g => g !== "The MimicFake" && g !== "MoroiFake");
@@ -493,34 +525,90 @@ function randomRoom() {
   const keys = Object.keys(roomMap).filter(r => r !== "Van");
   return keys[Math.floor(Math.random() * keys.length)];
 }
+function openMoveMenu() {
+  const options = document.getElementById("game-options");
+  options.innerHTML = "<p>Choose a direction to move:</p>";
 
+  const directions = ["North", "East", "South", "West"];
+  const room = game.playerRoom;
+  const availableDirs = houseMap[room] || {};
+
+  directions.forEach(dir => {
+    const destination = availableDirs[dir];
+    const btn = document.createElement("button");
+    btn.textContent = dir;
+    btn.style.margin = "5px";
+
+    if (destination) {
+      btn.onclick = () => {
+        game.facing = dir;
+        game.playerRoom = destination;
+        log(`You moved ${dir} to the ${destination}.`);
+        updateHUD();
+        updateMap();
+        renderActionButtons();
+      };
+    } else {
+      btn.disabled = true;
+      btn.title = "No path in this direction.";
+    }
+
+    options.appendChild(btn);
+  });
+
+  // Option to cancel
+  const cancel = document.createElement("button");
+  cancel.textContent = "Cancel";
+  cancel.onclick = () => renderActionButtons();
+  cancel.style.marginTop = "10px";
+  options.appendChild(document.createElement("br"));
+  options.appendChild(cancel);
+}
+
+// === TURN LOGIC ===
 // === TURN LOGIC ===
 function advanceTurn() {
   game.currentTurn++;
   game.usedVanThisTurn = false;
+
+  // Sanity drops randomly (2–6 per turn)
+  const sanityDrop = Math.floor(Math.random() * 5) + 2;
+  game.sanity = Math.max(0, game.sanity - sanityDrop);
+
+  // Mimic shifting
   if (game.ghost === "The Mimic") handleMimicBehavior();
+
+  // Room shifting
   if (Math.random() < 0.3) maybeShiftGhostRoom();
+
+  // Update ghost aggression cooldown
+  if (game.huntCooldown > 0) game.huntCooldown--;
+
+  // Determine if hunt triggers
+  if (game.sanity <= ghostProfiles[game.ghost].huntThreshold && game.huntCooldown === 0) {
+    const aggression = ghostProfiles[game.ghost].aggression || 0.5;
+    const willHunt = Math.random() < aggression;
+
+    if (willHunt) {
+      triggerHunt();
+      game.huntCooldown = ghostProfiles[game.ghost].huntCooldown || 3;
+    }
+  }
+
   updateHUD();
   renderActionButtons();
-}
 
-function handleMimicBehavior() {
-  if (game.currentTurn >= game.nextMimicShift) {
-    const mimicTargets = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
-    game.mimicForm = mimicTargets[Math.floor(Math.random() * mimicTargets.length)];
-    game.nextMimicShift = game.currentTurn + Math.floor(Math.random() * 4) + 3;
-    log("Mimic has changed behavior.");
+  // Optional: add atmospheric ADA message
+  if (Math.random() < 0.3) {
+    const lines = [
+      "Something creaked nearby...",
+      "A cold breeze brushes past.",
+      "The lights flicker slightly.",
+      "You feel like you're being watched.",
+      "You hear breathing that isn't yours..."
+    ];
+    log(lines[Math.floor(Math.random() * lines.length)]);
   }
-}
-
-function maybeShiftGhostRoom() {
-  if (game.ghost === "Goryo") return;
-  if (game.ghost === "Yurei" && game.smudgeLockTurns > 0) {
-    game.smudgeLockTurns--;
-    return;
-  }
-  const keys = Object.keys(roomMap).filter(r => r !== "Van");
-  game.ghostRoom = keys[Math.floor(Math.random() * keys.length)];
 }
 
 // === ADA LOG & BUTTONS ===
@@ -534,23 +622,27 @@ function log(msg) {
 }
 
 function renderActionButtons() {
-  const cmds = [
-    { label: "Check Room", action: () => checkRoom() },
-    { label: "Use Item", action: () => openItemMenu() },
-    { label: "View Evidence", action: () => openEvidence() },
-    { label: "Guess Ghost", action: () => openGuess() },
-    { label: "Access Van", action: () => visitVan() },
-    { label: "Next Turn", action: () => advanceTurn() }
+  const actions = [
+    { label: "Use Item", id: "useItem" },
+    { label: "Move", id: "move" },
+    { label: "Check Evidence", id: "evidence" },
+    { label: "Guess Ghost", id: "guess" },
+    { label: "Return to Van", id: "van" },
+    { label: "End Turn", id: "endTurn" }
   ];
-  const box = document.getElementById("command-buttons");
-  box.innerHTML = "";
-  cmds.forEach(c => {
-    const b = document.createElement("button");
-    b.textContent = c.label;
-    b.onclick = c.action;
-    box.appendChild(b);
+
+  const container = document.getElementById("game-options");
+  container.innerHTML = "";
+
+  actions.forEach(action => {
+    const btn = document.createElement("button");
+    btn.textContent = action.label;
+    btn.onclick = () => handleAdaCommand(action.id);
+    btn.style.margin = "5px";
+    container.appendChild(btn);
   });
 }
+
 
 // === HUD ===
 function updateHUD() {
@@ -576,73 +668,89 @@ let orbs = [];
 const MAX_ORBS = 10;
 
 function startOrbs() {
-  orbCanvas = document.getElementById("orb-canvas");
-  orbCtx = orbCanvas.getContext("2d");
-  resizeOrbs();
-  window.addEventListener("resize", resizeOrbs);
-  for (let i = 0; i < MAX_ORBS; i++) orbs.push(makeOrb());
-  animateOrbs();
-}
+  const canvas = document.getElementById("orb-canvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
 
-function resizeOrbs() {
-  orbCanvas.width = window.innerWidth;
-  orbCanvas.height = window.innerHeight;
-}
+  const maxOrbs = 10;
+  const orbs = [];
 
-function makeOrb() {
-  return {
-    x: Math.random() * orbCanvas.width,
-    y: Math.random() * orbCanvas.height,
-    size: Math.random() * 6 + 3,
-    opacity: 0,
-    fadeSpeed: Math.random() * 0.01 + 0.002,
-    fadeIn: true,
-    life: Date.now() + Math.random() * 5000 + 3000
-  };
-}
-
-function updateOrbs() {
-  const now = Date.now();
-  for (let i = 0; i < orbs.length; i++) {
-    let orb = orbs[i];
-    if (orb.fadeIn) {
-      orb.opacity += orb.fadeSpeed;
-      if (orb.opacity >= 1) orb.fadeIn = false;
-    } else {
-      orb.opacity -= orb.fadeSpeed / 2;
-    }
-    if (now > orb.life || orb.opacity <= 0) orbs[i] = makeOrb();
+  function createOrb() {
+    return {
+      x: Math.random() * canvas.width,
+      y: Math.random() * canvas.height,
+      size: Math.random() * 3 + 2,
+      opacity: 0,
+      speedX: (Math.random() - 0.5) * 0.3,
+      speedY: (Math.random() - 0.5) * 0.3,
+      fadeIn: true,
+      delay: Math.random() * 3000
+    };
   }
-}
 
-function drawOrbs() {
-  orbCtx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
-  for (let orb of orbs) {
-    orbCtx.beginPath();
-    orbCtx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
-    orbCtx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
-    orbCtx.fill();
+  for (let i = 0; i < maxOrbs; i++) {
+    orbs.push(createOrb());
   }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    orbs.forEach(orb => {
+      if (orb.delay > 0) {
+        orb.delay -= 16;
+        return;
+      }
+
+      if (orb.fadeIn) {
+        orb.opacity += 0.01;
+        if (orb.opacity >= 0.8) orb.fadeIn = false;
+      } else {
+        orb.opacity -= 0.005;
+        if (orb.opacity <= 0) {
+          Object.assign(orb, createOrb());
+          return;
+        }
+      }
+
+      orb.x += orb.speedX;
+      orb.y += orb.speedY;
+
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(173, 216, 230, ${orb.opacity})`;
+      ctx.fill();
+    });
+
+    requestAnimationFrame(animate);
+  }
+
+  animate();
 }
 
-function animateOrbs() {
-  updateOrbs();
-  drawOrbs();
-  requestAnimationFrame(animateOrbs);
-}
 
 // === LIGHTNING EFFECT ===
 function startLightning() {
-  const flash = document.getElementById("lightning");
-  function triggerFlash() {
-    flash.style.opacity = "0.7";
-    setTimeout(() => flash.style.opacity = "0", 100);
-    setTimeout(() => flash.style.opacity = "0.5", 250);
-    setTimeout(() => flash.style.opacity = "0", 400);
-    setTimeout(() => setTimeout(triggerFlash, Math.random() * 10000 + 3000), 5000 + Math.random() * 5000);
+  const lightning = document.getElementById("flash-overlay");
+
+  function flash() {
+    lightning.style.opacity = "0.9";
+    setTimeout(() => {
+      lightning.style.opacity = "0";
+    }, 80 + Math.random() * 80);
   }
-  setTimeout(triggerFlash, Math.random() * 8000 + 2000);
+
+  function scheduleFlash() {
+    const delay = 5000 + Math.random() * 8000;
+    setTimeout(() => {
+      flash();
+      scheduleFlash();
+    }, delay);
+  }
+
+  scheduleFlash();
 }
+
 
 // === ADA VOICE ===
 let adaVoice = window.speechSynthesis.getVoices().find(v => v.name.toLowerCase().includes("female")) || null;
