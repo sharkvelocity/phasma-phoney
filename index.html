@@ -422,9 +422,12 @@ const roomMap = {
 <script>
 // === INITIALIZATION ===
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('startButton').onclick = () => {
-    document.getElementById('title-screen').style.display = 'none';
-    showLoadoutMenu();
+    document.getElementById('startButton').onclick = () => {
+      document.getElementById("startButton").style.display = "none";
+      document.getElementById('title-screen').style.display = 'none';
+      showLoadoutMenu();
+};
+
   };
 
   document.getElementById('confirm-loadout').onclick = confirmLoadout;
@@ -447,12 +450,22 @@ function showLoadoutMenu() {
 function confirmLoadout() {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked'));
   if (selected.length > 3) return alert("Max 3 items.");
+
   game.inventory = selected.map(cb => cb.value).concat("Notebook", "Lighter");
-  const remaining = allLoadoutItems.filter(i => !game.inventory.includes(i));
-  remaining.forEach(i => game.vanStock[i] = (i === "Smudge" ? 4 : i === "Salt" ? 3 : 1));
+
+  // Fill vanStock with unselected items
+  const all = allLoadoutItems.filter(i => !game.inventory.includes(i));
+  all.forEach(name => {
+    game.vanStock[name] = name === "Smudge" ? 4 : name === "Salt" ? 3 : 1;
+  });
+
+  // Hide loadout
   document.getElementById("loadout-screen").style.display = "none";
+
+  // 👇 ADD THIS — triggers the entire game start sequence
   startInvestigation();
 }
+
 
 // === START INVESTIGATION ===
 function startInvestigation() {
