@@ -459,12 +459,13 @@ function confirmLoadout() {
     game.vanStock[name] = name === "Smudge" ? 4 : name === "Salt" ? 3 : 1;
   });
 
-  // Hide loadout
+  // Hide loadout screen
   document.getElementById("loadout-screen").style.display = "none";
 
-  // 👇 ADD THIS — triggers the entire game start sequence
+  // 🔥 START THE GAME
   startInvestigation();
 }
+
 
 
 // === START INVESTIGATION ===
