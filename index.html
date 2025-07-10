@@ -1174,5 +1174,113 @@ document.addEventListener("DOMContentLoaded", () => {
   }, 2000);
 });
 </script>
+  <script>
+// === ADA SPEECH SYSTEM ===
+let adaVoice = null;
+function initAdaVoice() {
+  const voices = speechSynthesis.getVoices();
+  adaVoice = voices.find(v =>
+    v.name.toLowerCase().includes("female") ||
+    v.name.toLowerCase().includes("en-us") && v.name.toLowerCase().includes("f")
+  ) || voices[0]; // fallback
+}
+speechSynthesis.onvoiceschanged = initAdaVoice;
+
+function speakAda(text) {
+  if (!game.muted && text) {
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.voice = adaVoice;
+    utterance.pitch = 1.1;
+    utterance.rate = 0.93;
+    speechSynthesis.cancel();
+    speechSynthesis.speak(utterance);
+  }
+  log(text);
+}
+
+// === MOVE SYSTEM ===
+function openMoveMenu() {
+  const room = game.playerRoom;
+  const paths = roomMap[room]?.exits || {};
+  const buttons = Object.keys(paths).map(dir => {
+    return `<button onclick="movePlayer('${paths[dir]}', '${dir}')">${dir.toUpperCase()}</button>`;
+  }).join('');
+  showOptions("Move to which room?", buttons);
+}
+
+function movePlayer(destination, direction) {
+  game.playerRoom = destination;
+  game.playerFacing = direction;
+  speakAda(`You moved to the ${destination}.`);
+  updateHUD();
+  updateBackground();
+  advanceTurn();
+}
+
+// === LOOK AROUND ===
+function lookAround() {
+  const room = game.playerRoom;
+  const clues = getRoomClues(room);
+  if (clues.length) {
+    speakAda(`Looking around... I see: ${clues.join(', ')}`);
+  } else {
+    speakAda("Nothing unusual found here.");
+  }
+  advanceTurn();
+}
+
+// === RETURN TO VAN ===
+function returnToVan() {
+  game.playerRoom = "Van";
+  game.playerFacing = "North";
+  speakAda("Returning to the van.");
+  updateHUD();
+  updateBackground();
+  advanceTurn();
+}
+
+// === BUTTON WIRING ===
+function renderActionButtons() {
+  const options = [
+    `<button onclick="openMoveMenu()">Move</button>`,
+    `<button onclick="lookAround()">Look Around</button>`,
+    `<button onclick="returnToVan()">Return to Van</button>`,
+    `<button onclick="openGuess()">Guess Ghost</button>`,
+    `<button onclick="openInventory()">Use Item</button>`,
+    `<button onclick="openRules()">Rules</button>`
+  ];
+  document.getElementById("game-options").innerHTML = options.join('');
+}
+
+// === AMBIENT NARRATION SYSTEM ===
+const ambientLines = [
+  "A faint creak echoes from somewhere nearby...",
+  "Cold wind brushes against your arm.",
+  "Something feels... off in this room.",
+  "ADA's sensors detect a slight fluctuation.",
+  "You hear distant footsteps, but see no one.",
+  "There’s static interference in the EMF feed.",
+  "Temperature dropped for a moment."
+];
+
+function maybeAmbientLine() {
+  if (Math.random() < 0.4) {
+    const line = ambientLines[Math.floor(Math.random() * ambientLines.length)];
+    speakAda(line);
+  }
+}
+
+// Call this in `advanceTurn()` after HUD updates
+function advanceTurn() {
+  game.currentTurn++;
+  game.usedVanThisTurn = false;
+  if (game.ghost === "The Mimic") handleMimicBehavior();
+  if (Math.random() < 0.3) maybeShiftGhostRoom();
+  updateHUD();
+  maybeAmbientLine();
+  renderActionButtons();
+}
+</script>
+
 </body>
 </html>
