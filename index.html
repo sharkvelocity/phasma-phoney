@@ -196,27 +196,22 @@
   font-family: monospace;
   border-radius: 10px;">
   <h2 style="text-align:center;">Select Your Loadout</h2>
-  <form id="item-selection" style="margin-top: 20px;">
-    <label><input type="checkbox" value="EMF"> EMF Reader</label><br>
-    <label><input type="checkbox" value="Spirit Box"> Spirit Box</label><br>
-    <label><input type="checkbox" value="Camera"> Camera</label><br>
-    <label><input type="checkbox" value="UV Light"> UV Light</label><br>
-    <label><input type="checkbox" value="D.O.T.S"> D.O.T.S Projector</label><br>
-    <label><input type="checkbox" value="Thermometer"> Thermometer</label><br>
-    <label><input type="checkbox" value="Book"> Ghost Writing Book</label><br>
-    <label><input type="checkbox" value="Smudge"> Smudge Stick</label><br>
-    <label><input type="checkbox" value="Crucifix"> Crucifix</label><br>
-    <label><input type="checkbox" value="Salt"> Salt</label><br>
-  </form>
-  <p style="font-size: 0.85em; margin-top: 10px; color: #ccc;">
-    You may select up to 3 items.<br>Notebook and Lighter are always included.
-  </p>
-  <div style="text-align:center; margin-top: 20px;">
-    <button id="confirm-loadout" style="margin:5px; padding: 8px 24px;">Confirm</button>
-    <button id="cancel-loadout" style="margin:5px; padding: 8px 24px;">Cancel</button>
-  </div>
-</div>
-<!-- === PHASMA‑PHONEY MASTER BUILD — PART 3 === -->
+<form id="item-selection" style="margin-top: 20px;">
+  <p><strong>Select up to 3 items:</strong> <span id="selected-count">0</span>/3</p>
+  <label><input type="checkbox" value="EMF"> EMF Reader</label><br>
+  <label><input type="checkbox" value="Spirit Box"> Spirit Box</label><br>
+  <label><input type="checkbox" value="Camera"> Camera</label><br>
+  <label><input type="checkbox" value="UV Light"> UV Light</label><br>
+  <label><input type="checkbox" value="D.O.T.S"> D.O.T.S Projector</label><br>
+  <label><input type="checkbox" value="Thermometer"> Thermometer</label><br>
+  <label><input type="checkbox" value="Book"> Ghost Writing Book</label><br>
+  <label><input type="checkbox" value="Smudge"> Smudge Stick</label><br>
+  <label><input type="checkbox" value="Crucifix"> Crucifix</label><br>
+  <label><input type="checkbox" value="Salt"> Salt</label><br>
+</form>
+
+<button id="confirm-loadout">Confirm Loadout</button>
+<p id="loadout-warning" style="color: red; display: none;"></p>
 
 <!-- === GHOST GUESSING MODAL === -->
 <div id="guess-popup" style="
@@ -342,7 +337,7 @@
 
 <!-- === MAIN INVESTIGATION SCENE LAYERS === -->
 <div id="main-scene" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;">
-  <img id="scene-background" src="Van_N.png" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;" />
+<img id="scene-background" src="Van_N.png" alt="View of the van from the north" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;">
 
   <!-- Rain Blocker -->
   <div id="background-blocker" class="layer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
