@@ -207,17 +207,19 @@
   <h2 style="text-align:center;">Select Your Loadout</h2>
 <form id="item-selection" style="margin-top: 20px;">
   <p><strong>Select up to 3 items:</strong> <span id="selected-count">0</span>/3</p>
-  <label><input type="checkbox" value="EMF"> EMF Reader</label><br>
-  <label><input type="checkbox" value="Spirit Box"> Spirit Box</label><br>
-  <label><input type="checkbox" value="Camera"> Camera</label><br>
-  <label><input type="checkbox" value="UV Light"> UV Light</label><br>
-  <label><input type="checkbox" value="D.O.T.S"> D.O.T.S Projector</label><br>
-  <label><input type="checkbox" value="Thermometer"> Thermometer</label><br>
-  <label><input type="checkbox" value="Book"> Ghost Writing Book</label><br>
-  <label><input type="checkbox" value="Smudge"> Smudge Stick</label><br>
-  <label><input type="checkbox" value="Crucifix"> Crucifix</label><br>
-  <label><input type="checkbox" value="Salt"> Salt</label><br>
+
+  <label for="emf"><input type="checkbox" id="emf" name="emf" value="EMF"> EMF Reader</label><br>
+  <label for="spiritbox"><input type="checkbox" id="spiritbox" name="spiritbox" value="Spirit Box"> Spirit Box</label><br>
+  <label for="camera"><input type="checkbox" id="camera" name="camera" value="Camera"> Camera</label><br>
+  <label for="uv"><input type="checkbox" id="uv" name="uv" value="UV Light"> UV Light</label><br>
+  <label for="dots"><input type="checkbox" id="dots" name="dots" value="D.O.T.S"> D.O.T.S Projector</label><br>
+  <label for="thermo"><input type="checkbox" id="thermo" name="thermo" value="Thermometer"> Thermometer</label><br>
+  <label for="book"><input type="checkbox" id="book" name="book" value="Book"> Ghost Writing Book</label><br>
+  <label for="smudge"><input type="checkbox" id="smudge" name="smudge" value="Smudge"> Smudge Stick</label><br>
+  <label for="crucifix"><input type="checkbox" id="crucifix" name="crucifix" value="Crucifix"> Crucifix</label><br>
+  <label for="salt"><input type="checkbox" id="salt" name="salt" value="Salt"> Salt</label><br>
 </form>
+
 
 <button id="confirm-loadout">Confirm Loadout</button>
 <p id="loadout-warning" style="color: red; display: none;"></p>
