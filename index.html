@@ -1,4 +1,3 @@
-<!-- === PHASMA-PHONEY MASTER BUILD — PART 1 === -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -343,7 +342,7 @@
 
 <!-- === MAIN INVESTIGATION SCENE LAYERS === -->
 <div id="main-scene" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 1;">
-  <img id="scene-background" src="images/backgrounds/Van_N.png" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;" />
+  <img id="scene-background" src="Van_N.png" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1;" />
 
   <!-- Rain Blocker -->
   <div id="background-blocker" class="layer" style="position:absolute; top:0; left:0; width:100%; height:100%; z-index:2;"></div>
@@ -580,7 +579,8 @@
     return keys[Math.floor(Math.random() * keys.length)];
   }
 </script>
-const game = {
+<script>
+  const game = {
   ghost: null,
   ghostRoom: null,
   playerRoom: "Van",
