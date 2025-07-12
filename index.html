@@ -259,7 +259,7 @@
 
   <!-- === LOADOUT SCREEN (LIVE SWAP) === -->
   <div id="loadout-screen" style="
-    display: block;
+    display: none;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -287,7 +287,6 @@
     </div>
     <div style="margin-top: 20px;">
       <button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
-      <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
     </div>
   </div>
 
@@ -360,7 +359,14 @@ const allLoadoutItems = [
   "Crucifix",
   "Smudge Stick"
 ];
-  const rooms = ["Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
+  const rooms = [
+    "Living Room",
+    "Kitchen",
+    "Bathroom",
+    "Bedroom",
+    "Garage",
+    "Basement"
+];
 
   const ghostProfiles = [
     { name: "Spirit", evidence: ["EMF", "Spirit Box", "Ghost Writing"] },
@@ -417,12 +423,16 @@ const allLoadoutItems = [
   }
 
   // === Game Start Trigger ===
-  const startBtn = document.getElementById("startButton");
-  const modal = document.getElementById("gameModal");
-  startBtn.onclick = () => {
-    startBtn.style.display = "none";
-    modal.style.display = "block";
-  };
+const startBtn = document.getElementById("startButton");
+const modal = document.getElementById("gameModal");
+
+startBtn.onclick = () => {
+  startBtn.style.display = "none";
+  modal.style.display = "block";
+
+  // ✅ Start game logic
+  startInvestigation();
+};
 
   // === Rules Modal ===
   document.getElementById('rulesBtn').onclick = () => {
@@ -810,22 +820,71 @@ function spawnOrb() {
   }
 }
 
+const orbCanvas = document.getElementById("orb-canvas");
+const ctx = orbCanvas.getContext("2d");
+const orbs = [];
+
+function resizeCanvas() {
+  orbCanvas.width = window.innerWidth;
+  orbCanvas.height = window.innerHeight;
+}
+resizeCanvas();
+window.addEventListener("resize", resizeCanvas);
+
+function spawnOrb() {
+  if (orbs.length < 12) {
+    orbs.push({
+      x: Math.random() * orbCanvas.width,
+      y: Math.random() * orbCanvas.height,
+      dx: (Math.random() - 0.5) * 0.3,  // horizontal drift
+      dy: (Math.random() - 0.5) * 0.3,  // vertical drift
+      size: 15 + Math.random() * 10,
+      opacity: 0,
+      fadeSpeed: 0.005 + Math.random() * 0.01,
+      phase: Math.random() * Math.PI * 2,
+      life: 0,
+      lifespan: 400 + Math.random() * 400
+    });
+  }
+}
+
 function animateOrbs() {
   ctx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
-  orbs.forEach((orb, index) => {
-    orb.y -= orb.speed;
-    orb.opacity += orb.fade;
-    if (orb.opacity <= 0 || orb.opacity >= 1) orb.fade *= -1;
-    if (orb.y < 0 || orb.opacity <= 0) orbs.splice(index, 1);
+
+  for (let i = orbs.length - 1; i >= 0; i--) {
+    const orb = orbs[i];
+    orb.x += orb.dx;
+    orb.y += orb.dy;
+    orb.life++;
+
+    // Use sine wave for smooth opacity pulse
+    orb.opacity = 0.3 + 0.2 * Math.sin((orb.life + orb.phase) * orb.fadeSpeed * 50);
+
+    // Remove when lifespan is over or out of bounds
+    if (
+      orb.life > orb.lifespan ||
+      orb.x < -50 || orb.x > orbCanvas.width + 50 ||
+      orb.y < -50 || orb.y > orbCanvas.height + 50
+    ) {
+      orbs.splice(i, 1);
+      continue;
+    }
+
+    // Draw glowing orb
+    const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.size);
+    gradient.addColorStop(0, `rgba(180,255,255,${orb.opacity})`);
+    gradient.addColorStop(1, `rgba(180,255,255,0)`);
+
     ctx.beginPath();
-    ctx.arc(orb.x, orb.y, orb.size, 0, 2 * Math.PI);
-    ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+    ctx.fillStyle = gradient;
+    ctx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
     ctx.fill();
-  });
+  }
+
   requestAnimationFrame(animateOrbs);
 }
 
-setInterval(spawnOrb, 1000);
+setInterval(spawnOrb, 800);
 requestAnimationFrame(animateOrbs);
 
   // === LIGHTNING EFFECT ===
