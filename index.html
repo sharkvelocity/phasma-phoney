@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Phasma‑Phoney</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <style>
+<meta charset="utf-8"/>
+<title>Phasma‑Phoney</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<style>
     html, body {
       margin: 0;
       padding: 0;
@@ -98,75 +99,30 @@
       z-index: 9999;
     }
   
-    #hud {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      padding: 8px 12px;
-      background: rgba(0,0,0,0.8);
-      color: #0ff;
-      font-size: 14px;
-      font-family: monospace;
-      z-index: 999;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .hud-bar {
-      height: 6px;
-      background: #0ff;
-      border: 1px solid #0ff;
-      border-radius: 4px;
-      margin-top: 4px;
-    }
-
-    #sanity-bar {
-      width: 100px;
-      height: 6px;
-      background: red;
-      border: 1px solid #0ff;
-      border-radius: 4px;
-      margin-left: 10px;
-    }
-
-    #fog-layer {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      z-index: 3;
-      pointer-events: none;
-      background: url('fog.png') repeat;
-      opacity: 0.2;
-      animation: fogMove 60s linear infinite;
-    }
-
-    @keyframes fogMove {
-      0% { background-position: 0 0; }
-      100% { background-position: -2000px 0; }
-    }
-</style>
+#game-ui { display: none; }
+#ada-modal { display: none; }
+#hud { display: none; }
+#fog-layer { display: none; }
+#lightning { display: none; }
+#guess-popup { display: none; }
+#van-popup { display: none; }
+#item-popup { display: none; }</style>
 </head>
 <body>
-  <!-- START BUTTON -->
-  <button id="startButton">Start Investigation</button>
-<!-- === FOG LAYER === -->
-<div id="fog-layer"></div>
-  <!-- FLASH OVERLAY -->
-  <div id="flash-overlay"></div>
-  <!-- FLOATING ORBS -->
-  <canvas id="orb-canvas"></canvas>
-
-  <!-- ADA GLOW TITLE -->
-  <div id="text-shadow-box">
-    <div class="text-glow">Phasma‑Phoney</div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer>Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer>
-  <!-- ADA MODAL GAME MENU -->
-  <div id="gameModal" style="
+<!-- START BUTTON -->
+<button id="startButton">Start Investigation</button>
+<!-- FLASH OVERLAY -->
+<div id="flash-overlay"></div>
+<!-- FLOATING ORBS -->
+<canvas id="orb-canvas" style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 20;"></canvas>
+<!-- ADA GLOW TITLE -->
+<div id="text-shadow-box">
+<div class="text-glow">Phasma‑Phoney</div>
+</div>
+<!-- FOOTER -->
+<footer>Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer>
+<!-- ADA MODAL GAME MENU -->
+<div id="gameModal" style="
     display: none;
     position: fixed;
     top: 10%;
@@ -182,21 +138,19 @@
     width: 500px;
     text-align: center;
   ">
-    <div id="mainMenu">
-      <button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
-      <button id="ghostTalk" style="margin:10px; padding:10px 30px; font-size:18px;">Ghost Talk</button>
-      <button id="memories" style="margin:10px; padding:10px 30px; font-size:18px;">Memories</button>
-      <button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
-      <button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
-    </div>
-
-    <div id="ui" style="display:none; margin-top:20px;">
-      <div id="log" style="text-align: left;"></div>
-    </div>
-  </div>
-
-  <!-- RULES POPUP -->
-  <div id="rulesPopup" style="
+<div id="mainMenu">
+<button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
+<button id="ghostTalk" style="margin:10px; padding:10px 30px; font-size:18px;">Ghost Talk</button>
+<button id="memories" style="margin:10px; padding:10px 30px; font-size:18px;">Memories</button>
+<button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
+<button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
+</div>
+<div id="ui" style="display:none; margin-top:20px;">
+<div id="log" style="text-align: left;"></div>
+</div>
+</div>
+<!-- RULES POPUP -->
+<div id="rulesPopup" style="
     display: none;
     position: fixed;
     top: 10%;
@@ -214,8 +168,8 @@
     font-family: monospace;
     font-size: 14px;
   ">
-    <h2 style="text-align:center;">Rules</h2>
-    <pre>
+<h2 style="text-align:center;">Rules</h2>
+<pre>
 - Correctly identify ghosts by behavior.
 - Turn system with sanity loss and hunt danger.
 - Each ghost has unique evidence and personality.
@@ -225,13 +179,12 @@
 - Items can be dropped and returned to via the van.
 - Use crucifix or smudge to avoid death during a hunt.
     </pre>
-    <div style="text-align:center; margin-top:10px;">
-      <button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
-    </div>
-  </div>
-
-  <!-- LOADOUT SELECTION -->
-  <div id="loadout-screen" style="
+<div style="text-align:center; margin-top:10px;">
+<button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
+</div>
+</div>
+<!-- LOADOUT SELECTION -->
+<div id="loadout-screen" style="
     display: none;
     position: fixed;
     top: 50%;
@@ -246,28 +199,27 @@
     font-family: monospace;
     border-radius: 10px;
   ">
-    <h2 style="text-align:center;">Select Your Loadout</h2>
-    <form id="item-selection" style="margin-top: 20px;">
-      <label><input type="checkbox" name="items" value="EMF"> EMF Reader</label><br>
-      <label><input type="checkbox" name="items" value="Spirit Box"> Spirit Box</label><br>
-      <label><input type="checkbox" name="items" value="Camera"> Camera</label><br>
-      <label><input type="checkbox" name="items" value="UV Light"> UV Light</label><br>
-      <label><input type="checkbox" name="items" value="D.O.T.S"> D.O.T.S Projector</label><br>
-      <label><input type="checkbox" name="items" value="Thermometer"> Thermometer</label><br>
-      <label><input type="checkbox" name="items" value="Book"> Ghost Writing Book</label><br>
-      <label><input type="checkbox" name="items" value="Smudge"> Smudge Stick</label><br>
-      <label><input type="checkbox" name="items" value="Crucifix"> Crucifix</label><br>
-      <label><input type="checkbox" name="items" value="Salt"> Salt</label><br>
-    </form>
-    <p style="font-size: 0.85em; margin-top: 10px; color: #ccc;">You may select up to 3 items. Notebook and Lighter are always with you.</p>
-    <div style="text-align: center; margin-top: 20px;">
-      <button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
-      <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
-    </div>
-  </div>
-
-  <!-- INVESTIGATION UI -->
-  <div id="game-ui" style="
+<h2 style="text-align:center;">Select Your Loadout</h2>
+<form id="item-selection" style="margin-top: 20px;">
+<label><input name="items" type="checkbox" value="EMF"/> EMF Reader</label><br/>
+<label><input name="items" type="checkbox" value="Spirit Box"/> Spirit Box</label><br/>
+<label><input name="items" type="checkbox" value="Camera"/> Camera</label><br/>
+<label><input name="items" type="checkbox" value="UV Light"/> UV Light</label><br/>
+<label><input name="items" type="checkbox" value="D.O.T.S"/> D.O.T.S Projector</label><br/>
+<label><input name="items" type="checkbox" value="Thermometer"/> Thermometer</label><br/>
+<label><input name="items" type="checkbox" value="Book"/> Ghost Writing Book</label><br/>
+<label><input name="items" type="checkbox" value="Smudge"/> Smudge Stick</label><br/>
+<label><input name="items" type="checkbox" value="Crucifix"/> Crucifix</label><br/>
+<label><input name="items" type="checkbox" value="Salt"/> Salt</label><br/>
+</form>
+<p style="font-size: 0.85em; margin-top: 10px; color: #ccc;">You may select up to 3 items. Notebook and Lighter are always with you.</p>
+<div style="text-align: center; margin-top: 20px;">
+<button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
+<button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
+</div>
+</div>
+<!-- INVESTIGATION UI -->
+<div id="game-ui" style="
     display: none;
     position: absolute;
     top: 15%;
@@ -282,9 +234,9 @@
     z-index: 1500;
     border: 1px solid #0ff;
   ">
-    <div id="game-log"></div>
-    <div id="game-options" style="margin-top: 20px;"></div>
-  </div>
+<div id="game-log"></div>
+<div id="game-options" style="margin-top: 20px;"></div>
+</div>
 <script>
   // === DOM REFERENCES ===
   const startBtn = document.getElementById('startButton');
@@ -610,97 +562,53 @@
   }, 15000);
 
   // === Floating Orbs ===
-   // === SPIRIT ORB FX ===
-  const orbCanvas = document.getElementById("orb-canvas");
-const ctx = orbCanvas.getContext("2d");
+  const orbCanvas = document.getElementById('orb-canvas');
+  const ctx = orbCanvas.getContext('2d');
+  let width = orbCanvas.width = window.innerWidth;
+  let height = orbCanvas.height = window.innerHeight;
 
-function resizeCanvas() {
-  orbCanvas.width = window.innerWidth;
-  orbCanvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-function spawnOrb() {
-  if (orbs.length < 10) {
-    orbs.push({
-      x: Math.random() * orbCanvas.width,
-      y: Math.random() * orbCanvas.height,
-      size: 5 + Math.random() * 10,
-      speed: 0.2 + Math.random() * 0.5,
-      opacity: 0.2 + Math.random() * 0.3,
-      fade: Math.random() < 0.5 ? -0.003 : 0.003
-    });
-  }
-}
-
-const orbCanvas = document.getElementById("orb-canvas");
-const ctx = orbCanvas.getContext("2d");
-const orbs = [];
-
-function resizeCanvas() {
-  orbCanvas.width = window.innerWidth;
-  orbCanvas.height = window.innerHeight;
-}
-resizeCanvas();
-window.addEventListener("resize", resizeCanvas);
-
-function spawnOrb() {
-  if (orbs.length < 12) {
-    orbs.push({
-      x: Math.random() * orbCanvas.width,
-      y: Math.random() * orbCanvas.height,
-      dx: (Math.random() - 0.5) * 0.3,  // horizontal drift
-      dy: (Math.random() - 0.5) * 0.3,  // vertical drift
-      size: 15 + Math.random() * 10,
+  function createOrb() {
+    return {
+      x: Math.random() * width,
+      y: Math.random() * height,
+      vx: (Math.random() - 0.5),
+      vy: (Math.random() - 0.5),
+      radius: Math.random() * 2 + 1,
       opacity: 0,
-      fadeSpeed: 0.005 + Math.random() * 0.01,
-      phase: Math.random() * Math.PI * 2,
-      life: 0,
-      lifespan: 400 + Math.random() * 400
+      fadeIn: true,
+      tick: 0
+    };
+  }
+
+  let orbs = Array.from({ length: 15 }, createOrb);
+
+  function animateOrbs() {
+    ctx.clearRect(0, 0, width, height);
+    orbs.forEach(orb => {
+      orb.tick++;
+      orb.radius += Math.sin(orb.tick / 30) * 0.1;
+      orb.opacity += orb.fadeIn ? 0.01 : -0.005;
+      if (orb.opacity > 0.5) orb.fadeIn = false;
+      if (orb.opacity <= 0) Object.assign(orb, createOrb());
+      orb.x += orb.vx;
+      orb.y += orb.vy;
+      if (orb.x < 0 || orb.x > width) orb.vx *= -1;
+      if (orb.y < 0 || orb.y > height) orb.vy *= -1;
+      ctx.beginPath();
+      ctx.arc(orb.x, orb.y, orb.radius, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+      ctx.shadowBlur = 10;
+      ctx.shadowColor = "white";
+      ctx.fill();
     });
-  }
-}
-
-function animateOrbs() {
-  ctx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
-
-  for (let i = orbs.length - 1; i >= 0; i--) {
-    const orb = orbs[i];
-    orb.x += orb.dx;
-    orb.y += orb.dy;
-    orb.life++;
-
-    // Use sine wave for smooth opacity pulse
-    orb.opacity = 0.3 + 0.2 * Math.sin((orb.life + orb.phase) * orb.fadeSpeed * 50);
-
-    // Remove when lifespan is over or out of bounds
-    if (
-      orb.life > orb.lifespan ||
-      orb.x < -50 || orb.x > orbCanvas.width + 50 ||
-      orb.y < -50 || orb.y > orbCanvas.height + 50
-    ) {
-      orbs.splice(i, 1);
-      continue;
-    }
-
-    // Draw glowing orb
-    const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.size);
-    gradient.addColorStop(0, `rgba(180,255,255,${orb.opacity})`);
-    gradient.addColorStop(1, `rgba(180,255,255,0)`);
-
-    ctx.beginPath();
-    ctx.fillStyle = gradient;
-    ctx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
-    ctx.fill();
+    requestAnimationFrame(animateOrbs);
   }
 
-  requestAnimationFrame(animateOrbs);
-}
-
-setInterval(spawnOrb, 800);
-requestAnimationFrame(animateOrbs);
-
+  animateOrbs();
+  window.addEventListener('resize', () => {
+    width = orbCanvas.width = window.innerWidth;
+    height = orbCanvas.height = window.innerHeight;
+  });
 </script>
 </body>
 </html>
