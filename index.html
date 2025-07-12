@@ -195,26 +195,29 @@
 </div>
 <!-- === MAIN MENU MODAL === -->
 <div id="gameModal" style="
-    display: none;
-    position: fixed;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 30px;
-    border: 2px solid #666;
-    z-index: 9999;
-    box-shadow: 0 0 20px #000;
-    border-radius: 10px;
-    width: 500px;
-    text-align: center;">
-<div id="mainMenu">
-<button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
-<button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
-<button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
+  display: none;
+  position: fixed;
+  top: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #000;
+  color: #fff;
+  padding: 30px;
+  border: 2px solid #666;
+  z-index: 9999;
+  box-shadow: 0 0 20px #000;
+  border-radius: 10px;
+  width: 500px;
+  text-align: center;
+  font-family: monospace;
+">
+  <div id="mainMenu">
+    <button id="startNewGame" style="margin: 10px; padding: 10px 30px; font-size: 18px; cursor: pointer;">Start New Game</button>
+    <button id="rulesBtn" style="margin: 10px; padding: 10px 30px; font-size: 18px; cursor: pointer;">Rules</button>
+    <button id="exitMenu" style="margin: 10px; padding: 10px 30px; font-size: 18px; cursor: pointer;">Exit</button>
+  </div>
 </div>
-</div>
+
 <!-- === RULES POPUP === -->
 <div id="rulesPopup" style="
     display: none;
@@ -278,6 +281,7 @@
 </div>
 <!-- === INVESTIGATION UI === -->
 <div id="game-ui" style="
+	display: none;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -436,7 +440,7 @@ startBtn.onclick = () => {
 
 });
 
-document.getElementById("game-ui").style.display = "flex";
+
   const loadoutScreen = document.getElementById('loadout-screen');
   const heldDiv = document.getElementById('held-items');
   const vanDiv = document.getElementById('van-items');
@@ -788,29 +792,6 @@ document.getElementById("game-ui").style.display = "flex";
   }
 
   // === SPIRIT ORB FX ===
-  const orbCanvas = document.getElementById("orb-canvas");
-const ctx = orbCanvas.getContext("2d");
-
-function resizeCanvas() {
-  orbCanvas.width = window.innerWidth;
-  orbCanvas.height = window.innerHeight;
-}
-window.addEventListener("resize", resizeCanvas);
-resizeCanvas();
-
-function spawnOrb() {
-  if (orbs.length < 10) {
-    orbs.push({
-      x: Math.random() * orbCanvas.width,
-      y: Math.random() * orbCanvas.height,
-      size: 5 + Math.random() * 10,
-      speed: 0.2 + Math.random() * 0.5,
-      opacity: 0.2 + Math.random() * 0.3,
-      fade: Math.random() < 0.5 ? -0.003 : 0.003
-    });
-  }
-}
-
 const orbCanvas = document.getElementById("orb-canvas");
 const ctx = orbCanvas.getContext("2d");
 const orbs = [];
@@ -827,8 +808,8 @@ function spawnOrb() {
     orbs.push({
       x: Math.random() * orbCanvas.width,
       y: Math.random() * orbCanvas.height,
-      dx: (Math.random() - 0.5) * 0.3,  // horizontal drift
-      dy: (Math.random() - 0.5) * 0.3,  // vertical drift
+      dx: (Math.random() - 0.5) * 0.3,
+      dy: (Math.random() - 0.5) * 0.3,
       size: 15 + Math.random() * 10,
       opacity: 0,
       fadeSpeed: 0.005 + Math.random() * 0.01,
@@ -841,17 +822,12 @@ function spawnOrb() {
 
 function animateOrbs() {
   ctx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
-
   for (let i = orbs.length - 1; i >= 0; i--) {
     const orb = orbs[i];
     orb.x += orb.dx;
     orb.y += orb.dy;
     orb.life++;
-
-    // Use sine wave for smooth opacity pulse
     orb.opacity = 0.3 + 0.2 * Math.sin((orb.life + orb.phase) * orb.fadeSpeed * 50);
-
-    // Remove when lifespan is over or out of bounds
     if (
       orb.life > orb.lifespan ||
       orb.x < -50 || orb.x > orbCanvas.width + 50 ||
@@ -861,7 +837,6 @@ function animateOrbs() {
       continue;
     }
 
-    // Draw glowing orb
     const gradient = ctx.createRadialGradient(orb.x, orb.y, 0, orb.x, orb.y, orb.size);
     gradient.addColorStop(0, `rgba(180,255,255,${orb.opacity})`);
     gradient.addColorStop(1, `rgba(180,255,255,0)`);
@@ -871,7 +846,6 @@ function animateOrbs() {
     ctx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
     ctx.fill();
   }
-
   requestAnimationFrame(animateOrbs);
 }
 
