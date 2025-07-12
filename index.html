@@ -781,38 +781,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === SPIRIT ORB FX ===
   const orbCanvas = document.getElementById("orb-canvas");
-  const ctx = orbCanvas.getContext("2d");
-  const orbs = [];
+const ctx = orbCanvas.getContext("2d");
 
-  function spawnOrb() {
-    if (orbs.length >= 10) return;
+function resizeCanvas() {
+  orbCanvas.width = window.innerWidth;
+  orbCanvas.height = window.innerHeight;
+}
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
+function spawnOrb() {
+  if (orbs.length < 10) {
     orbs.push({
       x: Math.random() * orbCanvas.width,
       y: Math.random() * orbCanvas.height,
       size: 5 + Math.random() * 10,
       speed: 0.2 + Math.random() * 0.5,
-      opacity: 0.1 + Math.random() * 0.5,
-      fade: Math.random() < 0.5 ? -0.005 : 0.005
+      opacity: 0.2 + Math.random() * 0.3,
+      fade: Math.random() < 0.5 ? -0.003 : 0.003
     });
   }
+}
 
-  function animateOrbs() {
-    ctx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
-    orbs.forEach((orb, index) => {
-      orb.y -= orb.speed;
-      orb.opacity += orb.fade;
-      if (orb.opacity <= 0 || orb.opacity >= 1) orb.fade *= -1;
-      if (orb.y < 0 || orb.opacity <= 0) orbs.splice(index, 1);
-      ctx.beginPath();
-      ctx.arc(orb.x, orb.y, orb.size, 0, Math.PI * 2);
-      ctx.fillStyle = `rgba(200,255,255,${orb.opacity})`;
-      ctx.fill();
-    });
-    requestAnimationFrame(animateOrbs);
-  }
+function animateOrbs() {
+  ctx.clearRect(0, 0, orbCanvas.width, orbCanvas.height);
+  orbs.forEach((orb, index) => {
+    orb.y -= orb.speed;
+    orb.opacity += orb.fade;
+    if (orb.opacity <= 0 || orb.opacity >= 1) orb.fade *= -1;
+    if (orb.y < 0 || orb.opacity <= 0) orbs.splice(index, 1);
+    ctx.beginPath();
+    ctx.arc(orb.x, orb.y, orb.size, 0, 2 * Math.PI);
+    ctx.fillStyle = `rgba(255,255,255,${orb.opacity})`;
+    ctx.fill();
+  });
+  requestAnimationFrame(animateOrbs);
+}
 
-  setInterval(spawnOrb, 1200);
-  animateOrbs();
+setInterval(spawnOrb, 1000);
+requestAnimationFrame(animateOrbs);
 
   // === LIGHTNING EFFECT ===
   const lightning = document.getElementById("flash-overlay");
