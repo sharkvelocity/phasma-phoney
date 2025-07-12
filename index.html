@@ -1,17 +1,15 @@
-<!-- === PHASMA‑PHONEY MASTER BUILD — PART 1: HEAD & GLOBAL STYLES === -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Phasma‑Phoney</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Phasma-Phoney: Turn-based ghost investigation horror" />
-  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-  <meta http-equiv="Pragma" content="no-cache" />
-  <meta http-equiv="Expires" content="0" />
-  <link rel="icon" type="image/x-icon" href="favicon.ico?v=2" />
-
-  <style>
+<meta charset="utf-8"/>
+<title>Phasma‑Phoney</title>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<meta content="Phasma-Phoney: Turn-based ghost investigation horror" name="description"/>
+<meta content="no-cache, no-store, must-revalidate" http-equiv="Cache-Control"/>
+<meta content="no-cache" http-equiv="Pragma"/>
+<meta content="0" http-equiv="Expires"/>
+<link href="favicon.ico?v=2" rel="icon" type="image/x-icon"/>
+<style>
     html, body {
       margin: 0;
       padding: 0;
@@ -45,19 +43,7 @@
       background-color: #333;
       border-color: #666;
     }
-	#title-screen, #loadout-screen, #guess-popup, #use-popup, #ada-modal {
-		display: none;
-	}
-	#orb-canvas, #fog-layer {
-		display: block;
-	}
-	#game-ui {
-	  display: none; /* until investigation starts */
-	}
-		#lightning {
-	  display: none;
-	}
-	
+
     #flash-overlay {
       position: fixed;
       top: 0;
@@ -182,43 +168,33 @@
   </style>
 </head>
 <body>
-  <!-- === TITLE LOGO GLOW === -->
-  <div id="text-shadow-box">
-    <div class="text-glow">Phasma‑Phoney</div>
-  </div>
-
-  <!-- === START BUTTON === -->
-  <button id="startButton">Start Investigation</button>
-
-  <!-- === VOICE TOGGLE === -->
-  <button id="toggle-voice">🔊 Voice: ON</button>
-
-  <!-- === LIGHTNING FLASH OVERLAY === -->
-  <div id="flash-overlay"></div>
-
-  <!-- === FLOATING SPIRIT ORBS === -->
-  <canvas id="orb-canvas"></canvas>
-
-  <!-- === FOG LAYER === -->
-  <div id="fog-layer"></div>
-
-  <!-- === FIXED FOOTER === -->
-  <footer>Based off of Phasmophobia — this is a text-based turn horror investigation</footer>
-	<div id="guess-popup"></div>
-	<div id="use-popup"></div>
-	<div id="ada-modal"></div>
-  <!-- === MAIN GAME HUD === -->
-	<div id="hud">
-    <div>Turn: <span id="hud-turn">0</span></div>
-    <div>Room: <span id="hud-room">Van</span></div>
-    <div>Facing: <span id="hud-facing">North</span></div>
-    <div>Sanity: <span id="hud-sanity">100%</span>
-      <div id="sanity-bar"></div>
-    </div>
-  </div>
-
-  <!-- === MAIN MENU MODAL === -->
-  <div id="gameModal" style="
+<!-- === TITLE LOGO GLOW === -->
+<div id="text-shadow-box">
+<div class="text-glow">Phasma‑Phoney</div>
+</div>
+<!-- === START BUTTON === -->
+<button id="startButton">Start Investigation</button>
+<!-- === VOICE TOGGLE === -->
+<button id="toggle-voice">🔊 Voice: ON</button>
+<!-- === LIGHTNING FLASH OVERLAY === -->
+<div id="flash-overlay"></div>
+<!-- === FLOATING SPIRIT ORBS === -->
+<canvas id="orb-canvas"></canvas>
+<!-- === FOG LAYER === -->
+<div id="fog-layer"></div>
+<!-- === FIXED FOOTER === -->
+<footer>Shark-Blades — A text-based turn horror investigation</footer>
+<!-- === MAIN GAME HUD === -->
+<div id="hud">
+<div>Turn: <span id="hud-turn">0</span></div>
+<div>Room: <span id="hud-room">Van</span></div>
+<div>Facing: <span id="hud-facing">North</span></div>
+<div>Sanity: <span id="hud-sanity">100%</span>
+<div id="sanity-bar"></div>
+</div>
+</div>
+<!-- === MAIN MENU MODAL === -->
+<div id="gameModal" style="
     display: none;
     position: fixed;
     top: 10%;
@@ -233,15 +209,14 @@
     border-radius: 10px;
     width: 500px;
     text-align: center;">
-    <div id="mainMenu">
-      <button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
-      <button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
-      <button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
-    </div>
-  </div>
-
-  <!-- === RULES POPUP === -->
-  <div id="rulesPopup" style="
+<div id="mainMenu">
+<button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
+<button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
+<button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
+</div>
+</div>
+<!-- === RULES POPUP === -->
+<div id="rulesPopup" style="
     display: none;
     position: fixed;
     top: 10%;
@@ -258,21 +233,20 @@
     z-index: 10000;
     font-family: monospace;
     font-size: 14px;">
-    <h2 style="text-align:center;">Rules</h2>
-    <pre>
+<h2 style="text-align:center;">Rules</h2>
+<pre>
 - Use behavior + evidence to ID the ghost.
 - Each ghost has 3 unique evidence types.
 - Sanity drops each turn; hunts more likely below 50%.
 - Drop and pick up tools in any room.
 - Access van to swap tools at any time.
     </pre>
-    <div style="text-align:center; margin-top:10px;">
-      <button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
-    </div>
-  </div>
-
-  <!-- === LOADOUT SCREEN (LIVE SWAP) === -->
-  <div id="loadout-screen" style="
+<div style="text-align:center; margin-top:10px;">
+<button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
+</div>
+</div>
+<!-- === LOADOUT SCREEN (LIVE SWAP) === -->
+<div id="loadout-screen" style="
     display: none;
     position: fixed;
     top: 50%;
@@ -287,25 +261,24 @@
     font-family: monospace;
     border-radius: 10px;
     text-align: center;">
-    <h2>Select Your Loadout</h2>
-    <p style="font-size: 0.9em;">Hold up to 3 tools. Notebook and Lighter are always with you.</p>
-    <div style="display:flex; justify-content:space-between; margin-top:20px;">
-      <div style="flex:1; text-align:left;">
-        <strong>Holding:</strong>
-        <div id="held-items" style="margin-top:8px;"></div>
-      </div>
-      <div style="flex:1; text-align:right;">
-        <strong>Van Inventory:</strong>
-        <div id="van-items" style="margin-top:8px;"></div>
-      </div>
-    </div>
-    <div style="margin-top: 20px;">
-      <button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
-    </div>
-  </div>
-
-  <!-- === INVESTIGATION UI === -->
-  <div id="game-ui" style="
+<h2>Select Your Loadout</h2>
+<p style="font-size: 0.9em;">Hold up to 3 tools. Notebook and Lighter are always with you.</p>
+<div style="display:flex; justify-content:space-between; margin-top:20px;">
+<div style="flex:1; text-align:left;">
+<strong>Holding:</strong>
+<div id="held-items" style="margin-top:8px;"></div>
+</div>
+<div style="flex:1; text-align:right;">
+<strong>Van Inventory:</strong>
+<div id="van-items" style="margin-top:8px;"></div>
+</div>
+</div>
+<div style="margin-top: 20px;">
+<button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
+</div>
+</div>
+<!-- === INVESTIGATION UI === -->
+<div id="game-ui" style="
     display: block;
     position: fixed;
     top: 50%;
@@ -322,14 +295,14 @@
     box-shadow: 0 0 10px #0ff;
     display: flex;
     flex-direction: column;">
-    <div id="game-log" style="
+<div id="game-log" style="
       flex: 1;
       padding: 20px;
       overflow-y: auto;
       font-size: 14px;
       line-height: 1.4;
       border-bottom: 1px solid #0ff;"></div>
-    <div id="game-options" style="
+<div id="game-options" style="
       padding: 16px;
       min-height: 100px;
       display: flex;
@@ -339,20 +312,14 @@
       gap: 10px;
       background-color: #000;
       border-top: 1px solid #0ff;"></div>
-  </div>
+</div>
+
+
+
+<footer style="position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; padding: 5px; font-size: 10px; color: #aaa;">
+  Phasma‑Phoney v1.5.0 — Developed by SharkBlades
+</footer>
 <script>
-const allLoadoutItems = [
-  "EMF Reader",
-  "Spirit Box",
-  "Camera",
-  "UV Light",
-  "D.O.T.S Projector",
-  "Ghost Writing Book",
-  "Thermometer",
-  "Salt",
-  "Crucifix",
-  "Smudge Stick"
-];
 document.addEventListener("DOMContentLoaded", () => {
   const game = {
     inventory: [],
@@ -373,7 +340,18 @@ document.addEventListener("DOMContentLoaded", () => {
     vanAccessedThisTurn: false
   };
 
-
+const allLoadoutItems = [
+  "EMF Reader",
+  "Spirit Box",
+  "Camera",
+  "UV Light",
+  "D.O.T.S Projector",
+  "Ghost Writing Book",
+  "Thermometer",
+  "Salt",
+  "Crucifix",
+  "Smudge Stick"
+];
   const rooms = [
     "Living Room",
     "Kitchen",
@@ -457,10 +435,9 @@ startBtn.onclick = () => {
     document.getElementById('rulesPopup').style.display = 'none';
   };
 
-  // (Part 4 will begin with Loadout logic, confirm flow, renderActionButtons, and new HUD updates)
 });
-</script>
-<script>
+
+
   const loadoutScreen = document.getElementById('loadout-screen');
   const heldDiv = document.getElementById('held-items');
   const vanDiv = document.getElementById('van-items');
@@ -720,8 +697,8 @@ startBtn.onclick = () => {
 
     renderActionButtons();
   }
-</script>
-<script>
+
+
   function openGuess() {
     gameOptions.innerHTML = "<p>What ghost do you think it is?</p>";
     ghostProfiles.forEach(g => {
@@ -919,10 +896,5 @@ requestAnimationFrame(animateOrbs);
   }
   resizeCanvas();
   window.addEventListener("resize", resizeCanvas);
-</script>
-<footer style="position: absolute; bottom: 0; left: 0; width: 100%; text-align: center; padding: 5px; font-size: 10px; color: #aaa;">
-  Phasma‑Phoney v1.5.0 &mdash; Developed by SharkVelocity
-</footer>
-
-</body>
+</script></body>
 </html>
