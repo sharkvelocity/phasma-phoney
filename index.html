@@ -45,7 +45,19 @@
       background-color: #333;
       border-color: #666;
     }
-
+	#title-screen, #loadout-screen, #guess-popup, #use-popup, #ada-modal {
+		display: none;
+	}
+	#orb-canvas, #fog-layer {
+		display: block;
+	}
+	#game-ui {
+	  display: none; /* until investigation starts */
+	}
+		#lightning {
+	  display: none;
+	}
+	
     #flash-overlay {
       position: fixed;
       top: 0;
@@ -191,10 +203,12 @@
   <div id="fog-layer"></div>
 
   <!-- === FIXED FOOTER === -->
-  <footer>Shark-Blades — A text-based turn horror investigation</footer>
-
+  <footer>Based off of Phasmophobia — this is a text-based turn horror investigation</footer>
+	<div id="guess-popup"></div>
+	<div id="use-popup"></div>
+	<div id="ada-modal"></div>
   <!-- === MAIN GAME HUD === -->
-  <div id="hud">
+	<div id="hud">
     <div>Turn: <span id="hud-turn">0</span></div>
     <div>Room: <span id="hud-room">Van</span></div>
     <div>Facing: <span id="hud-facing">North</span></div>
