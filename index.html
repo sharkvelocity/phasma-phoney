@@ -259,7 +259,7 @@
 
   <!-- === LOADOUT SCREEN (LIVE SWAP) === -->
   <div id="loadout-screen" style="
-    display: none;
+    display: block;
     position: fixed;
     top: 50%;
     left: 50%;
@@ -348,11 +348,18 @@ document.addEventListener("DOMContentLoaded", () => {
     vanAccessedThisTurn: false
   };
 
-  const allLoadoutItems = [
-    "EMF", "Spirit Box", "Camera", "UV Light", "D.O.T.S",
-    "Thermometer", "Book", "Smudge", "Crucifix", "Salt"
-  ];
-
+const allLoadoutItems = [
+  "EMF Reader",
+  "Spirit Box",
+  "Camera",
+  "UV Light",
+  "D.O.T.S Projector",
+  "Ghost Writing Book",
+  "Thermometer",
+  "Salt",
+  "Crucifix",
+  "Smudge Stick"
+];
   const rooms = ["Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
 
   const ghostProfiles = [
