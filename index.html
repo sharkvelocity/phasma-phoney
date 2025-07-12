@@ -97,7 +97,56 @@
       font-family: sans-serif;
       z-index: 9999;
     }
-  </style>
+  
+    #hud {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 8px 12px;
+      background: rgba(0,0,0,0.8);
+      color: #0ff;
+      font-size: 14px;
+      font-family: monospace;
+      z-index: 999;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .hud-bar {
+      height: 6px;
+      background: #0ff;
+      border: 1px solid #0ff;
+      border-radius: 4px;
+      margin-top: 4px;
+    }
+
+    #sanity-bar {
+      width: 100px;
+      height: 6px;
+      background: red;
+      border: 1px solid #0ff;
+      border-radius: 4px;
+      margin-left: 10px;
+    }
+
+    #fog-layer {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      z-index: 3;
+      pointer-events: none;
+      background: url('fog.png') repeat;
+      opacity: 0.2;
+      animation: fogMove 60s linear infinite;
+    }
+
+    @keyframes fogMove {
+      0% { background-position: 0 0; }
+      100% { background-position: -2000px 0; }
+    }
+</style>
 </head>
 <body>
   <!-- START BUTTON -->
@@ -105,7 +154,7 @@
 
   <!-- FLASH OVERLAY -->
   <div id="flash-overlay"></div>
-
+ <canvas id="orb-canvas"></canvas>
   <!-- FLOATING ORBS -->
   <canvas id="orb-canvas"></canvas>
 
