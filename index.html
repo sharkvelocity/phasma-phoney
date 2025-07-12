@@ -341,6 +341,18 @@
       border-top: 1px solid #0ff;"></div>
   </div>
 <script>
+const allLoadoutItems = [
+  "EMF Reader",
+  "Spirit Box",
+  "Camera",
+  "UV Light",
+  "D.O.T.S Projector",
+  "Ghost Writing Book",
+  "Thermometer",
+  "Salt",
+  "Crucifix",
+  "Smudge Stick"
+];
 document.addEventListener("DOMContentLoaded", () => {
   const game = {
     inventory: [],
@@ -361,18 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     vanAccessedThisTurn: false
   };
 
-const allLoadoutItems = [
-  "EMF Reader",
-  "Spirit Box",
-  "Camera",
-  "UV Light",
-  "D.O.T.S Projector",
-  "Ghost Writing Book",
-  "Thermometer",
-  "Salt",
-  "Crucifix",
-  "Smudge Stick"
-];
+
   const rooms = [
     "Living Room",
     "Kitchen",
