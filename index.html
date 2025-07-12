@@ -111,6 +111,12 @@
       font-family: sans-serif;
       z-index: 9999;
     }
+    
+#ada-modal {
+  display: none;
+  z-index: 50;
+  position: relative;
+}
 
     #hud {
       position: fixed;
@@ -480,12 +486,13 @@ document.addEventListener("DOMContentLoaded", () => {
     tempInventory = [];
     tempVan = [...allLoadoutItems];
     renderLoadoutUI();
-    document.getElementById("gameModal").style.display = "none";
+    document.getElementById("gameModal").style.display = "block";
     loadoutScreen.style.display = "block";
   };
 
   document.getElementById('cancel-loadout').onclick = () => {
     loadoutScreen.style.display = "none";
+    document.getElementById("ada-modal").style.display = "block";
     document.getElementById("gameModal").style.display = "block";
   };
 
