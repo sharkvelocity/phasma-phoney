@@ -221,7 +221,7 @@
 const game = {
   ghost: null,
   ghostRoom: null,
-  playerRoom: "Van",
+  playerRoom: "Title Room",
   inventory: [],
   vanStock: {},
   floorItems: {}, // roomName => [items]
@@ -369,6 +369,7 @@ const evidenceMap = {
 <script>
 // Room structure and directional connections (north, south, east, west)
 const mapLayout = {
+  'Title Room': { next: 'Van' },
   Bathroom: { east: "Foyer" },
   Foyer: { west: "Bathroom", east: "Living Room", south: "Basement", north: "Van" },
   Living Room: { west: "Foyer", east: "Kitchen", south: "Garage" },
@@ -504,18 +505,11 @@ function updateRoomVisuals() {
 }
 </script>
      <script>function startGameFlow() {
-  document.getElementById("loadout-screen").style.display = "none";
-  startInvestigation();
-  </script>
-<script>
-// ADA voice state
-let muted = false;
-let selectedVoice = "Google UK English Female";
-
-// Mute toggle button
-document.getElementById("mute-btn").addEventListener("click", () => {
-  muted = !muted;
-  document.getElementById("mute-btn").textContent = muted ? "🔇 Muted" : "🔊 Voice";
+  document.getElementById("room-overlay").style.display = "none";
+  game.playerRoom = "Van";
+  updateRoomVisuals();
+  updateHUD();
+  showLoadoutMenu();
 });
 
 // Voice selector dropdown
@@ -643,6 +637,7 @@ function closeVanSwapMenu() {
 </script>
 <script>
 const mapLayout = {
+  'Title Room': { next: 'Van' },
   "Van": { north: "Foyer" },
   "Foyer": { south: "Van", north: "Living Room", east: "Garage", west: "Dining Room" },
   "Living Room": { south: "Foyer", north: "Master Bedroom" },
@@ -1297,6 +1292,14 @@ document.addEventListener("DOMContentLoaded", () => {
   populateVoices();
 });
 </script>
+
+
+<!-- Room-specific overlay -->
+<div id="room-overlay" style="position: fixed; top:0; left:0; width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:2000;">
+  <img src="logo.png" alt="PhasmaPhoney Logo" style="max-width: 80%; margin-bottom: 20px;" />
+  <button onclick="startGameFlow()" style="font-size: 20px;">Start Investigation</button>
+  <p style="color:#0ff; font-style: italic; margin-top: 10px;">“The ghosts speak when you stop listening.”</p>
+</div>
 
 </body>
 </html>
