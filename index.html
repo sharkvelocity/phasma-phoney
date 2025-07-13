@@ -238,11 +238,20 @@ const game = {
 };
 
 const allLoadoutItems = [
-  "EMF Reader", "Spirit Box", "Camera", "UV Light",
-  "D.O.T.S Projector", "Thermometer", "Ghost Writing Book",
-  "Crucifix", "Smudge", "Salt", "Motion Sensor"
+  "EMF Reader",
+  "Spirit Box",
+  "Camera",
+  "UV Light",
+  "D.O.T.S Projector",
+  "Thermometer",
+  "Ghost Writing Book",
+  "Crucifix",
+  "Smudge",
+  "Salt",
+  "Motion Sensor"
 ];
-// Each ghost has: 3 real evidence types, unique behavior (personality), and optional mimic logic
+
+  // Each ghost has: 3 real evidence types, unique behavior (personality), and optional mimic logic
 const ghostProfiles = {
   Spirit: {
     evidence: ["Spirit Box", "EMF Level 5", "Ghost Writing"],
@@ -360,31 +369,81 @@ const evidenceMap = {
 <script>
 // Room structure and directional connections (north, south, east, west)
 const mapLayout = {
-  Van: { east: "Foyer" },
-  Foyer: { west: "Van", east: "Living Room", south: "Basement", north: "Bathroom" },
+  Bathroom: { east: "Foyer" },
+  Foyer: { west: "Bathroom", east: "Living Room", south: "Basement", north: "Van" },
   Living Room: { west: "Foyer", east: "Kitchen", south: "Garage" },
   Kitchen: { west: "Living Room", east: "Dining Room" },
   Dining Room: { west: "Kitchen" },
   Garage: { north: "Living Room" },
   Basement: { north: "Foyer" },
-  Bathroom: { south: "Foyer" },
+  Van: { south: "Foyer" },
   Kids Bedroom: { west: "Master Bedroom" },
   Master Bedroom: { east: "Kids Bedroom" }
 };
 
-// Each room has a placeholder for future specific visuals
 const roomVisuals = {
-  Van: "Van_N.png",
-  Foyer: "Foyer_N.png",
-  Living Room: "LivingRoom_N.png",
-  Kitchen: "Kitchen_N.png",
-  Dining Room: "DiningRoom_N.png",
-  Garage: "Garage_N.png",
-  Basement: "Basement_N.png",
-  Bathroom: "Bathroom_N.png",
-  Kids Bedroom: "KidsBedroom_N.png",
-  Master Bedroom: "MasterBedroom_N.png"
+  Van: {
+    N: "Van_N.png",
+    S: "Van_S.png",
+    E: "Van_E.png",
+    W: "Van_W.png"
+  },
+  Foyer: {
+    N: "Foyer_N.png",
+    S: "Foyer_S.png",
+    E: "Foyer_E.png",
+    W: "Foyer_W.png"
+  },
+  LivingRoom: {
+    N: "LivingRoom_N.png",
+    S: "LivingRoom_S.png",
+    E: "LivingRoom_E.png",
+    W: "LivingRoom_W.png"
+  },
+  Kitchen: {
+    N: "Kitchen_N.png",
+    S: "Kitchen_S.png",
+    E: "Kitchen_E.png",
+    W: "Kitchen_W.png"
+  },
+  DiningRoom: {
+    N: "DiningRoom_N.png",
+    S: "DiningRoom_S.png",
+    E: "DiningRoom_E.png",
+    W: "DiningRoom_W.png"
+  },
+  Garage: {
+    N: "Garage_N.png",
+    S: "Garage_S.png",
+    E: "Garage_E.png",
+    W: "Garage_W.png"
+  },
+  Basement: {
+    N: "Basement_N.png",
+    S: "Basement_S.png",
+    E: "Basement_E.png",
+    W: "Basement_W.png"
+  },
+  Bathroom: {
+    N: "Bathroom_N.png",
+    S: "Bathroom_S.png",
+    E: "Bathroom_E.png",
+    W: "Bathroom_W.png"
+  },
+  KidsBedroom: {
+    N: "KidsBedroom_N.png",
+    S: "KidsBedroom_S.png",
+    E: "KidsBedroom_E.png",
+    W: "KidsBedroom_W.png"
+  },
+  MasterBedroom: {
+    N: "MasterBedroom_N.png",
+    S: "MasterBedroom_S.png",
+    E: "MasterBedroom_E.png",
+    W: "MasterBedroom_W.png"
+  }
 };
+
 
 // All rooms excluding van — used for ghost room randomization
 const houseRooms = Object.keys(mapLayout).filter(r => r !== "Van");
