@@ -74,10 +74,10 @@
     #game-ui {
       display: none;
       position: fixed;
-      top: 10%;
+      top: 8%;
       left: 5%;
       width: 90%;
-      height: 80%;
+      height: 85%;
       z-index: 1500;
       pointer-events: none;
     }
@@ -86,7 +86,7 @@
       top: 0;
       left: 0;
       width: 100%;
-      height: calc(100% - 80px);
+      height: calc(100% - 120px);
       background-color: rgba(0, 0, 0, 0.6);
       color: #0ff;
       padding: 20px;
@@ -105,6 +105,19 @@
       padding: 10px;
       border-top: 1px solid #0ff;
       pointer-events: auto;
+    }
+    /* === HUD === */
+    #hud {
+      position: fixed;
+      top: 0;
+      right: 0;
+      width: 180px;
+      background: rgba(0,0,0,0.7);
+      color: #0ff;
+      border-left: 1px solid #0ff;
+      padding: 10px;
+      font-size: 12px;
+      z-index: 999;
     }
     /* Weather Layers */
     #fog-layer, #rain-layer, #bloodmoon-layer {
@@ -157,6 +170,12 @@
   <div id="bloodmoon-layer"></div>
   <footer>Shark-Blades — Inspired by Phasmophobia.</footer>
 
+  <div id="hud">
+    <div><strong>Sanity:</strong> <span id="hud-sanity">100%</span></div>
+    <div><strong>Room:</strong> <span id="hud-room">Van</span></div>
+    <div><strong>Items:</strong> <span id="hud-items">None</span></div>
+  </div>
+
   <!-- RULES POPUP -->
   <div id="rulesPopup" style="
     display:none;
@@ -178,7 +197,7 @@
     <h2 style="text-align:center;">Rules</h2>
     <pre>
 - Identify ghosts by behavior & evidence.
-- Sanity loss & hunts based on turns.
+- Sanity changes based on light & ghost proximity.
 - Mimic fakes orbs & changes forms.
 - Max 3 carried tools; drop/pick up as needed.
 - Items can be swapped at van.
@@ -203,7 +222,7 @@
     z-index:2000;
     font-family:monospace;
     border-radius:10px;">
-    <h2 style="text-align:center;">Select Your Loadout (Click or Drag to choose)</h2>
+    <h2 style="text-align:center;">Select Your Loadout (Drag or Click)</h2>
     <div style="display:flex;justify-content:space-between;">
       <div id="van-inventory" style="width:45%;min-height:200px;border:1px solid #555;padding:10px;">
         <strong>Van:</strong>
@@ -214,7 +233,7 @@
         <div id="player-items"></div>
       </div>
     </div>
-    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">Select or drag up to 3 items. Notebook & Lighter always included.</p>
+    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">Pick up to 3 items. Notebook & Lighter always included.</p>
     <div style="text-align:center;margin-top:20px;">
       <button id="confirm-loadout" style="margin:5px;padding:8px 24px;">Confirm</button>
     </div>
@@ -227,9 +246,7 @@
   </div>
 
 <script>
-/* ==============================
-   === GAME STATE & DOM HOOKS ===
-============================== */
+/* === GAME STATE & DOM HOOKS === */
 const gameLog=document.getElementById('game-log');
 const gameOptions=document.getElementById('game-options');
 const loadoutScreen=document.getElementById('loadout-screen');
@@ -240,6 +257,9 @@ const cameraOverlay=document.getElementById('camera-overlay');
 const fogLayer=document.getElementById('fog-layer');
 const rainLayer=document.getElementById('rain-layer');
 const bloodmoonLayer=document.getElementById('bloodmoon-layer');
+const hudSanity=document.getElementById('hud-sanity');
+const hudRoom=document.getElementById('hud-room');
+const hudItems=document.getElementById('hud-items');
 
 const game={
   inventory:[],vanStock:{},playerRoom:"Van",
@@ -247,7 +267,8 @@ const game={
   mimicShift:0,sanity:100,turn:0,foundEvidence:[],
   started:false,droppedItems:{},activeHunt:false,
   crucifixUsed:false,smudgeUsed:false,huntCooldown:0,
-  weather:"Clear",cameraPlaced:{},cameraRoom:null
+  weather:"Clear",cameraPlaced:{},cameraRoom:null,
+  lightOn:true
 };
 /* ==============================
    === MAP VISUALS & WEATHER ===
@@ -262,6 +283,8 @@ function updateMapVisual(){
   const bg=roomVisuals[game.playerRoom]||"Van_N.png";
   document.body.style.background=`url('${bg}') no-repeat center center fixed`;
   document.body.style.backgroundSize="cover";
+  hudRoom.textContent=game.playerRoom;
+  hudItems.textContent=game.inventory.join(", ");
 }
 function applyWeather(){
   fogLayer.style.display="none";
@@ -275,51 +298,64 @@ const weathers=["Clear","Rain","Bloodmoon","Fog"];
 function chooseWeather(){
   game.weather=weathers[Math.floor(Math.random()*weathers.length)];
   applyWeather();
-  log(generateThought("ambient",`Weather... ${game.weather}.`));
+  log(generateThought("ambient","The weather's "+game.weather.toLowerCase()+" today."));
 }
 
 /* ==============================
    === HUMANIZED THOUGHT LOG ===
 ============================== */
-function generateThought(type, msg="") {
-  let s = game.sanity;
-  let base = msg;
-  if (type === "ambient") {
-    if (s > 90) base = "Everything's... fine, I think. " + msg;
-    else if (s > 80) base = "I swear something moved... " + msg;
-    else if (s > 70) base = "My head's buzzing. Or is it them whispering? " + msg;
-    else if (s > 60) base = "Stop shaking... just stop shaking... " + msg;
-    else if (s > 50) base = "Skin crawling, I feel it watching... " + msg;
-    else if (s > 40) base = "Whispers—laughing? No, no, quiet! " + msg;
-    else if (s > 30) base = "It's here. It’s HERE. " + msg;
-    else if (s > 20) base = "Voices, screaming—GET OUT! " + msg;
-    else if (s > 10) base = "It’s inside my head. Crawling. " + msg;
-    else base = "Blood. Eyes everywhere. STOP LOOKING AT ME! " + msg;
+function generateThought(type,msg="") {
+  let s=game.sanity;
+  if(type==="ambient"){
+    if(s>85){
+      return msg;
+    } else if(s>70){
+      return msg+" (I need to stay calm...)";
+    } else if(s>60){
+      return msg+" (My hands are shaking...)";
+    } else if(s>50){
+      return msg+" (I'm hearing things now...)";
+    } else if(s>40){
+      return msg+" (It’s getting harder to think...)";
+    } else if(s>30){
+      return msg+" (STOP talking to me, brain...)";
+    } else if(s>20){
+      return msg.toUpperCase()+" (Make it stop...)";
+    } else {
+      return "IT'S INSIDE MY HEAD. "+msg.toUpperCase();
+    }
   }
-  return base;
+  return msg;
 }
 
-function log(msg) {
-  const line = document.createElement('div');
-  line.textContent = msg;
-  line.style.marginBottom = '6px';
+function log(msg){
+  const line=document.createElement('div');
+  line.textContent=msg;
+  line.style.marginBottom='6px';
   gameLog.appendChild(line);
-  gameLog.scrollTop = gameLog.scrollHeight;
+  gameLog.scrollTop=gameLog.scrollHeight;
+  updateHUD();
   updateSanityEffects();
 }
 
-function updateSanityEffects() {
+function updateHUD(){
+  hudSanity.textContent=game.sanity+"%";
+  hudRoom.textContent=game.playerRoom;
+  hudItems.textContent=game.inventory.join(", ");
+}
+
+function updateSanityEffects(){
   document.body.classList.remove("sanity-60","sanity-40","sanity-20","sanity-10");
-  if (game.sanity <= 10) document.body.classList.add("sanity-10");
-  else if (game.sanity <= 20) document.body.classList.add("sanity-20");
-  else if (game.sanity <= 40) document.body.classList.add("sanity-40");
-  else if (game.sanity <= 60) document.body.classList.add("sanity-60");
+  if(game.sanity<=10)document.body.classList.add("sanity-10");
+  else if(game.sanity<=20)document.body.classList.add("sanity-20");
+  else if(game.sanity<=40)document.body.classList.add("sanity-40");
+  else if(game.sanity<=60)document.body.classList.add("sanity-60");
 }
 
 /* ==============================
    === GHOST PROFILES & ROOMS ===
 ============================== */
-const ghostProfiles = [
+const ghostProfiles=[
   {name:"Spirit",evidence:["EMF","Spirit Box","Ghost Writing"]},
   {name:"Wraith",evidence:["EMF","Spirit Box","D.O.T.S"]},
   {name:"Phantom",evidence:["Spirit Box","Fingerprints","D.O.T.S"]},
@@ -346,68 +382,56 @@ const ghostProfiles = [
   {name:"Thaye",evidence:["Ghost Orb","Ghost Writing","D.O.T.S"]},
   {name:"Succubus",evidence:["Spirit Box","Ghost Writing","D.O.T.S"]}
 ];
-const rooms = ["Van","Living Room","Kitchen","Bathroom","Bedroom","Garage","Basement"];
+const rooms=["Van","Living Room","Kitchen","Bathroom","Bedroom","Garage","Basement"];
 
 /* ==============================
    === START INVESTIGATION ===
 ============================== */
 function startInvestigation(){
-  game.currentGhost = ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
-  game.ghostRoom = rooms[Math.floor(Math.random()*(rooms.length-1))+1];
-  game.turn = 1;
-  game.foundEvidence = [];
-  game.mimicForm = null;
-  game.mimicShift = 3 + Math.floor(Math.random()*4);
-  game.cameraRoom=null;
+  game.currentGhost=ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
+  game.ghostRoom=rooms[Math.floor(Math.random()*(rooms.length-1))+1];
+  game.turn=1;
+  game.foundEvidence=[];
+  game.mimicForm=null;
+  game.mimicShift=3+Math.floor(Math.random()*4);
   chooseWeather();
   updateMapVisual();
-  log(generateThought("ambient","This is it... the investigation starts."));
+  log(generateThought("ambient","Investigation begins..."));
   renderActionButtons();
 }
 
 /* ==============================
-   === NOTEBOOK LOGIC (CHECK/CROSS) ===
+   === NOTEBOOK LOGIC ===
 ============================== */
-function openNotebook() {
-  gameOptions.innerHTML = "<p>Notebook:</p>";
-  const allEv = ["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
+function openNotebook(){
+  gameOptions.innerHTML="<p>Notebook:</p>";
+  const allEv=["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
   allEv.forEach(e=>{
     const btn=document.createElement("button");
-    let text=e;
-    if(game.foundEvidence.includes(e)) text="✓ "+e;
-    else if(game.crossed && game.crossed.includes(e)) text="✗ "+e;
-    btn.textContent=text;
+    if(game.foundEvidence.includes(e)){
+      btn.textContent="✓ "+e;
+    }else{
+      btn.textContent=e;
+    }
     btn.onclick=()=>{
       if(game.foundEvidence.includes(e)){
         game.foundEvidence=game.foundEvidence.filter(x=>x!==e);
-        if(!game.crossed)game.crossed=[];
-        game.crossed.push(e);
-      }else if(game.crossed && game.crossed.includes(e)){
-        game.crossed=game.crossed.filter(x=>x!==e);
       }else{
         game.foundEvidence.push(e);
       }
       openNotebook();
     };
-    if(game.crossed && game.crossed.includes(e)){
-      btn.style.textDecoration="line-through";
-      btn.style.opacity="0.5";
-    }
     gameOptions.appendChild(btn);
   });
-  const possible=ghostProfiles.filter(g=>{
-    return game.foundEvidence.every(ev=>g.evidence.includes(ev)) &&
-      !(game.crossed||[]).some(x=>g.evidence.includes(x));
-  });
-  const list=document.createElement("div");
-  list.style.marginTop="10px";
-  list.innerHTML="<strong>Possible Ghosts:</strong><br>"+(possible.length?possible.map(g=>g.name).join(", "):"None");
   gameOptions.appendChild(document.createElement("hr"));
+  const possible=ghostProfiles.filter(g=>game.foundEvidence.every(ev=>g.evidence.includes(ev)));
+  const list=document.createElement("div");
+  list.innerHTML="<strong>Possible Ghosts:</strong><br>"+(possible.length?possible.map(g=>g.name).join(", "):"None");
   gameOptions.appendChild(list);
-  const cancel=document.createElement("button");
-  cancel.textContent="Cancel";
-  cancel.onclick=renderActionButtons;
-  gameOptions.appendChild(cancel);
+  const cancelBtn=document.createElement("button");
+  cancelBtn.textContent="Cancel";
+  cancelBtn.onclick=renderActionButtons;
+  gameOptions.appendChild(cancelBtn);
 }
 
 /* ==============================
@@ -421,7 +445,7 @@ function renderActionButtons(){
     {label:"Notebook",handler:openNotebook},
     {label:"Drop/Pick Item",handler:openDropMenu},
     {label:"Van Swap",handler:openVanMenu},
-    {label:"End Turn",handler:endTurn}
+    {label:"Wait",handler:endTurn}
   ].forEach(btn=>{
     const b=document.createElement("button");
     b.textContent=btn.label;
@@ -434,22 +458,20 @@ function renderActionButtons(){
    === MOVE MENU ===
 ============================== */
 function openMoveMenu(){
-  gameOptions.innerHTML="<p>Select a room to move to:</p>";
+  gameOptions.innerHTML="<p>Select a room:</p>";
   rooms.forEach(r=>{
     const btn=document.createElement("button");
     btn.textContent=r;
     btn.onclick=()=>{
       game.playerRoom=r;
       updateMapVisual();
-      // If ghost changed rooms, reset orb visibility unless found again
-      if(game.playerRoom!==game.ghostRoom) cameraOverlay.style.display="none";
-      log(generateThought("ambient","I walk into "+r+"."));
-      renderActionButtons();
+      cameraOverlay.style.display="none";
+      log(generateThought("ambient","I moved to the "+r+"."));
+      endTurn(true);
     };
     gameOptions.appendChild(btn);
   });
 }
-
 /* ==============================
    === ITEM USAGE (CHANCE SYSTEM) ===
 ============================== */
@@ -458,10 +480,11 @@ function openItemMenu(){
   game.inventory.forEach(i=>{
     const btn=document.createElement("button");
     btn.textContent=i;
-    btn.onclick=()=>{useItem(i);renderActionButtons();};
+    btn.onclick=()=>{useItem(i);endTurn(true);};
     gameOptions.appendChild(btn);
   });
 }
+
 function useItem(item){
   const evMap={
     "EMF":"EMF","Spirit Box":"Spirit Box","Camera":"Ghost Orb",
@@ -477,17 +500,19 @@ function useItem(item){
   if(item==="Camera"){
     game.cameraPlaced[game.playerRoom]=true;
     game.cameraRoom=game.playerRoom;
-    if(game.foundEvidence.includes("Ghost Orb") && game.playerRoom===game.ghostRoom){
-      log(generateThought("ambient","The lens catches soft, drifting orbs..."));
+    if(game.foundEvidence.includes("Ghost Orb") && game.playerRoom===game.ghostRoom) {
+      log(generateThought("ambient","The camera lens catches tiny glowing orbs..."));
       cameraOverlay.style.display="block";
-    }else if(isMimic && inGhostRoom){
-      log(generateThought("ambient","Weird shimmering orbs... too perfect."));
+    } else if(isMimic && inGhostRoom) {
+      log(generateThought("ambient","Orbs swirl unnaturally on camera... it's fake?"));
       cameraOverlay.style.display="block";
+    } else {
+      log(generateThought("ambient","Camera shows nothing out of the ordinary."));
     }
   }
 
   if(!inGhostRoom){
-    log(generateThought("ambient","No reaction here. Maybe wrong spot."));
+    log(generateThought("ambient","I try the "+item+", but nothing happens here."));
     return;
   }
 
@@ -495,83 +520,74 @@ function useItem(item){
     if(Math.random()<=chance){
       if(!game.foundEvidence.includes(ev)){
         game.foundEvidence.push(ev);
-        log(generateThought("ambient","I’m sure this is "+ev+" evidence."));
+        log(generateThought("ambient","Got it. Evidence: "+ev+"."));
         if(ev==="Ghost Orb") cameraOverlay.style.display="block";
-      }else log(generateThought("ambient","Same readings as before."));
-    }else log(generateThought("ambient","Unclear reading... try again later."));
-  }else log(generateThought("ambient","Nothing. Dead quiet."));
+      } else {
+        log(generateThought("ambient","Same readings as before."));
+      }
+    } else {
+      log(generateThought("ambient","No clear reading yet. Maybe next time."));
+    }
+  } else {
+    log(generateThought("ambient","The "+item+" isn't giving me anything useful."));
+  }
 }
+
 /* ==============================
    === VAN SWAP & CAMERA MONITOR ===
 ============================== */
 function openVanMenu(){
   if(game.playerRoom!=="Van"){
-    log(generateThought("ambient","I need to get back to the van first."));
+    log(generateThought("ambient","I should be in the van to do that."));
     renderActionButtons();
     return;
   }
   gameOptions.innerHTML="<p>Van Options:</p>";
 
-  // === CAMERA MONITOR ===
   const camBtn=document.createElement("button");
   camBtn.textContent="View Camera Monitor";
   camBtn.onclick=()=>{
     if(game.cameraRoom && game.cameraPlaced[game.cameraRoom]){
       updateMapVisual();
-      if(game.cameraRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")){
-        cameraOverlay.style.display="block";
-        log(generateThought("ambient","The monitor flickers... orbs drift on the screen."));
-      }else if(game.currentGhost.name==="Goryo" && game.cameraRoom===game.ghostRoom){
-        if(!game.foundEvidence.includes("D.O.T.S")){
-          log(generateThought("ambient","I see a faint silhouette... must be D.O.T.S."));
-          game.foundEvidence.push("D.O.T.S");
-        }
-        cameraOverlay.style.display="block";
-      }else{
-        cameraOverlay.style.display="none";
-        log(generateThought("ambient","Nothing unusual on the feed."));
-      }
-    }else{
-      log(generateThought("ambient","No active cameras hooked up."));
+      cameraOverlay.style.display="block";
+      log(generateThought("ambient","Watching the monitor..."));
+    } else {
+      log(generateThought("ambient","No active camera feeds."));
     }
   };
   gameOptions.appendChild(camBtn);
 
-  // === ITEM SWAP (Click + Drag fallback) ===
   const swapBtn=document.createElement("button");
   swapBtn.textContent="Swap Items";
   swapBtn.onclick=()=>{
     gameOptions.innerHTML="<p>Swap items:</p>";
-
     for(let tool in game.vanStock){
       const take=document.createElement("button");
       take.textContent="Take "+tool+" ("+game.vanStock[tool]+")";
       take.onclick=()=>{
         if(game.inventory.length>=5){
-          log(generateThought("ambient","I can't carry more!"));
+          log(generateThought("ambient","I can’t carry more than this..."));
           return;
         }
         game.inventory.push(tool);
         game.vanStock[tool]--;
         if(game.vanStock[tool]<=0) delete game.vanStock[tool];
-        log(generateThought("ambient","Took "+tool+" from the van."));
+        log(generateThought("ambient","Took "+tool+" from van."));
         openVanMenu();
       };
       gameOptions.appendChild(take);
     }
-
     game.inventory.filter(i=>!["Notebook","Lighter"].includes(i)).forEach(i=>{
       const ret=document.createElement("button");
       ret.textContent="Return "+i;
       ret.onclick=()=>{
         game.inventory=game.inventory.filter(x=>x!==i);
         game.vanStock[i]=(game.vanStock[i]||0)+1;
-        log(generateThought("ambient","Returned "+i+" to the van."));
+        log(generateThought("ambient","Returned "+i+" to van."));
         openVanMenu();
       };
       gameOptions.appendChild(ret);
     });
-
     const back=document.createElement("button");
     back.textContent="Back";
     back.onclick=openVanMenu;
@@ -599,7 +615,7 @@ function openDropMenu(){
     btn.onclick=()=>{
       game.droppedItems[room].push(i);
       game.inventory=game.inventory.filter(x=>x!==i);
-      log(generateThought("ambient","Dropped "+i+" in the "+room+"."));
+      log(generateThought("ambient","Dropped "+i+" in "+room+"."));
       renderActionButtons();
     };
     gameOptions.appendChild(btn);
@@ -612,7 +628,7 @@ function openDropMenu(){
       btn.textContent="Pick "+i;
       btn.onclick=()=>{
         if(game.inventory.length>=5){
-          log(generateThought("ambient","Too heavy... can't carry more."));
+          log(generateThought("ambient","My hands are full."));
           return;
         }
         game.inventory.push(i);
@@ -633,89 +649,95 @@ function openDropMenu(){
 /* ==============================
    === END TURN & HUNT SYSTEM ===
 ============================== */
-function endTurn(){
+function endTurn(skipSanity){
   game.turn++;
-  const sanityDrop = Math.floor(Math.random()*6+3);
-  game.sanity = Math.max(0,game.sanity - sanityDrop);
+  if(!skipSanity){
+    // sanity change based on light or ghost proximity
+    if(game.playerRoom!==game.ghostRoom){
+      if(game.weather!=="Bloodmoon" && Math.random()<0.7){
+        game.sanity=Math.min(100,game.sanity+Math.floor(Math.random()*3)); // regains slightly in safe lit area
+      }else{
+        game.sanity=Math.max(0,game.sanity-Math.floor(Math.random()*2)); // slow drain in dark
+      }
+    }else{
+      game.sanity=Math.max(0,game.sanity-Math.floor(Math.random()*6+3));
+    }
+  }
+  updateHUD();
   updateSanityEffects();
-  log(generateThought("ambient","Turn "+game.turn+". Sanity: "+game.sanity+"%."));
 
-  // Ambient Narration
-  const ambients=[
-    "A creak behind me... wait, was it behind me?",
-    "The walls seem closer now. Breathing?",
-    "A cold draft brushes my neck...",
-    "My own heartbeat sounds too loud.",
-    "Every step echoes too much. Too much."
+  const ambientLines=[
+    "The air smells metallic.",
+    "Every shadow looks alive.",
+    "Something faintly creaked nearby.",
+    "I keep glancing over my shoulder...",
+    "A whisper? Or just my own mind..."
   ];
-  if(Math.random()<0.6) log(generateThought("ambient",ambients[Math.floor(Math.random()*ambients.length)]));
+  if(Math.random()<0.6){
+    log(generateThought("ambient",ambientLines[Math.floor(Math.random()*ambientLines.length)]));
+  }
 
-  // Mimic Shifting
   if(game.currentGhost.name==="The Mimic"){
     game.mimicShift--;
     if(game.mimicShift<=0){
       let pool=ghostProfiles.filter(g=>g.name!=="The Mimic");
       game.mimicForm=pool[Math.floor(Math.random()*pool.length)];
       game.mimicShift=3+Math.floor(Math.random()*4);
-      log(generateThought("ambient","Its behavior twists... something changed."));
+      log(generateThought("ambient","Its behavior changed abruptly..."));
     }
   }
 
-  // Hunt Trigger
   handleHuntLogic();
   renderActionButtons();
 }
 
 function handleHuntLogic(){
-  const huntChance = (100 - game.sanity) / 100;
-  const isInGhostRoom = game.playerRoom === game.ghostRoom;
+  const huntChance=(100-game.sanity)/100;
+  const isInGhostRoom=game.playerRoom===game.ghostRoom;
 
-  if(game.huntCooldown>0){
-    game.huntCooldown--;
-    return;
-  }
+  if(game.huntCooldown>0){game.huntCooldown--;return;}
 
   if(isInGhostRoom && Math.random()<huntChance){
-    game.huntCooldown = 3 + Math.floor(Math.random()*3);
+    game.huntCooldown=3+Math.floor(Math.random()*3);
     triggerHunt();
   }
 }
 
 function triggerHunt(){
-  log(generateThought("ambient","...The air tightens, my heart skips—it's hunting!"));
+  log(generateThought("ambient","Everything goes silent... then I feel it—it's hunting!"));
   applyHuntVisuals(true);
 
   if(!game.crucifixUsed && game.inventory.includes("Crucifix")){
-    game.crucifixUsed = true;
+    game.crucifixUsed=true;
     setTimeout(()=>{
-      log(generateThought("ambient","The crucifix sizzles in my hands... it stopped it."));
+      log(generateThought("ambient","The crucifix scorched in my hand... it saved me this time."));
       applyHuntVisuals(false);
     },2000);
     return;
   }
 
   if(!game.smudgeUsed && game.inventory.includes("Smudge")){
-    game.smudgeUsed = true;
+    game.smudgeUsed=true;
     setTimeout(()=>{
-      log(generateThought("ambient","Smudge smoke fills the air, its growl fades away..."));
+      log(generateThought("ambient","I fumble with the smudge... smoke fills the room, it retreats."));
       applyHuntVisuals(false);
     },2500);
     return;
   }
 
   setTimeout(()=>{
-    log(generateThought("ambient","It grabs me—I can’t—NO—"));
-    gameOptions.innerHTML="<button onclick='location.reload()'>Restart</button>";
+    log(generateThought("ambient","I freeze. A cold hand grabs me—this is it..."));
+    endGame(false);
     applyHuntVisuals(false);
   },4000);
 }
 
 function applyHuntVisuals(active){
   if(active){
-    document.body.style.filter="contrast(120%) saturate(130%) hue-rotate(-20deg)";
+    document.body.style.filter="contrast(120%) saturate(130%) hue-rotate(-15deg)";
     flashOverlay();
-  }else{
-    updateSanityEffects();
+  } else {
+    document.body.style.filter="";
   }
 }
 
@@ -724,25 +746,64 @@ function flashOverlay(){
   overlay.style.opacity=0.8;
   setTimeout(()=>overlay.style.opacity=0,300);
 }
+/* ==============================
+   === HUD (SANITY, ROOM, ITEMS) ===
+============================== */
+function createHUD(){
+  let hud=document.getElementById("hud");
+  if(!hud){
+    hud=document.createElement("div");
+    hud.id="hud";
+    hud.style.position="fixed";
+    hud.style.top="10px";
+    hud.style.right="10px";
+    hud.style.background="rgba(0,0,0,0.6)";
+    hud.style.border="1px solid #0ff";
+    hud.style.color="#0ff";
+    hud.style.fontFamily="monospace";
+    hud.style.padding="10px";
+    hud.style.borderRadius="6px";
+    hud.style.zIndex="2000";
+    hud.style.fontSize="14px";
+    document.body.appendChild(hud);
+  }
+  updateHUD();
+}
+
+function updateHUD(){
+  const hud=document.getElementById("hud");
+  if(!hud) return;
+  hud.innerHTML=
+    `<strong>Sanity:</strong> ${game.sanity}%<br>`+
+    `<strong>Room:</strong> ${game.playerRoom}<br>`+
+    `<strong>Items:</strong> ${game.inventory.join(", ")}`;
+}
 
 /* ==============================
-   === CONFIRM LOADOUT (DRAG/DROP + CLICK FALLBACK) ===
+   === CONFIRM LOADOUT (CLICK + DRAG FALLBACK) ===
 ============================== */
 const allLoadoutItems=["EMF","Spirit Box","Camera","UV Light","D.O.T.S","Thermometer","Book","Smudge","Crucifix","Salt"];
+
 function initLoadout(){
   vanItems.innerHTML="";
   playerItems.innerHTML="";
-
   allLoadoutItems.forEach(it=>{
     const div=document.createElement("div");
     div.textContent=it;
+    div.style.border="1px solid #555";
+    div.style.margin="4px";
+    div.style.padding="4px";
+    div.style.cursor="pointer";
     div.draggable=true;
     div.onclick=()=>{
-      if([...playerItems.querySelectorAll("div")].length>=3){
-        alert("Max 3 items.");
-        return;
+      // click fallback
+      if(playerItems.querySelectorAll("div").length<3 && ![...playerItems.querySelectorAll("div")].some(d=>d.textContent===it)){
+        playerItems.appendChild(div);
+      } else {
+        if([...playerItems.querySelectorAll("div")].some(d=>d.textContent===it)){
+          vanItems.appendChild(div);
+        }
       }
-      playerItems.appendChild(div);
     };
     div.ondragstart=e=>{e.dataTransfer.setData("text/plain",it);};
     vanItems.appendChild(div);
@@ -752,10 +813,7 @@ function initLoadout(){
 
   playerItems.ondrop=e=>{
     const it=e.dataTransfer.getData("text/plain");
-    if(playerItems.querySelectorAll("div").length>=3){
-      alert("Max 3 items.");
-      return;
-    }
+    if(playerItems.querySelectorAll("div").length>=3){alert("Max 3 items.");return;}
     const node=[...vanItems.querySelectorAll("div")].find(d=>d.textContent===it);
     if(node) playerItems.appendChild(node);
   };
@@ -769,10 +827,7 @@ function initLoadout(){
 
 document.getElementById('confirm-loadout').onclick=()=>{
   game.inventory=[...playerItems.querySelectorAll("div")].map(d=>d.textContent);
-  if(game.inventory.length>3){
-    alert("Max 3 items.");
-    return;
-  }
+  if(game.inventory.length>3){alert("Max 3 items.");return;}
   game.vanStock={};
   allLoadoutItems.forEach(it=>{
     if(!game.inventory.includes(it)) game.vanStock[it]=(it==="Smudge"?2:it==="Salt"?3:1);
@@ -780,28 +835,13 @@ document.getElementById('confirm-loadout').onclick=()=>{
   game.inventory.push("Notebook","Lighter");
   loadoutScreen.style.display="none";
   gameUI.style.display="block";
+  createHUD();
   log(generateThought("ambient","I’ve packed: "+game.inventory.join(", ")));
   setTimeout(()=>startInvestigation(),400);
 };
-/* ==============================
-   === SANITY VISUAL DISTORTIONS ===
-============================== */
-function updateSanityEffects(){
-  const s=game.sanity;
-  document.body.style.filter="";
-  if(s<=90 && s>80) document.body.style.filter="blur(1px)";
-  else if(s<=80 && s>70) document.body.style.filter="blur(1.5px) contrast(105%)";
-  else if(s<=70 && s>60) document.body.style.filter="blur(2px) contrast(110%)";
-  else if(s<=60 && s>50) document.body.style.filter="blur(2.5px) contrast(115%) saturate(105%)";
-  else if(s<=50 && s>40) document.body.style.filter="blur(3px) contrast(120%) saturate(110%)";
-  else if(s<=40 && s>30) document.body.style.filter="blur(4px) contrast(130%) saturate(120%) hue-rotate(-5deg)";
-  else if(s<=30 && s>20) document.body.style.filter="blur(4.5px) contrast(140%) saturate(130%) hue-rotate(-10deg)";
-  else if(s<=20 && s>10) document.body.style.filter="blur(5px) contrast(150%) saturate(140%) hue-rotate(-15deg)";
-  else if(s<=10) document.body.style.filter="blur(6px) contrast(160%) saturate(150%) hue-rotate(-25deg)";
-}
 
 /* ==============================
-   === SPIRIT ORBS (Dynamic Reset When Ghost Room Changes)
+   === SPIRIT ORBS (Reset on Ghost Move) ===
 ============================== */
 const orbCanvas=document.getElementById('orb-canvas');
 const ctx=orbCanvas.getContext('2d');
@@ -823,26 +863,31 @@ function createOrb(){
 
 let orbs=Array.from({length:10},createOrb);
 
+function resetOrbs(){
+  orbs=Array.from({length:10},createOrb);
+}
+
 function animateOrbs(){
   ctx.clearRect(0,0,width,height);
-  // Orbs only visible if evidence found and current ghost room matches
   if(game.playerRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")){
     orbs.forEach(o=>{
       o.tick++;
       if(o.fadeIn){
         o.opacity+=0.01;
         if(o.opacity>0.6) o.fadeIn=false;
-      } else {
+      }else{
         o.opacity-=0.005;
         if(o.opacity<=0.05) Object.assign(o,createOrb());
       }
       o.x+=o.vx; o.y+=o.vy;
       if(o.x<0||o.x>width) o.vx*=-1;
       if(o.y<0||o.y>height) o.vy*=-1;
+
       const gradient=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.baseRadius*3);
       gradient.addColorStop(0,`rgba(200,255,255,${o.opacity})`);
       gradient.addColorStop(0.5,`rgba(150,200,255,${o.opacity*0.5})`);
       gradient.addColorStop(1,`rgba(100,150,200,0)`);
+
       ctx.beginPath();
       ctx.fillStyle=gradient;
       ctx.ellipse(o.x,o.y,o.baseRadius*(1+Math.sin(o.tick*0.05)*0.3),o.baseRadius,0,0,Math.PI*2);
@@ -859,12 +904,12 @@ window.addEventListener('resize',()=>{
 });
 
 /* ==============================
-   === NOTEBOOK DYNAMIC GHOST FILTER ===
+   === NOTEBOOK DYNAMIC FILTER (CHECK/CROSS + POSSIBLE GHOSTS) ===
 ============================== */
 function openNotebook(){
   gameOptions.innerHTML="<p>Notebook:</p>";
-  const allEvidence=["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
 
+  const allEvidence=["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
   allEvidence.forEach(e=>{
     const btn=document.createElement("button");
     let status="";
@@ -872,14 +917,17 @@ function openNotebook(){
     btn.textContent=status+e;
     btn.onclick=()=>{
       if(game.foundEvidence.includes(e)){
-        const idx=game.foundEvidence.indexOf(e);
-        game.foundEvidence.splice(idx,1);
+        // crossing out evidence
+        game.foundEvidence=game.foundEvidence.filter(x=>x!==e);
         if(!game.crossed) game.crossed=[];
         if(!game.crossed.includes(e)) game.crossed.push(e);
+        log(generateThought("ambient","Crossed out "+e+" in notebook."));
       } else if(game.crossed && game.crossed.includes(e)){
         game.crossed=game.crossed.filter(x=>x!==e);
+        log(generateThought("ambient","Erased cross-out for "+e+"."));
       } else {
         game.foundEvidence.push(e);
+        log(generateThought("ambient","Marked "+e+" in notebook."));
       }
       openNotebook();
     };
@@ -891,15 +939,15 @@ function openNotebook(){
   });
 
   gameOptions.appendChild(document.createElement("hr"));
+
   const possibleGhosts=ghostProfiles.filter(g=>{
     return game.foundEvidence.every(ev=>g.evidence.includes(ev)) &&
-      !(game.crossed||[]).some(x=>g.evidence.includes(x));
+           !(game.crossed||[]).some(x=>g.evidence.includes(x));
   });
 
   const ghostList=document.createElement("div");
   ghostList.style.marginTop="10px";
-  ghostList.innerHTML="<strong>Possible Ghosts:</strong><br>"+
-    (possibleGhosts.length?possibleGhosts.map(g=>g.name).join(", "):"None");
+  ghostList.innerHTML="<strong>Possible Ghosts:</strong><br>"+(possibleGhosts.length?possibleGhosts.map(g=>g.name).join(", "):"None");
   gameOptions.appendChild(ghostList);
 
   const guessBtn=document.createElement("button");
@@ -914,7 +962,7 @@ function openNotebook(){
 }
 
 /* ==============================
-   === GUESS GHOST ===
+   === GUESS GHOST MENU ===
 ============================== */
 function openGuessMenu(){
   gameOptions.innerHTML="<p>Who do you think it is?</p>";
@@ -923,10 +971,10 @@ function openGuessMenu(){
     btn.textContent=g.name;
     btn.onclick=()=>{
       if(g.name===game.currentGhost.name){
-        log(generateThought("ambient","I KNEW IT! It was a "+g.name+"."));
+        log(generateThought("ambient","Yes... it was a "+g.name+". I solved it."));
         endGame(true);
       } else {
-        log(generateThought("ambient","I was wrong... It was a "+game.currentGhost.name+"."));
+        log(generateThought("ambient","No... wrong guess. It was "+game.currentGhost.name+"."));
         endGame(false);
       }
     };
@@ -935,28 +983,157 @@ function openGuessMenu(){
 }
 
 /* ==============================
-   === GAME END & RESTART ===
+   === END GAME & RESTART ===
 ============================== */
 function endGame(victory){
   gameOptions.innerHTML="";
   const msg=document.createElement("div");
   msg.style.marginBottom="10px";
-  msg.textContent=victory
-    ?"You survived and solved the case."
-    :"You died. The ghost claimed you.";
+  msg.textContent=victory?
+    "I survived this haunting and uncovered the truth." :
+    "The ghost claimed me. My story ends here.";
   gameOptions.appendChild(msg);
 
   const restart=document.createElement("button");
   restart.textContent="Restart Game";
-  restart.onclick=()=>{
-    localStorage.removeItem("phasmaGame");
-    location.reload();
-  };
+  restart.onclick=()=>{localStorage.removeItem("phasmaGame");location.reload();};
   gameOptions.appendChild(restart);
 }
 
 /* ==============================
-   === AUTO STARTUP ===
+   === AUTO START ===
+============================== */
+document.addEventListener("DOMContentLoaded",()=>{
+  initLoadout();
+});
+/* ==============================
+   === TURN HANDLER & HUNT SYSTEM (UPDATED SANITY LOGIC) ===
+============================== */
+function endTurn(){
+  game.turn++;
+
+  // Sanity Change (light vs dark logic)
+  let lightedRooms=["Van","Living Room","Kitchen"];
+  let ghostNearby = (game.playerRoom===game.ghostRoom);
+  if(lightedRooms.includes(game.playerRoom) && !ghostNearby && game.sanity<100){
+    game.sanity += Math.floor(Math.random()*2+1); // small recovery
+    if(game.sanity>100) game.sanity=100;
+  } else {
+    let drop = ghostNearby ? Math.floor(Math.random()*8+5) : Math.floor(Math.random()*3);
+    game.sanity -= drop;
+    if(game.sanity<0) game.sanity=0;
+  }
+
+  updateSanityEffects();
+  updateHUD();
+  log(generateThought("ambient",randomAmbientThought()));
+
+  // Mimic Shift Logic
+  if(game.currentGhost.name==="The Mimic"){
+    game.mimicShift--;
+    if(game.mimicShift<=0){
+      let pool=ghostProfiles.filter(g=>g.name!=="The Mimic");
+      game.mimicForm=pool[Math.floor(Math.random()*pool.length)];
+      game.mimicShift=3+Math.floor(Math.random()*4);
+      log(generateThought("ambient","It feels... different again. Something has shifted."));
+    }
+  }
+
+  handleHunt();
+  renderActionButtons();
+}
+
+function randomAmbientThought(){
+  const amb=[
+    "That creak again... is it following me?",
+    "The air smells stale, wrong, heavy.",
+    "My breath caught in my throat... was it watching?",
+    "A sudden chill licked my neck.",
+    "I swear I heard someone whisper my name.",
+    "The shadows don't seem to stay still anymore.",
+    "Something brushed my arm just now.",
+    "I can almost feel it breathing beside me."
+  ];
+  return amb[Math.floor(Math.random()*amb.length)];
+}
+
+function handleHunt(){
+  if(game.huntCooldown>0){
+    game.huntCooldown--;
+    return;
+  }
+
+  const huntChance = (100 - game.sanity) / 100;
+  const inGhostRoom = (game.playerRoom===game.ghostRoom);
+
+  if(inGhostRoom && Math.random() < huntChance){
+    game.huntCooldown = 3 + Math.floor(Math.random()*3);
+    triggerHunt();
+  }
+}
+
+function triggerHunt(){
+  log(generateThought("ambient","...it's here. IT'S HUNTING!"));
+  applyHuntVisuals(true);
+
+  if(!game.crucifixUsed && game.inventory.includes("Crucifix")){
+    game.crucifixUsed = true;
+    setTimeout(()=>{
+      log(generateThought("ambient","The crucifix burns in my hand... it worked this time."));
+      applyHuntVisuals(false);
+    },2000);
+    return;
+  }
+
+  if(!game.smudgeUsed && game.inventory.includes("Smudge")){
+    game.smudgeUsed = true;
+    setTimeout(()=>{
+      log(generateThought("ambient","I light the smudge quickly. Its wail fades into silence."));
+      applyHuntVisuals(false);
+    },2500);
+    return;
+  }
+
+  setTimeout(()=>{
+    log(generateThought("ambient","It grabs me—cold fingers, crushing bone—this is it..."));
+    endGame(false);
+    applyHuntVisuals(false);
+  },4000);
+}
+
+function applyHuntVisuals(active){
+  const overlay=document.getElementById("flash-overlay");
+  if(active){
+    overlay.style.opacity=0.8;
+    document.body.style.filter="contrast(130%) saturate(150%) hue-rotate(-30deg)";
+    setTimeout(()=>overlay.style.opacity=0.4,300);
+    setTimeout(()=>overlay.style.opacity=0,600);
+  } else {
+    document.body.style.filter="";
+    overlay.style.opacity=0;
+  }
+}
+
+/* ==============================
+   === FINALIZE GAME START ===
+============================== */
+function startInvestigation(){
+  game.currentGhost = ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
+  game.ghostRoom = rooms[Math.floor(Math.random()*(rooms.length-1))+1];
+  game.turn = 1;
+  game.foundEvidence = [];
+  game.crossed = [];
+  game.mimicForm = null;
+  game.mimicShift = 3 + Math.floor(Math.random()*4);
+  chooseWeather();
+  updateMapVisual();
+  updateHUD();
+  log(generateThought("ambient","This is it... the investigation starts."));
+  renderActionButtons();
+}
+
+/* ==============================
+   === GAME INITIALIZATION ===
 ============================== */
 document.addEventListener("DOMContentLoaded",()=>{
   initLoadout();
