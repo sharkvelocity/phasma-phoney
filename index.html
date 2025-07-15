@@ -105,7 +105,7 @@
   <div id="flash-overlay"></div>
   <canvas id="orb-canvas"></canvas>
   <div id="text-shadow-box"><div class="text-glow">Phasma‑Phoney</div></div>
-  <footer>Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer>
+  <footer>Shark-Blades — Inspired by the first-person ghost hunting game Phasmophobia.</footer>
 
   <div id="gameModal" style="
     display:none;
@@ -217,7 +217,8 @@
     <div id="game-options" style="margin-top:20px;"></div>
   </div>
 
-<script>
+  <!-- === FULL SCRIPT === -->
+  <script>
 /* ---------- DOM REFERENCES ---------- */
 const startBtn = document.getElementById('startButton');
 const modal = document.getElementById('gameModal');
@@ -248,7 +249,7 @@ const game = {
   huntCooldown: 0
 };
 
-/* ---------- ADA VOICE SETUP ---------- */
+/* ---------- ADA VOICE ---------- */
 let adaVoice = null, adaSpeak = true;
 function loadVoices() {
   const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("en"));
@@ -270,11 +271,12 @@ voiceToggle.onclick = () => {
 };
 speechSynthesis.onvoiceschanged = loadVoices;
 
-/* ---------- LOG FUNCTION (VOICE PACING FIX) ---------- */
+/* ---------- LOG + VOICE ---------- */
 function log(msg) {
   const line = document.createElement('div');
   line.textContent = 'ADA: ' + msg;
   line.style.marginBottom = '8px';
+  line.style.whiteSpace = 'pre-wrap';
   gameLog.appendChild(line);
   gameLog.scrollTop = gameLog.scrollHeight;
 
@@ -289,7 +291,7 @@ function log(msg) {
   saveGame();
 }
 
-/* ---------- SAVE/LOAD ---------- */
+/* ---------- SAVE / LOAD ---------- */
 function saveGame() {
   localStorage.setItem("phasmaGame", JSON.stringify(game));
 }
@@ -330,7 +332,7 @@ const ghostProfiles = [
 ];
 const rooms = ["Van", "Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
 
-/* ---------- STARTUP ---------- */
+/* ---------- START INVESTIGATION ---------- */
 function startInvestigation() {
   game.currentGhost = ghostProfiles[Math.floor(Math.random() * ghostProfiles.length)];
   game.ghostRoom = rooms[Math.floor(Math.random() * (rooms.length - 1)) + 1];
@@ -342,18 +344,17 @@ function startInvestigation() {
   renderActionButtons();
 }
 
-/* ---------- RENDER BUTTONS ---------- */
+/* ---------- BUTTON RENDERING ---------- */
 function renderActionButtons() {
   gameOptions.innerHTML = "";
-  const buttons = [
+  [
     { label: "Move", handler: openMoveMenu },
     { label: "Use Item", handler: openItemMenu },
     { label: "Drop/Pick Item", handler: openDropMenu },
     { label: "Van Swap", handler: openVanMenu },
     { label: "Guess Ghost", handler: openGuessMenu },
     { label: "End Turn", handler: endTurn }
-  ];
-  buttons.forEach(btn => {
+  ].forEach(btn => {
     const b = document.createElement("button");
     b.textContent = btn.label;
     b.style.margin = "6px";
@@ -362,177 +363,11 @@ function renderActionButtons() {
   });
 }
 
-/* ---------- MOVE MENU ---------- */
-function openMoveMenu() {
-  gameOptions.innerHTML = "<p>Select a room to move to:</p>";
-  rooms.forEach(r => {
-    const btn = document.createElement("button");
-    btn.textContent = r;
-    btn.onclick = () => {
-      game.playerRoom = r;
-      log("🚪 You moved to the " + r + ".");
-      if (r === game.ghostRoom) log("👻 This room feels colder...");
-      renderActionButtons();
-    };
-    gameOptions.appendChild(btn);
-  });
-}
-
-/* ---------- DROP / PICK ---------- */
-function openDropMenu() {
-  gameOptions.innerHTML = "<p>Drop or pick items:</p>";
-  const room = game.playerRoom;
-  if (!game.droppedItems[room]) game.droppedItems[room] = [];
-
-  // Drop
-  game.inventory.forEach(i => {
-    if (i === "Notebook" || i === "Lighter") return;
-    const btn = document.createElement("button");
-    btn.textContent = "Drop " + i;
-    btn.onclick = () => {
-      if (game.droppedItems[room].length < 5) {
-        game.inventory = game.inventory.filter(x => x !== i);
-        game.droppedItems[room].push(i);
-        log("📦 Dropped " + i + " in " + room + ".");
-      } else {
-        log("Room too cluttered to drop more.");
-      }
-      renderActionButtons();
-    };
-    gameOptions.appendChild(btn);
-  });
-
-  // Pick
-  game.droppedItems[room].forEach(i => {
-    const btn = document.createElement("button");
-    btn.textContent = "Pick " + i;
-    btn.onclick = () => {
-      if (game.inventory.length < 5) {
-        game.droppedItems[room] = game.droppedItems[room].filter(x => x !== i);
-        game.inventory.push(i);
-        log("📦 Picked up " + i + ".");
-      } else {
-        log("Inventory full, cannot pick up.");
-      }
-      renderActionButtons();
-    };
-    gameOptions.appendChild(btn);
-  });
-}
-
-/* ---------- VAN SWAP ---------- */
-function openVanMenu() {
-  if (game.playerRoom !== "Van") {
-    log("🚐 You must be in the van to access van inventory.");
-    return;
-  }
-  gameOptions.innerHTML = "<p>Van Swap:</p>";
-
-  // Take
-  Object.keys(game.vanStock).forEach(i => {
-    const btn = document.createElement("button");
-    btn.textContent = "Take " + i + " (" + game.vanStock[i] + ")";
-    btn.onclick = () => {
-      if (game.inventory.length < 5 && game.vanStock[i] > 0) {
-        game.inventory.push(i);
-        game.vanStock[i]--;
-        log("🚐 Took " + i + " from van.");
-        if (game.vanStock[i] === 0) delete game.vanStock[i];
-      } else {
-        log("Cannot carry more items.");
-      }
-      renderActionButtons();
-    };
-    gameOptions.appendChild(btn);
-  });
-
-  // Store
-  game.inventory.forEach(i => {
-    if (i === "Notebook" || i === "Lighter") return;
-    const btn = document.createElement("button");
-    btn.textContent = "Store " + i;
-    btn.onclick = () => {
-      game.inventory = game.inventory.filter(x => x !== i);
-      game.vanStock[i] = (game.vanStock[i] || 0) + 1;
-      log("🚐 Stored " + i + " in van.");
-      renderActionButtons();
-    };
-    gameOptions.appendChild(btn);
-  });
-}
-
-/* ---------- GUESS GHOST ---------- */
-function openGuessMenu() {
-  gameOptions.innerHTML = "<p>Who do you think it is?</p>";
-  ghostProfiles.forEach(g => {
-    const btn = document.createElement("button");
-    btn.textContent = g.name;
-    btn.onclick = () => {
-      if (g.name === game.currentGhost.name) {
-        log("🎯 Correct! The ghost was a " + g.name + ".");
-      } else {
-        log("❌ Wrong. It was actually a " + game.currentGhost.name + ".");
-      }
-      gameOptions.innerHTML = "<button onclick='location.reload()'>Restart Game</button>";
-    };
-    gameOptions.appendChild(btn);
-  });
-}
-
-/* ---------- ITEM USAGE ---------- */
-function openItemMenu() {
-  gameOptions.innerHTML = "<p>Select an item to use:</p>";
-  game.inventory.forEach(i => {
-    const btn = document.createElement("button");
-    btn.textContent = i;
-    btn.onclick = () => {
-      useItem(i);
-      renderActionButtons();
-    };
-    gameOptions.appendChild(btn);
-  });
-}
-function useItem(item) {
-  const evMap = {
-    "EMF": "EMF",
-    "Spirit Box": "Spirit Box",
-    "Camera": "Ghost Orb",
-    "UV Light": "Fingerprints",
-    "Thermometer": "Freezing",
-    "D.O.T.S": "D.O.T.S",
-    "Book": "Ghost Writing"
-  };
-  const ev = evMap[item];
-  const inGhostRoom = (game.playerRoom === game.ghostRoom);
-  const isMimic = game.currentGhost.name === "The Mimic";
-  const mimicEvidence = game.mimicForm ? game.mimicForm.evidence : [];
-  const evidenceList = (isMimic && game.mimicForm) ? mimicEvidence : game.currentGhost.evidence;
-
-  if (item === "Camera" && isMimic && inGhostRoom) {
-    log("📸 You see a ghost orb... but it feels unnatural.");
-  }
-  if (!inGhostRoom) {
-    log("🧍 You use the " + item + ", but nothing happens.");
-    return;
-  }
-  if (evidenceList.includes(ev)) {
-    if (!game.foundEvidence.includes(ev)) {
-      game.foundEvidence.push(ev);
-      log("✅ Evidence confirmed: " + ev);
-    } else {
-      log("You’ve already found that evidence.");
-    }
-  } else {
-    log(item + " shows no useful reading.");
-  }
-}
-
 /* ---------- AMBIENT NARRATION ---------- */
 function ambientNarration() {
   const lowSanity = game.sanity <= 40;
   const inGhostRoom = game.playerRoom === game.ghostRoom;
   const ghost = game.currentGhost.name;
-
   const base = [
     "A cold chill passes your neck...",
     "You hear distant footsteps...",
@@ -552,23 +387,20 @@ function ambientNarration() {
     "A whisper calls your name — or maybe you imagined it.",
     "Shadows dance unnaturally along the walls."
   ];
-
   let lines = [...base];
   if (inGhostRoom && ghostHints[ghost]) lines.push(...ghostHints[ghost]);
   if (lowSanity) lines.push(...hallucinations);
-
   if (Math.random() < (lowSanity ? 0.8 : inGhostRoom ? 0.7 : 0.4)) {
     log("🌫️ " + lines[Math.floor(Math.random() * lines.length)]);
   }
 }
 
-/* ---------- END TURN ---------- */
+/* ---------- TURN END ---------- */
 function endTurn() {
   game.turn++;
   game.sanity -= Math.floor(Math.random() * 6 + 3);
   if (game.sanity < 0) game.sanity = 0;
   log(`🌀 Turn ${game.turn} complete. Sanity: ${game.sanity}%`);
-
   ambientNarration();
 
   if (game.currentGhost.name === "The Mimic") {
@@ -601,26 +433,10 @@ function endTurn() {
       return;
     }
   }
-
   renderActionButtons();
 }
 
-/* ---------- LIGHTNING ---------- */
-function lightningFlash() {
-  const flash = document.getElementById('flash-overlay');
-  flash.style.opacity = '0.4';
-  setTimeout(() => { flash.style.opacity = '0'; }, 120);
-}
-function scheduleLightning() {
-  const delay = 10000 + Math.random() * 20000;
-  setTimeout(() => {
-    lightningFlash();
-    scheduleLightning();
-  }, delay);
-}
-scheduleLightning();
-
-/* ---------- FLOATING ORBS ---------- */
+/* ---------- FLOATING SPIRIT ORBS ---------- */
 const orbCanvas = document.getElementById('orb-canvas');
 const ctx = orbCanvas.getContext('2d');
 let width = orbCanvas.width = window.innerWidth;
@@ -629,13 +445,15 @@ function createOrb() {
   return {
     x: Math.random() * width,
     y: Math.random() * height,
-    vx: (Math.random() - 0.5) * 0.3,
-    vy: (Math.random() - 0.5) * 0.3,
-    radius: Math.random() * 2 + 1,
+    vx: (Math.random() - 0.5) * (0.2 + Math.random() * 0.5),
+    vy: (Math.random() - 0.5) * (0.2 + Math.random() * 0.5),
+    baseRadius: 2 + Math.random() * 3,
+    radius: 0,
     opacity: 0,
-    fadeIn: true,
-    tick: 0,
-    lifetime: 300 + Math.random() * 200
+    fadeIn: Math.random() > 0.5,
+    tick: Math.random() * 1000,
+    lifetime: 200 + Math.random() * 400,
+    pulseSpeed: 0.02 + Math.random() * 0.03
   };
 }
 let orbs = Array.from({ length: 10 }, createOrb);
@@ -644,19 +462,28 @@ function animateOrbs() {
   orbs.forEach(o => {
     o.tick++;
     o.lifetime--;
-    o.radius += Math.sin(o.tick / 30) * 0.1;
-    o.opacity += o.fadeIn ? 0.01 : -0.005;
-    if (o.opacity > 0.5) o.fadeIn = false;
-    if (o.opacity <= 0 || o.lifetime <= 0) Object.assign(o, createOrb());
-    o.x += o.vx;
-    o.y += o.vy;
+    if (o.fadeIn) {
+      o.opacity += 0.005 + Math.random() * 0.01;
+      if (o.opacity > 0.6 + Math.random() * 0.3) o.fadeIn = false;
+    } else {
+      o.opacity -= 0.002 + Math.random() * 0.005;
+      if (o.opacity <= 0.05 || o.lifetime <= 0) Object.assign(o, createOrb());
+    }
+    o.radius = o.baseRadius + Math.sin(o.tick * o.pulseSpeed) * 1.5;
+    o.x += o.vx; o.y += o.vy;
+    if (Math.random() < 0.01) {
+      o.vx += (Math.random() - 0.5) * 0.05;
+      o.vy += (Math.random() - 0.5) * 0.05;
+    }
     if (o.x < 0 || o.x > width) o.vx *= -1;
     if (o.y < 0 || o.y > height) o.vy *= -1;
+    const g = ctx.createRadialGradient(o.x, o.y, 0, o.x, o.y, o.radius * 2);
+    g.addColorStop(0, `rgba(255,255,255,${o.opacity})`);
+    g.addColorStop(0.4, `rgba(180,220,255,${o.opacity * 0.6})`);
+    g.addColorStop(1, `rgba(100,150,255,0)`);
     ctx.beginPath();
-    ctx.arc(o.x, o.y, o.radius, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(255,255,255,${o.opacity})`;
-    ctx.shadowBlur = 10;
-    ctx.shadowColor = "white";
+    ctx.fillStyle = g;
+    ctx.ellipse(o.x, o.y, o.radius * (1 + Math.sin(o.tick * 0.05) * 0.3), o.radius, 0, 0, Math.PI * 2);
     ctx.fill();
   });
   requestAnimationFrame(animateOrbs);
@@ -666,6 +493,19 @@ window.addEventListener('resize', () => {
   width = orbCanvas.width = window.innerWidth;
   height = orbCanvas.height = window.innerHeight;
 });
+
+/* ---------- LIGHTNING ---------- */
+function lightningFlash() {
+  const flash = document.getElementById('flash-overlay');
+  flash.style.opacity = '0.4';
+  setTimeout(() => { flash.style.opacity = '0'; }, 120);
+}
+(function scheduleLightning() {
+  setTimeout(() => {
+    lightningFlash();
+    scheduleLightning();
+  }, 10000 + Math.random() * 20000);
+})();
 
 /* ---------- UI FLOW ---------- */
 startBtn.onclick = () => {
@@ -703,10 +543,7 @@ document.getElementById('closeRules').onclick = () => {
 };
 document.getElementById('confirm-loadout').onclick = () => {
   const selected = Array.from(document.querySelectorAll('#item-selection input:checked')).map(i => i.value);
-  if (selected.length > 3) {
-    alert("You may only carry 3 tools.");
-    return;
-  }
+  if (selected.length > 3) return alert("You may only carry 3 tools.");
   Object.assign(game, {
     inventory: [...selected, "Notebook", "Lighter"],
     vanStock: {},
@@ -728,7 +565,7 @@ document.getElementById('confirm-loadout').onclick = () => {
   loadoutScreen.style.display = 'none';
   gameUI.style.display = 'block';
   log("🎒 Loadout confirmed: " + selected.join(', '));
-  setTimeout(() => { startInvestigation(); }, 400);
+  setTimeout(startInvestigation, 400);
 };
 </script>
 
