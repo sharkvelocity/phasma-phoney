@@ -14,12 +14,10 @@
       background-color: #000;
       font-family: monospace;
     }
-
     body {
       background: url('House.png') no-repeat center center fixed;
       background-size: cover;
     }
-
     #startButton {
       position: absolute;
       top: 50%;
@@ -34,13 +32,11 @@
       z-index: 999;
       transition: all 0.2s ease-in-out;
     }
-
     #startButton:hover {
       background-color: #333;
       color: #fff;
       border-color: #666;
     }
-
     #flash-overlay {
       position: fixed;
       top: 0;
@@ -52,7 +48,6 @@
       pointer-events: none;
       z-index: 9999;
     }
-
     #orb-canvas {
       position: fixed;
       top: 0;
@@ -60,22 +55,19 @@
       width: 100vw;
       height: 100vh;
       pointer-events: none;
-      z-index: 1;
+      z-index: 0;
     }
-
     .text-glow {
       font-size: 4em;
       color: #fff;
       font-family: Arial;
       text-shadow: 1px 0px 20px blue;
     }
-
     .text-glow:hover,
     .text-glow:focus,
     .text-glow:active {
       text-shadow: 1px 0px 25px cyan;
     }
-
     #text-shadow-box {
       position: absolute;
       top: 10%;
@@ -86,7 +78,6 @@
       border-radius: 10px;
       z-index: 10;
     }
-
     footer {
       position: fixed;
       bottom: 10px;
@@ -97,23 +88,22 @@
       font-family: sans-serif;
       z-index: 9999;
     }
+    #gameModal, #loadout-screen, #rulesPopup {
+      max-width: 90vw;
+    }
   </style>
 </head>
 <body>
   <!-- START BUTTON -->
   <button id="startButton">Start Investigation</button>
-
   <!-- FLASH OVERLAY -->
   <div id="flash-overlay"></div>
-
   <!-- FLOATING ORBS -->
   <canvas id="orb-canvas"></canvas>
-
   <!-- ADA GLOW TITLE -->
   <div id="text-shadow-box">
     <div class="text-glow">Phasma‑Phoney</div>
   </div>
-
   <!-- FOOTER -->
   <footer>Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer>
   <!-- ADA MODAL GAME MENU -->
@@ -140,12 +130,10 @@
       <button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
       <button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
     </div>
-
     <div id="ui" style="display:none; margin-top:20px;">
       <div id="log" style="text-align: left;"></div>
     </div>
   </div>
-
   <!-- RULES POPUP -->
   <div id="rulesPopup" style="
     display: none;
@@ -180,7 +168,6 @@
       <button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
     </div>
   </div>
-
   <!-- LOADOUT SELECTION -->
   <div id="loadout-screen" style="
     display: none;
@@ -216,7 +203,6 @@
       <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
     </div>
   </div>
-
   <!-- INVESTIGATION UI -->
   <div id="game-ui" style="
     display: none;
@@ -244,7 +230,6 @@
   const gameUI = document.getElementById('game-ui');
   const gameLog = document.getElementById('game-log');
   const gameOptions = document.getElementById('game-options');
-
   // === STATE OBJECT ===
   const game = {
     inventory: [],
@@ -258,12 +243,12 @@
     turn: 0,
     foundEvidence: [],
     started: false,
-    droppedItems: {}, // roomName: [items]
+    droppedItems: {},
     activeHunt: false,
     crucifixUsed: false,
-    smudgeUsed: false
+    smudgeUsed: false,
+    huntCooldown: 0
   };
-
   // === LOG FUNCTION ===
   function log(msg) {
     const line = document.createElement('div');
@@ -273,36 +258,29 @@
     gameLog.appendChild(line);
     gameLog.scrollTop = gameLog.scrollHeight;
   }
-
   // === UI FLOW ===
   startBtn.onclick = () => {
     startBtn.style.display = 'none';
     modal.style.display = 'block';
   };
-
   document.getElementById('startNewGame').onclick = () => {
     modal.style.display = 'none';
     loadoutScreen.style.display = 'block';
   };
-
   document.getElementById('cancel-loadout').onclick = () => {
     loadoutScreen.style.display = 'none';
     modal.style.display = 'block';
   };
-
   document.getElementById('exitMenu').onclick = () => {
     modal.style.display = 'none';
     startBtn.style.display = 'block';
   };
-
   document.getElementById('rulesBtn').onclick = () => {
     document.getElementById('rulesPopup').style.display = 'block';
   };
-
   document.getElementById('closeRules').onclick = () => {
     document.getElementById('rulesPopup').style.display = 'none';
   };
-
   // === LOADOUT CONFIRM ===
   document.getElementById('confirm-loadout').onclick = () => {
     const selected = Array.from(document.querySelectorAll('#item-selection input:checked')).map(i => i.value);
@@ -310,8 +288,6 @@
       alert("You may only carry 3 tools.");
       return;
     }
-
-    // Store inventory
     game.inventory = [...selected];
     game.vanStock = {};
     game.foundEvidence = [];
@@ -322,24 +298,20 @@
     game.playerRoom = "Van";
     game.crucifixUsed = false;
     game.smudgeUsed = false;
-
-    // Fill van with all unused tools
+    game.huntCooldown = 0;
     const allTools = ["EMF", "Spirit Box", "Camera", "UV Light", "D.O.T.S", "Thermometer", "Book", "Smudge", "Crucifix", "Salt"];
     allTools.forEach(tool => {
       if (!game.inventory.includes(tool)) {
         game.vanStock[tool] = (tool === "Smudge" ? 2 : tool === "Salt" ? 3 : 1);
       }
     });
-
-    // Add static tools
     game.inventory.push("Notebook", "Lighter");
-
     loadoutScreen.style.display = 'none';
     gameUI.style.display = 'block';
-
     log("🎒 Loadout confirmed: " + selected.join(', '));
     log("📓 Notebook and 🔥 Lighter are always with you.");
     log("🚐 You are in the van. Your investigation begins.");
+    setTimeout(() => { if (game.started) startInvestigation(); }, 400);
   };
 </script>
 <script>
@@ -365,14 +337,13 @@
     { name: "The Twins", evidence: ["EMF", "Spirit Box", "Freezing"] },
     { name: "Raiju", evidence: ["EMF", "Ghost Orb", "D.O.T.S"] },
     { name: "Obake", evidence: ["EMF", "Fingerprints", "Ghost Orb"] },
-    { name: "The Mimic", evidence: ["Spirit Box", "Fingerprints", "Freezing"] }, // fake orb always shows
+    { name: "The Mimic", evidence: ["Spirit Box", "Fingerprints", "Freezing"] },
     { name: "Moroi", evidence: ["Spirit Box", "Ghost Writing", "Freezing"] },
     { name: "Deogen", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] },
-    { name: "Thaye", evidence: ["Ghost Orb", "Ghost Writing", "D.O.T.S"] }
+    { name: "Thaye", evidence: ["Ghost Orb", "Ghost Writing", "D.O.T.S"] },
+    { name: "Succubus", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] }
   ];
-
   const rooms = ["Van", "Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
-
   function startInvestigation() {
     game.currentGhost = ghostProfiles[Math.floor(Math.random() * ghostProfiles.length)];
     game.ghostRoom = rooms[Math.floor(Math.random() * (rooms.length - 1)) + 1];
@@ -383,18 +354,15 @@
     log("🧠 Ghost profile initialized. Begin your investigation.");
     renderActionButtons();
   }
-
   function renderActionButtons() {
     const opts = gameOptions;
     opts.innerHTML = "";
-
     const buttons = [
       { label: "Move", handler: openMoveMenu },
       { label: "Use Item", handler: openItemMenu },
       { label: "Guess Ghost", handler: openGuessMenu },
       { label: "End Turn", handler: endTurn }
     ];
-
     buttons.forEach(btn => {
       const b = document.createElement("button");
       b.textContent = btn.label;
@@ -403,7 +371,6 @@
       opts.appendChild(b);
     });
   }
-
   function openMoveMenu() {
     gameOptions.innerHTML = "<p>Select a room to move to:</p>";
     rooms.forEach(r => {
@@ -418,7 +385,6 @@
       gameOptions.appendChild(btn);
     });
   }
-
   function openGuessMenu() {
     gameOptions.innerHTML = "<p>Who do you think it is?</p>";
     ghostProfiles.forEach(g => {
@@ -435,7 +401,6 @@
       gameOptions.appendChild(btn);
     });
   }
-
   function openItemMenu() {
     gameOptions.innerHTML = "<p>Select an item to use:</p>";
     game.inventory.forEach(i => {
@@ -448,7 +413,6 @@
       gameOptions.appendChild(btn);
     });
   }
-
   function useItem(item) {
     const evMap = {
       "EMF": "EMF",
@@ -459,23 +423,18 @@
       "D.O.T.S": "D.O.T.S",
       "Book": "Ghost Writing"
     };
-
     const ev = evMap[item];
     const inGhostRoom = (game.playerRoom === game.ghostRoom);
     const isMimic = game.currentGhost.name === "The Mimic";
     const mimicEvidence = game.mimicForm ? game.mimicForm.evidence : [];
-
     const evidenceList = (isMimic && game.mimicForm) ? mimicEvidence : game.currentGhost.evidence;
-
     if (item === "Camera" && isMimic && inGhostRoom) {
       log("📸 You see a ghost orb... but it feels unnatural.");
     }
-
     if (!inGhostRoom) {
       log("🧍 You use the " + item + ", but nothing happens.");
       return;
     }
-
     if (evidenceList.includes(ev)) {
       if (!game.foundEvidence.includes(ev)) {
         game.foundEvidence.push(ev);
@@ -487,15 +446,11 @@
       log(item + " shows no useful reading.");
     }
   }
-</script>
-<script>
   function endTurn() {
     game.turn++;
-    game.sanity -= Math.floor(Math.random() * 6 + 3); // Lose 3–8 sanity per turn
+    game.sanity -= Math.floor(Math.random() * 6 + 3);
     if (game.sanity < 0) game.sanity = 0;
     log(`🌀 Turn ${game.turn} complete. Sanity: ${game.sanity}%`);
-
-    // Ambient Narration
     const ambients = [
       "A cold chill passes your neck...",
       "You hear distant footsteps...",
@@ -506,8 +461,6 @@
     if (Math.random() < 0.6) {
       log("🌫️ " + ambients[Math.floor(Math.random() * ambients.length)]);
     }
-
-    // Mimic mimicry shift
     if (game.currentGhost.name === "The Mimic") {
       game.mimicShift--;
       if (game.mimicShift <= 0) {
@@ -517,15 +470,14 @@
         log("🌀 Something about the ghost's behavior seems to shift...");
       }
     }
-
-    // Hunt Logic
-    const huntChance = (100 - game.sanity) / 100; // e.g. 60 sanity = 0.4
+    const huntChance = (100 - game.sanity) / 100;
     const isInGhostRoom = game.playerRoom === game.ghostRoom;
-
-    if (isInGhostRoom && Math.random() < huntChance) {
+    if (game.huntCooldown > 0) {
+      game.huntCooldown--;
+    } else if (isInGhostRoom && Math.random() < huntChance) {
+      game.huntCooldown = 3 + Math.floor(Math.random() * 3);
       log("🔦 Your flashlight begins flickering...");
       log("👻 The ghost is hunting!");
-
       if (!game.crucifixUsed && game.inventory.includes("Crucifix")) {
         game.crucifixUsed = true;
         log("🕯️ Your crucifix flares and burns — a hunt was prevented!");
@@ -538,34 +490,27 @@
         return;
       }
     }
-
     renderActionButtons();
   }
-
-  // Start game logic immediately after confirm
-  document.getElementById('confirm-loadout').addEventListener('click', () => {
-    setTimeout(() => {
-      if (game.started) startInvestigation();
-    }, 400);
-  });
-
-  // === Lightning Flash ===
+  // === Lightning Flash (random interval) ===
   function lightningFlash() {
     const flash = document.getElementById('flash-overlay');
     flash.style.opacity = '0.4';
     setTimeout(() => { flash.style.opacity = '0'; }, 120);
   }
-
-  setInterval(() => {
-    if (Math.random() < 0.5) lightningFlash();
-  }, 15000);
-
+  function scheduleLightning() {
+    const delay = 10000 + Math.random() * 20000;
+    setTimeout(() => {
+      lightningFlash();
+      scheduleLightning();
+    }, delay);
+  }
+  scheduleLightning();
   // === Floating Orbs ===
   const orbCanvas = document.getElementById('orb-canvas');
   const ctx = orbCanvas.getContext('2d');
   let width = orbCanvas.width = window.innerWidth;
   let height = orbCanvas.height = window.innerHeight;
-
   function createOrb() {
     return {
       x: Math.random() * width,
@@ -578,9 +523,7 @@
       tick: 0
     };
   }
-
   let orbs = Array.from({ length: 15 }, createOrb);
-
   function animateOrbs() {
     ctx.clearRect(0, 0, width, height);
     orbs.forEach(orb => {
@@ -602,7 +545,6 @@
     });
     requestAnimationFrame(animateOrbs);
   }
-
   animateOrbs();
   window.addEventListener('resize', () => {
     width = orbCanvas.width = window.innerWidth;
