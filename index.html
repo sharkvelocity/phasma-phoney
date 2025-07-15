@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <title>Phasma‑Phoney</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     html, body {
       margin: 0;
@@ -13,7 +13,6 @@
       width: 100%;
       background-color: #000;
       font-family: monospace;
-      -webkit-tap-highlight-color: transparent;
     }
     body {
       background: url('Van_N.png') no-repeat center center fixed;
@@ -48,12 +47,11 @@
     }
     footer {
       position: fixed;
-      bottom: 1vh;
+      bottom: 10px;
       left: 50%;
       transform: translateX(-50%);
       color: white;
-      font-size: 2.8vw;
-      max-font-size: 14px;
+      font-size: 0.9em;
       font-family: sans-serif;
       z-index: 9999;
     }
@@ -61,26 +59,24 @@
       max-width: 90vw;
     }
     #voice-controls {
-      margin-bottom: 1vh;
+      margin-bottom: 10px;
       text-align: right;
     }
     #voice-controls select, #voice-controls button {
       background: #111;
       color: #0ff;
       border: 1px solid #444;
-      padding: 1vh 2vw;
-      margin-left: 1vw;
+      padding: 4px 8px;
+      margin-left: 4px;
       font-family: monospace;
-      font-size: 3vw;
     }
     button {
       background: #111;
       color: #0ff;
       border: 1px solid #444;
-      padding: 1.5vh 3vw;
-      margin: 1vw;
+      padding: 6px 10px;
+      margin: 3px;
       cursor: pointer;
-      font-size: 3.5vw;
     }
     button:hover {
       background: #222;
@@ -97,30 +93,29 @@
       z-index: 1500;
       pointer-events: none;
     }
-  #game-log {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: calc(100% - 80px);
-  background-color: rgba(0, 0, 0, 0.1); /* almost transparent */
-  color: #0ff;
-  padding: 20px;
-  overflow-y: auto;
-  border: 1px solid rgba(0,255,255,0.3);
-  pointer-events: auto;
-}
-
-#game-options {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  background-color: rgba(0, 0, 0, 0.1); /* almost transparent */
-  padding: 10px;
-  border-top: 1px solid rgba(0,255,255,0.3);
-  pointer-events: auto;
-}
+    #game-log {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 80px);
+      background-color: rgba(0, 0, 0, 0.1);
+      color: #0ff;
+      padding: 20px;
+      overflow-y: auto;
+      border: 1px solid rgba(0,255,255,0.3);
+      pointer-events: auto;
+    }
+    #game-options {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.1);
+      padding: 10px;
+      border-top: 1px solid rgba(0,255,255,0.3);
+      pointer-events: auto;
+    }
     /* Weather Layers */
     #fog-layer, #rain-layer, #bloodmoon-layer {
       position: fixed;
@@ -142,36 +137,20 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: 90vw;
-      max-width: 600px;
-      height: 60vh;
+      width: 600px;
+      height: 400px;
       background: #000;
       border: 2px solid #0ff;
       z-index: 10000;
       color: #0ff;
-      padding: 2vw;
+      padding: 10px;
     }
     #orb-mini-canvas {
       width: 100%;
-      height: 40vh;
+      height: 300px;
       background: rgba(0,0,0,0.8);
       border: 1px solid #0ff;
       cursor: crosshair;
-    }
-    #orb-score {
-      font-size: 3vw;
-      margin-top: 1vh;
-    }
-    @media (min-width: 768px) {
-      button, #voice-controls select, #voice-controls button {
-        font-size: 14px;
-      }
-      #game-log {
-        font-size: 14px;
-      }
-      #orb-score {
-        font-size: 14px;
-      }
     }
   </style>
 </head>
@@ -224,14 +203,13 @@
     </div>
   </div>
 
-  <!-- LOADOUT SCREEN (Tap-to-Swap for Mobile) -->
+  <!-- LOADOUT SCREEN -->
   <div id="loadout-screen" style="
     position:fixed;
     top:50%;
     left:50%;
     transform:translate(-50%,-50%);
-    width:90vw;
-    max-width:500px;
+    width:500px;
     background-color:#111;
     color:white;
     padding:30px;
@@ -239,8 +217,8 @@
     z-index:2000;
     font-family:monospace;
     border-radius:10px;">
-    <h2 style="text-align:center;">Select Your Loadout</h2>
-    <div style="display:flex;justify-content:space-between;gap:2vw;">
+    <h2 style="text-align:center;">Select Your Loadout (Drag or Tap to Choose)</h2>
+    <div style="display:flex;justify-content:space-between;">
       <div id="van-inventory" style="width:45%;min-height:200px;border:1px solid #555;padding:10px;">
         <strong>Van:</strong>
         <div id="van-items"></div>
@@ -250,7 +228,7 @@
         <div id="player-items"></div>
       </div>
     </div>
-    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">Tap items to swap. Max 3 items. Notebook & Lighter always included.</p>
+    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">Drag or tap to move items. Max 3 items. Notebook & Lighter always included.</p>
     <div style="text-align:center;margin-top:20px;">
       <button id="confirm-loadout" style="margin:5px;padding:8px 24px;">Confirm</button>
     </div>
@@ -295,6 +273,7 @@ const game={
   weather:"Clear",cameraPlaced:{},cameraRoom:null,
   notebookCrossedOut:{},orbGameActive:false
 };
+
 /* ==============================
    === MAP VISUALS & WEATHER ===
 ============================== */
@@ -411,7 +390,6 @@ function startInvestigation(){
 ============================== */
 function openNotebook(){
   gameOptions.innerHTML="<p>Notebook:</p>";
-  // Evidence checklist
   ["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"].forEach(e=>{
     const btn=document.createElement("button");
     btn.textContent=(game.foundEvidence.includes(e)?"✓ ":"")+e;
@@ -424,30 +402,11 @@ function openNotebook(){
     };
     gameOptions.appendChild(btn);
   });
-  // Cross-out for forbidden actions
-  const crossBtn=document.createElement("button");
-  crossBtn.textContent="Cross-Out Ghosts (Forbidden Behavior)";
-  crossBtn.onclick=()=>{
-    ghostProfiles.forEach(g=>{
-      if(game.notebookCrossedOut[g.name]) return;
-      if(g.name==="Onryo" && game.lastForbidden==="huntNearFire"){
-        game.notebookCrossedOut[g.name]=true;
-        log("Crossed out: "+g.name+" (forbidden action detected).");
-      }
-    });
-    openNotebook();
-  };
+  const exitBtn=document.createElement("button");
+  exitBtn.textContent="Exit Notebook";
+  exitBtn.onclick=renderActionButtons;
   gameOptions.appendChild(document.createElement("hr"));
-  gameOptions.appendChild(crossBtn);
-
-  const guessBtn=document.createElement("button");
-  guessBtn.textContent="Guess Ghost";
-  guessBtn.onclick=openGuessMenu;
-  gameOptions.appendChild(guessBtn);
-  const cancelBtn=document.createElement("button");
-  cancelBtn.textContent="Cancel";
-  cancelBtn.onclick=renderActionButtons;
-  gameOptions.appendChild(cancelBtn);
+  gameOptions.appendChild(exitBtn);
 }
 
 /* ==============================
@@ -506,6 +465,7 @@ function openMoveMenu(){
     gameOptions.appendChild(btn);
   });
 }
+
 /* ==============================
    === ITEM USAGE & EVIDENCE CHANCE ===
 ============================== */
@@ -529,7 +489,7 @@ function useItem(item){
   const inGhostRoom=game.playerRoom===game.ghostRoom;
   const isMimic=game.currentGhost.name==="The Mimic";
   const evidenceList=(isMimic && game.mimicForm)?game.mimicForm.evidence:game.currentGhost.evidence;
-  const chance=0.5+Math.random()*0.35; // 50–85%
+  const chance=0.5+Math.random()*0.35; //50–85%
 
   if(item==="Camera"){
     game.cameraPlaced[game.playerRoom]=true;
@@ -540,9 +500,7 @@ function useItem(item){
       cameraOverlay.style.display="block";
       triggerOrbMiniGame();
     }
-    else if(isMimic && inGhostRoom) {
-      log("The camera picks up strange, unnatural orbs...");
-    }
+    else if(isMimic && inGhostRoom) log("The camera picks up strange, unnatural orbs...");
   }
 
   if(!inGhostRoom){
@@ -555,19 +513,10 @@ function useItem(item){
       if(!game.foundEvidence.includes(ev)){
         game.foundEvidence.push(ev);
         log("Evidence confirmed: "+ev);
-        if(ev==="Ghost Orb"){ 
-          cameraOverlay.style.display="block"; 
-          triggerOrbMiniGame(); 
-        }
-      } else {
-        log("Already recorded "+ev+".");
-      }
-    } else {
-      log(item+" gives uncertain reading.");
-    }
-  } else {
-    log(item+" shows no useful reading.");
-  }
+        if(ev==="Ghost Orb"){ cameraOverlay.style.display="block"; triggerOrbMiniGame(); }
+      }else log("Already recorded "+ev+".");
+    }else log(item+" gives uncertain reading.");
+  }else log(item+" shows no useful reading.");
 }
 
 /* ==============================
@@ -588,14 +537,12 @@ function openVanMenu(){
       updateMapVisual();
       cameraOverlay.style.display="block";
       log("Viewing camera feed in "+game.cameraRoom+".");
-    } else {
-      log("No active cameras.");
-    }
+    }else log("No active cameras.");
   };
   gameOptions.appendChild(camBtn);
 
   const swapLabel=document.createElement("p");
-  swapLabel.textContent="Van Inventory:";
+  swapLabel.textContent="Drag & Drop Swap:";
   gameOptions.appendChild(swapLabel);
 
   Object.keys(game.vanStock).forEach(tool=>{
@@ -611,7 +558,6 @@ function openVanMenu(){
     };
     gameOptions.appendChild(btn);
   });
-
   game.inventory.filter(i=>!["Notebook","Lighter"].includes(i)).forEach(i=>{
     const btn=document.createElement("button");
     btn.textContent="Return "+i;
@@ -624,10 +570,10 @@ function openVanMenu(){
     gameOptions.appendChild(btn);
   });
 
-  const cancel=document.createElement("button");
-  cancel.textContent="Cancel";
-  cancel.onclick=renderActionButtons;
-  gameOptions.appendChild(cancel);
+  const confirmBtn=document.createElement("button");
+  confirmBtn.textContent="Confirm & Exit";
+  confirmBtn.onclick=renderActionButtons;
+  gameOptions.appendChild(confirmBtn);
 }
 
 /* ==============================
@@ -695,9 +641,8 @@ function endTurn(){
   const huntChance=(100-game.sanity)/100;
   const isInGhostRoom=game.playerRoom===game.ghostRoom;
 
-  if(game.huntCooldown>0){ 
-    game.huntCooldown--; 
-  } else if(Math.random()<huntChance){
+  if(game.huntCooldown>0){ game.huntCooldown--; }
+  else if(Math.random()<huntChance){
     log("Your equipment flickers...");
     log("The ghost begins to hunt!");
     if(isInGhostRoom){
@@ -720,25 +665,6 @@ function endTurn(){
 }
 
 /* ==============================
-   === AMBIENT PERSONALITY SYSTEM ===
-============================== */
-function triggerAmbientPersonality(){
-  const ambients=[
-    "A chill crawls down your neck...",
-    "Distant footsteps echo softly...",
-    "The walls creak as if breathing..."
-  ];
-  if(Math.random()<0.6) log(ambients[Math.floor(Math.random()*ambients.length)]);
-
-  const g=game.currentGhost.name;
-  if(g==="Onryo" && Math.random()<0.4) log("You notice a nearby flame flicker and extinguish...");
-  if(g==="Mare" && Math.random()<0.3) log("Lights nearby flicker, the ghost seems to dislike light...");
-  if(g==="Oni" && Math.random()<0.25) log("You feel a rush of cold air, like something brushed past fast...");
-  if(g==="Poltergeist" && Math.random()<0.3) log("You hear items clatter faintly somewhere...");
-  if(g==="Banshee" && Math.random()<0.3) log("A soft humming, almost like singing, carries through the room...");
-  if(g==="Myling" && Math.random()<0.25) log("You hear faint whispering on the edge of hearing...");
-}
-/* ==============================
    === ORB MINI-GAME LOGIC ===
 ============================== */
 let orbMiniActive=false;
@@ -747,7 +673,6 @@ function triggerOrbMiniGame(){
   orbMiniActive=true;
   log("A surge of spiritual energy fills the room. Mini-game triggered!");
 
-  // Popup overlay for mini-game
   const popup=document.createElement("div");
   popup.style.position="fixed";
   popup.style.top="50%";
@@ -755,33 +680,26 @@ function triggerOrbMiniGame(){
   popup.style.transform="translate(-50%,-50%)";
   popup.style.width="400px";
   popup.style.height="300px";
-  popup.style.background="rgba(0,0,0,0.9)";
+  popup.style.background="rgba(0,0,0,0.7)";
   popup.style.border="2px solid #0ff";
   popup.style.color="#0ff";
   popup.style.zIndex="99999";
   popup.style.padding="10px";
-  popup.style.borderRadius="10px";
-  popup.innerHTML="<h3 style='text-align:center;'>Spirit Orb Mini-Game</h3><p style='font-size:0.9em;'>Click the orbs to collect spiritual energy before they vanish!</p>";
+  popup.innerHTML="<h3>Spirit Orb Mini-Game</h3><p>Tap or click orbs to absorb their energy!</p>";
 
   const closeBtn=document.createElement("button");
   closeBtn.textContent="Close";
   closeBtn.style.marginTop="10px";
-  closeBtn.style.display="block";
-  closeBtn.style.marginLeft="auto";
-  closeBtn.style.marginRight="auto";
   closeBtn.onclick=()=>{
     document.body.removeChild(popup);
     orbMiniActive=false;
-    log("The orb energy dissipates...");
   };
 
   const miniCanvas=document.createElement("canvas");
-  miniCanvas.width=380;
-  miniCanvas.height=200;
+  miniCanvas.width=380; miniCanvas.height=200;
   miniCanvas.style.background="#111";
   miniCanvas.style.display="block";
   miniCanvas.style.margin="10px auto";
-  miniCanvas.style.cursor="crosshair";
   popup.appendChild(miniCanvas);
   popup.appendChild(closeBtn);
   document.body.appendChild(popup);
@@ -791,22 +709,26 @@ function triggerOrbMiniGame(){
     x:Math.random()*miniCanvas.width,
     y:Math.random()*miniCanvas.height,
     r:8+Math.random()*5,
-    vx:(Math.random()-0.5)*1.2,
-    vy:(Math.random()-0.5)*1.2,
+    vx:(Math.random()-0.5)*1,
+    vy:(Math.random()-0.5)*1,
     alive:true
   }));
   let score=0;
-  miniCanvas.addEventListener("click",e=>{
+  miniCanvas.addEventListener("click",tapOrTouch);
+  miniCanvas.addEventListener("touchstart",tapOrTouch);
+
+  function tapOrTouch(e){
     const rect=miniCanvas.getBoundingClientRect();
-    const mx=e.clientX-rect.left,my=e.clientY-rect.top;
+    const mx=(e.touches?e.touches[0].clientX:e.clientX)-rect.left;
+    const my=(e.touches?e.touches[0].clientY:e.clientY)-rect.top;
     miniOrbs.forEach(o=>{
       if(o.alive && Math.hypot(mx-o.x,my-o.y)<o.r){
         o.alive=false;
         score++;
-        log("You absorbed an orb's energy! Total score: "+score);
+        log("You absorbed an orb's energy! Total: "+score);
       }
     });
-  });
+  }
 
   function loop(){
     ctxM.clearRect(0,0,miniCanvas.width,miniCanvas.height);
@@ -826,7 +748,100 @@ function triggerOrbMiniGame(){
 }
 
 /* ==============================
-   === CONFIRM LOADOUT (FIXED) ===
+   === SPIRIT ORBS CANVAS ===
+============================== */
+const orbCanvas=document.getElementById('orb-canvas');
+const ctx=orbCanvas.getContext('2d');
+let width=orbCanvas.width=window.innerWidth;
+let height=orbCanvas.height=window.innerHeight;
+function createOrb(){
+  return {
+    x:Math.random()*width,
+    y:Math.random()*height,
+    vx:(Math.random()-0.5)*0.5,
+    vy:(Math.random()-0.5)*0.5,
+    baseRadius:2+Math.random()*3,
+    opacity:0,
+    fadeIn:true,
+    tick:Math.random()*1000
+  };
+}
+let orbs=Array.from({length:10},createOrb);
+function animateOrbs(){
+  ctx.clearRect(0,0,width,height);
+  if(game.playerRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")){
+    orbs.forEach(o=>{
+      o.tick++;
+      if(o.fadeIn){o.opacity+=0.01;if(o.opacity>0.6)o.fadeIn=false;}
+      else{o.opacity-=0.005;if(o.opacity<=0.05)Object.assign(o,createOrb());}
+      o.x+=o.vx;o.y+=o.vy;
+      if(o.x<0||o.x>width)o.vx*=-1;
+      if(o.y<0||o.y>height)o.vy*=-1;
+      ctx.beginPath();
+      ctx.fillStyle=`rgba(200,255,255,${o.opacity})`;
+      ctx.arc(o.x,o.y,o.baseRadius,0,Math.PI*2);
+      ctx.fill();
+    });
+  }
+  requestAnimationFrame(animateOrbs);
+}
+animateOrbs();
+window.addEventListener('resize',()=>{
+  width=orbCanvas.width=window.innerWidth;
+  height=orbCanvas.height=window.innerHeight;
+});
+
+/* ==============================
+   === LOADOUT INITIALIZER (MOBILE-FRIENDLY) ===
+============================== */
+const allLoadoutItems=["EMF","Spirit Box","Camera","UV Light","D.O.T.S","Thermometer","Book","Smudge","Crucifix","Salt"];
+
+function initLoadout(){
+  vanItems.innerHTML="";
+  playerItems.innerHTML="";
+  allLoadoutItems.forEach(it=>{
+    const div=document.createElement("div");
+    div.textContent=it;
+    div.style.margin="4px";
+    div.style.padding="6px";
+    div.style.border="1px solid #0ff";
+    div.style.background="rgba(0,255,255,0.1)";
+    div.style.cursor="pointer";
+    div.draggable=true;
+
+    // Drag for desktop
+    div.ondragstart=e=>{e.dataTransfer.setData("text/plain",it);};
+
+    // Tap for mobile
+    div.onclick=()=>{
+      if(playerItems.querySelectorAll("div").length<3){
+        playerItems.appendChild(div);
+      } else {
+        alert("Max 3 items.");
+      }
+    };
+    vanItems.appendChild(div);
+  });
+
+  vanItems.ondragover=playerItems.ondragover=e=>e.preventDefault();
+  playerItems.ondrop=e=>{
+    e.preventDefault();
+    const it=e.dataTransfer.getData("text/plain");
+    const node=[...vanItems.querySelectorAll("div")].find(d=>d.textContent===it);
+    if(node && playerItems.querySelectorAll("div").length<3){
+      playerItems.appendChild(node);
+    }
+  };
+  vanItems.ondrop=e=>{
+    e.preventDefault();
+    const it=e.dataTransfer.getData("text/plain");
+    const node=[...playerItems.querySelectorAll("div")].find(d=>d.textContent===it);
+    if(node) vanItems.appendChild(node);
+  };
+}
+
+/* ==============================
+   === CONFIRM LOADOUT (FIXED MOBILE/DRAG) ===
 ============================== */
 document.getElementById('confirm-loadout').onclick=()=>{
   const selected=[...playerItems.querySelectorAll("div")].map(d=>d.textContent);
@@ -842,8 +857,7 @@ document.getElementById('confirm-loadout').onclick=()=>{
   game.crucifixUsed=false;
   game.smudgeUsed=false;
   game.huntCooldown=0;
-  const allTools=["EMF","Spirit Box","Camera","UV Light","D.O.T.S","Thermometer","Book","Smudge","Crucifix","Salt"];
-  allTools.forEach(tool=>{
+  allLoadoutItems.forEach(tool=>{
     if(!game.inventory.includes(tool)){
       game.vanStock[tool]=(tool==="Smudge"?2:tool==="Salt"?3:1);
     }
@@ -858,124 +872,22 @@ document.getElementById('confirm-loadout').onclick=()=>{
 };
 
 /* ==============================
-   === SPIRIT ORBS CANVAS ===
+   === MOBILE-FRIENDLY UI + TRANSPARENT BOXES ===
 ============================== */
-const orbCanvas=document.getElementById('orb-canvas');
-const ctx=orbCanvas.getContext('2d');
-let width=orbCanvas.width=window.innerWidth;
-let height=orbCanvas.height=window.innerHeight;
-
-function createOrb(){
-  return {
-    x:Math.random()*width,
-    y:Math.random()*height,
-    vx:(Math.random()-0.5)*0.5,
-    vy:(Math.random()-0.5)*0.5,
-    baseRadius:2+Math.random()*3,
-    opacity:0,
-    fadeIn:true,
-    tick:Math.random()*1000
-  };
-}
-let orbs=Array.from({length:10},createOrb);
-
-function animateOrbs(){
-  ctx.clearRect(0,0,width,height);
-  if(game.playerRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")){
-    orbs.forEach(o=>{
-      o.tick++;
-      if(o.fadeIn){
-        o.opacity+=0.01;
-        if(o.opacity>0.6)o.fadeIn=false;
-      }else{
-        o.opacity-=0.005;
-        if(o.opacity<=0.05)Object.assign(o,createOrb());
-      }
-      o.x+=o.vx;o.y+=o.vy;
-      if(o.x<0||o.x>width)o.vx*=-1;
-      if(o.y<0||o.y>height)o.vy*=-1;
-      ctx.beginPath();
-      ctx.fillStyle=`rgba(200,255,255,${o.opacity})`;
-      ctx.arc(o.x,o.y,o.baseRadius,0,Math.PI*2);
-      ctx.fill();
-    });
-  }
-  requestAnimationFrame(animateOrbs);
-}
-animateOrbs();
-
-window.addEventListener('resize',()=>{
-  width=orbCanvas.width=window.innerWidth;
-  height=orbCanvas.height=window.innerHeight;
+// Adjust transparency after DOM loaded
+document.addEventListener("DOMContentLoaded",()=>{
+  initLoadout();
+  document.getElementById("game-log").style.backgroundColor="rgba(0,0,0,0.3)";
+  document.getElementById("game-options").style.backgroundColor="rgba(0,0,0,0.3)";
 });
-
-/* ==============================
-   === DRAG & DROP LOADOUT INIT ===
-============================== */
-function initLoadout(){
-  vanItems.innerHTML="";
-  playerItems.innerHTML="";
-  const allLoadoutItems=["EMF","Spirit Box","Camera","UV Light","D.O.T.S","Thermometer","Book","Smudge","Crucifix","Salt"];
-  allLoadoutItems.forEach(it=>{
-    const div=document.createElement("div");
-    div.textContent=it;
-    div.draggable=true;
-    div.style.background="#222";
-    div.style.color="#0ff";
-    div.style.padding="4px";
-    div.style.margin="3px 0";
-    div.style.border="1px solid #0ff";
-    div.style.borderRadius="4px";
-    div.ondragstart=e=>{e.dataTransfer.setData("text/plain",it);};
-    vanItems.appendChild(div);
-  });
-  vanItems.ondragover=playerItems.ondragover=e=>e.preventDefault();
-  playerItems.ondrop=e=>{
-    const it=e.dataTransfer.getData("text/plain");
-    if(playerItems.querySelectorAll("div").length>=3){alert("Max 3 items.");return;}
-    const node=[...vanItems.querySelectorAll("div")].find(d=>d.textContent===it);
-    if(node) playerItems.appendChild(node);
-  };
-  vanItems.ondrop=e=>{
-    const it=e.dataTransfer.getData("text/plain");
-    const node=[...playerItems.querySelectorAll("div")].find(d=>d.textContent===it);
-    if(node) vanItems.appendChild(node);
-  };
-}
 
 /* ==============================
    === AUTO START ===
 ============================== */
-document.addEventListener("DOMContentLoaded",()=>initLoadout());
-/* ==============================
-   === MOBILE-FRIENDLY OPTIMIZATIONS ===
-============================== */
-(function(){
-  // Responsive scaling adjustments
-  const meta=document.createElement('meta');
-  meta.name="viewport";
-  meta.content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no";
-  document.head.appendChild(meta);
-
-  // Ensure UI adjusts for smaller screens
-  function adjustForMobile(){
-    const scale = window.innerWidth < 600 ? 0.9 : 1;
-    document.body.style.transform=`scale(${scale})`;
-    document.body.style.transformOrigin="top left";
-  }
-  window.addEventListener("resize",adjustForMobile);
-  adjustForMobile();
-})();
-
-/* ==============================
-   === FINAL TOUCHES ===
-============================== */
-// Add slight scroll auto-sizing for logs on mobile
-gameLog.style.fontSize = window.innerWidth < 600 ? "12px" : "14px";
-gameOptions.style.fontSize = window.innerWidth < 600 ? "12px" : "14px";
-
-log("System ready. Drag your loadout, confirm, and begin the investigation!");
-
+document.addEventListener("DOMContentLoaded",()=>{
+  if(!game.started) loadoutScreen.style.display="block";
+  else { gameUI.style.display="block"; renderActionButtons(); }
+});
 </script>
 </body>
 </html>
