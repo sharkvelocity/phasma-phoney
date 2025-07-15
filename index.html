@@ -97,30 +97,30 @@
       z-index: 1500;
       pointer-events: none;
     }
-    #game-log {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: calc(100% - 12vh);
-      background-color: rgba(0, 0, 0, 0.6);
-      color: #0ff;
-      padding: 2vw;
-      overflow-y: auto;
-      border: 1px solid #0ff;
-      pointer-events: auto;
-      font-size: 3.2vw;
-    }
-    #game-options {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      width: 100%;
-      background-color: rgba(0, 0, 0, 0.85);
-      padding: 2vw;
-      border-top: 1px solid #0ff;
-      pointer-events: auto;
-    }
+  #game-log {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 80px);
+  background-color: rgba(0, 0, 0, 0.1); /* almost transparent */
+  color: #0ff;
+  padding: 20px;
+  overflow-y: auto;
+  border: 1px solid rgba(0,255,255,0.3);
+  pointer-events: auto;
+}
+
+#game-options {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: rgba(0, 0, 0, 0.1); /* almost transparent */
+  padding: 10px;
+  border-top: 1px solid rgba(0,255,255,0.3);
+  pointer-events: auto;
+}
     /* Weather Layers */
     #fog-layer, #rain-layer, #bloodmoon-layer {
       position: fixed;
