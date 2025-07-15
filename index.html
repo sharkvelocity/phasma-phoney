@@ -5,7 +5,6 @@
   <title>Phasma‑Phoney</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
-    /* === GLOBAL RESET === */
     html, body {
       margin: 0;
       padding: 0;
@@ -15,13 +14,10 @@
       background-color: #000;
       font-family: monospace;
     }
-
     body {
       background: url('House.png') no-repeat center center fixed;
       background-size: cover;
     }
-
-    /* === START BUTTON === */
     #startButton {
       position: absolute;
       top: 50%;
@@ -41,8 +37,6 @@
       color: #fff;
       border-color: #666;
     }
-
-    /* === LIGHTNING FLASH === */
     #flash-overlay {
       position: fixed;
       top: 0;
@@ -54,8 +48,6 @@
       pointer-events: none;
       z-index: 9999;
     }
-
-    /* === FLOATING ORBS === */
     #orb-canvas {
       position: fixed;
       top: 0;
@@ -65,8 +57,6 @@
       pointer-events: none;
       z-index: 0;
     }
-
-    /* === TITLE GLOW === */
     .text-glow {
       font-size: 4em;
       color: #fff;
@@ -83,8 +73,6 @@
       border-radius: 10px;
       z-index: 10;
     }
-
-    /* === FOOTER === */
     footer {
       position: fixed;
       bottom: 10px;
@@ -95,13 +83,9 @@
       font-family: sans-serif;
       z-index: 9999;
     }
-
-    /* === POPUPS & MODALS === */
     #gameModal, #loadout-screen, #rulesPopup {
       max-width: 90vw;
     }
-
-    /* === VOICE CONTROLS === */
     #voice-controls {
       margin-top: 10px;
       text-align: right;
@@ -117,67 +101,52 @@
   </style>
 </head>
 <body>
-  <!-- START BUTTON -->
   <button id="startButton">Start Investigation</button>
-
-  <!-- LIGHTNING FLASH -->
   <div id="flash-overlay"></div>
-
-  <!-- FLOATING ORBS -->
   <canvas id="orb-canvas"></canvas>
+  <div id="text-shadow-box"><div class="text-glow">Phasma‑Phoney</div></div>
+  <footer>Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.</footer>
 
-  <!-- TITLE GLOW -->
-  <div id="text-shadow-box">
-    <div class="text-glow">Phasma‑Phoney</div>
-  </div>
-
-  <!-- FOOTER -->
-  <footer>
-    Shark-Blades — This game was an Envisionment of the first-person ghost hunting game Phasmophobia.
-  </footer>
-
-  <!-- MAIN MENU MODAL -->
   <div id="gameModal" style="
-    display: none;
-    position: fixed;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: #000;
-    color: #fff;
-    padding: 30px;
-    border: 2px solid #666;
-    z-index: 1000;
-    box-shadow: 0 0 20px #000;
-    border-radius: 10px;
-    width: 500px;
-    text-align: center;">
+    display:none;
+    position:fixed;
+    top:10%;
+    left:50%;
+    transform:translateX(-50%);
+    background:#000;
+    color:#fff;
+    padding:30px;
+    border:2px solid #666;
+    z-index:1000;
+    box-shadow:0 0 20px #000;
+    border-radius:10px;
+    width:500px;
+    text-align:center;">
     <div id="mainMenu">
-      <button id="startNewGame" style="margin:10px; padding:10px 30px; font-size:18px;">Start New Game</button>
-      <button id="loadPrevGame" style="margin:10px; padding:10px 30px; font-size:18px;">Load Previous Game</button>
-      <button id="rulesBtn" style="margin:10px; padding:10px 30px; font-size:18px;">Rules</button>
-      <button id="exitMenu" style="margin:10px; padding:10px 30px; font-size:18px;">Exit</button>
+      <button id="startNewGame" style="margin:10px;padding:10px 30px;font-size:18px;">Start New Game</button>
+      <button id="loadPrevGame" style="margin:10px;padding:10px 30px;font-size:18px;">Load Previous Game</button>
+      <button id="rulesBtn" style="margin:10px;padding:10px 30px;font-size:18px;">Rules</button>
+      <button id="exitMenu" style="margin:10px;padding:10px 30px;font-size:18px;">Exit</button>
     </div>
   </div>
 
-  <!-- RULES POPUP -->
   <div id="rulesPopup" style="
-    display: none;
-    position: fixed;
-    top: 10%;
-    left: 50%;
-    transform: translateX(-50%);
-    background: rgba(0, 0, 0, 0.95);
-    color: #0ff;
-    padding: 20px;
-    width: 600px;
-    max-height: 70vh;
-    overflow-y: auto;
-    border: 2px solid #0ff;
-    border-radius: 10px;
-    z-index: 10000;
-    font-family: monospace;
-    font-size: 14px;">
+    display:none;
+    position:fixed;
+    top:10%;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,0.95);
+    color:#0ff;
+    padding:20px;
+    width:600px;
+    max-height:70vh;
+    overflow-y:auto;
+    border:2px solid #0ff;
+    border-radius:10px;
+    z-index:10000;
+    font-family:monospace;
+    font-size:14px;">
     <h2 style="text-align:center;">Rules</h2>
     <pre>
 - Identify ghosts by behavior & evidence.
@@ -187,28 +156,27 @@
 - Items can be swapped at van.
 - Crucifix & smudge can prevent hunts.
     </pre>
-    <div style="text-align:center; margin-top:10px;">
-      <button id="closeRules" style="padding: 6px 16px; font-size: 16px;">Close</button>
+    <div style="text-align:center;margin-top:10px;">
+      <button id="closeRules" style="padding:6px 16px;font-size:16px;">Close</button>
     </div>
   </div>
 
-  <!-- LOADOUT SCREEN -->
   <div id="loadout-screen" style="
-    display: none;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 500px;
-    background-color: #111;
-    color: white;
-    padding: 30px;
-    border: 2px solid #444;
-    z-index: 2000;
-    font-family: monospace;
-    border-radius: 10px;">
+    display:none;
+    position:fixed;
+    top:50%;
+    left:50%;
+    transform:translate(-50%,-50%);
+    width:500px;
+    background-color:#111;
+    color:white;
+    padding:30px;
+    border:2px solid #444;
+    z-index:2000;
+    font-family:monospace;
+    border-radius:10px;">
     <h2 style="text-align:center;">Select Your Loadout</h2>
-    <form id="item-selection" style="margin-top: 20px;">
+    <form id="item-selection" style="margin-top:20px;">
       <label><input type="checkbox" value="EMF"> EMF Reader</label><br>
       <label><input type="checkbox" value="Spirit Box"> Spirit Box</label><br>
       <label><input type="checkbox" value="Camera"> Camera</label><br>
@@ -220,43 +188,37 @@
       <label><input type="checkbox" value="Crucifix"> Crucifix</label><br>
       <label><input type="checkbox" value="Salt"> Salt</label><br>
     </form>
-    <p style="font-size: 0.85em; margin-top: 10px; color: #ccc;">
-      You may select up to 3 items. Notebook & Lighter always included.
-    </p>
-    <div style="text-align: center; margin-top: 20px;">
-      <button id="confirm-loadout" style="margin: 5px; padding: 8px 24px;">Confirm</button>
-      <button id="cancel-loadout" style="margin: 5px; padding: 8px 24px;">Cancel</button>
+    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">You may select up to 3 items. Notebook & Lighter always included.</p>
+    <div style="text-align:center;margin-top:20px;">
+      <button id="confirm-loadout" style="margin:5px;padding:8px 24px;">Confirm</button>
+      <button id="cancel-loadout" style="margin:5px;padding:8px 24px;">Cancel</button>
     </div>
   </div>
 
-  <!-- GAME UI -->
   <div id="game-ui" style="
-    display: none;
-    position: absolute;
-    top: 15%;
-    left: 5%;
-    width: 90%;
-    height: 70%;
-    background-color: rgba(0, 0, 0, 0.9);
-    padding: 20px;
-    overflow-y: auto;
-    color: #0ff;
-    font-family: monospace;
-    z-index: 1500;
-    border: 1px solid #0ff;">
+    display:none;
+    position:absolute;
+    top:15%;
+    left:5%;
+    width:90%;
+    height:70%;
+    background-color:rgba(0,0,0,0.9);
+    padding:20px;
+    overflow-y:auto;
+    color:#0ff;
+    font-family:monospace;
+    z-index:1500;
+    border:1px solid #0ff;">
     <div id="voice-controls">
-      Voice:
-      <select id="voiceSelect"></select>
+      Voice: <select id="voiceSelect"></select>
       <button id="voiceToggle">Mute</button>
     </div>
     <div id="game-log"></div>
-    <div id="game-options" style="margin-top: 20px;"></div>
+    <div id="game-options" style="margin-top:20px;"></div>
   </div>
 
 <script>
-/* === FULL JAVASCRIPT === */
-
-/* ---------- BASIC DOM SETUP ---------- */
+/* ---------- DOM REFERENCES ---------- */
 const startBtn = document.getElementById('startButton');
 const modal = document.getElementById('gameModal');
 const loadoutScreen = document.getElementById('loadout-screen');
@@ -288,7 +250,6 @@ const game = {
 
 /* ---------- ADA VOICE SETUP ---------- */
 let adaVoice = null, adaSpeak = true;
-
 function loadVoices() {
   const voices = speechSynthesis.getVoices().filter(v => v.lang.startsWith("en"));
   voiceSelect.innerHTML = "";
@@ -298,9 +259,8 @@ function loadVoices() {
     opt.textContent = v.name;
     voiceSelect.appendChild(opt);
   });
-  if (voices.length) adaVoice = voices[0];
+  if (voices.length) adaVoice = voices.find(v => v.name.toLowerCase().includes("female")) || voices[0];
 }
-
 voiceSelect.onchange = () => {
   adaVoice = speechSynthesis.getVoices()[voiceSelect.value];
 };
@@ -310,17 +270,21 @@ voiceToggle.onclick = () => {
 };
 speechSynthesis.onvoiceschanged = loadVoices;
 
-/* ---------- LOGGING FUNCTION ---------- */
+/* ---------- LOG FUNCTION (VOICE PACING FIX) ---------- */
 function log(msg) {
   const line = document.createElement('div');
   line.textContent = 'ADA: ' + msg;
   line.style.marginBottom = '8px';
   gameLog.appendChild(line);
   gameLog.scrollTop = gameLog.scrollHeight;
+
   if (adaSpeak && adaVoice) {
-    const utter = new SpeechSynthesisUtterance(msg);
-    utter.voice = adaVoice;
-    speechSynthesis.speak(utter);
+    setTimeout(() => {
+      const utter = new SpeechSynthesisUtterance(msg);
+      utter.voice = adaVoice;
+      speechSynthesis.cancel();
+      speechSynthesis.speak(utter);
+    }, 150);
   }
   saveGame();
 }
@@ -335,6 +299,7 @@ function loadGame() {
   Object.assign(game, JSON.parse(data));
   return true;
 }
+
 /* ---------- GHOST PROFILES ---------- */
 const ghostProfiles = [
   { name: "Spirit", evidence: ["EMF", "Spirit Box", "Ghost Writing"] },
@@ -363,10 +328,9 @@ const ghostProfiles = [
   { name: "Thaye", evidence: ["Ghost Orb", "Ghost Writing", "D.O.T.S"] },
   { name: "Succubus", evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"] }
 ];
-
 const rooms = ["Van", "Living Room", "Kitchen", "Bathroom", "Bedroom", "Garage", "Basement"];
 
-/* ---------- INVESTIGATION STARTUP ---------- */
+/* ---------- STARTUP ---------- */
 function startInvestigation() {
   game.currentGhost = ghostProfiles[Math.floor(Math.random() * ghostProfiles.length)];
   game.ghostRoom = rooms[Math.floor(Math.random() * (rooms.length - 1)) + 1];
@@ -378,7 +342,7 @@ function startInvestigation() {
   renderActionButtons();
 }
 
-/* ---------- RENDER ACTION BUTTONS ---------- */
+/* ---------- RENDER BUTTONS ---------- */
 function renderActionButtons() {
   gameOptions.innerHTML = "";
   const buttons = [
@@ -414,13 +378,13 @@ function openMoveMenu() {
   });
 }
 
-/* ---------- ITEM DROP/PICK MENU ---------- */
+/* ---------- DROP / PICK ---------- */
 function openDropMenu() {
   gameOptions.innerHTML = "<p>Drop or pick items:</p>";
   const room = game.playerRoom;
   if (!game.droppedItems[room]) game.droppedItems[room] = [];
 
-  // Drop items
+  // Drop
   game.inventory.forEach(i => {
     if (i === "Notebook" || i === "Lighter") return;
     const btn = document.createElement("button");
@@ -438,7 +402,7 @@ function openDropMenu() {
     gameOptions.appendChild(btn);
   });
 
-  // Pick items
+  // Pick
   game.droppedItems[room].forEach(i => {
     const btn = document.createElement("button");
     btn.textContent = "Pick " + i;
@@ -456,7 +420,7 @@ function openDropMenu() {
   });
 }
 
-/* ---------- VAN SWAP MENU ---------- */
+/* ---------- VAN SWAP ---------- */
 function openVanMenu() {
   if (game.playerRoom !== "Van") {
     log("🚐 You must be in the van to access van inventory.");
@@ -464,7 +428,7 @@ function openVanMenu() {
   }
   gameOptions.innerHTML = "<p>Van Swap:</p>";
 
-  // Take from van
+  // Take
   Object.keys(game.vanStock).forEach(i => {
     const btn = document.createElement("button");
     btn.textContent = "Take " + i + " (" + game.vanStock[i] + ")";
@@ -482,7 +446,7 @@ function openVanMenu() {
     gameOptions.appendChild(btn);
   });
 
-  // Store to van
+  // Store
   game.inventory.forEach(i => {
     if (i === "Notebook" || i === "Lighter") return;
     const btn = document.createElement("button");
@@ -528,7 +492,6 @@ function openItemMenu() {
     gameOptions.appendChild(btn);
   });
 }
-
 function useItem(item) {
   const evMap = {
     "EMF": "EMF",
@@ -548,12 +511,10 @@ function useItem(item) {
   if (item === "Camera" && isMimic && inGhostRoom) {
     log("📸 You see a ghost orb... but it feels unnatural.");
   }
-
   if (!inGhostRoom) {
     log("🧍 You use the " + item + ", but nothing happens.");
     return;
   }
-
   if (evidenceList.includes(ev)) {
     if (!game.foundEvidence.includes(ev)) {
       game.foundEvidence.push(ev);
@@ -566,25 +527,50 @@ function useItem(item) {
   }
 }
 
-/* ---------- END TURN & HUNT LOGIC ---------- */
-function endTurn() {
-  game.turn++;
-  game.sanity -= Math.floor(Math.random() * 6 + 3);
-  if (game.sanity < 0) game.sanity = 0;
-  log(`🌀 Turn ${game.turn} complete. Sanity: ${game.sanity}%`);
+/* ---------- AMBIENT NARRATION ---------- */
+function ambientNarration() {
+  const lowSanity = game.sanity <= 40;
+  const inGhostRoom = game.playerRoom === game.ghostRoom;
+  const ghost = game.currentGhost.name;
 
-  const ambients = [
+  const base = [
     "A cold chill passes your neck...",
     "You hear distant footsteps...",
     "The walls creak with age...",
     "A soft hum echoes from nowhere...",
     "Your breath hangs in the air."
   ];
-  if (Math.random() < 0.6) {
-    log("🌫️ " + ambients[Math.floor(Math.random() * ambients.length)]);
-  }
+  const ghostHints = {
+    Demon: ["A guttural growl vibrates through the air...", "You feel an oppressive, angry presence."],
+    Mare: ["The lights flicker faintly, as if feeding on the dark...", "A soft whisper says something you can’t understand."],
+    Yurei: ["An unnatural stillness grips the room...", "You feel your soul being tugged from your body."],
+    Succubus: ["The air feels oddly warm, almost inviting...", "A soft giggle trails around you."],
+    "The Mimic": ["You swear the ghost's behavior feels... inconsistent.", "The sounds change pitch, like something is imitating."]
+  };
+  const hallucinations = [
+    "You think you see someone standing in the corner, but it's gone...",
+    "A whisper calls your name — or maybe you imagined it.",
+    "Shadows dance unnaturally along the walls."
+  ];
 
-  // Mimic behavior change
+  let lines = [...base];
+  if (inGhostRoom && ghostHints[ghost]) lines.push(...ghostHints[ghost]);
+  if (lowSanity) lines.push(...hallucinations);
+
+  if (Math.random() < (lowSanity ? 0.8 : inGhostRoom ? 0.7 : 0.4)) {
+    log("🌫️ " + lines[Math.floor(Math.random() * lines.length)]);
+  }
+}
+
+/* ---------- END TURN ---------- */
+function endTurn() {
+  game.turn++;
+  game.sanity -= Math.floor(Math.random() * 6 + 3);
+  if (game.sanity < 0) game.sanity = 0;
+  log(`🌀 Turn ${game.turn} complete. Sanity: ${game.sanity}%`);
+
+  ambientNarration();
+
   if (game.currentGhost.name === "The Mimic") {
     game.mimicShift--;
     if (game.mimicShift <= 0) {
@@ -595,17 +581,14 @@ function endTurn() {
     }
   }
 
-  // Hunt Logic
   const huntChance = (100 - game.sanity) / 100;
   const isInGhostRoom = game.playerRoom === game.ghostRoom;
-
   if (game.huntCooldown > 0) {
     game.huntCooldown--;
   } else if (isInGhostRoom && Math.random() < huntChance) {
     game.huntCooldown = 3 + Math.floor(Math.random() * 3);
     log("🔦 Your flashlight begins flickering...");
     log("👻 The ghost is hunting!");
-
     if (!game.crucifixUsed && game.inventory.includes("Crucifix")) {
       game.crucifixUsed = true;
       log("🕯️ Your crucifix flares and burns — a hunt was prevented!");
@@ -622,7 +605,7 @@ function endTurn() {
   renderActionButtons();
 }
 
-/* ---------- LIGHTNING FLASH ---------- */
+/* ---------- LIGHTNING ---------- */
 function lightningFlash() {
   const flash = document.getElementById('flash-overlay');
   flash.style.opacity = '0.4';
@@ -642,7 +625,6 @@ const orbCanvas = document.getElementById('orb-canvas');
 const ctx = orbCanvas.getContext('2d');
 let width = orbCanvas.width = window.innerWidth;
 let height = orbCanvas.height = window.innerHeight;
-
 function createOrb() {
   return {
     x: Math.random() * width,
@@ -656,9 +638,7 @@ function createOrb() {
     lifetime: 300 + Math.random() * 200
   };
 }
-
 let orbs = Array.from({ length: 10 }, createOrb);
-
 function animateOrbs() {
   ctx.clearRect(0, 0, width, height);
   orbs.forEach(o => {
@@ -682,13 +662,12 @@ function animateOrbs() {
   requestAnimationFrame(animateOrbs);
 }
 animateOrbs();
-
 window.addEventListener('resize', () => {
   width = orbCanvas.width = window.innerWidth;
   height = orbCanvas.height = window.innerHeight;
 });
 
-/* ---------- UI FLOW SETUP ---------- */
+/* ---------- UI FLOW ---------- */
 startBtn.onclick = () => {
   startBtn.style.display = 'none';
   modal.style.display = 'block';
@@ -752,5 +731,6 @@ document.getElementById('confirm-loadout').onclick = () => {
   setTimeout(() => { startInvestigation(); }, 400);
 };
 </script>
+
 </body>
 </html>
