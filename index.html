@@ -70,8 +70,7 @@
       background: #222;
       color: #fff;
     }
-
-    /* === Game UI Panels (more transparent now) === */
+    /* === Game UI Split === */
     #game-ui {
       display: none;
       position: fixed;
@@ -88,7 +87,7 @@
       left: 0;
       width: 100%;
       height: calc(100% - 80px);
-      background-color: rgba(0, 0, 0, 0.45);
+      background-color: rgba(0, 0, 0, 0.4);
       color: #0ff;
       padding: 20px;
       overflow-y: auto;
@@ -102,13 +101,12 @@
       bottom: 0;
       left: 0;
       width: 100%;
-      background-color: rgba(0, 0, 0, 0.55);
+      background-color: rgba(0, 0, 0, 0.5);
       padding: 10px;
       border-top: 1px solid #0ff;
       pointer-events: auto;
     }
-
-    /* === Weather Layers === */
+    /* Weather Layers */
     #fog-layer, #rain-layer, #bloodmoon-layer {
       position: fixed;
       top: 0; left: 0;
@@ -123,36 +121,24 @@
     @keyframes fogMove { from{background-position:0 0;} to{background-position:1000px 0;} }
     @keyframes rainMove { from{background-position:0 0;} to{background-position:0 1000px;} }
 
-    /* === HUD Elements === */
+    /* === HUD === */
     #hud {
       position: fixed;
-      top: 10px;
-      right: 10px;
-      background: rgba(0,0,0,0.4);
+      top: 5px;
+      left: 5px;
       color: #0ff;
-      padding: 8px 12px;
+      background: rgba(0,0,0,0.4);
       border: 1px solid #0ff;
-      border-radius: 5px;
+      padding: 6px 10px;
       font-size: 14px;
       z-index: 2000;
-      font-family: monospace;
     }
 
-    /* === SANITY DISTORTIONS REMOVED (now only hunt visuals) === */
-
-    /* === Loadout Transparency === */
-    #loadout-screen {
-      background-color: rgba(17, 17, 17, 0.7);
-      border: 2px solid rgba(68, 68, 68, 0.7);
-      border-radius: 10px;
-      color: #fff;
-    }
-    #van-inventory, #player-inventory {
-      background-color: rgba(0,0,0,0.3);
-      border: 1px solid #555;
-      min-height: 200px;
-      padding: 10px;
-    }
+    /* === SANITY DISTORTIONS (Mild only) === */
+    .sanity-60 { filter: brightness(0.95); }
+    .sanity-40 { filter: brightness(0.9) contrast(1.05); }
+    .sanity-20 { filter: brightness(0.85) contrast(1.1) saturate(1.1); }
+    .sanity-10 { filter: brightness(0.8) contrast(1.2) saturate(1.2); }
   </style>
 </head>
 <body>
@@ -162,8 +148,41 @@
   <div id="fog-layer"></div>
   <div id="rain-layer"></div>
   <div id="bloodmoon-layer"></div>
-  <footer>Shark-Blades — Inspired by Phasmophobia.</footer>
   <div id="hud">Sanity: 100%<br>Room: Van<br>Items: None</div>
+  <footer>Shark-Blades — Inspired by Phasmophobia.</footer>
+
+  <!-- RULES POPUP -->
+  <div id="rulesPopup" style="
+    display:none;
+    position:fixed;
+    top:10%;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(0,0,0,0.9);
+    color:#0ff;
+    padding:20px;
+    width:600px;
+    max-height:70vh;
+    overflow-y:auto;
+    border:2px solid #0ff;
+    border-radius:10px;
+    z-index:10000;
+    font-family:monospace;
+    font-size:14px;">
+    <h2 style="text-align:center;">Rules</h2>
+    <pre>
+- Identify ghosts by behavior & evidence.
+- Sanity loss & hunts based on turns.
+- Mimic fakes orbs & changes forms.
+- Max 3 carried tools; drop/pick up as needed.
+- Items can be swapped at van.
+- Crucifix & smudge can prevent hunts.
+- Salt can reveal ghost movement or footprints.
+    </pre>
+    <div style="text-align:center;margin-top:10px;">
+      <button id="closeRules" style="padding:6px 16px;font-size:16px;">Close</button>
+    </div>
+  </div>
 
   <!-- LOADOUT SCREEN -->
   <div id="loadout-screen" style="
@@ -172,21 +191,25 @@
     left:50%;
     transform:translate(-50%,-50%);
     width:500px;
+    background-color:#111;
+    color:white;
     padding:30px;
+    border:2px solid #444;
     z-index:2000;
-  ">
-    <h2 style="text-align:center;">Select Your Loadout (Drag or Click to Choose)</h2>
+    font-family:monospace;
+    border-radius:10px;">
+    <h2 style="text-align:center;">Select Your Loadout (Click or Drag)</h2>
     <div style="display:flex;justify-content:space-between;">
-      <div id="van-inventory">
+      <div id="van-inventory" style="width:45%;min-height:200px;border:1px solid #555;padding:10px;">
         <strong>Van:</strong>
         <div id="van-items"></div>
       </div>
-      <div id="player-inventory">
+      <div id="player-inventory" style="width:45%;min-height:200px;border:1px solid #555;padding:10px;">
         <strong>Holding:</strong>
         <div id="player-items"></div>
       </div>
     </div>
-    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">Drag or click up to 3 items. Notebook & Lighter always included.</p>
+    <p style="font-size:0.85em;margin-top:10px;color:#ccc;">Pick up to 3 items. Notebook & Lighter always included.</p>
     <div style="text-align:center;margin-top:20px;">
       <button id="confirm-loadout" style="margin:5px;padding:8px 24px;">Confirm</button>
     </div>
@@ -200,7 +223,7 @@
 
 <script>
 /* ==============================
-   === GAME STATE & DOM HOOKS ===
+   === GLOBAL GAME STATE ===
 ============================== */
 const gameLog=document.getElementById('game-log');
 const gameOptions=document.getElementById('game-options');
@@ -208,54 +231,23 @@ const loadoutScreen=document.getElementById('loadout-screen');
 const gameUI=document.getElementById('game-ui');
 const vanItems=document.getElementById('van-items');
 const playerItems=document.getElementById('player-items');
-const hud=document.getElementById('hud');
 const cameraOverlay=document.getElementById('camera-overlay');
 const fogLayer=document.getElementById('fog-layer');
 const rainLayer=document.getElementById('rain-layer');
 const bloodmoonLayer=document.getElementById('bloodmoon-layer');
+const hud=document.getElementById('hud');
 
 const game={
-  inventory:[],
-  vanStock:{},
-  playerRoom:"Van",
-  ghostRoom:null,
-  currentGhost:null,
-  mimicForm:null,
-  mimicShift:0,
-  sanity:100,
-  turn:0,
-  foundEvidence:[],
-  started:false,
-  droppedItems:{},
-  activeHunt:false,
-  crucifixUsed:false,
-  smudgeUsed:false,
-  huntCooldown:0,
-  weather:"Clear",
-  cameraPlaced:{},
-  cameraRoom:null,
-  saltPlaced:{},
-  saltDisturbed:{}
+  inventory:[],vanStock:{},playerRoom:"Van",
+  ghostRoom:null,currentGhost:null,mimicForm:null,
+  mimicShift:0,sanity:100,turn:0,foundEvidence:[],
+  started:false,droppedItems:{},activeHunt:false,
+  crucifixUsed:false,smudgeUsed:false,huntCooldown:0,
+  weather:"Clear",cameraPlaced:{},cameraRoom:null,
+  saltPlaced:{},saltDisturbed:{}
 };
 
-function updateHUD(){
-  hud.innerHTML = 
-    `Sanity: ${game.sanity}%<br>`+
-    `Room: ${game.playerRoom}<br>`+
-    `Items: ${game.inventory.join(", ")}`;
-}
-
-function log(msg){
-  const line=document.createElement('div');
-  line.textContent=msg;
-  line.style.marginBottom='6px';
-  gameLog.appendChild(line);
-  gameLog.scrollTop=gameLog.scrollHeight;
-  updateHUD();
-}
-/* ==============================
-   === MAP VISUALS & WEATHER ===
-============================== */
+/* === ROOM VISUALS === */
 const roomVisuals={
   "Van":"Van_N.png",
   "Living Room":"LivingRoom_N.png",
@@ -265,11 +257,14 @@ const roomVisuals={
   "Garage":"Garage_N.png",
   "Basement":"Basement_N.png"
 };
-function updateMapVisual(){
-  const bg=roomVisuals[game.playerRoom]||"Van_N.png";
-  document.body.style.background=`url('${bg}') no-repeat center center fixed`;
-  document.body.style.backgroundSize="cover";
+
+/* === UPDATE HUD === */
+function updateHUD(){
+  hud.innerHTML = `Sanity: ${game.sanity}%<br>Room: ${game.playerRoom}<br>Items: ${game.inventory.join(", ") || "None"}`;
 }
+
+/* === WEATHER === */
+const weathers=["Clear","Rain","Bloodmoon","Fog"];
 function applyWeather(){
   fogLayer.style.display="none";
   rainLayer.style.display="none";
@@ -278,17 +273,41 @@ function applyWeather(){
   else if(game.weather==="Rain") rainLayer.style.display="block";
   else if(game.weather==="Bloodmoon") bloodmoonLayer.style.display="block";
 }
-const weathers=["Clear","Rain","Bloodmoon","Fog"];
 function chooseWeather(){
   game.weather=weathers[Math.floor(Math.random()*weathers.length)];
   applyWeather();
   log("The weather's "+game.weather.toLowerCase()+" today.");
 }
 
+/* === MAP VISUAL === */
+function updateMapVisual(){
+  const bg=roomVisuals[game.playerRoom]||"Van_N.png";
+  document.body.style.background=`url('${bg}') no-repeat center center fixed`;
+  document.body.style.backgroundSize="cover";
+}
+
+/* === LOGGING === */
+function log(msg){
+  const line=document.createElement('div');
+  line.textContent=msg;
+  line.style.marginBottom='6px';
+  gameLog.appendChild(line);
+  gameLog.scrollTop=gameLog.scrollHeight;
+  updateSanityEffects();
+}
+
+/* === SANITY VISUAL EFFECTS === */
+function updateSanityEffects(){
+  document.body.classList.remove("sanity-60","sanity-40","sanity-20","sanity-10");
+  if(game.sanity <=10) document.body.classList.add("sanity-10");
+  else if(game.sanity <=20) document.body.classList.add("sanity-20");
+  else if(game.sanity <=40) document.body.classList.add("sanity-40");
+  else if(game.sanity <=60) document.body.classList.add("sanity-60");
+}
 /* ==============================
    === GHOST PROFILES & ROOMS ===
 ============================== */
-const ghostProfiles=[
+const ghostProfiles = [
   {name:"Spirit",evidence:["EMF","Spirit Box","Ghost Writing"]},
   {name:"Wraith",evidence:["EMF","Spirit Box","D.O.T.S"]},
   {name:"Phantom",evidence:["Spirit Box","Fingerprints","D.O.T.S"]},
@@ -315,60 +334,64 @@ const ghostProfiles=[
   {name:"Thaye",evidence:["Ghost Orb","Ghost Writing","D.O.T.S"]},
   {name:"Succubus",evidence:["Spirit Box","Ghost Writing","D.O.T.S"]}
 ];
-const rooms=["Van","Living Room","Kitchen","Bathroom","Bedroom","Garage","Basement"];
+const rooms = ["Van","Living Room","Kitchen","Bathroom","Bedroom","Garage","Basement"];
 
 /* ==============================
    === START INVESTIGATION ===
 ============================== */
 function startInvestigation(){
-  game.currentGhost=ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
-  game.ghostRoom=rooms[Math.floor(Math.random()*(rooms.length-1))+1];
-  game.turn=1;
-  game.foundEvidence=[];
-  game.mimicForm=null;
-  game.mimicShift=3+Math.floor(Math.random()*4);
+  game.currentGhost = ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
+  game.ghostRoom = rooms[Math.floor(Math.random()*(rooms.length-1))+1];
+  game.turn = 1;
+  game.foundEvidence = [];
+  game.mimicForm = null;
+  game.mimicShift = 3 + Math.floor(Math.random()*4);
+  game.saltPlaced = {};
+  game.saltDisturbed = {};
   chooseWeather();
   updateMapVisual();
+  updateHUD();
   log("This is it... the investigation starts.");
   renderActionButtons();
 }
 
 /* ==============================
-   === NOTEBOOK LOGIC (CHECK/CROSS) ===
+   === NOTEBOOK LOGIC ===
 ============================== */
 function openNotebook(){
   gameOptions.innerHTML="<p>Notebook:</p>";
-  const allEvidence=["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
-  allEvidence.forEach(e=>{
+  const allEv=["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
+  allEv.forEach(e=>{
     const btn=document.createElement("button");
     btn.textContent=(game.foundEvidence.includes(e)?"✓ ":"")+e;
     btn.onclick=()=>{
       if(game.foundEvidence.includes(e)){
         game.foundEvidence=game.foundEvidence.filter(x=>x!==e);
-        log("Crossed out "+e+" in notebook.");
-      } else {
+        log("Crossed out "+e+".");
+      }else{
         game.foundEvidence.push(e);
-        log("Marked "+e+" in notebook.");
+        log("Marked "+e+".");
       }
+      updateHUD();
       openNotebook();
     };
     gameOptions.appendChild(btn);
   });
 
   gameOptions.appendChild(document.createElement("hr"));
-  const possibleGhosts = ghostProfiles.filter(g=>
+  const possible=ghostProfiles.filter(g=>
     game.foundEvidence.every(ev=>g.evidence.includes(ev))
   );
   const ghostList=document.createElement("div");
   ghostList.style.marginTop="10px";
   ghostList.innerHTML="<strong>Possible Ghosts:</strong><br>"+
-    (possibleGhosts.length?possibleGhosts.map(g=>g.name).join(", "):"None");
+    (possible.length?possible.map(g=>g.name).join(", "):"None");
   gameOptions.appendChild(ghostList);
 
-  const cancelBtn=document.createElement("button");
-  cancelBtn.textContent="Cancel";
-  cancelBtn.onclick=renderActionButtons;
-  gameOptions.appendChild(cancelBtn);
+  const cancel=document.createElement("button");
+  cancel.textContent="Cancel";
+  cancel.onclick=renderActionButtons;
+  gameOptions.appendChild(cancel);
 }
 
 /* ==============================
@@ -381,7 +404,7 @@ function renderActionButtons(){
     {label:"Use Item",handler:openItemMenu},
     {label:"Notebook",handler:openNotebook},
     {label:"Drop/Pick Item",handler:openDropMenu},
-    {label:"Van",handler:openVanMenu},
+    {label:"Van Menu",handler:openVanMenu},
     {label:"Wait",handler:endTurn}
   ].forEach(btn=>{
     const b=document.createElement("button");
@@ -402,16 +425,18 @@ function openMoveMenu(){
     btn.onclick=()=>{
       game.playerRoom=r;
       updateMapVisual();
+      updateHUD();
       cameraOverlay.style.display="none";
       log("Moved to "+r+".");
-      endTurn(); // moving counts as a turn
+      if(r!=="Van") endTurn();
+      else renderActionButtons();
     };
     gameOptions.appendChild(btn);
   });
 }
 
 /* ==============================
-   === ITEM USAGE (CHANCE SYSTEM + SALT) ===
+   === ITEM USAGE + SALT ===
 ============================== */
 function openItemMenu(){
   gameOptions.innerHTML="<p>Select an item to use:</p>";
@@ -438,8 +463,9 @@ function useItem(item){
   if(item==="Camera"){
     game.cameraPlaced[game.playerRoom]=true;
     game.cameraRoom=game.playerRoom;
+    log("Placed a camera facing the room.");
     if(game.foundEvidence.includes("Ghost Orb") || (isMimic && inGhostRoom)){
-      log("Camera captures faint orbs swirling on screen.");
+      log("Camera captures faint orbs swirling.");
       cameraOverlay.style.display="block";
     }
     endTurn();
@@ -450,16 +476,15 @@ function useItem(item){
     if(!game.saltPlaced[game.playerRoom]){
       game.saltPlaced[game.playerRoom]=true;
       game.saltDisturbed[game.playerRoom]=false;
-      log("I sprinkled salt carefully on the ground here.");
-    } else {
-      log("There's already salt here.");
-    }
+      log("Salt sprinkled across the floor.");
+      updateHUD();
+    } else log("Salt is already on the floor.");
     endTurn();
     return;
   }
 
   if(!inGhostRoom){
-    log("No signs... maybe wrong room.");
+    log("No signs... wrong room maybe.");
     endTurn();
     return;
   }
@@ -468,18 +493,20 @@ function useItem(item){
     if(Math.random()<=chance){
       if(!game.foundEvidence.includes(ev)){
         game.foundEvidence.push(ev);
-        log("Evidence confirmed: "+ev);
+        log("Evidence found: "+ev);
         if(ev==="Ghost Orb") cameraOverlay.style.display="block";
-      } else log("Same reading as before.");
-    } else log("The reading flickers... nothing solid yet.");
-  } else log("No response from this tool.");
+      } else log("Same evidence reading as before.");
+    } else log("Reading was inconclusive...");
+  } else log("Nothing shows up.");
   endTurn();
+  updateHUD();
 }
+
 /* ==============================
-   === VAN MENU (CAMERA + SWAP) ===
+   === VAN MENU ===
 ============================== */
 function openVanMenu(){
-  if(game.playerRoom!=="Van"){log("I need to be in the van for this.");renderActionButtons();return;}
+  if(game.playerRoom!=="Van"){log("I need to be in the van.");renderActionButtons();return;}
   gameOptions.innerHTML="<p>Van Options:</p>";
 
   const camBtn=document.createElement("button");
@@ -489,11 +516,9 @@ function openVanMenu(){
       document.body.style.background=`url('${roomVisuals[game.cameraRoom]}') no-repeat center center fixed`;
       document.body.style.backgroundSize="cover";
       cameraOverlay.style.display="block";
-      log("I stare at the monitor, watching the feed from "+game.cameraRoom+".");
-      endTurn(true); // viewing counts as a turn
-    } else {
-      log("No active cameras connected.");
-    }
+      log("Watching monitor feed from "+game.cameraRoom+".");
+      endTurn();
+    } else log("No active cameras set.");
   };
   gameOptions.appendChild(camBtn);
 
@@ -505,12 +530,12 @@ function openVanMenu(){
       const take=document.createElement("button");
       take.textContent="Take "+tool+" ("+game.vanStock[tool]+")";
       take.onclick=()=>{
-        if(game.inventory.length>=5){log("I can't carry more.");return;}
+        if(game.inventory.length>=5){log("Too many items.");return;}
         game.inventory.push(tool);
         game.vanStock[tool]--;
         if(game.vanStock[tool]<=0) delete game.vanStock[tool];
-        log("Took "+tool+" from the van.");
         updateHUD();
+        log("Took "+tool+" from van.");
         openVanMenu();
       };
       gameOptions.appendChild(take);
@@ -521,8 +546,8 @@ function openVanMenu(){
       ret.onclick=()=>{
         game.inventory=game.inventory.filter(x=>x!==i);
         game.vanStock[i]=(game.vanStock[i]||0)+1;
-        log("Returned "+i+" to the van.");
         updateHUD();
+        log("Returned "+i+" to van.");
         openVanMenu();
       };
       gameOptions.appendChild(ret);
@@ -539,7 +564,6 @@ function openVanMenu(){
   cancel.onclick=renderActionButtons;
   gameOptions.appendChild(cancel);
 }
-
 /* ==============================
    === DROP / PICK ITEMS ===
 ============================== */
@@ -567,7 +591,7 @@ function openDropMenu(){
       const btn=document.createElement("button");
       btn.textContent="Pick "+i;
       btn.onclick=()=>{
-        if(game.inventory.length>=5){log("Can't hold more.");return;}
+        if(game.inventory.length>=5){log("Too many items already.");return;}
         game.inventory.push(i);
         game.droppedItems[room]=game.droppedItems[room].filter(x=>x!==i);
         log("Picked up "+i+".");
@@ -585,184 +609,261 @@ function openDropMenu(){
 }
 
 /* ==============================
-   === HUD UPDATE (Sanity, Room, Items, Salt) ===
+   === TURN SYSTEM + SANITY ===
 ============================== */
-function updateHUD(){
-  const hud=document.querySelector("footer");
-  let saltStatus="";
-  if(game.saltPlaced[game.playerRoom]){
-    saltStatus = game.saltDisturbed[game.playerRoom] ? "Salt: disturbed" : "Salt: placed";
-  }
-  hud.textContent=`Shark-Blades — Inspired by Phasmophobia. | Sanity: ${game.sanity}% | Room: ${game.playerRoom} | Items: ${game.inventory.join(", ")}${saltStatus? " | "+saltStatus:""}`;
-}
-
-/* ==============================
-   === END TURN & SANITY LOGIC ===
-============================== */
-function endTurn(skipSanity){
-  if(!skipSanity){
-    // Sanity logic: small regen in van or lit areas, slow drain in dark
-    let sanityChange = 0;
-    if(game.playerRoom==="Van"){ 
-      sanityChange = +1; // resting in van regenerates sanity slightly
-    } else if(game.weather!=="Clear" && game.playerRoom!=="Van") {
-      sanityChange = -Math.floor(Math.random()*3); // bad weather drains
-    } else if(game.playerRoom!==game.ghostRoom){
-      sanityChange = (Math.random()<0.4)?0: -1;
-    } else { // ghost nearby = higher drain
-      sanityChange = -Math.floor(Math.random()*6+3);
-    }
-    game.sanity = Math.min(100,Math.max(0,game.sanity + sanityChange));
+function endTurn(){
+  // No sanity changes in the van unless using monitor
+  if(game.playerRoom==="Van") {
+    renderActionButtons();
+    return;
   }
 
   game.turn++;
+  const litRoom = game.weather!=="Bloodmoon" && game.weather!=="Fog";
+  let sanityChange = 0;
+
+  if(game.playerRoom!==game.ghostRoom){
+    if(litRoom) sanityChange = +Math.random()*2; // Regain a bit if well-lit and ghost not around
+    else sanityChange = -Math.random()*1.5;      // Very slow drain if dark and no ghost
+  } else {
+    sanityChange = -Math.random()*6 - 3;          // Faster drain near ghost
+  }
+
+  game.sanity = Math.min(100, Math.max(0, game.sanity + sanityChange));
   updateHUD();
-  generateAmbientThought();
+
+  // Ambient narration
+  const ambients = roomSpecificNarration(game.playerRoom);
+  if(Math.random()<0.6) log(ambients[Math.floor(Math.random()*ambients.length)]);
+
+  // Mimic Shift Logic
   if(game.currentGhost.name==="The Mimic"){
     game.mimicShift--;
     if(game.mimicShift<=0){
-      let pool=ghostProfiles.filter(g=>g.name!=="The Mimic");
+      const pool=ghostProfiles.filter(g=>g.name!=="The Mimic");
       game.mimicForm=pool[Math.floor(Math.random()*pool.length)];
       game.mimicShift=3+Math.floor(Math.random()*4);
-      log("Its behavior feels... different. Like it's copying something new.");
+      log("The behavior shifts strangely... something's off.");
     }
   }
-  handleSaltInteractions();
-  handleHunt();
-  renderActionButtons();
-}
 
-/* ==============================
-   === AMBIENT NARRATION PER ROOM ===
-============================== */
-function generateAmbientThought(){
-  const ambientVan=[
-    "I glance at the monitors. Still quiet.",
-    "The van hums quietly. Safe, for now.",
-    "I rest my hands on the desk. No shaking... yet.",
-    "It's too calm out here. The house feels alive in the distance."
-  ];
-  const ambientGeneric=[
-    "That creak again... is it following me?",
-    "A sudden chill licked my neck.",
-    "I swear I heard someone whisper my name.",
-    "The air smells stale, wrong, heavy.",
-    "My breath caught in my throat... was it watching?",
-    "Something brushed my arm just now."
-  ];
-  const roomSpecific={
-    "Living Room":[
-      "The couch looks untouched... or is it?",
-      "Shadows play tricks on the fireplace walls.",
-      "The TV flickers faintly, though it's off."
-    ],
-    "Kitchen":[
-      "The fridge hums louder than usual.",
-      "Plates rattle slightly... no one's here.",
-      "The smell of old food hangs too thickly."
-    ],
-    "Bathroom":[
-      "The sink drips. Every drop echoes.",
-      "The mirror fogged up just now... I didn't breathe on it.",
-      "Something scratched the tiles faintly."
-    ],
-    "Bedroom":[
-      "The bed looks slept in... was it?",
-      "Curtains sway with no wind.",
-      "I feel like someone's under the bed."
-    ],
-    "Garage":[
-      "Tools clinked somewhere on their own.",
-      "The car door twitched slightly.",
-      "The smell of oil feels too fresh."
-    ],
-    "Basement":[
-      "The air is damp and oppressive.",
-      "Footsteps? Or water dripping? Hard to tell.",
-      "The pipes groan... or is that something else?"
-    ]
-  };
-
-  let arr=ambientGeneric;
-  if(game.playerRoom==="Van") arr=ambientVan;
-  else if(roomSpecific[game.playerRoom]) arr=ambientGeneric.concat(roomSpecific[game.playerRoom]);
-  if(Math.random()<0.7){
-    log(arr[Math.floor(Math.random()*arr.length)]);
-  }
-}
-
-/* ==============================
-   === SALT INTERACTIONS ===
-============================== */
-function handleSaltInteractions(){
-  for(let room in game.saltPlaced){
-    if(game.saltPlaced[room] && !game.saltDisturbed[room]){
-      // Ghost passes by random chance if in same or adjacent room
-      if(Math.random()<0.3 && (room===game.ghostRoom)){
-        game.saltDisturbed[room]=true;
-        if(room===game.playerRoom){
-          log("I watch as the salt crunches... a footprint forms.");
-        } else {
-          log("Somewhere... something just disturbed the salt.");
-        }
+  // Salt disturbance check
+  for(const r in game.saltPlaced){
+    if(game.saltPlaced[r] && !game.saltDisturbed[r]){
+      const ghostNearby = Math.random()<0.3 && r===game.ghostRoom;
+      if(ghostNearby){
+        game.saltDisturbed[r]=true;
+        if(r===game.playerRoom) log("A crunch—The salt just got disturbed!");
         updateHUD();
       }
     }
   }
+
+  handleHuntLogic();
+  renderActionButtons();
 }
 
-/* ==============================
-   === HUNT SYSTEM ===
-============================== */
-function handleHunt(){
-  if(game.huntCooldown>0){game.huntCooldown--;return;}
-  const inGhostRoom = (game.playerRoom===game.ghostRoom);
-  const huntChance = (100 - game.sanity) / 100;
-  if(inGhostRoom && Math.random()<huntChance){
-    game.huntCooldown=3+Math.floor(Math.random()*3);
-    log("The air thickens suddenly... It's HUNTING!");
+function roomSpecificNarration(room){
+  const vanNarration=[
+    "I feel safer here, for now.",
+    "The hum of the equipment is oddly comforting.",
+    "I stare at the shelves... everything's still.",
+    "This van smells like dust and old coffee.",
+    "Outside the storm rattles, but here it's quiet."
+  ];
+  const livingRoom=[
+    "The couch shadows twitch in the corner of my eye.",
+    "A creak echoes through the living room.",
+    "The fireplace smells cold and ashy.",
+    "It feels like something watches from behind the TV.",
+    "I hear soft shuffling under the rug."
+  ];
+  const kitchen=[
+    "The smell of stale food makes me gag.",
+    "A utensil just clinked on its own.",
+    "Cabinets creak as if they move slightly.",
+    "The fridge hum is too steady... too loud.",
+    "The tiles feel icy underfoot."
+  ];
+  const bathroom=[
+    "Water drips even though it's off.",
+    "The mirror... my reflection twitched wrong.",
+    "I smell mildew and something metallic.",
+    "The shower curtain shifted by itself.",
+    "I hate how small and cramped it feels."
+  ];
+  const bedroom=[
+    "The bed sheets wrinkle on their own.",
+    "Something cold lingers near the closet.",
+    "The dresser drawer moved slightly.",
+    "I swear I heard soft breathing near the pillow.",
+    "Dust dances strangely in the air here."
+  ];
+  const garage=[
+    "The car's metal frame pops quietly.",
+    "Tools rattle faintly on the workbench.",
+    "It smells like oil and old wood.",
+    "The concrete floor vibrated slightly.",
+    "A faint metallic clang echoes here."
+  ];
+  const basement=[
+    "It's damp and smells of rot down here.",
+    "The darkness feels thicker in this room.",
+    "I hear faint scratching on the walls.",
+    "The old pipes groan overhead.",
+    "I swear the shadows move wrong here."
+  ];
 
-    if(!game.crucifixUsed && game.inventory.includes("Crucifix")){
-      game.crucifixUsed=true;
-      log("The crucifix glows hot in my hand... the ghost recoils.");
-      return;
-    }
-
-    if(!game.smudgeUsed && game.inventory.includes("Smudge")){
-      game.smudgeUsed=true;
-      log("I burn a smudge stick... shrieking fades away.");
-      return;
-    }
-
-    log("My chest tightens—It's HERE—");
-    setTimeout(()=>{
-      log("Everything goes black as claws grip me... I'm dead.");
-      endGame(false);
-    },2000);
+  switch(room){
+    case "Van": return vanNarration;
+    case "Living Room": return livingRoom;
+    case "Kitchen": return kitchen;
+    case "Bathroom": return bathroom;
+    case "Bedroom": return bedroom;
+    case "Garage": return garage;
+    case "Basement": return basement;
+    default: return ["Silence fills the air."];
   }
 }
-/* ==============================
-   === GAME END & RESTART ===
-============================== */
-function endGame(victory){
-  gameOptions.innerHTML="";
-  const msg=document.createElement("div");
-  msg.style.marginBottom="10px";
-  msg.textContent = victory ? "You solved the case and survived." : "You died. The ghost claimed you.";
-  gameOptions.appendChild(msg);
 
-  const restart=document.createElement("button");
-  restart.textContent="Restart Game";
-  restart.onclick=()=>{
-    location.reload();
-  };
-  gameOptions.appendChild(restart);
+/* ==============================
+   === HUNT LOGIC ===
+============================== */
+function handleHuntLogic(){
+  if(game.huntCooldown>0){
+    game.huntCooldown--;
+    return;
+  }
+
+  const inGhostRoom = (game.playerRoom===game.ghostRoom);
+  const huntChance = (100 - game.sanity) / 100;
+
+  if(inGhostRoom && Math.random()<huntChance){
+    game.huntCooldown = 3 + Math.floor(Math.random()*3);
+    triggerHunt();
+  }
+}
+
+function triggerHunt(){
+  log("The air grows heavy... it's hunting!");
+  applyHuntVisuals(true);
+
+  if(game.inventory.includes("Crucifix") && !game.crucifixUsed){
+    game.crucifixUsed=true;
+    setTimeout(()=>{
+      log("The crucifix burns hot—The ghost is repelled!");
+      applyHuntVisuals(false);
+    },2000);
+    return;
+  }
+
+  if(game.inventory.includes("Smudge") && !game.smudgeUsed){
+    game.smudgeUsed=true;
+    setTimeout(()=>{
+      log("I light the smudge, smoke curls—It retreats.");
+      applyHuntVisuals(false);
+    },2500);
+    return;
+  }
+
+  setTimeout(()=>{
+    log("It lunges from the shadows—My vision fades... The ghost got me.");
+    gameOptions.innerHTML="<button onclick='location.reload()'>Restart</button>";
+    applyHuntVisuals(false);
+  },4000);
+}
+
+function applyHuntVisuals(active){
+  if(active){
+    document.body.style.filter="contrast(120%) saturate(130%) hue-rotate(-15deg)";
+    flashOverlay();
+  }else{
+    document.body.style.filter="";
+  }
+}
+
+function flashOverlay(){
+  const overlay=document.getElementById("flash-overlay");
+  overlay.style.opacity=0.8;
+  setTimeout(()=>overlay.style.opacity=0,300);
 }
 
 /* ==============================
-   === LOADOUT INITIALIZATION ===
+   === HUD UPDATE ===
 ============================== */
-const allLoadoutItems=["EMF","Spirit Box","Camera","UV Light","D.O.T.S","Thermometer","Book","Smudge","Crucifix","Salt"];
+function updateHUD(){
+  const hudText = 
+    `Sanity: ${Math.round(game.sanity)}% | Room: ${game.playerRoom} | Items: ${game.inventory.join(", ")}` +
+    (game.saltPlaced[game.playerRoom] ? 
+      ` | Salt: ${game.saltDisturbed[game.playerRoom]?"Disturbed":"Placed"}` : "");
+  document.querySelector("footer").textContent="Shark-Blades — Inspired by Phasmophobia. "+hudText;
+}
+
+/* ==============================
+   === SPIRIT ORBS (ANIMATION) ===
+============================== */
+const orbCanvas=document.getElementById('orb-canvas');
+const ctx=orbCanvas.getContext('2d');
+let width=orbCanvas.width=window.innerWidth;
+let height=orbCanvas.height=window.innerHeight;
+
+function createOrb(){
+  return {
+    x:Math.random()*width,
+    y:Math.random()*height,
+    vx:(Math.random()-0.5)*0.5,
+    vy:(Math.random()-0.5)*0.5,
+    baseRadius:2+Math.random()*3,
+    opacity:0,
+    fadeIn:true,
+    tick:Math.random()*1000
+  };
+}
+let orbs=Array.from({length:10},createOrb);
+
+function animateOrbs(){
+  ctx.clearRect(0,0,width,height);
+  if((game.playerRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")) || 
+     (game.cameraRoom===game.ghostRoom && cameraOverlay.style.display==="block")){
+    orbs.forEach(o=>{
+      o.tick++;
+      if(o.fadeIn){
+        o.opacity+=0.01;
+        if(o.opacity>0.6)o.fadeIn=false;
+      }else{
+        o.opacity-=0.005;
+        if(o.opacity<=0.05)Object.assign(o,createOrb());
+      }
+      o.x+=o.vx;o.y+=o.vy;
+      if(o.x<0||o.x>width)o.vx*=-1;
+      if(o.y<0||o.y>height)o.vy*=-1;
+
+      const gradient = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.baseRadius*3);
+      gradient.addColorStop(0,`rgba(200,255,255,${o.opacity})`);
+      gradient.addColorStop(0.5,`rgba(150,200,255,${o.opacity*0.5})`);
+      gradient.addColorStop(1,`rgba(100,150,200,0)`);
+
+      ctx.beginPath();
+      ctx.fillStyle=gradient;
+      ctx.ellipse(o.x,o.y,o.baseRadius*(1+Math.sin(o.tick*0.05)*0.3),o.baseRadius,0,0,Math.PI*2);
+      ctx.fill();
+    });
+  }
+  requestAnimationFrame(animateOrbs);
+}
+animateOrbs();
+
+window.addEventListener('resize',()=>{
+  width=orbCanvas.width=window.innerWidth;
+  height=orbCanvas.height=window.innerHeight;
+});
+/* ==============================
+   === LOADOUT SYSTEM (CLICK + DRAG) ===
+============================== */
+const allLoadoutItems=[
+  "EMF","Spirit Box","Camera","UV Light","D.O.T.S",
+  "Thermometer","Book","Smudge","Crucifix","Salt"
+];
 
 function initLoadout(){
   vanItems.innerHTML="";
@@ -770,20 +871,24 @@ function initLoadout(){
   allLoadoutItems.forEach(it=>{
     const div=document.createElement("div");
     div.textContent=it;
-    div.style.border="1px solid #555";
-    div.style.margin="3px";
-    div.style.padding="4px";
-    div.style.background="#111";
+    div.draggable=true;
+    div.style.background="#222";
     div.style.color="#0ff";
-    div.style.cursor="pointer";
+    div.style.margin="3px";
+    div.style.padding="4px 6px";
+    div.style.cursor="grab";
+
+    // CLICK selection fallback
     div.onclick=()=>{
-      // Click fallback
-      if([...playerItems.querySelectorAll("div")].length>=3){alert("Max 3 items.");return;}
       if([...playerItems.querySelectorAll("div")].some(d=>d.textContent===it))return;
+      if(playerItems.querySelectorAll("div").length>=3){alert("Max 3 items.");return;}
       playerItems.appendChild(div);
     };
-    div.draggable=true;
-    div.ondragstart=e=>{e.dataTransfer.setData("text/plain",it);};
+
+    // DRAG fallback
+    div.ondragstart=e=>{
+      e.dataTransfer.setData("text/plain",it);
+    };
     vanItems.appendChild(div);
   });
 
@@ -805,7 +910,7 @@ function initLoadout(){
   };
 }
 
-document.getElementById('confirm-loadout').onclick=()=>{
+document.getElementById("confirm-loadout").onclick=()=>{
   game.inventory=[...playerItems.querySelectorAll("div")].map(d=>d.textContent);
   if(game.inventory.length>3){alert("Max 3 items.");return;}
   game.vanStock={};
@@ -821,216 +926,32 @@ document.getElementById('confirm-loadout').onclick=()=>{
 };
 
 /* ==============================
-   === START INVESTIGATION ===
+   === INVESTIGATION START ===
 ============================== */
 function startInvestigation(){
-  game.currentGhost=ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
-  game.ghostRoom=rooms[Math.floor(Math.random()*(rooms.length-1))+1];
+  game.currentGhost = ghostProfiles[Math.floor(Math.random()*ghostProfiles.length)];
+  game.ghostRoom = rooms[Math.floor(Math.random()*(rooms.length-1))+1];
   game.turn=1;
   game.foundEvidence=[];
+  game.crossed=[];
   game.mimicForm=null;
   game.mimicShift=3+Math.floor(Math.random()*4);
   chooseWeather();
   updateMapVisual();
-  log("The investigation starts now...");
+  log("This is it... the investigation starts.");
   renderActionButtons();
 }
 
 /* ==============================
-   === CAMERA PLACEMENT & ORBS ===
-============================== */
-function useItem(item){
-  const evMap={
-    "EMF":"EMF","Spirit Box":"Spirit Box","Camera":"Ghost Orb",
-    "UV Light":"Fingerprints","Thermometer":"Freezing",
-    "D.O.T.S":"D.O.T.S","Book":"Ghost Writing"
-  };
-  const ev=evMap[item];
-  const inGhostRoom=game.playerRoom===game.ghostRoom;
-  const isMimic=game.currentGhost.name==="The Mimic";
-  const evidenceList=(isMimic&&game.mimicForm)?game.mimicForm.evidence:game.currentGhost.evidence;
-  const chance=0.5+Math.random()*0.35;
-
-  if(item==="Camera"){
-    game.cameraPlaced[game.playerRoom]=true;
-    game.cameraRoom=game.playerRoom;
-    if(game.foundEvidence.includes("Ghost Orb") || (isMimic && inGhostRoom)){
-      log("Camera shows orbs drifting lazily.");
-      cameraOverlay.style.display="block";
-    }
-    updateHUD();
-    return;
-  }
-
-  if(item==="Salt"){
-    if(!game.saltPlaced[game.playerRoom]){
-      game.saltPlaced[game.playerRoom]=true;
-      game.saltDisturbed[game.playerRoom]=false;
-      log("I laid a strip of salt on the ground.");
-      updateHUD();
-    } else {
-      log("There's already salt in this room.");
-    }
-    return;
-  }
-
-  if(!inGhostRoom){
-    log("This isn't the right spot... nothing responds.");
-    return;
-  }
-
-  if(evidenceList.includes(ev)){
-    if(Math.random()<=chance){
-      if(!game.foundEvidence.includes(ev)){
-        game.foundEvidence.push(ev);
-        log("I confirm: "+ev+" is present here.");
-        if(ev==="Ghost Orb") cameraOverlay.style.display="block";
-      } else log("I already noted this.");
-    } else log("The tool flickers but shows nothing solid.");
-  } else log("No response from this tool.");
-  updateHUD();
-}
-
-/* ==============================
-   === NOTEBOOK (CHECK + CROSS) ===
-============================== */
-function openNotebook(){
-  gameOptions.innerHTML="<p>Notebook:</p>";
-  const allEv=["EMF","Spirit Box","Fingerprints","Ghost Orb","Ghost Writing","Freezing","D.O.T.S"];
-  allEv.forEach(e=>{
-    const btn=document.createElement("button");
-    btn.textContent=(game.foundEvidence.includes(e)?"✓ ":"")+e;
-    btn.onclick=()=>{
-      if(game.foundEvidence.includes(e)){
-        game.foundEvidence=game.foundEvidence.filter(x=>x!==e);
-        log("Crossed out "+e+" in notebook.");
-      } else {
-        game.foundEvidence.push(e);
-        log("Marked "+e+" in notebook.");
-      }
-      updateHUD();
-      openNotebook();
-    };
-    gameOptions.appendChild(btn);
-  });
-
-  gameOptions.appendChild(document.createElement("hr"));
-  const possibleGhosts=ghostProfiles.filter(g=>
-    game.foundEvidence.every(ev=>g.evidence.includes(ev))
-  );
-  const ghostList=document.createElement("div");
-  ghostList.style.marginTop="10px";
-  ghostList.innerHTML="<strong>Possible Ghosts:</strong><br>"+
-    (possibleGhosts.length?possibleGhosts.map(g=>g.name).join(", "):"None");
-  gameOptions.appendChild(ghostList);
-
-  const cancelBtn=document.createElement("button");
-  cancelBtn.textContent="Cancel";
-  cancelBtn.onclick=renderActionButtons;
-  gameOptions.appendChild(cancelBtn);
-}
-
-/* ==============================
-   === MAP VISUALS & WEATHER ===
-============================== */
-const roomVisuals={
-  "Van":"Van_N.png","Living Room":"LivingRoom_N.png",
-  "Kitchen":"Kitchen_N.png","Bathroom":"Bathroom_N.png",
-  "Bedroom":"Bedroom_N.png","Garage":"Garage_N.png",
-  "Basement":"Basement_N.png"
-};
-function updateMapVisual(){
-  const bg=roomVisuals[game.playerRoom]||"Van_N.png";
-  document.body.style.background=`url('${bg}') no-repeat center center fixed`;
-  document.body.style.backgroundSize="cover";
-}
-function applyWeather(){
-  fogLayer.style.display="none";
-  rainLayer.style.display="none";
-  bloodmoonLayer.style.display="none";
-  if(game.weather==="Fog") fogLayer.style.display="block";
-  else if(game.weather==="Rain") rainLayer.style.display="block";
-  else if(game.weather==="Bloodmoon") bloodmoonLayer.style.display="block";
-}
-const weathers=["Clear","Rain","Bloodmoon","Fog"];
-function chooseWeather(){
-  game.weather=weathers[Math.floor(Math.random()*weathers.length)];
-  applyWeather();
-  log("Weather today: "+game.weather);
-}
-
-/* ==============================
-   === SPIRIT ORBS DISPLAY ===
-============================== */
-const orbCanvas=document.getElementById('orb-canvas');
-const ctx=orbCanvas.getContext('2d');
-let width=orbCanvas.width=window.innerWidth;
-let height=orbCanvas.height=window.innerHeight;
-function createOrb(){
-  return {
-    x:Math.random()*width,
-    y:Math.random()*height,
-    vx:(Math.random()-0.5)*0.5,
-    vy:(Math.random()-0.5)*0.5,
-    baseRadius:2+Math.random()*3,
-    opacity:0,
-    fadeIn:true,
-    tick:Math.random()*1000
-  };
-}
-let orbs=Array.from({length:10},createOrb);
-function animateOrbs(){
-  ctx.clearRect(0,0,width,height);
-  if((game.playerRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")) ||
-     (game.cameraRoom===game.ghostRoom && cameraOverlay.style.display==="block")){
-    orbs.forEach(o=>{
-      o.tick++;
-      if(o.fadeIn){
-        o.opacity+=0.01;
-        if(o.opacity>0.6)o.fadeIn=false;
-      } else {
-        o.opacity-=0.005;
-        if(o.opacity<=0.05)Object.assign(o,createOrb());
-      }
-      o.x+=o.vx;o.y+=o.vy;
-      if(o.x<0||o.x>width)o.vx*=-1;
-      if(o.y<0||o.y>height)o.vy*=-1;
-      const gradient=ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.baseRadius*3);
-      gradient.addColorStop(0,`rgba(200,255,255,${o.opacity})`);
-      gradient.addColorStop(0.5,`rgba(150,200,255,${o.opacity*0.5})`);
-      gradient.addColorStop(1,`rgba(100,150,200,0)`);
-      ctx.beginPath();
-      ctx.fillStyle=gradient;
-      ctx.ellipse(o.x,o.y,o.baseRadius*(1+Math.sin(o.tick*0.05)*0.3),o.baseRadius,0,0,Math.PI*2);
-      ctx.fill();
-    });
-  }
-  requestAnimationFrame(animateOrbs);
-}
-animateOrbs();
-window.addEventListener('resize',()=>{
-  width=orbCanvas.width=window.innerWidth;
-  height=orbCanvas.height=window.innerHeight;
-});
-/* ==============================
-   === HUD UPDATE (Sanity, Room, Items, Salt) ===
-============================== */
-function updateHUD(){
-  let hudText = `Sanity: ${game.sanity}% | Room: ${game.playerRoom} | Items: ${game.inventory.join(", ")}`;
-  let saltStatus = "";
-  if(game.saltPlaced[game.playerRoom]){
-    saltStatus = game.saltDisturbed[game.playerRoom] ? " | Salt: disturbed" : " | Salt: placed";
-  }
-  if(document.querySelector("footer")){
-    document.querySelector("footer").textContent = `Shark-Blades — Inspired by Phasmophobia.  ${hudText}${saltStatus}`;
-  }
-}
-
-/* ==============================
-   === VAN MENU (UPDATED) ===
+   === VAN MENU (UPDATED FOR MONITOR + FREE SWAP) ===
 ============================== */
 function openVanMenu(){
-  if(game.playerRoom!=="Van"){log("I need to be in the van.");renderActionButtons();return;}
+  if(game.playerRoom!=="Van"){
+    log("I need to be in the van for this.");
+    renderActionButtons();
+    return;
+  }
+
   gameOptions.innerHTML="<p>Van Options:</p>";
 
   const camBtn=document.createElement("button");
@@ -1040,18 +961,16 @@ function openVanMenu(){
       document.body.style.background=`url('${roomVisuals[game.cameraRoom]}') no-repeat center center fixed`;
       document.body.style.backgroundSize="cover";
       cameraOverlay.style.display="block";
-      log("I stare at the monitor, watching the feed from "+game.cameraRoom+".");
-      endTurn(true); // Viewing takes a turn
-    } else {
-      log("No active cameras connected.");
-    }
+      log("I stare at the monitor, watching "+game.cameraRoom+".");
+      endTurn(); // Viewing counts as a turn
+    }else log("No active cameras connected.");
   };
   gameOptions.appendChild(camBtn);
 
   const swapBtn=document.createElement("button");
   swapBtn.textContent="Swap Items";
   swapBtn.onclick=()=>{
-    gameOptions.innerHTML="<p>Swap items:</p>";
+    gameOptions.innerHTML="<p>Swap items (free in van):</p>";
     for(let tool in game.vanStock){
       const take=document.createElement("button");
       take.textContent="Take "+tool+" ("+game.vanStock[tool]+")";
@@ -1092,143 +1011,12 @@ function openVanMenu(){
 }
 
 /* ==============================
-   === TURN HANDLER (WAIT BUTTON) ===
-============================== */
-function endTurn(isVanAction=false){
-  if(game.playerRoom==="Van" && !isVanAction){
-    log("I sit in the van, taking a moment to breathe. (No time passes)");
-    return;
-  }
-  game.turn++;
-  let sanityChange = 0;
-
-  // Sanity changes depending on environment
-  const isGhostNearby = (game.playerRoom===game.ghostRoom);
-  if(game.playerRoom==="Van"){
-    sanityChange = +2; // calming
-  } else if(!isGhostNearby && game.weather!=="Bloodmoon"){
-    if(Math.random()<0.5) sanityChange = +1; // calm if well lit
-    else sanityChange = 0;
-  } else {
-    sanityChange = -(Math.floor(Math.random()*6+3));
-  }
-
-  game.sanity = Math.max(0, Math.min(100, game.sanity + sanityChange));
-  updateHUD();
-
-  // Ambient Narration Pool (Varied)
-  const ambientNarration = {
-    "Van": [
-      "The hum of the equipment is oddly comforting.",
-      "I sip stale coffee... one more case.",
-      "The monitors flicker, but everything seems stable."
-    ],
-    "Living Room": [
-      "A couch sits here... but the air feels heavy.",
-      "Pictures stare back with hollow eyes.",
-      "The old rug muffles my steps—something moved beneath it?"
-    ],
-    "Kitchen": [
-      "Knives hang on the rack, swaying gently.",
-      "The smell of stale grease lingers.",
-      "The faucet drips... or is it? I didn't hear a drip just now."
-    ],
-    "Bathroom": [
-      "A mirror fogs slightly, though it's cold.",
-      "The tiles are wet... I haven't touched anything.",
-      "The shower curtain sways... something brushed it."
-    ],
-    "Bedroom": [
-      "The bed creaks as if someone just sat down.",
-      "A photo frame lies face down.",
-      "Something scratches faintly under the bed."
-    ],
-    "Garage": [
-      "Tools rattle lightly on the workbench.",
-      "Tire tracks look fresh... but no one drove here.",
-      "Oil stains seem darker, wetter than before."
-    ],
-    "Basement": [
-      "The air is dense, like it's breathing.",
-      "Something moved in the shadows.",
-      "The stairs creak behind me—no one's there."
-    ]
-  };
-
-  const roomLines = ambientNarration[game.playerRoom] || [
-    "A strange silence fills the air.",
-    "Every sound feels louder here.",
-    "Shadows shift in my peripheral vision."
-  ];
-  const randomLine = roomLines[Math.floor(Math.random()*roomLines.length)];
-  log(randomLine);
-
-  // Mimic Logic
-  if(game.currentGhost.name==="The Mimic"){
-    game.mimicShift--;
-    if(game.mimicShift<=0){
-      let pool=ghostProfiles.filter(g=>g.name!=="The Mimic");
-      game.mimicForm=pool[Math.floor(Math.random()*pool.length)];
-      game.mimicShift=3+Math.floor(Math.random()*4);
-      log("...It feels different now. Like it's someone else.");
-    }
-  }
-
-  handleHunt();
-  renderActionButtons();
-}
-
-/* ==============================
-   === HUNT LOGIC (DEATH NARRATION) ===
-============================== */
-function handleHunt(){
-  if(game.huntCooldown>0){
-    game.huntCooldown--;
-    return;
-  }
-
-  const huntChance = (100 - game.sanity) / 100;
-  const inGhostRoom = (game.playerRoom === game.ghostRoom);
-
-  if(inGhostRoom && Math.random() < huntChance){
-    game.huntCooldown = 3 + Math.floor(Math.random()*3);
-    log("The air goes heavy... it's starting a hunt!");
-
-    // Crucifix check
-    if(!game.crucifixUsed && game.inventory.includes("Crucifix")){
-      game.crucifixUsed = true;
-      log("The crucifix sizzles hot in my hand, stopping it... for now.");
-      return;
-    }
-
-    // Smudge check
-    if(!game.smudgeUsed && game.inventory.includes("Smudge")){
-      game.smudgeUsed = true;
-      log("I light the smudge; it recoils with a scream!");
-      return;
-    }
-
-    // Death outcome
-    setTimeout(()=>{
-      const deathLines = [
-        "Its cold fingers wrap around my neck...",
-        "I feel my chest crushed by unseen hands...",
-        "I can't scream. It's here. It's over.",
-        "It stands over me, laughing without a mouth."
-      ];
-      log(deathLines[Math.floor(Math.random()*deathLines.length)]);
-      endGame(false);
-    }, 3000);
-  }
-}
-
-/* ==============================
-   === INITIALIZE GAME ON DOM LOAD ===
+   === STARTUP AUTO LOAD ===
 ============================== */
 document.addEventListener("DOMContentLoaded",()=>{
   initLoadout();
-  updateHUD();
 });
+
 /* ==============================
    === GAME END & RESTART ===
 ============================== */
@@ -1236,9 +1024,9 @@ function endGame(victory){
   gameOptions.innerHTML="";
   const msg=document.createElement("div");
   msg.style.marginBottom="10px";
-  msg.textContent = victory 
-    ? "I made it out alive... and I know what it was." 
-    : "The world fades to black... the ghost claimed me.";
+  msg.textContent = victory ? 
+    "You survived and solved the case." : 
+    "You died. The ghost claimed you.";
   gameOptions.appendChild(msg);
 
   const restart=document.createElement("button");
@@ -1251,129 +1039,8 @@ function endGame(victory){
 }
 
 /* ==============================
-   === ORBS ANIMATION (Camera + Room)
+   === CLOSE SCRIPT, BODY, HTML ===
 ============================== */
-const orbCanvas=document.getElementById('orb-canvas');
-const ctx=orbCanvas.getContext('2d');
-let width=orbCanvas.width=window.innerWidth;
-let height=orbCanvas.height=window.innerHeight;
-
-function createOrb(){
-  return {
-    x:Math.random()*width,
-    y:Math.random()*height,
-    vx:(Math.random()-0.5)*0.5,
-    vy:(Math.random()-0.5)*0.5,
-    baseRadius:2+Math.random()*3,
-    opacity:0,
-    fadeIn:true,
-    tick:Math.random()*1000
-  };
-}
-
-let orbs=Array.from({length:10},createOrb);
-
-function animateOrbs(){
-  ctx.clearRect(0,0,width,height);
-
-  // Orbs only show if Ghost Orb evidence found, and only in ghost room or on monitor feed
-  const shouldShowOrbs = (
-    (game.playerRoom===game.ghostRoom && game.foundEvidence.includes("Ghost Orb")) ||
-    (game.playerRoom==="Van" && game.cameraRoom===game.ghostRoom && game.cameraPlaced[game.cameraRoom])
-  );
-
-  if(shouldShowOrbs){
-    orbs.forEach(o=>{
-      o.tick++;
-      if(o.fadeIn){
-        o.opacity+=0.01;
-        if(o.opacity>0.6) o.fadeIn=false;
-      } else {
-        o.opacity-=0.005;
-        if(o.opacity<=0.05) Object.assign(o,createOrb());
-      }
-      o.x+=o.vx; o.y+=o.vy;
-      if(o.x<0||o.x>width) o.vx*=-1;
-      if(o.y<0||o.y>height) o.vy*=-1;
-
-      const gradient = ctx.createRadialGradient(o.x,o.y,0,o.x,o.y,o.baseRadius*3);
-      gradient.addColorStop(0,`rgba(200,255,255,${o.opacity})`);
-      gradient.addColorStop(0.5,`rgba(150,200,255,${o.opacity*0.5})`);
-      gradient.addColorStop(1,`rgba(100,150,200,0)`);
-
-      ctx.beginPath();
-      ctx.fillStyle=gradient;
-      ctx.ellipse(
-        o.x,o.y,
-        o.baseRadius*(1+Math.sin(o.tick*0.05)*0.3),
-        o.baseRadius,0,0,Math.PI*2
-      );
-      ctx.fill();
-    });
-  }
-
-  requestAnimationFrame(animateOrbs);
-}
-animateOrbs();
-
-window.addEventListener('resize',()=>{
-  width=orbCanvas.width=window.innerWidth;
-  height=orbCanvas.height=window.innerHeight;
-});
-
-/* ==============================
-   === SALT DISTURBANCE CHECK ===
-============================== */
-function checkSaltInteraction(){
-  // Salt disturbance happens if ghost roams to salt-placed room
-  Object.keys(game.saltPlaced).forEach(room=>{
-    if(game.saltPlaced[room] && !game.saltDisturbed[room]){
-      if(room===game.ghostRoom && Math.random()<0.3){
-        game.saltDisturbed[room]=true;
-        if(game.playerRoom===room){
-          log("The salt shifts—footprints smear the line!");
-        } else {
-          // Silent update if player is not present
-          updateHUD();
-        }
-      }
-    }
-  });
-}
-
-/* ==============================
-   === WEATHER & ROOM CHANGE EVENTS ===
-============================== */
-function updateMapVisual(){
-  const bg=roomVisuals[game.playerRoom]||"Van_N.png";
-  document.body.style.background=`url('${bg}') no-repeat center center fixed`;
-  document.body.style.backgroundSize="cover";
-}
-
-function applyWeather(){
-  fogLayer.style.display="none";
-  rainLayer.style.display="none";
-  bloodmoonLayer.style.display="none";
-
-  if(game.weather==="Fog") fogLayer.style.display="block";
-  else if(game.weather==="Rain") rainLayer.style.display="block";
-  else if(game.weather==="Bloodmoon") bloodmoonLayer.style.display="block";
-}
-
-const weathers=["Clear","Rain","Bloodmoon","Fog"];
-function chooseWeather(){
-  game.weather=weathers[Math.floor(Math.random()*weathers.length)];
-  applyWeather();
-  log(`The weather's ${game.weather.toLowerCase()} today.`);
-}
-
-/* ==============================
-   === FINAL INITIALIZATION ===
-============================== */
-document.addEventListener("DOMContentLoaded",()=>{
-  initLoadout();
-  updateHUD();
-});
 </script>
 </body>
 </html>
