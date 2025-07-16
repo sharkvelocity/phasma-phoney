@@ -171,7 +171,7 @@
       background:#333;
     }
 
-    /* === HUD (SANITY, TURNS, ETC.) === */
+    /* === HUD (SANITY, TURNS, WEATHER) === */
     #hud {
       position: absolute;
       top: 10px;
@@ -255,6 +255,39 @@
       cursor:pointer;
     }
 
+    /* === MOVE OVERLAY (NEW) === */
+    #move-overlay {
+      position:fixed;
+      top:0; left:0;
+      width:100vw; height:100vh;
+      background: rgba(0,0,0,0.8);
+      display:none;
+      justify-content:center;
+      align-items:center;
+      flex-direction:column;
+      z-index:250;
+    }
+    #move-options {
+      background:#111;
+      padding:20px;
+      border:1px solid #444;
+      max-height:70%;
+      overflow-y:auto;
+    }
+    #move-options button {
+      display:block;
+      width:100%;
+      margin:4px 0;
+      padding:6px;
+      background:#222;
+      color:#eee;
+      border:1px solid #555;
+      cursor:pointer;
+    }
+    #move-options button:hover {
+      background:#333;
+    }
+
     /* === GHOST GUESS POPUP === */
     #guess-popup {
       position:fixed;
@@ -319,7 +352,7 @@
 
     <!-- HUD -->
     <div id="hud">
-      <div>Location: <span id="hud-location">Van</span></div>
+      <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
       <div>Turns: <span id="hud-turns">0</span></div>
       <div>Sanity:</div>
       <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
@@ -341,7 +374,6 @@
         <button data-cmd="look">Look Around</button>
         <button data-cmd="use">Use Item</button>
         <button data-cmd="inventory">Inventory</button>
-        <button data-cmd="map">Map/Weather</button>
         <button data-cmd="guess">Ghost Guess</button>
       </div>
     </div>
@@ -357,13 +389,17 @@
     </div>
   </div>
 
+  <!-- === MOVE OVERLAY === -->
+  <div id="move-overlay">
+    <div id="move-options"></div>
+  </div>
+
   <!-- === GUESS POPUP === -->
   <div id="guess-popup">
     <div id="guess-list"></div>
   </div>
 
   <footer>Phasma‑Phoney v1.4.0 — Master Build</footer>
-
   <script>
     /* === GAME DATA & GLOBAL VARIABLES === */
     const allLoadoutItems = [
@@ -383,6 +419,8 @@
       "Sound Sensor"
     ];
 
+    const possibleWeather = ["Stormy", "Rain", "Clear", "Foggy"];
+
     const game = {
       ghost: null,
       ghostRoom: null,
@@ -395,7 +433,8 @@
       mimicForm: null,
       nextMimicShift: 0,
       huntCooldown: 0,
-      smudgeActive: 0
+      smudgeActive: 0,
+      weather: null
     };
 
     const ghostProfiles = {
@@ -500,74 +539,24 @@
         behavior: "Targets males, drains sanity faster during interactions.",
       }
     };
-    /* === ROOM VISUALS & MAP === */
+
     const roomVisuals = {
-      Van: {
-        N: "Van_N.png",
-        S: "Van_S.png",
-        E: "Van_E.png",
-        W: "Van_W.png"
-      },
-      Foyer: {
-        N: "Foyer_N.png",
-        S: "Foyer_S.png",
-        E: "Foyer_E.png",
-        W: "Foyer_W.png"
-      },
-      "Living Room": {
-        N: "LivingRoom_N.png",
-        S: "LivingRoom_S.png",
-        E: "LivingRoom_E.png",
-        W: "LivingRoom_W.png"
-      },
-      Kitchen: {
-        N: "Kitchen_N.png",
-        S: "Kitchen_S.png",
-        E: "Kitchen_E.png",
-        W: "Kitchen_W.png"
-      },
-      "Dining Room": {
-        N: "DiningRoom_N.png",
-        S: "DiningRoom_S.png",
-        E: "DiningRoom_E.png",
-        W: "DiningRoom_W.png"
-      },
-      Garage: {
-        N: "Garage_N.png",
-        S: "Garage_S.png",
-        E: "Garage_E.png",
-        W: "Garage_W.png"
-      },
-      Basement: {
-        N: "Basement_N.png",
-        S: "Basement_S.png",
-        E: "Basement_E.png",
-        W: "Basement_W.png"
-      },
-      Bathroom: {
-        N: "Bathroom_N.png",
-        S: "Bathroom_S.png",
-        E: "Bathroom_E.png",
-        W: "Bathroom_W.png"
-      },
-      "Kids Bedroom": {
-        N: "KidsBedroom_N.png",
-        S: "KidsBedroom_S.png",
-        E: "KidsBedroom_E.png",
-        W: "KidsBedroom_W.png"
-      },
-      "Master Bedroom": {
-        N: "MasterBedroom_N.png",
-        S: "MasterBedroom_S.png",
-        E: "MasterBedroom_E.png",
-        W: "MasterBedroom_W.png"
-      }
+      Van: { N: "Van_N.png", S: "Van_S.png", E: "Van_E.png", W: "Van_W.png" },
+      Foyer: { N: "Foyer_N.png", S: "Foyer_S.png", E: "Foyer_E.png", W: "Foyer_W.png" },
+      "Living Room": { N: "LivingRoom_N.png", S: "LivingRoom_S.png", E: "LivingRoom_E.png", W: "LivingRoom_W.png" },
+      Kitchen: { N: "Kitchen_N.png", S: "Kitchen_S.png", E: "Kitchen_E.png", W: "Kitchen_W.png" },
+      "Dining Room": { N: "DiningRoom_N.png", S: "DiningRoom_S.png", E: "DiningRoom_E.png", W: "DiningRoom_W.png" },
+      Garage: { N: "Garage_N.png", S: "Garage_S.png", E: "Garage_E.png", W: "Garage_W.png" },
+      Basement: { N: "Basement_N.png", S: "Basement_S.png", E: "Basement_E.png", W: "Basement_W.png" },
+      Bathroom: { N: "Bathroom_N.png", S: "Bathroom_S.png", E: "Bathroom_E.png", W: "Bathroom_W.png" },
+      "Kids Bedroom": { N: "KidsBedroom_N.png", S: "KidsBedroom_S.png", E: "KidsBedroom_E.png", W: "KidsBedroom_W.png" },
+      "Master Bedroom": { N: "MasterBedroom_N.png", S: "MasterBedroom_S.png", E: "MasterBedroom_E.png", W: "MasterBedroom_W.png" }
     };
 
     const mapConnections = {
       Van: ["Foyer"],
       Foyer: ["Van", "Living Room", "Kitchen", "Bathroom"],
-      "Living Room": ["Foyer", "Dining Room", "Garage"],
+      "Living Room": ["Foyer", "Dining Room", "Garage", "Kids Bedroom", "Master Bedroom"],
       Kitchen: ["Foyer", "Dining Room"],
       "Dining Room": ["Living Room", "Kitchen", "Basement"],
       Garage: ["Living Room"],
@@ -606,6 +595,7 @@
       document.getElementById("main-scene").style.display = "none";
       document.getElementById("loadout-screen").style.display = "none";
       document.getElementById("narrator-ui").style.display = "none";
+      document.getElementById("move-overlay").style.display = "none";
       game.playerRoom = "Van";
       game.currentTurn = 0;
       game.sanity = 100;
@@ -675,9 +665,10 @@
     function startInvestigation() {
       document.getElementById("main-scene").style.display = "block";
       document.getElementById("narrator-ui").style.display = "flex";
+      game.weather = randomFromArray(possibleWeather);
       assignRandomGhost();
       assignRandomGhostRoom();
-      logToGame("You are in the van. The weather outside is stormy...");
+      logToGame("You are in the van. The weather outside is " + game.weather.toLowerCase() + "...");
       renderHUD();
       updateBackground();
       randomLightning();
@@ -704,6 +695,7 @@
     /* === HUD & BACKGROUND UPDATE === */
     function renderHUD() {
       document.getElementById("hud-location").textContent = game.playerRoom;
+      document.getElementById("hud-weather").textContent = game.weather;
       document.getElementById("hud-turns").textContent = game.currentTurn;
       document.getElementById("held-items-display").textContent = game.inventory.join(", ");
       updateSanityBar();
@@ -727,28 +719,33 @@
 
     function handleCommand(cmd) {
       switch (cmd) {
-        case "move": openMoveOptions(); break;
+        case "move": openMoveOverlay(); break;
         case "look": lookAround(); break;
         case "use": useItemMenu(); break;
         case "inventory": openVanSwap(); break;
-        case "map": showMapWeather(); break;
         case "guess": openGuess(); break;
       }
     }
 
-    /* === MOVE SYSTEM === */
-    function openMoveOptions() {
+    /* === MOVE OVERLAY (NEW) === */
+    function openMoveOverlay() {
       const options = mapConnections[game.playerRoom] || [];
+      const container = document.getElementById("move-options");
+      container.innerHTML = "";
       if (!options.length) {
         logToGame("No available paths from here.");
         return;
       }
-      const choice = prompt(`Where to move? Options: ${options.join(", ")}`);
-      if (choice && options.includes(choice)) {
-        moveToRoom(choice);
-      } else {
-        logToGame("Movement canceled or invalid.");
-      }
+      options.forEach(room => {
+        const btn = document.createElement("button");
+        btn.textContent = "Go to " + room;
+        btn.onclick = () => {
+          document.getElementById("move-overlay").style.display = "none";
+          moveToRoom(room);
+        };
+        container.appendChild(btn);
+      });
+      document.getElementById("move-overlay").style.display = "flex";
     }
 
     function moveToRoom(room) {
@@ -759,14 +756,13 @@
       updateBackground();
       checkTurnEvents();
     }
-
     /* === LOOK AROUND === */
     function lookAround() {
       game.currentTurn++;
       if (game.playerRoom === game.ghostRoom) {
         logToGame("You feel an eerie presence here...");
         if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-          logToGame("Through the camera, you notice strange ghost orbs...");
+          logToGame("Through the camera, you notice strange ghost orbs flickering in and out...");
         }
       } else {
         logToGame("Nothing unusual here.");
@@ -795,6 +791,9 @@
           if (game.playerRoom === game.ghostRoom) {
             game.smudgeActive = 3;
             logToGame("You smudge the room, calming the ghost temporarily.");
+            if (game.ghost === "Yurei") {
+              logToGame("The Yurei seems locked in place for a while.");
+            }
           } else {
             logToGame("You smudge, but nothing happens.");
           }
@@ -814,27 +813,23 @@
       checkTurnEvents();
     }
 
-    /* === VAN SWAP === */
+    /* === VAN SWAP (FIXED) === */
     document.getElementById("return-van-btn").addEventListener("click", () => {
-      openVanSwap();
-    });
-
-    function openVanSwap() {
       if (game.playerRoom !== "Van") {
         logToGame("You need to be in the van to swap items.");
         return;
       }
       tempHeld = game.inventory.filter(i => i !== "Notebook" && i !== "Lighter");
       tempVan = game.vanStock;
-      showLoadout();
+      showVanSwap();
+    });
+
+    function showVanSwap() {
+      document.getElementById("loadout-screen").style.display = "flex";
+      renderLoadout();
     }
 
-    /* === MAP & WEATHER === */
-    function showMapWeather() {
-      logToGame("Map: Connections visible. Weather: Stormy with heavy rain.");
-    }
-
-    /* === GUESS POPUP === */
+    /* === GHOST GUESS SYSTEM === */
     function openGuess() {
       const popup = document.getElementById("guess-popup");
       const list = document.getElementById("guess-list");
@@ -850,9 +845,11 @@
       });
       popup.style.display = "flex";
     }
+
     function closeGuess() {
       document.getElementById("guess-popup").style.display = "none";
     }
+
     function makeGuess(ghost) {
       if (ghost === game.ghost) {
         logToGame("Correct! The ghost was indeed " + ghost + "!");
@@ -865,7 +862,7 @@
       }, 2000);
     }
 
-    /* === TURN & GHOST BEHAVIOR EVENTS === */
+    /* === TURN EVENTS & GHOST BEHAVIOR === */
     function checkTurnEvents() {
       if (game.ghost === "TheMimic" && game.currentTurn >= game.nextMimicShift) {
         assignMimicForm();
@@ -973,7 +970,7 @@
       canvas.height = window.innerHeight;
     });
 
-    /* === START GAME INIT === */
+    /* === GAME START === */
     document.addEventListener("DOMContentLoaded", () => {
       startTitleScreen();
     });
