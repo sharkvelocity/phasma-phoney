@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phasma‑Phoney v2.0 — FINAL MASTER BUILD</title>
+  <title>Phasma‑Phoney v2.1 — FINAL MASTER BUILD</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Phasma-Phoney: Fully integrated ghost investigation horror game with complete features and orb mini-game." />
   <style>
@@ -156,11 +156,11 @@
       transition:width 0.3s ease;
     }
 
-    /* === INVENTORY DISPLAY === */
+    /* === INVENTORY DISPLAY (TOP-RIGHT) === */
     #inventory-display {
       position: absolute;
-      bottom:10px;
-      left:10px;
+      top:10px;
+      right:10px;
       background: rgba(0,0,0,0.5);
       padding:6px 10px;
       border:1px solid #444;
@@ -390,7 +390,7 @@
       <div>Temp: <span id="hud-temp">--°C</span></div>
     </div>
 
-    <!-- Inventory Display -->
+    <!-- Inventory Display (Now Top-Right) -->
     <div id="inventory-display">
       <div>Held:</div>
       <div id="held-items-display">None</div>
@@ -449,7 +449,7 @@
   <!-- === GHOST GUESS POPUP === -->
   <div id="guess-popup"><div id="guess-list"></div></div>
 
-  <footer>Phasma‑Phoney v2.0 — Master Build</footer>
+  <footer>Phasma‑Phoney v2.1 — Master Build</footer>
 
   <script>
     /* === GLOBAL GAME STATE === */
@@ -805,12 +805,12 @@
       const roomInv=game.roomItems[game.playerRoom]||[];
       roomInv.forEach(i=>{
         const b=document.createElement("button");
-        b.textContent="Pick up: "+i;
-        b.onclick=()=>{
-          pickItem(i);
-          document.getElementById("inventory-overlay").style.display="none";
-        };
-        c.appendChild(b);
+          b.textContent="Pick up: "+i;
+          b.onclick=()=>{
+            pickItem(i);
+            document.getElementById("inventory-overlay").style.display="none";
+          };
+          c.appendChild(b);
       });
 
       document.getElementById("inventory-overlay").style.display="flex";
@@ -1030,6 +1030,10 @@
           border.appendChild(b);
         });
       }
+      const close=document.createElement("button");
+      close.textContent="Close Monitor";
+      close.onclick=()=>{document.getElementById("monitor-overlay").style.display="none";};
+      border.appendChild(close);
     }
 
     function viewCameraFeed(room){
@@ -1046,6 +1050,7 @@
       back.textContent="Back";back.onclick=openMonitorMenu;
       b.appendChild(back);
     }
+
     document.getElementById("close-monitor").addEventListener("click",()=>{
       document.getElementById("monitor-overlay").style.display="none";
     });
@@ -1087,7 +1092,7 @@
           fade:Math.random()*0.02+0.01
         });
       }
-      setTimeout(spawnOrb,800);
+      setTimeout(spawn,800);
     }
 
     function animateOrbGame(){
