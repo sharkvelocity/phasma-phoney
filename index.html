@@ -553,40 +553,72 @@
       else bar.style.background="#f00";
     }
 
-    function startTitleScreen(){
-      if(game.titleShown){
-        resetGameState();
-        showLoadout();
-        return;
-      }
-      game.titleShown=true;
-      document.getElementById("title-screen").style.display="flex";
-      document.getElementById("main-scene").style.display="none";
-      resetGameState();
-    }
+    /* === FIXED STARTUP FLOW === */
 
-    function resetGameState(){
-      game.ghost=null;game.ghostRoom=null;
-      game.playerRoom="Van";game.inventory=[];
-      game.vanStock=[...allLoadoutItems];game.roomItems={};
-      game.selectedEvidence.clear();
-      game.currentTurn=0;game.sanity=100;
-      game.mimicForm=null;game.nextMimicShift=0;
-      game.huntCooldown=0;game.smudgeActive=0;
-      game.weather=null;game.cameraActive=false;
-      game.placedCrucifix={};game.monitorBooted=false;
-      game.placedCameras={};game.usedCursedItems={};
-      game.spawnedCursedItem=null;game.spawnedCursedRoom=null;
-      updateSanityBar();
-    }
+function startTitleScreen() {
+  // Always show the title first on initial page load
+  if (!game.titleShown) {
+    game.titleShown = true;
+    document.getElementById("title-screen").style.display = "flex";
+    document.getElementById("title-screen").style.opacity = "1";
+    document.getElementById("main-scene").style.display = "none";
+    document.getElementById("loadout-screen").style.display = "none";
+    resetGameState();
+  } else {
+    // If restarting after death or guessing, skip title and go straight to van
+    resetGameState();
+    showLoadout();
+  }
+}
 
-    document.getElementById("startButton").addEventListener("click",()=>{
-      document.getElementById("title-screen").style.opacity="0";
-      setTimeout(()=>{
-        document.getElementById("title-screen").style.display="none";
-        showLoadout();
-      },2000);
-    });
+function resetGameState() {
+  // Full reset for a new investigation
+  game.ghost = null;
+  game.ghostRoom = null;
+  game.playerRoom = "Van";
+  game.inventory = [];
+  game.vanStock = [...allLoadoutItems];
+  game.roomItems = {};
+  game.selectedEvidence.clear();
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.mimicForm = null;
+  game.nextMimicShift = 0;
+  game.huntCooldown = 0;
+  game.smudgeActive = 0;
+  game.weather = null;
+  game.cameraActive = false;
+  game.placedCrucifix = {};
+  game.monitorBooted = false;
+  game.placedCameras = {};
+  game.usedCursedItems = {};
+  game.spawnedCursedItem = null;
+  game.spawnedCursedRoom = null;
+  updateSanityBar();
+
+  // Reset HUD and hide overlays
+  document.getElementById("narrator-ui").style.display = "none";
+  document.getElementById("move-overlay").style.display = "none";
+  document.getElementById("item-overlay").style.display = "none";
+  document.getElementById("inventory-overlay").style.display = "none";
+  document.getElementById("inspect-overlay").style.display = "none";
+  document.getElementById("monitor-overlay").style.display = "none";
+}
+
+document.getElementById("startButton").addEventListener("click", () => {
+  // Fade out title and show loadout properly
+  document.getElementById("title-screen").style.opacity = "0";
+  setTimeout(() => {
+    document.getElementById("title-screen").style.display = "none";
+    showLoadout();
+  }, 2000);
+});
+
+/* === INITIAL PAGE LOAD === */
+document.addEventListener("DOMContentLoaded", () => {
+  startTitleScreen();
+});
+
 
     let tempHeld=[],tempVan=[...allLoadoutItems];
     function showLoadout(){
