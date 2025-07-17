@@ -1,3 +1,4 @@
+<!-- === PHASMA‑PHONEY CANONICAL MASTER BUILD === -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -5,8 +6,9 @@
   <title>Phasma‑Phoney</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Phasma‑Phoney: Turn-based ghost investigation horror" />
+
   <style>
-    /* === GLOBAL RESET === */
+    /* === GLOBAL RESET & BASICS === */
     html, body {
       margin: 0;
       padding: 0;
@@ -29,11 +31,23 @@
       z-index: 100;
       transition: opacity 1.5s ease-in-out;
       opacity: 1;
+      flex-direction: column;
     }
     #title-screen img {
       max-width: 60%;
       animation: pulse 5s infinite ease-in-out;
     }
+    #startButton {
+      margin-top: 30px;
+      padding: 12px 30px;
+      font-size: 20px;
+      background: #111;
+      color: #eee;
+      border: 2px solid #444;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+    }
+    #startButton:hover { background: #222; }
     @keyframes pulse {
       0%,100% { opacity: 0.8; transform: scale(1); }
       50% { opacity: 1; transform: scale(1.03); }
@@ -54,96 +68,28 @@
     #loadout-box {
       display:flex; gap:40px;
       background:#111; padding:20px; border:2px solid #555;
+      flex-wrap: wrap;
     }
     .loadout-section h4 {
       margin:0 0 10px; text-align:center;
     }
     .item-row { display:flex; justify-content:space-between; margin-bottom:5px; }
-    .item-row button { background:#333; color:#fff; border:1px solid #555; cursor:pointer; }
-
+    .item-row button {
+      background:#333; color:#fff; border:1px solid #555;
+      cursor:pointer; padding:2px 6px;
+    }
     #confirm-loadout {
       margin-top:20px; width:100%;
       background:#444; color:#fff; border:none; padding:10px; cursor:pointer;
     }
-
-    /* === MAIN SCENE === */
-    #main-scene {
-      position:relative; width:100%; height:100%;
-      display:none;
-    }
-    #background, #rain-layer, #orbCanvas, #fog-layer, #lightning {
-      position:absolute; top:0; left:0;
-      width:100%; height:100%;
-    }
-    #rain-layer { pointer-events:none; }
-    #orbCanvas { pointer-events:none; z-index:4; }
-    #lightning {
-      background:white; opacity:0; z-index:3; pointer-events:none;
-    }
-    #fog-layer {
-      background:url('fog.png') repeat; opacity:0.3;
-      z-index:2; animation:fogMove 60s linear infinite;
-    }
-    @keyframes fogMove {
-      from { background-position:0 0; } to { background-position:1000px 0; }
-    }
-
-    /* === HUD === */
-    #hud {
-      position:absolute; top:10px; left:10px; color:#0f0; z-index:5;
-    }
-    #hud span { display:block; }
-    #sanity-bar-container {
-      width:120px; height:10px; background:#222; border:1px solid #555; margin-top:4px;
-    }
-    #sanity-bar {
-      height:100%; background:lime; width:100%;
-    }
-    #held-items {
-      margin-top:10px; font-size:14px;
-    }
-
-    /* === NARRATOR UI === */
-    #narrator-ui {
-      position:absolute; bottom:0; left:0; right:0;
-      background:rgba(0,0,0,0.6);
-      color:#fff; padding:10px;
-      display:none; flex-direction:column;
-      max-height:40%; overflow:hidden;
-      z-index:10;
-    }
-    #game-log {
-      flex:1; overflow-y:auto; margin-bottom:10px; font-size:14px;
-    }
-    .log-entry { opacity:1; transition:opacity 2s; }
-    .log-entry.fade { opacity:0.5; }
-    #command-buttons { display:flex; gap:10px; flex-wrap:wrap; }
-    #command-buttons button {
-      flex:1; padding:6px 10px; background:#222; color:#fff; border:1px solid #555; cursor:pointer;
-    }
-
-    /* === NOTEBOOK === */
-    #notebook-overlay {
-      position:fixed; top:0; left:0;
-      width:100%; height:100%; background:rgba(0,0,0,0.9);
-      color:#fff; display:none; flex-direction:column; align-items:center; justify-content:center;
-      z-index:200;
-    }
-    #notebook-content { background:#111; padding:20px; border:1px solid #555; }
-    #close-notebook { margin-top:10px; background:#333; color:#fff; border:none; padding:5px; cursor:pointer; }
-    #possible-ghosts { margin-top:10px; }
-    #possible-ghosts span.possible { color:#0f0; }
-
-    /* === SCROLLBAR === */
-    #game-log::-webkit-scrollbar { width:6px; }
-    #game-log::-webkit-scrollbar-thumb { background:#444; }
   </style>
 </head>
 <body>
+
   <!-- === TITLE SCREEN === -->
   <div id="title-screen">
-    <img src="logo.png" alt="Phasma‑Phoney" />
-    <button id="startButton" style="position:absolute;bottom:20%;padding:12px 30px;font-size:20px;">Start New Game</button>
+    <img src="logo.png" alt="Phasma‑Phoney Logo" />
+    <button id="startButton">Start New Game</button>
   </div>
 
   <!-- === LOADOUT SCREEN === -->
@@ -160,42 +106,61 @@
       </div>
     </div>
   </div>
-
   <!-- === MAIN SCENE === -->
-  <div id="main-scene">
-    <img id="background" src="background.png" alt="Scene" />
-    <canvas id="rain-layer"></canvas>
-    <div id="fog-layer"></div>
-    <div id="lightning"></div>
-    <canvas id="orbCanvas"></canvas>
+  <div id="main-scene" style="display:none;">
+    <!-- === BACKGROUND LAYERS === -->
+    <img id="background" src="background.png" alt="Scene Background" style="position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;">
+    <canvas id="rain-layer" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1;"></canvas>
+    <div id="fog-layer" style="
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      background:url('fog.png') repeat;opacity:0.3;z-index:2;
+      animation:fogMove 60s linear infinite;">
+    </div>
+    <div id="lightning" style="
+      position:absolute;top:0;left:0;width:100%;height:100%;
+      background:white;opacity:0;pointer-events:none;z-index:3;">
+    </div>
+    <canvas id="orbCanvas" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4;"></canvas>
 
-    <!-- HUD -->
-    <div id="hud">
-      <span>Location: <span id="hud-location"></span></span>
-      <span>Weather: <span id="hud-weather"></span></span>
+    <!-- === HUD === -->
+    <div id="hud" style="position:absolute;top:10px;left:10px;color:#0f0;z-index:5;">
+      <span>Location: <span id="hud-location">Van</span></span>
+      <span>Weather: <span id="hud-weather">--</span></span>
       <span>Turns: <span id="hud-turns">0</span></span>
-      <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
+      <div id="sanity-bar-container" style="width:120px;height:10px;background:#222;border:1px solid #555;margin-top:4px;">
+        <div id="sanity-bar" style="height:100%;background:lime;width:100%;"></div>
+      </div>
       <span>Temp: <span id="hud-temp">--°C</span></span>
-      <div id="held-items">Held: <span id="held-items-display">None</span></div>
+      <div id="held-items" style="margin-top:10px;font-size:14px;">
+        Held: <span id="held-items-display">None</span>
+      </div>
     </div>
 
-    <!-- Narrator UI -->
-    <div id="narrator-ui">
-      <div id="game-log"></div>
-      <div id="command-buttons">
-        <button data-cmd="move">Move</button>
-        <button data-cmd="look">Look Around</button>
-        <button data-cmd="inventory">Return to Van</button>
-        <button data-cmd="monitor">Check Monitor</button>
-        <button data-cmd="notebook">Notebook</button>
-        <button data-cmd="guess">Ghost Guess</button>
+    <!-- === NARRATOR UI === -->
+    <div id="narrator-ui" style="
+      position:absolute;bottom:0;left:0;right:0;
+      background:rgba(0,0,0,0.6);color:#fff;
+      padding:10px;display:none;flex-direction:column;
+      max-height:40%;overflow:hidden;z-index:10;">
+      <div id="game-log" style="flex:1;overflow-y:auto;margin-bottom:10px;font-size:14px;"></div>
+      <div id="command-buttons" style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button data-cmd="move" style="flex:1;padding:6px 10px;background:#222;color:#fff;border:1px solid #555;cursor:pointer;">Move</button>
+        <button data-cmd="look" style="flex:1;padding:6px 10px;background:#222;color:#fff;border:1px solid #555;cursor:pointer;">Look Around</button>
+        <button data-cmd="inventory" style="flex:1;padding:6px 10px;background:#222;color:#fff;border:1px solid #555;cursor:pointer;">Return to Van</button>
+        <button data-cmd="monitor" style="flex:1;padding:6px 10px;background:#222;color:#fff;border:1px solid #555;cursor:pointer;">Check Monitor</button>
+        <button data-cmd="notebook" style="flex:1;padding:6px 10px;background:#222;color:#fff;border:1px solid #555;cursor:pointer;">Notebook</button>
+        <button data-cmd="guess" style="flex:1;padding:6px 10px;background:#222;color:#fff;border:1px solid #555;cursor:pointer;">Ghost Guess</button>
       </div>
     </div>
   </div>
 
-  <!-- === NOTEBOOK === -->
-  <div id="notebook-overlay">
-    <div id="notebook-content">
+  <!-- === NOTEBOOK OVERLAY === -->
+  <div id="notebook-overlay" style="
+    position:fixed;top:0;left:0;width:100%;height:100%;
+    background:rgba(0,0,0,0.9);color:#fff;display:none;
+    flex-direction:column;align-items:center;justify-content:center;
+    z-index:200;">
+    <div id="notebook-content" style="background:#111;padding:20px;border:1px solid #555;">
       <h4>Evidence</h4>
       <label><input type="checkbox" class="evidence-check" value="EMF Level 5"> EMF Level 5</label><br>
       <label><input type="checkbox" class="evidence-check" value="Spirit Box"> Spirit Box</label><br>
@@ -204,32 +169,55 @@
       <label><input type="checkbox" class="evidence-check" value="Freezing Temps"> Freezing Temps</label><br>
       <label><input type="checkbox" class="evidence-check" value="D.O.T.S"> D.O.T.S</label><br>
       <label><input type="checkbox" class="evidence-check" value="Orbs"> Orbs</label><br>
-      <div id="possible-ghosts"></div>
-      <button id="close-notebook">Close</button>
+      <div id="possible-ghosts" style="margin-top:10px;"></div>
+      <button id="close-notebook" style="margin-top:10px;background:#333;color:#fff;border:none;padding:5px;cursor:pointer;">Close</button>
     </div>
   </div>
 
+  <style>
+    /* === ANIMATIONS & SCROLLBAR === */
+    @keyframes fogMove {
+      from { background-position:0 0; } to { background-position:1000px 0; }
+    }
+    #game-log::-webkit-scrollbar { width:6px; }
+    #game-log::-webkit-scrollbar-thumb { background:#444; }
+    .log-entry { opacity:1; transition:opacity 2s; }
+    .log-entry.fade { opacity:0.5; }
+  </style>
 <script>
-/* === FULL GAME LOGIC BELOW — ALL MERGED === */
+/* === GLOBAL GAME STATE === */
 const game = {
-  ghost: null, ghostRoom: null, playerRoom:"Van",
-  inventory:[], vanStock:[], selectedEvidence:new Set(),
-  currentTurn:0, sanity:100, mimicForm:null, nextMimicShift:0,
-  weather:"", temperature:20, ghostBehavior:{},
-  huntCooldown:0, canUseVanThisTurn:true,
-  rooms:["Van","Foyer","Living Room","Kitchen","Dining Room","Bathroom","Garage","Basement","Kids Bedroom","Master Bedroom"],
-  ghostProfiles:{}
+  ghost: null,
+  ghostRoom: null,
+  playerRoom: "Van",
+  inventory: [],
+  vanStock: [],
+  selectedEvidence: new Set(),
+  currentTurn: 0,
+  sanity: 100,
+  mimicForm: null,
+  nextMimicShift: 0,
+  weather: "",
+  temperature: 20,
+  ghostBehavior: {},
+  huntCooldown: 0,
+  canUseVanThisTurn: true,
+  rooms: [
+    "Van","Foyer","Living Room","Kitchen","Dining Room",
+    "Bathroom","Garage","Basement","Kids Bedroom","Master Bedroom"
+  ],
+  ghostProfiles: {}
 };
 
-const allLoadoutItems=[
+const allLoadoutItems = [
   "EMF Reader","Spirit Box","Camera","UV Light","D.O.T.S Projector",
   "Thermometer","Ghost Writing Book","Video Camera","Tripod",
   "Parabolic Microphone","Sound Sensor","Motion Sensor",
   "Salt","Crucifix","Smudge Stick","Candle","Lighter"
 ];
 
-/* === GHOST PROFILES (25 TOTAL, WITH SUCCUBUS) === */
-game.ghostProfiles={
+/* === GHOST PROFILES (25 TOTAL, INCLUDING SUCCUBUS) === */
+game.ghostProfiles = {
   "Spirit":{evidence:["EMF Level 5","Spirit Box","Ghost Writing"],behavior:{aggression:2}},
   "Wraith":{evidence:["EMF Level 5","Spirit Box","D.O.T.S"],behavior:{aggression:3}},
   "Phantom":{evidence:["Spirit Box","D.O.T.S","Fingerprints"],behavior:{aggression:2}},
@@ -257,94 +245,132 @@ game.ghostProfiles={
   "Raith":{evidence:["Spirit Box","Freezing Temps","D.O.T.S"],behavior:{aggression:3}}
 };
 
-/* === DOMCONTENTLOADED === */
-document.addEventListener("DOMContentLoaded",()=>{
-  document.getElementById("startButton").addEventListener("click",()=>{
-    document.getElementById("title-screen").style.opacity=0;
-    setTimeout(()=>{
-      document.getElementById("title-screen").style.display="none";
+/* === DOMCONTENTLOADED STARTUP === */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("startButton").addEventListener("click", () => {
+    document.getElementById("title-screen").style.opacity = 0;
+    setTimeout(() => {
+      document.getElementById("title-screen").style.display = "none";
       openLoadout();
-    },1500);
+    }, 1500);
   });
   setupLoadout();
 });
 
-/* === LOADOUT === */
-let tempInventory=[],tempVan=[...allLoadoutItems];
-function setupLoadout(){
-  const vanList=document.getElementById("van-list");
-  const heldList=document.getElementById("held-list");
-  function renderLoadout(){
-    vanList.innerHTML=""; heldList.innerHTML="";
-    tempVan.forEach(item=>{
-      const row=document.createElement("div");row.className="item-row";
-      row.innerHTML=`<span>${item}</span>`;
-      const btn=document.createElement("button");btn.textContent="Take";
-      btn.onclick=()=>{if(tempInventory.length<3){tempInventory.push(item);tempVan=tempVan.filter(i=>i!==item);renderLoadout();}};
-      row.appendChild(btn); vanList.appendChild(row);
+/* === LOADOUT LOGIC === */
+let tempInventory = [], tempVan = [...allLoadoutItems];
+
+function setupLoadout() {
+  const vanList = document.getElementById("van-list");
+  const heldList = document.getElementById("held-list");
+
+  function renderLoadout() {
+    vanList.innerHTML = "";
+    heldList.innerHTML = "";
+
+    tempVan.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "item-row";
+      row.innerHTML = `<span>${item}</span>`;
+      const btn = document.createElement("button");
+      btn.textContent = "Take";
+      btn.onclick = () => {
+        if (tempInventory.length < 3) {
+          tempInventory.push(item);
+          tempVan = tempVan.filter(i => i !== item);
+          renderLoadout();
+        }
+      };
+      row.appendChild(btn);
+      vanList.appendChild(row);
     });
-    document.getElementById("held-side").querySelector("h4").textContent=`Holding (${tempInventory.length}/3)`;
-    tempInventory.forEach(item=>{
-      const row=document.createElement("div");row.className="item-row";
-      row.innerHTML=`<span>${item}</span>`;
-      const btn=document.createElement("button");btn.textContent="Drop";
-      btn.onclick=()=>{tempVan.push(item);tempInventory=tempInventory.filter(i=>i!==item);renderLoadout();};
-      row.appendChild(btn); heldList.appendChild(row);
+
+    document.getElementById("held-side").querySelector("h4").textContent =
+      `Holding (${tempInventory.length}/3)`;
+
+    tempInventory.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "item-row";
+      row.innerHTML = `<span>${item}</span>`;
+      const btn = document.createElement("button");
+      btn.textContent = "Drop";
+      btn.onclick = () => {
+        tempVan.push(item);
+        tempInventory = tempInventory.filter(i => i !== item);
+        renderLoadout();
+      };
+      row.appendChild(btn);
+      heldList.appendChild(row);
     });
   }
+
   renderLoadout();
-  document.getElementById("confirm-loadout").addEventListener("click",()=>{
-    game.inventory=[...tempInventory];
-    game.vanStock=[...tempVan];
-    document.getElementById("loadout-screen").style.display="none";
+
+  document.getElementById("confirm-loadout").addEventListener("click", () => {
+    game.inventory = [...tempInventory];
+    game.vanStock = [...tempVan];
+    document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
   });
 }
-function openLoadout(){document.getElementById("loadout-screen").style.display="flex";}
+
+function openLoadout() {
+  document.getElementById("loadout-screen").style.display = "flex";
+}
 
 /* === START INVESTIGATION === */
-function startInvestigation(){
-  document.getElementById("main-scene").style.display="block";
-  game.weather=Math.random()<0.5?"Rainy":"Clear";
-  game.ghost=selectRandomGhost();
-  game.ghostRoom=game.rooms[Math.floor(Math.random()*game.rooms.length)];
+function startInvestigation() {
+  document.getElementById("main-scene").style.display = "block";
+  game.weather = Math.random() < 0.5 ? "Rainy" : "Clear";
+  game.ghost = selectRandomGhost();
+  game.ghostRoom = game.rooms[Math.floor(Math.random() * game.rooms.length)];
   updateHUD();
   initNarrator();
   startAmbientSystems();
-  logEvent("You step out of the van. Weather: "+game.weather+".");
-}
-function selectRandomGhost(){const keys=Object.keys(game.ghostProfiles);return keys[Math.floor(Math.random()*keys.length)];}
-
-/* === HUD === */
-function updateHUD(){
-  document.getElementById("hud-location").textContent=game.playerRoom;
-  document.getElementById("hud-weather").textContent=game.weather;
-  document.getElementById("hud-turns").textContent=game.currentTurn;
-  document.getElementById("sanity-bar").style.width=game.sanity+"%";
-  document.getElementById("hud-temp").textContent=game.inventory.includes("Thermometer")?game.temperature.toFixed(1)+"°C":"--°C";
-  document.getElementById("held-items-display").textContent=game.inventory.length?game.inventory.join(", "):"None";
+  logEvent(`You step out of the van. Weather: ${game.weather}.`);
 }
 
-/* === NARRATOR === */
-function initNarrator(){
-  const ui=document.getElementById("narrator-ui");ui.style.display="flex";
-  document.querySelectorAll("#command-buttons button").forEach(btn=>{
-    btn.addEventListener("click",()=>handleCommand(btn.dataset.cmd));
+function selectRandomGhost() {
+  const keys = Object.keys(game.ghostProfiles);
+  return keys[Math.floor(Math.random() * keys.length)];
+}
+
+/* === HUD UPDATE === */
+function updateHUD() {
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-weather").textContent = game.weather;
+  document.getElementById("hud-turns").textContent = game.currentTurn;
+  document.getElementById("sanity-bar").style.width = game.sanity + "%";
+  document.getElementById("hud-temp").textContent = game.inventory.includes("Thermometer")
+    ? game.temperature.toFixed(1) + "°C" : "--°C";
+  document.getElementById("held-items-display").textContent = game.inventory.length
+    ? game.inventory.join(", ") : "None";
+}
+</script>
+<script>
+/* === NARRATOR UI INITIALIZATION === */
+function initNarrator() {
+  const ui = document.getElementById("narrator-ui");
+  ui.style.display = "flex";
+  document.querySelectorAll("#command-buttons button").forEach(btn => {
+    btn.addEventListener("click", () => handleCommand(btn.dataset.cmd));
   });
 }
 
-/* === LOGGING === */
-function logEvent(txt){
-  const log=document.getElementById("game-log");
-  const entry=document.createElement("div");
-  entry.className="log-entry"; entry.textContent="> "+txt;
-  log.appendChild(entry); log.scrollTop=log.scrollHeight;
-  setTimeout(()=>entry.classList.add("fade"),3000);
+/* === LOGGING EVENTS TO GAME LOG === */
+function logEvent(txt) {
+  const log = document.getElementById("game-log");
+  const entry = document.createElement("div");
+  entry.className = "log-entry";
+  entry.textContent = "> " + txt;
+  log.appendChild(entry);
+  log.scrollTop = log.scrollHeight;
+  setTimeout(() => entry.classList.add("fade"), 3000);
 }
 
-/* === COMMANDS === */
-function handleCommand(cmd){
-  switch(cmd){
+/* === COMMAND HANDLER === */
+function handleCommand(cmd) {
+  switch (cmd) {
     case "move": moveRoom(); break;
     case "look": lookAround(); break;
     case "inventory": returnVan(); break;
@@ -353,82 +379,178 @@ function handleCommand(cmd){
     case "guess": openGuess(); break;
   }
 }
-function moveRoom(){
-  const possible=game.rooms.filter(r=>r!==game.playerRoom);
-  game.playerRoom=possible[Math.floor(Math.random()*possible.length)];
-  logEvent("You move to the "+game.playerRoom+".");
+
+/* === MOVEMENT === */
+function moveRoom() {
+  const possible = game.rooms.filter(r => r !== game.playerRoom);
+  game.playerRoom = possible[Math.floor(Math.random() * possible.length)];
+  logEvent("You move to the " + game.playerRoom + ".");
   advanceTurn();
 }
-function lookAround(){
-  let text="Nothing unusual.";
-  if(game.playerRoom===game.ghostRoom && Math.random()<0.5) text="You sense something here...";
+
+/* === LOOK AROUND === */
+function lookAround() {
+  let text = "Nothing unusual.";
+  if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
+    text = "You sense something here...";
+  }
   logEvent(text);
   advanceTurn();
 }
-function returnVan(){
-  if(!game.canUseVanThisTurn && game.playerRoom!=="Van"){logEvent("Already accessed van remotely this turn.");return;}
-  if(game.playerRoom!=="Van") game.canUseVanThisTurn=false;
-  logEvent("You swap items in the van."); updateHUD();
+
+/* === RETURN TO VAN / INVENTORY SWAP === */
+function returnVan() {
+  if (!game.canUseVanThisTurn && game.playerRoom !== "Van") {
+    logEvent("Already accessed van remotely this turn.");
+    return;
+  }
+  if (game.playerRoom !== "Van") game.canUseVanThisTurn = false;
+  logEvent("You swap items in the van.");
+  updateHUD();
 }
-function openNotebook(){
-  document.getElementById("notebook-overlay").style.display="flex";
-  document.querySelectorAll(".evidence-check").forEach(chk=>{
-    chk.addEventListener("change",()=>{
-      if(chk.checked) game.selectedEvidence.add(chk.value); else game.selectedEvidence.delete(chk.value);
+
+/* === NOTEBOOK SYSTEM === */
+function openNotebook() {
+  document.getElementById("notebook-overlay").style.display = "flex";
+  document.querySelectorAll(".evidence-check").forEach(chk => {
+    chk.addEventListener("change", () => {
+      if (chk.checked) {
+        game.selectedEvidence.add(chk.value);
+      } else {
+        game.selectedEvidence.delete(chk.value);
+      }
       suggestGhosts();
     });
   });
 }
-document.getElementById("close-notebook").addEventListener("click",()=>{document.getElementById("notebook-overlay").style.display="none";});
-function suggestGhosts(){
-  const list=document.getElementById("possible-ghosts");list.innerHTML="";
-  Object.entries(game.ghostProfiles).forEach(([name,data])=>{
-    const match=[...game.selectedEvidence].every(e=>data.evidence.includes(e));
-    const span=document.createElement("span");span.textContent=name;if(match) span.classList.add("possible");
+
+document.getElementById("close-notebook").addEventListener("click", () => {
+  document.getElementById("notebook-overlay").style.display = "none";
+});
+
+function suggestGhosts() {
+  const list = document.getElementById("possible-ghosts");
+  list.innerHTML = "";
+  Object.entries(game.ghostProfiles).forEach(([name, data]) => {
+    const match = [...game.selectedEvidence].every(e => data.evidence.includes(e));
+    const span = document.createElement("span");
+    span.textContent = name + " ";
+    if (match) span.classList.add("possible");
     list.appendChild(span);
   });
 }
-function openGuess(){
-  const g=prompt("Your guess?");
-  if(!g) return;
-  if(g.toLowerCase()===game.ghost.toLowerCase()){logEvent("Correct! It was "+game.ghost+".");}else{logEvent("Wrong! It was "+game.ghost+".");}
+
+/* === GHOST GUESSING === */
+function openGuess() {
+  const g = prompt("Your guess?");
+  if (!g) return;
+  if (g.toLowerCase() === game.ghost.toLowerCase()) {
+    logEvent("Correct! It was " + game.ghost + ".");
+  } else {
+    logEvent("Wrong! It was " + game.ghost + ".");
+  }
   logEvent("Game Over. Refresh to restart.");
 }
 
-/* === TURN & HUNT === */
-function advanceTurn(){
+/* === TURN SYSTEM & HUNTING === */
+function advanceTurn() {
   game.currentTurn++;
-  game.sanity=Math.max(0,game.sanity-((Math.random()*3)+1));
-  if(game.sanity<30 && Math.random()<0.2 && game.huntCooldown===0) triggerHunt();
+  game.sanity = Math.max(0, game.sanity - ((Math.random() * 3) + 1));
+  if (game.sanity < 30 && Math.random() < 0.2 && game.huntCooldown === 0) triggerHunt();
   updateHUD();
 }
-function triggerHunt(){
-  game.huntCooldown=5; logEvent("A hunt begins!");
-  setTimeout(()=>logEvent("The hunt ends."),3000);
+
+function triggerHunt() {
+  game.huntCooldown = 5;
+  logEvent("A hunt begins!");
+  // Here we can add flicker, heartbeat audio, etc.
+  setTimeout(() => logEvent("The hunt ends."), 3000);
 }
 
-/* === AMBIENT === */
-function startAmbientSystems(){startRain();startLightning();startOrbs();}
-function startRain(){
-  const canvas=document.getElementById("rain-layer"),ctx=canvas.getContext("2d");
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const drops=Array.from({length:200},()=>({x:Math.random()*canvas.width,y:Math.random()*canvas.height,len:Math.random()*15+10,speed:Math.random()*4+4}));
-  function rain(){ctx.clearRect(0,0,canvas.width,canvas.height);ctx.strokeStyle="rgba(174,194,224,0.5)";ctx.beginPath();
-    drops.forEach(d=>{ctx.moveTo(d.x,d.y);ctx.lineTo(d.x,d.y+d.len);d.y+=d.speed;if(d.y>canvas.height)d.y=0;});
-    ctx.stroke();requestAnimationFrame(rain);}rain();
+/* === AMBIENT SYSTEMS (RAIN, LIGHTNING, ORBS) === */
+function startAmbientSystems() {
+  startRain();
+  startLightning();
+  startOrbs();
 }
-function startLightning(){
-  const light=document.getElementById("lightning");
-  function flash(){if(Math.random()<0.02){light.style.opacity=1;setTimeout(()=>light.style.opacity=0,100+Math.random()*200);}requestAnimationFrame(flash);}flash();
+
+function startRain() {
+  const canvas = document.getElementById("rain-layer");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const drops = Array.from({ length: 200 }, () => ({
+    x: Math.random() * canvas.width,
+    y: Math.random() * canvas.height,
+    len: Math.random() * 15 + 10,
+    speed: Math.random() * 4 + 4
+  }));
+
+  function rain() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "rgba(174,194,224,0.5)";
+    ctx.beginPath();
+    drops.forEach(d => {
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x, d.y + d.len);
+      d.y += d.speed;
+      if (d.y > canvas.height) d.y = 0;
+    });
+    ctx.stroke();
+    requestAnimationFrame(rain);
+  }
+  rain();
 }
-function startOrbs(){
-  const canvas=document.getElementById("orbCanvas"),ctx=canvas.getContext("2d");
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const orbs=[];
-  function spawnOrb(){if(orbs.length<10){orbs.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,alpha:Math.random(),size:Math.random()*4+2,dx:(Math.random()-0.5),dy:(Math.random()-0.5)});}}
-  function animate(){ctx.clearRect(0,0,canvas.width,canvas.height);orbs.forEach(o=>{o.x+=o.dx;o.y+=o.dy;o.alpha+=Math.random()*0.02-0.01;if(o.alpha<0)o.alpha=0;if(o.alpha>1)o.alpha=1;ctx.beginPath();ctx.arc(o.x,o.y,o.size,0,Math.PI*2);ctx.fillStyle=`rgba(255,255,255,${o.alpha})`;ctx.fill();});
-    if(Math.random()<0.05)spawnOrb();requestAnimationFrame(animate);}animate();
+
+function startLightning() {
+  const light = document.getElementById("lightning");
+  function flash() {
+    if (Math.random() < 0.02) {
+      light.style.opacity = 1;
+      setTimeout(() => light.style.opacity = 0, 100 + Math.random() * 200);
+    }
+    requestAnimationFrame(flash);
+  }
+  flash();
+}
+
+function startOrbs() {
+  const canvas = document.getElementById("orbCanvas");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const orbs = [];
+
+  function spawnOrb() {
+    if (orbs.length < 10) {
+      orbs.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        alpha: Math.random(),
+        size: Math.random() * 4 + 2,
+        dx: (Math.random() - 0.5),
+        dy: (Math.random() - 0.5)
+      });
+    }
+  }
+
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    orbs.forEach(o => {
+      o.x += o.dx;
+      o.y += o.dy;
+      o.alpha += Math.random() * 0.02 - 0.01;
+      if (o.alpha < 0) o.alpha = 0;
+      if (o.alpha > 1) o.alpha = 1;
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, o.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(255,255,255,${o.alpha})`;
+      ctx.fill();
+    });
+    if (Math.random() < 0.05) spawnOrb();
+    requestAnimationFrame(animate);
+  }
+  animate();
 }
 </script>
-</body>
 </html>
