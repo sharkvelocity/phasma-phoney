@@ -513,92 +513,124 @@ footer {
       else bar.style.background="#f00";
     }
 
-    function startTitleScreen(){
-      if(game.titleShown){
-        resetGameState();
-        showLoadout();
-        return;
-      }
-      game.titleShown=true;
-      document.getElementById("title-screen").style.display="flex";
-      document.getElementById("main-scene").style.display="none";
-      resetGameState();
-    }
+document.addEventListener("DOMContentLoaded", () => {
+  // Always start at title screen on first load
+  resetGameState();
+  game.titleShown = false;
+  document.getElementById("title-screen").style.display = "flex";
+  document.getElementById("title-screen").style.opacity = "1";
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("loadout-screen").style.display = "none";
+});
 
-    function resetGameState(){
-      game.ghost=null;game.ghostRoom=null;
-      game.playerRoom="Van";game.inventory=[];
-      game.vanStock=[...allLoadoutItems];game.roomItems={};
-      game.selectedEvidence.clear();
-      game.currentTurn=0;game.sanity=100;
-      game.mimicForm=null;game.nextMimicShift=0;
-      game.huntCooldown=0;game.smudgeActive=0;
-      game.weather=null;game.cameraActive=false;
-      game.placedCrucifix={};game.monitorBooted=false;
-      game.placedCameras={};game.usedCursedItems={};
-      game.spawnedCursedItem=null;game.spawnedCursedRoom=null;
-      updateSanityBar();
-    }
+function startTitleScreen() {
+  // Called only when restarting after a finished game
+  resetGameState();
+  showLoadout(); // skip title after first time
+}
 
-    document.getElementById("startButton").addEventListener("click",()=>{
-      document.getElementById("title-screen").style.opacity="0";
-      setTimeout(()=>{
-        document.getElementById("title-screen").style.display="none";
-        showLoadout();
-      },2000);
-    });
+function resetGameState() {
+  game.ghost = null;
+  game.ghostRoom = null;
+  game.playerRoom = "Van";
+  game.inventory = [];
+  game.vanStock = [...allLoadoutItems];
+  game.roomItems = {};
+  game.selectedEvidence.clear();
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.mimicForm = null;
+  game.nextMimicShift = 0;
+  game.huntCooldown = 0;
+  game.smudgeActive = 0;
+  game.weather = null;
+  game.cameraActive = false;
+  game.placedCrucifix = {};
+  game.monitorBooted = false;
+  game.placedCameras = {};
+  game.usedCursedItems = {};
+  game.spawnedCursedItem = null;
+  game.spawnedCursedRoom = null;
+  updateSanityBar();
+}
 
-    let tempHeld=[],tempVan=[...allLoadoutItems];
-    function showLoadout(){
-      document.getElementById("loadout-screen").style.display="flex";
+document.getElementById("startButton").addEventListener("click", () => {
+  game.titleShown = true;
+  const title = document.getElementById("title-screen");
+  title.style.opacity = "0";
+  setTimeout(() => {
+    title.style.display = "none";
+    showLoadout();
+  }, 1500);
+});
+
+let tempHeld = [],
+  tempVan = [...allLoadoutItems];
+
+function showLoadout() {
+  document.getElementById("loadout-screen").style.display = "flex";
+  renderLoadout();
+}
+
+function renderLoadout() {
+  const h = document.getElementById("held-list"),
+    v = document.getElementById("van-list");
+  h.innerHTML = "";
+  v.innerHTML = "";
+  tempHeld.forEach((i) => {
+    const b = document.createElement("button");
+    b.textContent = i + " (Remove)";
+    b.className = "item-button";
+    b.onclick = () => {
+      tempVan.push(i);
+      tempHeld = tempHeld.filter((x) => x !== i);
       renderLoadout();
-    }
-    function renderLoadout(){
-      const h=document.getElementById("held-list"),v=document.getElementById("van-list");
-      h.innerHTML="";v.innerHTML="";
-      tempHeld.forEach(i=>{
-        const b=document.createElement("button");
-        b.textContent=i+" (Remove)";
-        b.className="item-button";
-        b.onclick=()=>{
-          tempVan.push(i);
-          tempHeld=tempHeld.filter(x=>x!==i);
-          renderLoadout();
-        };
-        h.appendChild(b);
-      });
-      tempVan.forEach(i=>{
-        const b=document.createElement("button");
-        b.textContent=i+" (Add)";
-        b.className="item-button";
-        b.onclick=()=>{
-          if(tempHeld.length<3){
-            tempHeld.push(i);
-            tempVan=tempVan.filter(x=>x!==i);
-            renderLoadout();
-          }else alert("You can only hold 3 items!");
-        };
-        v.appendChild(b);
-      });
-    }
+    };
+    h.appendChild(b);
+  });
+  tempVan.forEach((i) => {
+    const b = document.createElement("button");
+    b.textContent = i + " (Add)";
+    b.className = "item-button";
+    b.onclick = () => {
+      if (tempHeld.length < 3) {
+        tempHeld.push(i);
+        tempVan = tempVan.filter((x) => x !== i);
+        renderLoadout();
+      } else alert("You can only hold 3 items!");
+    };
+    v.appendChild(b);
+  });
+}
 
-    document.getElementById("confirm-loadout").addEventListener("click",()=>{
-      game.inventory=[...tempHeld,"Notebook","Lighter"];
-      game.vanStock=[...tempVan];
-      document.getElementById("loadout-screen").style.display="none";
-      startInvestigation();
-    });
+document
+  .getElementById("confirm-loadout")
+  .addEventListener("click", () => {
+    game.inventory = [...tempHeld, "Notebook", "Lighter"];
+    game.vanStock = [...tempVan];
+    document.getElementById("loadout-screen").style.display = "none";
+    startInvestigation();
+  });
 
-    function startInvestigation(){
-      document.getElementById("main-scene").style.display="block";
-      document.getElementById("narrator-ui").style.display="flex";
-      game.weather=randomFromArray(possibleWeather);
-      assignRandomGhost();
-      assignRandomGhostRoom();
-      spawnRandomCursedItem();
-      logToGame("You are in the van. The weather outside is "+game.weather.toLowerCase()+"...");
-      renderHUD();updateBackground();randomLightning();animateRain();randomOrbs();
-    }
+function startInvestigation() {
+  document.getElementById("main-scene").style.display = "block";
+  document.getElementById("narrator-ui").style.display = "flex";
+  game.weather = randomFromArray(possibleWeather);
+  assignRandomGhost();
+  assignRandomGhostRoom();
+  spawnRandomCursedItem();
+  logToGame(
+    "You are in the van. The weather outside is " +
+      game.weather.toLowerCase() +
+      "..."
+  );
+  renderHUD();
+  updateBackground();
+  randomLightning();
+  animateRain();
+  randomOrbs();
+}
+
 
     function assignRandomGhost(){
       const g=Object.keys(ghostProfiles);
