@@ -2,11 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phasma‑Phoney v2.2 — Master Build</title>
+  <title>Phasma‑Phoney v2.3 — Master Build</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Phasma‑Phoney: Complete turn-based ghost investigation horror game with cursed items and orb mini-game." />
+  <meta name="description" content="Phasma‑Phoney: Turn-based ghost investigation horror game with cursed items and orb mini-game." />
   <style>
-    /* === GLOBAL RESET & BASICS === */
     html, body {
       margin: 0;
       padding: 0;
@@ -17,8 +16,6 @@
       font-family: monospace, sans-serif;
       color: #eee;
     }
-
-    /* === TITLE SCREEN === */
     #title-screen {
       position: fixed;
       top: 0; left: 0;
@@ -54,8 +51,6 @@
       background-color: #222;
       border-color: #888;
     }
-
-    /* === MAIN SCENE & LAYERS === */
     #main-scene {
       position: relative;
       width: 100vw;
@@ -77,8 +72,6 @@
     #foreground { z-index:4; pointer-events:none; }
     #fog-layer { z-index:5; pointer-events:none; }
     #orbCanvas { z-index:6; pointer-events:none; }
-
-    /* === NARRATOR UI (LOG + COMMANDS) === */
     #narrator-ui {
       position: absolute;
       bottom: 0;
@@ -126,8 +119,6 @@
       font-size:14px;
     }
     #command-buttons button:hover { background:#333; }
-
-    /* === HUD === */
     #hud {
       position: absolute;
       top:10px;
@@ -155,8 +146,6 @@
       width:100%;
       transition:width 0.3s ease;
     }
-
-    /* === INVENTORY DISPLAY (TOP-RIGHT) === */
     #inventory-display {
       position: absolute;
       top:10px;
@@ -167,8 +156,6 @@
       font-size:12px;
       z-index:11;
     }
-
-    /* === LOADOUT SCREEN === */
     #loadout-screen {
       position:fixed;
       top:0;
@@ -209,8 +196,6 @@
       border:1px solid #555;
       cursor:pointer;
     }
-
-    /* === OVERLAYS === */
     #move-overlay, #item-overlay, #inventory-overlay, #inspect-overlay, #monitor-overlay {
       position:fixed;
       top:0;
@@ -245,8 +230,6 @@
     #move-options button:hover, #item-options button:hover, #inventory-options button:hover {
       background:#333;
     }
-
-    /* === INSPECT OVERLAY === */
     #inspect-content {
       width:300px;
       text-align:center;
@@ -261,8 +244,6 @@
       line-height:1.4;
       color:#ccc;
     }
-
-    /* === VAN MONITOR BOOT/LOGIN (Fixed Size) === */
     #monitor-screen {
       width:400px;
       height:300px;
@@ -310,8 +291,6 @@
       color:#0f0;
       font-family:monospace;
     }
-
-    /* === ORB CAPTURE MINI-GAME (VAN MONITOR) === */
     #orb-game-canvas {
       display:none;
       background:black;
@@ -338,8 +317,6 @@
       font-size:18px;
       margin-top:4px;
     }
-
-    /* === GUESS POPUP === */
     #guess-popup {
       position:fixed;
       top:0;
@@ -370,8 +347,6 @@
       cursor:pointer;
     }
     #guess-list button:hover { background:#333; }
-
-    /* === FOOTER === */
     footer {
       position:fixed;
       bottom:0;
@@ -386,13 +361,10 @@
   </style>
 </head>
 <body>
-  <!-- === TITLE SCREEN === -->
   <div id="title-screen">
     <img src="logo.png" alt="Phasma-Phoney Logo" />
     <button id="startButton">Start New Game</button>
   </div>
-
-  <!-- === MAIN SCENE === -->
   <div id="main-scene">
     <div id="background"></div>
     <canvas id="rain-layer"></canvas>
@@ -400,8 +372,6 @@
     <div id="foreground"></div>
     <canvas id="fog-layer"></canvas>
     <canvas id="orbCanvas"></canvas>
-
-    <!-- HUD -->
     <div id="hud">
       <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
       <div>Turns: <span id="hud-turns">0</span></div>
@@ -409,14 +379,10 @@
       <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
       <div>Temp: <span id="hud-temp">--°C</span></div>
     </div>
-
-    <!-- Inventory Display (Top-Right) -->
     <div id="inventory-display">
       <div>Held:</div>
       <div id="held-items-display">None</div>
     </div>
-
-    <!-- Narrator UI -->
     <div id="narrator-ui">
       <div id="game-log"></div>
       <div id="command-buttons">
@@ -428,7 +394,6 @@
         <button data-cmd="guess">Ghost Guess</button>
       </div>
     </div>
-  </div>
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen">
     <div id="loadout-container">
@@ -448,8 +413,6 @@
     <div id="inspect-description"></div>
     <button onclick="closeInspect()">Close</button>
   </div></div>
-
-  <!-- === VAN MONITOR OVERLAY === -->
   <div id="monitor-overlay">
     <div id="monitor-screen">
       <div id="monitor-border">
@@ -471,18 +434,17 @@
     </div>
   </div>
 
-  <!-- === GHOST GUESS POPUP === -->
   <div id="guess-popup"><div id="guess-list"></div></div>
-
-  <footer>Phasma‑Phoney v2.2 — Master Build</footer>
+  <footer>Phasma‑Phoney v2.3 — Master Build</footer>
 
   <script>
     /* === GLOBAL GAME STATE === */
     const allLoadoutItems=[
       "EMF Reader","Spirit Box","Camera","UV Light","D.O.T.S Projector",
       "Thermometer","Ghost Writing Book","Video Camera","Crucifix",
-      "Smudge Stick","Salt","Parabolic Microphone","Motion Sensor","Sound Sensor",
-      /* === CURSED ITEMS IN VAN === */
+      "Smudge Stick","Salt","Parabolic Microphone","Motion Sensor","Sound Sensor"
+    ];
+    const cursedItemList=[
       "Ouija Board","Tarot Cards","Music Box","Voodoo Doll","Haunted Mirror","Summoning Circle","Monkey Paw"
     ];
     const possibleWeather=["Stormy","Rain","Clear","Foggy"];
@@ -493,17 +455,18 @@
       selectedEvidence:new Set(),currentTurn:0,sanity:100,
       mimicForm:null,nextMimicShift:0,huntCooldown:0,smudgeActive:0,
       weather:null,cameraActive:false,placedCrucifix:{},titleShown:false,
-      monitorBooted:false,placedCameras:{},usedCursedItems:{}
+      monitorBooted:false,placedCameras:{},usedCursedItems:{},
+      spawnedCursedItem:null,spawnedCursedRoom:null
     };
 
-    /* === CURSED ITEM DESCRIPTIONS & BEHAVIORS === */
+    /* === CURSED ITEM DESCRIPTIONS === */
     const cursedItemDescriptions={
       "Ouija Board":"A wooden spirit board; lets you ask the ghost questions, but drains sanity each time. Breaks may trigger an immediate hunt.",
       "Tarot Cards":"A mysterious deck; pulling a card may bless or curse you — expect sanity loss, ghost activity spikes, or even an instant hunt.",
       "Music Box":"A delicate box playing a haunted melody; the ghost will approach. Overuse risks triggering a hunt.",
       "Voodoo Doll":"A cursed doll with pins; poking it forces ghost interaction at a cost to your sanity.",
       "Haunted Mirror":"A cracked mirror showing glimpses of the ghost room; staring too long drains sanity fast.",
-      "Summoning Circle":"An occult circle with candles; lighting them forces the ghost to appear. It will hunt after being summoned.",
+      "Summoning Circle":"An occult circle with candles; lighting them forces the ghost to appear. It cannot be moved.",
       "Monkey Paw":"A cursed paw granting twisted wishes; each wish comes with sanity loss and increased ghost aggression."
     };
 
@@ -573,7 +536,6 @@
 
     const allRooms=Object.keys(roomVisuals);
 
-    /* === UTILS === */
     function randomFromArray(arr){return arr[Math.floor(Math.random()*arr.length)];}
     function logToGame(text){
       const log=document.getElementById("game-log");
@@ -591,7 +553,6 @@
       else bar.style.background="#f00";
     }
 
-    /* === STARTUP & RESET === */
     function startTitleScreen(){
       if(game.titleShown){
         resetGameState();
@@ -603,6 +564,7 @@
       document.getElementById("main-scene").style.display="none";
       resetGameState();
     }
+
     function resetGameState(){
       game.ghost=null;game.ghostRoom=null;
       game.playerRoom="Van";game.inventory=[];
@@ -614,8 +576,10 @@
       game.weather=null;game.cameraActive=false;
       game.placedCrucifix={};game.monitorBooted=false;
       game.placedCameras={};game.usedCursedItems={};
+      game.spawnedCursedItem=null;game.spawnedCursedRoom=null;
       updateSanityBar();
     }
+
     document.getElementById("startButton").addEventListener("click",()=>{
       document.getElementById("title-screen").style.opacity="0";
       setTimeout(()=>{
@@ -624,7 +588,6 @@
       },2000);
     });
 
-    /* === LOADOUT === */
     let tempHeld=[],tempVan=[...allLoadoutItems];
     function showLoadout(){
       document.getElementById("loadout-screen").style.display="flex";
@@ -658,6 +621,7 @@
         v.appendChild(b);
       });
     }
+
     document.getElementById("confirm-loadout").addEventListener("click",()=>{
       game.inventory=[...tempHeld,"Notebook","Lighter"];
       game.vanStock=[...tempVan];
@@ -665,12 +629,12 @@
       startInvestigation();
     });
 
-    /* === INVESTIGATION START === */
     function startInvestigation(){
       document.getElementById("main-scene").style.display="block";
       document.getElementById("narrator-ui").style.display="flex";
       game.weather=randomFromArray(possibleWeather);
-      assignRandomGhost();assignRandomGhostRoom();
+      assignRandomGhost();
+      assignRandomGhostRoom();
       spawnRandomCursedItem();
       logToGame("You are in the van. The weather outside is "+game.weather.toLowerCase()+"...");
       renderHUD();updateBackground();randomLightning();animateRain();randomOrbs();
@@ -690,12 +654,15 @@
       game.mimicForm=randomFromArray(g);
       game.nextMimicShift=game.currentTurn+Math.floor(Math.random()*4)+3;
     }
+
+    /* === SPAWN ONLY ONE CURSED ITEM === */
     function spawnRandomCursedItem(){
-      const cursed=Object.keys(cursedItemDescriptions);
-      const randomItem=randomFromArray(cursed);
-      const randomRoom=randomFromArray(allRooms.filter(x=>x!=="Van"));
-      game.roomItems[randomRoom]=game.roomItems[randomRoom]||[];
-      game.roomItems[randomRoom].push(randomItem);
+      const item=randomFromArray(cursedItemList);
+      const room=randomFromArray(allRooms.filter(x=>x!=="Van"));
+      game.roomItems[room]=game.roomItems[room]||[];
+      game.roomItems[room].push(item);
+      game.spawnedCursedItem=item;
+      game.spawnedCursedRoom=room;
       logToGame("Somewhere in this house, a cursed item lies waiting...");
     }
 
@@ -757,7 +724,6 @@
       checkTurnEvents();
     }
 
-    /* === LOOK AROUND === */
     function lookAround(){
       game.currentTurn++;
       if(game.playerRoom===game.ghostRoom){
@@ -768,7 +734,7 @@
       renderHUD();checkTurnEvents();
     }
 
-    /* === ITEM CONTEXT MENU (Right-Click Style) === */
+    /* === ITEM CONTEXT MENU === */
     function openItemOverlay(){
       if(!game.inventory.length){
         logToGame("You have no items to use.");
@@ -786,15 +752,25 @@
         c.appendChild(inspect);
 
         if(i!=="Notebook"&&i!=="Lighter"){
-          const use=document.createElement("button");
-          use.textContent="Use: "+i;
-          use.onclick=()=>{
-            document.getElementById("item-overlay").style.display="none";
-            useItem(i);
-          };
-          c.appendChild(use);
+          if(!cursedItemDescriptions[i]){
+            const use=document.createElement("button");
+            use.textContent="Use: "+i;
+            use.onclick=()=>{
+              document.getElementById("item-overlay").style.display="none";
+              useItem(i);
+            };
+            c.appendChild(use);
+          } else {
+            const use=document.createElement("button");
+            use.textContent="Use Cursed: "+i;
+            use.onclick=()=>{
+              document.getElementById("item-overlay").style.display="none";
+              handleCursedItem(i);
+            };
+            c.appendChild(use);
+          }
 
-          if(game.playerRoom!=="Van"){
+          if(game.playerRoom!=="Van" && i!=="Summoning Circle"){
             const place=document.createElement("button");
             place.textContent="Place: "+i;
             place.onclick=()=>{
@@ -836,11 +812,6 @@
 
     /* === ITEM ACTIONS === */
     function useItem(i){
-      // Cursed Items
-      if(cursedItemDescriptions[i]){
-        handleCursedItem(i);
-        return;
-      }
       switch(i){
         case"Smudge Stick":
           if(game.playerRoom===game.ghostRoom){
@@ -867,6 +838,12 @@
 
     function placeItem(i){
       if(game.playerRoom==="Van"){logToGame("You cannot place items in the van.");return;}
+      if(cursedItemDescriptions[i]){
+        if(i==="Summoning Circle"){
+          logToGame("The Summoning Circle cannot be moved.");
+          return;
+        }
+      }
       if(i==="Crucifix"){
         if(!game.placedCrucifix[game.playerRoom])
           game.placedCrucifix[game.playerRoom]=2;
@@ -876,10 +853,6 @@
         game.placedCameras[game.playerRoom]=true;
         logToGame("You place a camera in this room.");
       }
-      if(cursedItemDescriptions[i]){
-        logToGame("You place the "+i+" in this room.");
-        game.usedCursedItems[i]=false;
-      }
       game.inventory=game.inventory.filter(x=>x!==i);
       game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom]||[];
       game.roomItems[game.playerRoom].push(i);
@@ -887,6 +860,12 @@
     }
 
     function dropItem(i){
+      if(cursedItemDescriptions[i]){
+        if(i==="Summoning Circle"){
+          logToGame("The Summoning Circle cannot be moved or dropped.");
+          return;
+        }
+      }
       if(game.playerRoom==="Van"){
         game.vanStock.push(i);
         logToGame("You return the "+i+" to the van.");
@@ -903,6 +882,12 @@
       if(game.inventory.length>=3){
         logToGame("You can only hold 3 items.");
         return;
+      }
+      if(cursedItemDescriptions[i]){
+        if(i==="Summoning Circle"){
+          logToGame("The Summoning Circle is bound to this room.");
+          return;
+        }
       }
       game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom].filter(x=>x!==i);
       game.inventory.push(i);
@@ -963,7 +948,7 @@
         if(outcome<0.2){logToGame("The Fool! Nothing happens.");}
         else if(outcome<0.4){logToGame("The Tower! Ghost activity spikes.");checkTurnEvents();}
         else if(outcome<0.6){logToGame("The Death card! The ghost begins hunting!");startHunt();}
-        else logToGame("The Sun! You feel oddly refreshed.");game.sanity+=10;if(game.sanity>100)game.sanity=100;
+        else {logToGame("The Sun! You feel oddly refreshed.");game.sanity+=10;if(game.sanity>100)game.sanity=100;}
       }
       if(i==="Music Box"){
         logToGame("The melody echoes... the ghost is drawn closer.");
@@ -983,7 +968,7 @@
       }
       if(i==="Monkey Paw"){
         logToGame("You whisper a wish to the monkey paw... you feel cursed.");
-        game.huntCooldown=0; // ghost may hunt instantly
+        game.huntCooldown=0; 
         if(Math.random()<0.5)startHunt();
       }
       game.usedCursedItems[i]=true;
@@ -1011,7 +996,6 @@
       setTimeout(()=>{alert("Game Over. Restarting in van.");resetGameState();startInvestigation();},2000);
     }
 
-    /* === TURN EVENTS, MIMICRY, HUNTS === */
     function checkTurnEvents(){
       if(game.ghost==="TheMimic"&&game.currentTurn>=game.nextMimicShift){
         assignMimicForm();
