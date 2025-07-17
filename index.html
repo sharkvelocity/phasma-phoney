@@ -104,6 +104,27 @@
   </div>
   <div id="guess-popup"><div id="guess-list"></div></div>
   <div id="monitor-overlay"><div id="monitor-border"></div><canvas id="orb-game-canvas"></canvas><div id="orb-game-score"></div><div id="orb-game-timer"></div><div id="flip-clock"></div></div>
+  <!-- === MOVE OVERLAY (FIX) === -->
+<div id="move-overlay" style="
+  position:fixed;
+  top:0;left:0;
+  width:100vw;height:100vh;
+  background:rgba(0,0,0,0.8);
+  display:none;
+  justify-content:center;
+  align-items:center;
+  z-index:300;
+">
+  <div id="move-options" style="
+    background:#111;
+    padding:20px;
+    border:1px solid #444;
+    max-height:70%;
+    overflow-y:auto;
+    color:#eee;
+  "></div>
+</div>
+
   <footer>Phasma‑Phoney v2.3.3 — Full Master Build</footer>
 <script>
 /* === GLOBAL CONSTANTS & GAME STATE === */
