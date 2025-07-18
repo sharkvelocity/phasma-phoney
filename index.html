@@ -203,10 +203,13 @@
     <canvas id="fog-layer"></canvas>
     <canvas id="orbCanvas"></canvas>
     <div id="hud">
-      <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
-      <div>Turns: <span id="hud-turns">0</span></div>
+      <div>Location: 
+        <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
+      <div>Turns: 
+      <span id="hud-turns">0</span></div>
       <div>Sanity:</div>
-      <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
+      <div id="sanity-bar-container">
+      <div id="sanity-bar"></div></div>
       <div>Temp: <span id="hud-temp">--°C</span></div>
     </div>
     <div id="inventory-display">
@@ -438,13 +441,31 @@ function updateBackground(d="N"){
 /***********************
  === COMMAND HANDLER ===
 ************************/
+/***********************
+ === COMMAND HANDLER (FIXED) ===
+************************/
 function handleCommand(c){
   switch(c){
-    case"move":openMoveOverlay();break;
-    case"look":lookAround();break;
-    case"inventory":openInventoryOverlay();break;
-    case"guess":openGuess();break;
+    case "move": openMoveOverlay(); break;
+    case "look": lookAround(); break;
+    case "inventory": openInventoryOverlay(); break;
+    case "guess": openGuess(); break;
+    case "van": returnToVan(); break; // ✅ NEW
+    default: logToGame("Unknown command: " + c);
   }
+}
+
+function returnToVan(){
+  if(game.playerRoom==="Van"){
+    logToGame("You are already in the van.");
+    return;
+  }
+  game.playerRoom = "Van";
+  game.currentTurn++;
+  logToGame("You return to the van to regroup.");
+  renderHUD();
+  updateBackground();
+  checkTurnEvents();
 }
 
 function openMoveOverlay(){
