@@ -2,26 +2,27 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phasma‑Phoney v2.2 — Master Build (Full Features)</title>
+  <title>Phasma‑Phoney v2.2 — Fully Working Build</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="Phasma‑Phoney: Turn‑based ghost investigation horror with cursed items, evidence system, and orb mini‑game." />
   <style>
-    /* === GLOBAL RESET & BASICS === */
+    /* GLOBAL RESET & BASICS */
     html, body {
       margin: 0; padding: 0;
       width: 100vw; height: 100vh;
-      background: black; overflow: hidden;
+      background: #000; overflow: hidden;
       font-family: monospace, sans-serif; color: #eee;
+      box-sizing: border-box;
     }
+    body { padding-bottom: 32px; /* prevent footer overlap */ }
     button { font-family: monospace; }
 
-    /* === TITLE SCREEN === */
+    /* TITLE SCREEN */
     #title-screen {
       position: fixed; top:0; left:0;
       width:100vw; height:100vh;
-      background:black; display:flex;
+      background:#000; display:flex;
       justify-content:center; align-items:center;
-      z-index:1000; transition:opacity 2s ease-in-out;
+      z-index:1000; transition:opacity 1s ease;
     }
     #title-screen img {
       max-width:80%;
@@ -32,21 +33,18 @@
       50%     {opacity:1;   transform:scale(1.04);}
     }
 
-    /* === LAYERED SCENE === */
+    /* SCENE LAYERS */
     #main-scene { position:relative; width:100%; height:100%; }
-    .layer {
-      position:absolute; top:0; left:0;
-      width:100%; height:100%; pointer-events:none;
-    }
-    #background    { z-index:0; background-size:cover; background-repeat:no-repeat; }
-    #rain-canvas   { z-index:5; }
-    #bg-blocker    { z-index:10; background:rgba(0,0,0,0.25); }
-    #lightning     { z-index:20; background:#fff; opacity:0; transition:opacity .1s ease-out; }
+    .layer { position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none; }
+    #background { z-index:0; background-size:cover; background-repeat:no-repeat; }
+    #rain-canvas { z-index:5; }
+    #bg-blocker  { z-index:10; background:rgba(0,0,0,0.25); }
+    #lightning   { z-index:20; background:#fff; opacity:0; transition:opacity .1s ease-out; }
     #lightning.flash { opacity:1; }
     #fog-container { z-index:30; }
     #spirit-canvas { z-index:40; }
 
-    /* === GAME UI === */
+    /* HUD */
     #game-ui {
       position:absolute; bottom:0; left:0;
       width:100%; background:rgba(0,0,0,0.7);
@@ -55,10 +53,11 @@
     #game-stats {
       display:flex; flex-wrap:wrap; padding:4px;
       background:rgba(0,0,0,0.5); font-size:12px;
+      align-items:center;
     }
-    #game-stats > div { margin-right:8px; }
+    #game-stats > div { margin-right:12px; white-space:nowrap; }
     #sanity-bar {
-      flex:1; height:8px; background:#333; margin-top:2px;
+      flex:1; height:8px; background:#333; margin:4px 0;
       position:relative; overflow:hidden;
     }
     #sanity-fill {
@@ -69,7 +68,10 @@
       flex:1; overflow-y:auto; padding:8px;
       background:rgba(0,0,0,0.2); font-size:14px;
     }
-    .log-entry { opacity:1; animation:fadeUp 8s forwards; }
+    .log-entry {
+      opacity:1; animation:fadeUp 8s forwards;
+      margin-bottom:2px;
+    }
     @keyframes fadeUp {
       to { opacity:0.3; transform:translateY(-10px); }
     }
@@ -82,26 +84,25 @@
       background:#111; border:1px solid #444; color:#eee; cursor:pointer;
     }
 
-    /* === OVERLAYS === */
+    /* OVERLAYS */
     .overlay {
       position:absolute; top:20%; left:50%;
       transform:translateX(-50%);
       background:#222; border:2px solid #555;
       padding:16px; z-index:2000;
-      display:none; width:90%; max-width:300px;
-      color:#eee;
+      display:none; width:90%; max-width:320px; color:#eee;
     }
-    .overlay h2 { margin-top:0; font-size:16px; text-align:center; }
-    .overlay .options, .overlay #notebook-entries {
-      max-height:200px; overflow-y:auto; margin:8px 0;
+    .overlay h2 { margin-top:0; text-align:center; }
+    .options, #notebook-entries {
+      max-height:180px; overflow-y:auto; margin:8px 0;
     }
     .overlay button {
       width:100%; margin:4px 0;
-      background:#333; border:1px solid #555; color:#eee;
+      background:#333; border:1px solid #555;
       padding:6px; cursor:pointer;
     }
 
-    /* === FOOTER === */
+    /* FOOTER */
     #footer {
       position:fixed; bottom:0; left:0;
       width:100%; text-align:center;
@@ -110,21 +111,21 @@
     }
     #footer a { color:#0af; text-decoration:none; }
 
-    /* === RESPONSIVE === */
+    /* RESPONSIVE */
     @media(max-height:600px){ #game-ui { height:40%; } }
     @media(max-width:500px){ #action-buttons button{font-size:12px;} }
   </style>
 </head>
 <body>
 
-  <!-- TITLE SCREEN -->
+  <!-- TITLE -->
   <div id="title-screen">
     <button id="start-btn">
       <img src="title-logo.png" alt="Phasma‑Phoney">
     </button>
   </div>
 
-  <!-- MAIN SCENE & EFFECT LAYERS -->
+  <!-- SCENE -->
   <div id="main-scene">
     <div id="background"    class="layer"></div>
     <canvas id="rain-canvas" class="layer"></canvas>
@@ -134,16 +135,17 @@
     <canvas id="spirit-canvas" class="layer"></canvas>
   </div>
 
-  <!-- GAME UI -->
+  <!-- HUD -->
   <div id="game-ui">
     <div id="game-stats">
       <div id="stat-location">Location: Van</div>
-      <div id="stat-weather">Weather: Foggy</div>
       <div id="stat-turns">Turns: 0</div>
+      <div id="stat-weather">Weather: Foggy</div>
       <div id="stat-temp">Temp: --°C</div>
-      <div id="stat-sanity">Sanity:</div>
+      <div id="stat-smudge">Smudge: 0</div>
+      <div id="stat-crucifix">Crucifix: 2</div>
       <div id="sanity-bar"><div id="sanity-fill"></div></div>
-      <div style="margin-left:auto;">
+      <div style="margin-left:auto; display:flex; align-items:center;">
         <button id="btn-mute">🔇</button>
         <select id="voice-select"></select>
       </div>
@@ -161,57 +163,43 @@
     </div>
   </div>
 
-  <!-- LOADOUT OVERLAY -->
+  <!-- OVERLAYS -->
   <div id="loadout-popup" class="overlay">
     <h2>Choose Loadout</h2>
     <div class="options" id="loadout-list"></div>
     <button id="loadout-confirm">Confirm</button>
   </div>
-
-  <!-- VAN‑SWAP OVERLAY -->
   <div id="van-swap-overlay" class="overlay">
     <h2>Return to Van</h2>
     <div class="options" id="van-held"></div>
     <div class="options" id="van-stock"></div>
     <button id="van-swap-confirm">Done</button>
   </div>
-
-  <!-- NOTEBOOK OVERLAY -->
   <div id="notebook-overlay" class="overlay">
     <h2>Notebook</h2>
     <div id="notebook-entries"></div>
     <button onclick="closeNotebook()">Close</button>
   </div>
-
-  <!-- USE ITEM OVERLAY -->
   <div id="use-popup" class="overlay">
     <h2>Use Item</h2>
     <div class="options" id="use-list"></div>
     <button onclick="closeOverlay('use-popup')">Cancel</button>
   </div>
-
-  <!-- MOVE OVERLAY -->
   <div id="move-overlay" class="overlay">
     <h2>Choose Direction</h2>
     <div class="options" id="move-list"></div>
     <button onclick="closeOverlay('move-overlay')">Cancel</button>
   </div>
-
-  <!-- INVENTORY OVERLAY -->
   <div id="inv-popup" class="overlay">
     <h2>Your Items</h2>
     <div class="options" id="inv-list"></div>
     <button onclick="closeOverlay('inv-popup')">Close</button>
   </div>
-
-  <!-- GHOST GUESS OVERLAY -->
   <div id="guess-popup" class="overlay">
     <h2>Guess Ghost</h2>
     <div class="options" id="guess-list"></div>
     <button onclick="closeOverlay('guess-popup')">Cancel</button>
   </div>
-
-  <!-- RESTART OVERLAY -->
   <div id="restart-popup" class="overlay">
     <h2 id="end-message">Game Over</h2>
     <button id="restart-btn">Start New Game</button>
@@ -223,100 +211,97 @@
   </div>
 
   <script>
-  // ==== STATE ====
+  // STATE
   const game = {
-    ghost: null,
-    ghostRoom: null,
-    playerRoom: 'Van',
-    inventory: [],
-    vanStock: [],
-    selectedEvidence: new Set(),
-    currentTurn: 0,
-    sanity: 100,
-    huntCooldown: 0,
-    smudgeActive: 0,
-    crucifixUses: 2,
-    cameraActive: false,
-    nextMimicTurn: 0,
-    mimicForm: null,
-    usedVanThisTurn: false,
-    muted: false,
-    voice: null
+    ghost: null, ghostRoom: null, playerRoom:'Van',
+    inventory:[], vanStock:[], selectedEvidence:new Set(),
+    currentTurn:0, sanity:100, huntCooldown:0,
+    smudgeActive:0, crucifixUses:2,
+    cameraActive:false, nextMimicTurn:0, mimicForm:null,
+    usedVanThisTurn:false, muted:false, voice:null
   };
 
-  // ==== PROFILES & VISUALS ====
+  // GHOST PROFILES
   const ghostProfiles = {
-    Spirit:    { evidence:['EMF Level 5','Spirit Box','Ghost Writing'], behavior:"Standard." },
-    Wraith:    { evidence:['EMF Level 5','Spirit Box','D.O.T.S'], behavior:"Teleports." },
-    Phantom:   { evidence:['Spirit Box','Fingerprints','D.O.T.S'], behavior:"Drains sanity." },
-    Poltergeist:{evidence:['Spirit Box','Fingerprints','Ghost Writing'],behavior:"Throws items."},
-    Banshee:   { evidence:['Fingerprints','Orbs','D.O.T.S'], behavior:"Targets one." },
-    Jinn:      { evidence:['EMF Level 5','Fingerprints','Freezing Temps'],behavior:"Fast." },
-    Mare:      { evidence:['Spirit Box','Ghost Writing','Orbs'],behavior:"Night hunts." },
-    Revenant:  { evidence:['D.O.T.S','Ghost Writing','Fingerprints'],behavior:"Aggressive." },
-    Shade:     { evidence:['EMF Level 5','Ghost Writing','D.O.T.S'],behavior:"Stealthy." },
-    Demon:     { evidence:['Spirit Box','Ghost Writing','Freezing Temps'],behavior:"Kills often." },
-    Yurei:     { evidence:['Freezing Temps','Ghost Writing','D.O.T.S'],behavior:"Cold hunts." },
-    Oni:       { evidence:['EMF Level 5','Spirit Box','D.O.T.S'],behavior:"Powerful." },
-    Yokai:     { evidence:['Spirit Box','Freezing Temps','Ghost Writing'],behavior:"Calm hunts." },
-    Hantu:     { evidence:['Freezing Temps','D.O.T.S','Fingerprints'],behavior:"Cold rooms." },
-    Goryo:     { evidence:['D.O.T.S','EMF Level 5','Fingerprints'],behavior:"Far hunts." },
-    Myling:    { evidence:['EMF Level 5','Ghost Writing','Fingerprints'],behavior:"Quiet hunts." },
-    Onryo:     { evidence:['Ghost Writing','Spirit Box','Freezing Temps'],behavior:"Angry hunts." },
-    Raiju:     { evidence:['EMF Level 5','Spirit Box','Fingerprints'],behavior:"Electric." },
-    Obake:     { evidence:['Fingerprint Kit','Ghost Writing','D.O.T.S'],behavior:"Mimics objects." },
-    Twins:     { evidence:['EMF Level 5','Spirit Box','Ghost Writing'],behavior:"Dual presence." },
-    Deogen:    { evidence:['Ghost Writing','Freezing Temps','Fingerprint Kit'],behavior:"Loud footsteps." },
-    Succubus:  { evidence:['Ghost Writing','Freezing Temps','Fingerprint Kit'],behavior:"Seductive." },
-    Mimic:     { evidence:['EMF Level 5','Spirit Box','D.O.T.S'],behavior:"Mimics others." }
+    Spirit:    { evidence:['EMF Reader','Spirit Box','Ghost Writing'] },
+    Wraith:    { evidence:['EMF Reader','Spirit Box','D.O.T.S'] },
+    Phantom:   { evidence:['Spirit Box','Fingerprint Kit','D.O.T.S'] },
+    Poltergeist:{evidence:['Spirit Box','Fingerprint Kit','Ghost Writing']},
+    Banshee:   { evidence:['Fingerprint Kit','Orbs','D.O.T.S'] },
+    Jinn:      { evidence:['EMF Reader','Fingerprint Kit','Freezing Temps'] },
+    Mare:      { evidence:['Spirit Box','Ghost Writing','Orbs'] },
+    Revenant:  { evidence:['D.O.T.S','Ghost Writing','Fingerprint Kit'] },
+    Shade:     { evidence:['EMF Reader','Ghost Writing','D.O.T.S'] },
+    Demon:     { evidence:['Spirit Box','Ghost Writing','Freezing Temps'] },
+    Yurei:     { evidence:['Freezing Temps','Ghost Writing','D.O.T.S'] },
+    Oni:       { evidence:['EMF Reader','Spirit Box','D.O.T.S'] },
+    Yokai:     { evidence:['Spirit Box','Freezing Temps','Ghost Writing'] },
+    Hantu:     { evidence:['Freezing Temps','D.O.T.S','Fingerprint Kit'] },
+    Goryo:     { evidence:['D.O.T.S','EMF Reader','Fingerprint Kit'] },
+    Myling:    { evidence:['EMF Reader','Ghost Writing','Fingerprint Kit'] },
+    Onryo:     { evidence:['Ghost Writing','Spirit Box','Freezing Temps'] },
+    Raiju:     { evidence:['EMF Reader','Spirit Box','Fingerprint Kit'] },
+    Obake:     { evidence:['Fingerprint Kit','Ghost Writing','D.O.T.S'] },
+    Twins:     { evidence:['EMF Reader','Spirit Box','Ghost Writing'] },
+    Deogen:    { evidence:['Ghost Writing','Freezing Temps','Fingerprint Kit'] },
+    Succubus:  { evidence:['Ghost Writing','Freezing Temps','Fingerprint Kit'] },
+    Mimic:     { evidence:['EMF Reader','Spirit Box','D.O.T.S'] }
   };
 
+  // ROOM ADJACENCY
+  const rooms = {
+    Van:{ north:'Foyer' },
+    Foyer:{ south:'Van', east:'Living Room', west:'Kitchen' },
+    'Living Room':{ west:'Foyer', south:'Garage' },
+    Kitchen:{ east:'Foyer', south:'Dining Room' },
+    'Dining Room':{ north:'Kitchen', east:'Garage' },
+    Garage:{ north:'Living Room' },
+    Bathroom:{}, 'Basement':{}, 'Kids Bedroom':{}, 'Master Bedroom':{}
+  };
+
+  // ROOM VISUALS
   const roomVisuals = {
-    Van: {N:"Van_N.png",S:"Van_S.png",E:"Van_E.png",W:"Van_W.png"},
-    Foyer:{N:"Foyer_N.png",S:"Foyer_S.png",E:"Foyer_E.png",W:"Foyer_W.png"},
-    "Living Room":{N:"LivingRoom_N.png",S:"LivingRoom_S.png",E:"LivingRoom_E.png",W:"LivingRoom_W.png"},
-    Kitchen:{N:"Kitchen_N.png",S:"Kitchen_S.png",E:"Kitchen_E.png",W:"Kitchen_W.png"},
-    "Dining Room":{N:"DiningRoom_N.png",S:"DiningRoom_S.png",E:"DiningRoom_E.png",W:"DiningRoom_W.png"},
-    Garage:{N:"Garage_N.png",S:"Garage_S.png",E:"Garage_E.png",W:"Garage_W.png"},
-    Basement:{N:"Basement_N.png",S:"Basement_S.png",E:"Basement_E.png",W:"Basement_W.png"},
-    Bathroom:{N:"Bathroom_N.png",S:"Bathroom_S.png",E:"Bathroom_E.png",W:"Bathroom_W.png"},
-    "Kids Bedroom":{N:"KidsBedroom_N.png",S:"KidsBedroom_S.png",E:"KidsBedroom_E.png",W:"KidsBedroom_W.png"},
-    "Master Bedroom":{N:"MasterBedroom_N.png",S:"MasterBedroom_S.png",E:"MasterBedroom_E.png",W:"MasterBedroom_W.png"}
+    Van: {N:'Van_N.png',S:'Van_S.png',E:'Van_E.png',W:'Van_W.png'},
+    Foyer:{N:'Foyer_N.png',S:'Foyer_S.png',E:'Foyer_E.png',W:'Foyer_W.png'},
+    'Living Room':{N:'LR_N.png',S:'LR_S.png',E:'LR_E.png',W:'LR_W.png'},
+    Kitchen:{N:'Kit_N.png',S:'Kit_S.png',E:'Kit_E.png',W:'Kit_W.png'},
+    'Dining Room':{N:'DR_N.png',S:'DR_S.png',E:'DR_E.png',W:'DR_W.png'},
+    Garage:{N:'Gar_N.png',S:'Gar_S.png',E:'Gar_E.png',W:'Gar_W.png'}
   };
 
-  // ==== ITEMS & LOADOUT ====
+  // ITEMS
   const allLoadoutItems = [
     'EMF Reader','Spirit Box','Camera','Video Camera',
-    'UV Light','DOTS Projector','Fingerprint Kit',
+    'UV Light','D.O.T.S Projector','Fingerprint Kit',
     'Smudge Stick','Crucifix','Thermometer'
   ];
   const maxCarry = 3;
 
-  // ==== FX CANVASES ====
-  let rainCanvas, rainCtx, spiritCanvas, spiritCtx;
-  let fogImg = new Image(); fogImg.src = 'fog.png';
-  let raindrops = [], fogs = [], parts = [], voices=[];
+  // FX CANVASES
+  let rainCanvas, rainCtx, spiritCanvas, spiritCtx, fogImg=new Image();
+  fogImg.src='fog.png';
+  let raindrops=[], fogs=[], parts=[], voices=[];
 
   document.addEventListener('DOMContentLoaded',()=>{
-    // Canvas init
+    // Canvas setup
     rainCanvas   = document.getElementById('rain-canvas');
     rainCtx      = rainCanvas.getContext('2d');
     spiritCanvas = document.getElementById('spirit-canvas');
     spiritCtx    = spiritCanvas.getContext('2d');
     resize(); window.addEventListener('resize',resize);
 
-    // Title -> Loadout
+    // Title → Loadout
     document.getElementById('start-btn')
-      .addEventListener('click',()=>{ fade('#title-screen'); openLoadout(); });
+      .addEventListener('click', ()=>{ fade('#title-screen'); openLoadout(); });
 
-    // Voice toggle
+    // Mute toggle
     document.getElementById('btn-mute').onclick = ()=>{
       game.muted = !game.muted;
       document.getElementById('btn-mute').textContent = game.muted?'🔈':'🔇';
     };
 
     // Populate voices
-    window.speechSynthesis.onvoiceschanged = ()=>{
+    speechSynthesis.onvoiceschanged = ()=>{
       voices = speechSynthesis.getVoices().filter(v=>v.lang.startsWith('en'));
       const sel = document.getElementById('voice-select');
       voices.forEach((v,i)=> sel.add(new Option(v.name,i)));
@@ -326,29 +311,24 @@
       game.voice = voices[e.target.selectedIndex];
     };
 
-    // Bind action buttons
-    document.getElementById('btn-map')   .onclick = showMap;
-    document.getElementById('btn-move')  .onclick = showMove;
-    document.getElementById('btn-use')   .onclick = showUse;
-    document.getElementById('btn-inv')   .onclick = showInv;
-    document.getElementById('btn-notebook').onclick = openNotebook;
-    document.getElementById('btn-van')   .onclick = openVanSwap;
-    document.getElementById('btn-monitor').onclick = toggleMonitor;
-    document.getElementById('btn-guess') .onclick = showGuess;
-    document.getElementById('restart-btn').onclick = resetGame;
+    // Bind buttons
+    document.getElementById('btn-map')   .onclick=showMap;
+    document.getElementById('btn-move')  .onclick=showMove;
+    document.getElementById('btn-use')   .onclick=showUse;
+    document.getElementById('btn-inv')   .onclick=showInv;
+    document.getElementById('btn-notebook').onclick=openNotebook;
+    document.getElementById('btn-van')   .onclick=openVanSwap;
+    document.getElementById('btn-monitor').onclick=toggleMonitor;
+    document.getElementById('btn-guess') .onclick=showGuess;
+    document.getElementById('restart-btn').onclick=resetGame;
 
-    // Loadout confirm
+    // Confirm buttons
     document.getElementById('loadout-confirm')
-      .addEventListener('click',()=>{
-        closeOverlay('loadout-popup'); startGame();
-      });
-
-    // Van swap confirm
+      .addEventListener('click', ()=>{ closeOverlay('loadout-popup'); startGame(); });
     document.getElementById('van-swap-confirm')
-      .addEventListener('click',()=>{
+      .addEventListener('click', ()=>{ 
         closeOverlay('van-swap-overlay');
-        game.usedVanThisTurn = true;
-        logToGame('You leave the van.');
+        game.usedVanThisTurn = true; logToGame('Left the van.');
       });
 
     // Init FX
@@ -359,12 +339,12 @@
 
   function resize(){
     rainCanvas.width = spiritCanvas.width = innerWidth;
-    rainCanvas.height= spiritCanvas.height=innerHeight;
+    rainCanvas.height= spiritCanvas.height= innerHeight;
   }
 
-  /* === RAIN === */
+  /* RAIN */
   function initRain(){
-    for(let i=0;i<300;i++) raindrops.push({
+    for(let i=0;i<200;i++) raindrops.push({
       x:Math.random()*innerWidth,
       y:Math.random()*innerHeight,
       len:Math.random()*20+10,
@@ -373,14 +353,13 @@
   }
   function updateRain(){
     raindrops.forEach(d=>{
-      d.y += d.speed;
+      d.y+=d.speed;
       if(d.y>innerHeight){ d.y=-20; d.x=Math.random()*innerWidth; }
     });
   }
   function drawRain(){
     rainCtx.clearRect(0,0,innerWidth,innerHeight);
-    rainCtx.strokeStyle='rgba(200,200,255,0.2)';
-    rainCtx.lineWidth=1;
+    rainCtx.strokeStyle='rgba(200,200,255,0.2)'; rainCtx.lineWidth=1;
     raindrops.forEach(d=>{
       rainCtx.beginPath();
       rainCtx.moveTo(d.x,d.y);
@@ -389,7 +368,7 @@
     });
   }
 
-  /* === LIGHTNING === */
+  /* LIGHTNING */
   function triggerLightning(){
     const L = document.getElementById('lightning');
     L.classList.add('flash');
@@ -401,7 +380,7 @@
     }, Math.random()*22000+8000);
   }
 
-  /* === FOG === */
+  /* FOG */
   function initFog(){
     for(let i=0;i<3;i++) fogs.push({
       y:Math.random()*innerHeight,
@@ -411,20 +390,20 @@
   }
   function updateFog(){
     fogs.forEach(f=>{
-      f.y += f.speed;
-      if(f.y>innerHeight) f.y = -200;
+      f.y+=f.speed;
+      if(f.y>innerHeight) f.y=-200;
     });
   }
   function drawFog(){
     spiritCtx.clearRect(0,0,innerWidth,innerHeight);
     fogs.forEach(f=>{
-      spiritCtx.globalAlpha = f.alpha;
+      spiritCtx.globalAlpha=f.alpha;
       spiritCtx.drawImage(fogImg,0,f.y,innerWidth,200);
     });
-    spiritCtx.globalAlpha = 1;
+    spiritCtx.globalAlpha=1;
   }
 
-  /* === PARTICLES === */
+  /* PARTICLES */
   function initParticles(){
     for(let i=0;i<40;i++) parts.push({
       x:Math.random()*innerWidth,
@@ -435,112 +414,112 @@
   }
   function updateParticles(){
     parts.forEach(p=>{
-      p.alpha += p.fade;
+      p.alpha+=p.fade;
       if(p.alpha<=0||p.alpha>=1) p.fade*=-1;
-      p.x += (Math.random()-0.5);
-      p.y += (Math.random()-0.5);
+      p.x+=(Math.random()-0.5);
+      p.y+=(Math.random()-0.5);
     });
   }
   function drawParticles(){
     parts.forEach(p=>{
       spiritCtx.beginPath();
-      spiritCtx.fillStyle = `rgba(255,255,255,${p.alpha})`;
+      spiritCtx.fillStyle=`rgba(255,255,255,${p.alpha})`;
       spiritCtx.arc(p.x,p.y,p.size,0,Math.PI*2);
       spiritCtx.fill();
     });
   }
 
-  /* === MAIN LOOP === */
+  /* MAIN LOOP */
   function gameLoop(){
     updateRain(); drawRain();
     updateFog(); drawFog();
     if(game.cameraActive && game.playerRoom===game.ghostRoom){
       updateParticles(); drawParticles();
+    } else {
+      spiritCtx.clearRect(0,0,innerWidth,innerHeight);
     }
     requestAnimationFrame(gameLoop);
   }
 
-  /* === UTILS === */
+  /* UTILS */
   function logToGame(txt){
     const log = document.getElementById('game-log');
+    if(log.children.length>100) log.removeChild(log.firstChild);
     const e = document.createElement('div');
-    e.className = 'log-entry'; e.textContent = txt;
+    e.className='log-entry'; e.textContent=txt;
     log.appendChild(e);
-    log.scrollTop = log.scrollHeight;
+    log.scrollTop=log.scrollHeight;
     speak(txt);
   }
   function speak(txt){
     if(game.muted||!game.voice) return;
-    const u = new SpeechSynthesisUtterance(txt);
-    u.voice = game.voice;
+    const u=new SpeechSynthesisUtterance(txt);
+    u.voice=game.voice;
     speechSynthesis.speak(u);
   }
   function fade(sel){
-    document.querySelector(sel).style.opacity = 0;
+    document.querySelector(sel).style.opacity=0;
     setTimeout(()=>document.querySelector(sel).style.display='none',1000);
   }
-  function randInt(min,max){ return Math.floor(Math.random()*(max-min+1))+min; }
-  function randChoice(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+  function randInt(a,b){ return Math.floor(Math.random()*(b-a+1))+a; }
+  function randChoice(a){ return a[Math.floor(Math.random()*a.length)]; }
   function closeOverlay(id){ document.getElementById(id).style.display='none'; }
 
-  /* === START & LOADOUT === */
+  /* START & LOADOUT */
   function openLoadout(){
-    game.vanStock = [...allLoadoutItems];
-    const list = document.getElementById('loadout-list');
-    list.innerHTML = '';
+    game.vanStock=[...allLoadoutItems];
+    const list=document.getElementById('loadout-list');
+    list.innerHTML='';
     allLoadoutItems.forEach(item=>{
-      const b = document.createElement('button');
-      b.textContent = item;
-      b.onclick = ()=>{
+      const b=document.createElement('button');
+      b.textContent=item;
+      b.onclick=()=>{
         if(game.inventory.includes(item)){
           game.inventory.splice(game.inventory.indexOf(item),1);
-          b.style.background = '#333';
-        } else if(game.inventory.length < maxCarry){
+          b.style.background='#333';
+        } else if(game.inventory.length<maxCarry){
           game.inventory.push(item);
-          b.style.background = '#0a0';
+          b.style.background='#0a0';
         }
       };
       list.appendChild(b);
     });
-    document.getElementById('loadout-popup').style.display = 'flex';
+    document.getElementById('loadout-popup').style.display='flex';
   }
   function startGame(){
-    game.currentTurn = 0; game.sanity = 100;
-    game.inventory = [];
-    game.selectedEvidence.clear();
-    game.smudgeActive = 0; game.huntCooldown = 0; game.usedVanThisTurn = false;
-    game.ghost = randChoice(Object.keys(ghostProfiles));
-    game.ghostRoom = randChoice(Object.keys(roomVisuals).filter(r=>'Van'!==r));
-    game.nextMimicTurn = randInt(3,6);
+    game.currentTurn=0; game.sanity=100;
+    game.inventory=[]; game.selectedEvidence.clear();
+    game.smudgeActive=0; game.huntCooldown=0; game.usedVanThisTurn=false;
+    game.crucifixUses=2;
+    game.ghost=randChoice(Object.keys(ghostProfiles));
+    game.ghostRoom=randChoice(Object.keys(rooms).filter(r=>'Van'!==r));
+    game.nextMimicTurn=randInt(3,6);
     updateStats();
-    logToGame('Starting Investigation...');
+    logToGame('Investigation begins...');
     advanceTurn();
   }
 
-  /* === ADVANCE TURN & GHOST ROOM SHIFT === */
+  /* ADVANCE & SHIFT */
   function advanceTurn(){
-    game.currentTurn++;
-    game.usedVanThisTurn = false;
+    game.currentTurn++; game.usedVanThisTurn=false;
     if(game.smudgeActive>0) game.smudgeActive--;
     if(game.huntCooldown>0) game.huntCooldown--;
-    game.sanity = Math.max(0, game.sanity - 2);
+    game.sanity=Math.max(0, game.sanity-2);
     if(game.ghost==='Mimic' && game.currentTurn>=game.nextMimicTurn){
-      game.mimicForm = randChoice(Object.keys(ghostProfiles).filter(g=>'Mimic'!==g));
-      logToGame(`The Mimic now looks like a ${game.mimicForm}.`);
-      game.nextMimicTurn = game.currentTurn + randInt(3,6);
+      game.mimicForm=randChoice(Object.keys(ghostProfiles).filter(g=>'Mimic'!==g));
+      logToGame(`Mimic becomes ${game.mimicForm}.`);
+      game.nextMimicTurn=game.currentTurn+randInt(3,6);
     }
-    // shift ghosts (except Goryo), Yurei lock after smudge
-    if(game.ghost!=='Goryo' && !(game.ghost==='Yurei' && game.smudgeActive>0)){
-      if(Math.random()<0.10){
-        const choices = Object.keys(roomVisuals).filter(r=>'Van'!==r && r!==game.ghostRoom);
-        game.ghostRoom = randChoice(choices);
-        logToGame(`(Ghost drifts to the ${game.ghostRoom}.)`);
+    if(game.ghost!=='Goryo' && !(game.ghost==='Yurei'&&game.smudgeActive>0)){
+      if(Math.random()<.10){
+        game.ghostRoom=randChoice(Object.keys(rooms).filter(r=>'Van'!==r&&r!==game.ghostRoom));
+        logToGame(`(Ghost drifts to ${game.ghostRoom}.)`);
       }
     }
     updateStats(); attemptHunt();
   }
 
-  /* === HUNT === */
+  /* HUNT */
   function attemptHunt(){
     if(game.sanity<30 && game.huntCooldown===0 && game.smudgeActive===0){
       logToGame('💀 The ghost is hunting!');
@@ -549,89 +528,87 @@
       if(game.playerRoom===game.ghostRoom){
         if(game.crucifixUses>0){
           game.crucifixUses--;
-          logToGame('Your Crucifix holds the ghost back!');
+          logToGame('Your Crucifix protected you!');
         } else {
           endGame(false); return;
         }
       }
-      game.huntCooldown = randInt(5,10);
+      game.huntCooldown=randInt(5,10);
     }
   }
 
-  /* === UPDATE STATS & BACKGROUND === */
+  /* UPDATE STATS & BACKGROUND */
   function updateStats(){
-    document.getElementById('stat-location').textContent = 'Location: '+game.playerRoom;
-    document.getElementById('stat-turns').textContent    = 'Turns: '+game.currentTurn;
-    document.getElementById('stat-temp').textContent     = 'Temp: '+(game.inventory.includes('Thermometer')? (randInt(-5,5)+'°C'):'--°C');
-    const fill = document.getElementById('sanity-fill');
-    fill.style.width = game.sanity+'%';
-    fill.style.background = game.sanity>50? '#0f0':game.sanity>20? '#ff0':'#f00';
+    document.getElementById('stat-location').textContent='Location: '+game.playerRoom;
+    document.getElementById('stat-turns').textContent='Turns: '+game.currentTurn;
+    document.getElementById('stat-temp').textContent='Temp: '+(game.inventory.includes('Thermometer')? (randInt(-5,5)+'°C'):'--°C');
+    document.getElementById('stat-smudge').textContent='Smudge: '+game.smudgeActive;
+    document.getElementById('stat-crucifix').textContent='Crucifix: '+game.crucifixUses;
+    const fill=document.getElementById('sanity-fill');
+    fill.style.width=game.sanity+'%';
+    fill.style.background=game.sanity>50? '#0f0':game.sanity>20? '#ff0':'#f00';
     updateBackground(game.lastMoveDir||'N');
   }
-
   function updateBackground(dir='N'){
-    const v = roomVisuals[game.playerRoom]||roomVisuals['Van'];
-    document.getElementById('background').style.backgroundImage =
-      `url('${v[dir]}')`;
+    const v=roomVisuals[game.playerRoom]||roomVisuals['Van'];
+    document.getElementById('background').style.backgroundImage=`url('${v[dir]}')`;
   }
 
-  /* === COMMAND OVERLAYS === */
+  /* OVERLAY COMMANDS */
   function showMap(){
-    logToGame('Map: '+JSON.stringify(Object.entries(roomVisuals[game.playerRoom])));
+    logToGame('Map exits: '+Object.keys(rooms[game.playerRoom]).join(', '));
   }
   function showMove(){
-    const list = document.getElementById('move-list');
-    list.innerHTML = '';
-    Object.entries(roomVisuals[game.playerRoom]).forEach(([dir,fn])=>{
-      const room = (dir==='N'? roomUp='':null); // Not used here
-      const btn = document.createElement('button');
-      btn.textContent = dir;
-      btn.onclick = ()=>{
-        game.lastMoveDir = dir;
-        game.playerRoom = roomVisuals[game.playerRoom][dir] ? Object.keys(roomVisuals).find(r=>roomVisuals[r][dir]===fn) : game.playerRoom;
-        logToGame(`Moving ${dir} to ${game.playerRoom}.`);
+    const list=document.getElementById('move-list'); list.innerHTML='';
+    for(const [dir,dest] of Object.entries(rooms[game.playerRoom])){
+      const b=document.createElement('button');
+      b.textContent=`${dir} → ${dest}`;
+      b.onclick=()=>{
+        game.lastMoveDir=dir;
+        game.playerRoom=dest;
         closeOverlay('move-overlay');
+        logToGame(`Moved ${dir} to ${dest}.`);
         advanceTurn();
       };
-      list.appendChild(btn);
-    });
+      list.appendChild(b);
+    }
     document.getElementById('move-overlay').style.display='flex';
   }
   function showUse(){
-    const list = document.getElementById('use-list');
-    list.innerHTML = '';
+    const list=document.getElementById('use-list'); list.innerHTML='';
     game.inventory.forEach(i=>{
-      const btn = document.createElement('button');
-      btn.textContent = i;
-      btn.onclick = ()=>{
+      const b=document.createElement('button'); b.textContent=i;
+      b.onclick=()=>{
         useItem(i);
         closeOverlay('use-popup');
       };
-      list.appendChild(btn);
+      list.appendChild(b);
     });
     document.getElementById('use-popup').style.display='flex';
   }
   function showInv(){
-    const list = document.getElementById('inv-list');
-    list.innerHTML = '';
+    const list=document.getElementById('inv-list'); list.innerHTML='';
     game.inventory.forEach(i=>{
-      const d = document.createElement('div'); d.textContent=i; list.appendChild(d);
+      const d=document.createElement('div'); d.textContent=i; list.appendChild(d);
     });
     document.getElementById('inv-popup').style.display='flex';
   }
+  function toggleMonitor(){
+    game.cameraActive=!game.cameraActive;
+    logToGame(game.cameraActive?'Monitor on.':'Monitor off.');
+  }
 
-  /* === VAN‑SWAP === */
+  /* VAN SWAP */
   function openVanSwap(){
     if(game.usedVanThisTurn){
-      logToGame('You can only return to the van once per turn.');
+      logToGame('Van visit used this turn.');
       return;
     }
-    const held  = document.getElementById('van-held'),
-          stock = document.getElementById('van-stock');
-    held.innerHTML = ''; stock.innerHTML = '';
+    const held=document.getElementById('van-held'), stock=document.getElementById('van-stock');
+    held.innerHTML=''; stock.innerHTML='';
     game.inventory.forEach(item=>{
-      const b = document.createElement('button'); b.textContent=item;
-      b.onclick = ()=>{
+      const b=document.createElement('button'); b.textContent=item;
+      b.onclick=()=>{
         game.inventory.splice(game.inventory.indexOf(item),1);
         game.vanStock.push(item);
         openVanSwap();
@@ -639,8 +616,8 @@
       held.appendChild(b);
     });
     game.vanStock.forEach(item=>{
-      const b = document.createElement('button'); b.textContent=item;
-      b.onclick = ()=>{
+      const b=document.createElement('button'); b.textContent=item;
+      b.onclick=()=>{
         if(game.inventory.length<maxCarry){
           game.vanStock.splice(game.vanStock.indexOf(item),1);
           game.inventory.push(item);
@@ -652,92 +629,100 @@
     document.getElementById('van-swap-overlay').style.display='flex';
   }
 
-  /* === NOTEBOOK === */
+  /* NOTEBOOK */
   function openNotebook(){
-    const container = document.getElementById('notebook-entries');
-    container.innerHTML = '';
+    const c=document.getElementById('notebook-entries'); c.innerHTML='';
     if(game.selectedEvidence.size===0){
-      container.innerHTML = '<div>(No evidence yet.)</div>';
+      c.innerHTML='<div>(No evidence yet.)</div>';
     } else {
       game.selectedEvidence.forEach(e=>{
-        const d = document.createElement('div'); d.textContent=e; container.appendChild(d);
+        const d=document.createElement('div'); d.textContent=e; c.appendChild(d);
       });
+      suggestGhosts();
     }
     document.getElementById('notebook-overlay').style.display='flex';
   }
   function closeNotebook(){
     document.getElementById('notebook-overlay').style.display='none';
   }
+  function suggestGhosts(){
+    if(game.selectedEvidence.size<2) return;
+    const found=[...game.selectedEvidence];
+    const matches=Object.entries(ghostProfiles)
+      .filter(([g,p])=>found.every(e=>p.evidence.includes(e)))
+      .map(([g])=>g);
+    if(matches.length) logToGame('Possible: '+matches.join(', '));
+  }
 
-  /* === EVIDENCE & ITEMS === */
-  function useItem(i){
-    if(!game.inventory.includes(i)){
-      logToGame(`You don't have ${i}.`); return;
+  /* USE ITEMS & EVIDENCE */
+  function useItem(item){
+    if(!game.inventory.includes(item)){
+      logToGame(`No ${item}.`); return;
     }
-    // Cursed logic handled earlier...
-    switch(i){
+    switch(item){
       case 'EMF Reader':
         if(game.playerRoom===game.ghostRoom){
-          game.selectedEvidence.add('EMF Level 5');
-          logToGame('🔍 EMF Level 5 detected!');
-        } else logToGame('EMF reading normal.');
+          game.selectedEvidence.add('EMF Reader');
+          logToGame('🔍 EMF detected!');
+        } else logToGame('No EMF spikes.');
         break;
       case 'Spirit Box':
         if(game.playerRoom===game.ghostRoom){
           game.selectedEvidence.add('Spirit Box');
-          logToGame('🔍 Spirit Box responded!');
-        } else logToGame('No spirit response.');
+          logToGame('🔍 Spirit Box response!');
+        } else logToGame('Silent.');
         break;
       case 'Fingerprint Kit':
         if(game.playerRoom===game.ghostRoom){
-          game.selectedEvidence.add('Fingerprints');
-          logToGame('🔍 Fingerprints found!');
-        } else logToGame('No fingerprints here.');
+          game.selectedEvidence.add('Fingerprint Kit');
+          logToGame('🔍 Prints found!');
+        } else logToGame('None here.');
         break;
       case 'UV Light':
       case 'Thermometer':
         if(game.playerRoom===game.ghostRoom){
           game.selectedEvidence.add('Freezing Temps');
-          logToGame('🔍 Cold spots detected!');
-        } else logToGame('Temperature normal.');
+          logToGame('🔍 Cold spot!');
+        } else logToGame('Normal temp.');
         break;
-      case 'DOTS Projector':
+      case 'D.O.T.S Projector':
         if(game.playerRoom===game.ghostRoom){
-          game.selectedEvidence.add('D.O.T.S');
-          logToGame('🔍 D.O.T.S evidence recorded!');
-        } else logToGame('Nothing seen.');
+          game.selectedEvidence.add('D.O.T.S Projector');
+          logToGame('🔍 D.O.T.S hit!');
+        } else logToGame('No dots.');
         break;
       case 'Camera':
       case 'Video Camera':
         if(game.playerRoom!=='Van'){
-          game.cameraActive = !game.cameraActive;
+          game.cameraActive=!game.cameraActive;
           logToGame(game.cameraActive?'Camera on.':'Camera off.');
           if(game.cameraActive && game.playerRoom===game.ghostRoom){
             game.selectedEvidence.add('Orbs');
             logToGame('🔍 Orbs captured!');
           }
-        } else logToGame('Cannot use camera in van.');
+        } else logToGame('Cannot here.');
         break;
       case 'Smudge Stick':
         if(game.playerRoom===game.ghostRoom){
-          game.smudgeActive = 5;
-          logToGame('You smudge the room.');
-          if(game.ghost==='Yurei') logToGame('Yurei is locked!');
-        } else logToGame('Nothing happens.');
+          game.smudgeActive=5;
+          logToGame('Room smudged.');
+          game.inventory.splice(game.inventory.indexOf(item),1);
+          logToGame('Smudge Stick used.');
+        } else logToGame('No effect.');
         break;
       case 'Crucifix':
         logToGame('Crucifix ready.');
         break;
       default:
-        logToGame(`You use the ${i}, but nothing special happens.`);
+        logToGame(`Used ${item}.`);
     }
-    renderHUD(); advanceTurn();
+    updateStats();
+    advanceTurn();
   }
 
-  /* === GHOST GUESS & RESTART === */
+  /* GHOST GUESS & RESTART */
   function showGuess(){
-    const list = document.getElementById('guess-list');
-    list.innerHTML='';
+    const list=document.getElementById('guess-list'); list.innerHTML='';
     Object.keys(ghostProfiles).forEach(g=>{
       const b=document.createElement('button'); b.textContent=g;
       b.onclick=()=>{
@@ -748,28 +733,30 @@
     });
     document.getElementById('guess-popup').style.display='flex';
   }
-
   function endGame(win){
-    document.getElementById('end-message').textContent = win?'✅ You caught it!':'💀 You died!';
+    document.getElementById('end-message').textContent= win?'✅ You win!':'💀 You died!';
     document.getElementById('restart-popup').style.display='flex';
   }
   function resetGame(){
     closeOverlay('restart-popup');
     document.getElementById('game-log').innerHTML='';
     fade('#title-screen');
-    document.getElementById('title-screen').style.display='flex';
+    setTimeout(()=>document.getElementById('title-screen').style.display='flex',500);
   }
 
-  /* === AMBIENT NARRATION === */
-  const ambience = [
-    'You feel a chill...', 'A whisper in the dark...',
-    'Lights flicker...', 'Footsteps echo...', 'A distant moan...'
+  /* AMBIENT */
+  const ambience=[
+    'A chill passes by...',
+    'You hear a whisper...',
+    'Lights flicker...',
+    'Footsteps echo...',
+    'A distant moan...'
   ];
   function scheduleAmbient(){
     setTimeout(()=>{
       logToGame(randChoice(ambience));
       scheduleAmbient();
-    }, randInt(15000,30000));
+    },randInt(15000,30000));
   }
   </script>
 </body>
