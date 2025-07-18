@@ -98,21 +98,83 @@
     #command-buttons button:hover { background: #333; }
 
     /* === LOADOUT === */
-    #loadout-screen {
-      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.9);
-      display: none; justify-content: center; align-items: center;
-      flex-direction: column; z-index: 1000;
-    }
-    #loadout-container {
-      background: #111; padding: 20px; border: 1px solid #555;
-      max-width: 400px; width: 90%; color: #eee;
-    }
-    .item-button {
-      background: #222; color: #eee; border: 1px solid #555;
-      padding: 4px 6px; margin: 2px; cursor: pointer; font-size: 12px;
-    }
-    .item-button:hover { background: #333; }
+   #loadout-screen {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.85);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+#loadout-container {
+  background: rgba(20,20,20,0.9);
+  border: 1px solid #555;
+  padding: 20px;
+  width: 600px;
+  max-width: 90%;
+  color: #eee;
+  box-shadow: 0 0 10px rgba(0,0,0,0.8);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  font-family: monospace;
+}
+#loadout-title {
+  font-size: 18px;
+  margin-bottom: 10px;
+  text-shadow: 0 0 3px #fff;
+}
+#loadout-lists {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  margin-top: 10px;
+}
+.loadout-column {
+  width: 48%;
+  background: rgba(0,0,0,0.3);
+  padding: 10px;
+  border: 1px solid #444;
+}
+.loadout-column strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #ccc;
+}
+.item-button {
+  background: #222;
+  color: #eee;
+  border: 1px solid #555;
+  padding: 5px 8px;
+  margin: 3px;
+  font-size: 12px;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  transition: background 0.2s ease;
+}
+.item-button:hover {
+  background: #333;
+}
+#confirm-loadout {
+  margin-top: 12px;
+  padding: 8px 16px;
+  background: #222;
+  color: #eee;
+  border: 1px solid #555;
+  cursor: pointer;
+}
+#confirm-loadout:hover {
+  background: #333;
+}
+#loadout-warning {
+  color: #f66;
+  font-size: 12px;
+  margin-top: 5px;
+  display: none;
+}
 
     /* === GUESS POPUP === */
     #guess-popup {
@@ -285,34 +347,44 @@ function showLoadout(){
   renderLoadout();
 }
 function renderLoadout(){
-  const h=document.getElementById("held-list"),
-        v=document.getElementById("van-list");
-  h.innerHTML="";v.innerHTML="";
+  const h = document.getElementById("held-list"),
+        v = document.getElementById("van-list"),
+        warning = document.getElementById("loadout-warning");
+  h.innerHTML = "";
+  v.innerHTML = "";
+  warning.style.display = "none";
+
   tempHeld.forEach(i=>{
-    const b=document.createElement("button");
-    b.textContent=i+" (Remove)";
-    b.className="item-button";
-    b.onclick=()=>{
+    const b = document.createElement("button");
+    b.textContent = i + " (Remove)";
+    b.className = "item-button";
+    b.onclick = ()=>{
       tempVan.push(i);
-      tempHeld=tempHeld.filter(x=>x!==i);
+      tempHeld = tempHeld.filter(x=>x!==i);
       renderLoadout();
     };
     h.appendChild(b);
   });
+
   tempVan.forEach(i=>{
-    const b=document.createElement("button");
-    b.textContent=i+" (Add)";
-    b.className="item-button";
-    b.onclick=()=>{
-      if(tempHeld.length<3){
+    const b = document.createElement("button");
+    b.textContent = i + " (Add)";
+    b.className = "item-button";
+    b.onclick = ()=>{
+      if(tempHeld.length < 3){
         tempHeld.push(i);
-        tempVan=tempVan.filter(x=>x!==i);
-        renderLoadout();
-      } else alert("You can only hold 3 items!");
+        tempVan = tempVan.filter(x=>x!==i);
+      } else {
+        warning.style.display = "block";
+        setTimeout(()=>warning.style.display="none",2000);
+      }
+      renderLoadout();
     };
     v.appendChild(b);
   });
 }
+
+
 
 /* === INVESTIGATION START === */
 function startInvestigation(){
