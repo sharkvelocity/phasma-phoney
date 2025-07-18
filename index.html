@@ -349,15 +349,107 @@ function updateBackground(d="N"){
   document.getElementById("background").style.backgroundImage=`url('${v[d]}')`;
 }
 
-/* === COMMAND HANDLER === */
+/* === COMMAND HANDLER (FINAL WORKING VERSION) === */
 function handleCommand(c){
   switch(c){
-    case"move":openMoveOverlay();break;
-    case"look":lookAround();break;
-    case"inventory":openInventoryOverlay();break;
-    case"guess":openGuess();break;
-    case"van":openVanOverlay();break;
+    case "move":
+      openMoveOverlay();
+      break;
+    case "look":
+      lookAround();
+      break;
+    case "inventory":
+      openInventoryOverlay();
+      break;
+    case "guess":
+      openGuess();
+      break;
+    default:
+      logToGame("Unknown command.");
   }
+}
+
+/* === MOVE OVERLAY === */
+function openMoveOverlay(){
+  const exits = mapConnections[game.playerRoom] || [];
+  if(!exits.length){
+    logToGame("No exits here.");
+    return;
+  }
+  const overlay = document.createElement("div");
+  overlay.id = "move-temp";
+  overlay.style.position = "fixed";
+  overlay.style.top = "50%";
+  overlay.style.left = "50%";
+  overlay.style.transform = "translate(-50%, -50%)";
+  overlay.style.background = "#111";
+  overlay.style.padding = "10px";
+  overlay.style.zIndex = "1500";
+
+  let html = "<h3>Choose a room:</h3>";
+  exits.forEach(r=>{
+    html += `<button onclick="moveToRoom('${r}');closeOverlay('move-temp')">Go to ${r}</button>`;
+  });
+  html += `<button onclick="closeOverlay('move-temp')">Close</button>`;
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+function moveToRoom(r){
+  game.playerRoom = r;
+  game.currentTurn++;
+  logToGame("You move to " + r + ".");
+  renderHUD();
+  updateBackground();
+  checkTurnEvents();
+}
+function closeOverlay(id){
+  const o = document.getElementById(id);
+  if(o) document.body.removeChild(o);
+}
+
+/* === INVENTORY OVERLAY === */
+function openInventoryOverlay(){
+  const c = document.createElement("div");
+  c.id = "inventory-temp";
+  c.style.position = "fixed";
+  c.style.top = "50%";
+  c.style.left = "50%";
+  c.style.transform = "translate(-50%, -50%)";
+  c.style.background = "#111";
+  c.style.padding = "10px";
+  c.style.maxHeight = "70%";
+  c.style.overflowY = "auto";
+  c.style.zIndex = "1500";
+
+  let html = "<h3>Inventory</h3>";
+  game.inventory.forEach(i=>{
+    html += `<button onclick="inspectItem('${i}')">Inspect: ${i}</button>`;
+    html += `<button onclick="dropItem('${i}');closeOverlay('inventory-temp')">Drop: ${i}</button>`;
+    html += `<button onclick="useItem('${i}');closeOverlay('inventory-temp')">Use: ${i}</button>`;
+  });
+  const roomInv = game.roomItems && game.roomItems[game.playerRoom] || [];
+  roomInv.forEach(i=>{
+    html += `<button onclick="pickItem('${i}');closeOverlay('inventory-temp')">Pick up: ${i}</button>`;
+  });
+  html += `<button onclick="closeOverlay('inventory-temp')">Close</button>`;
+  c.innerHTML = html;
+  document.body.appendChild(c);
+}
+
+/* === GHOST GUESS === */
+function openGuess(){
+  const list = document.getElementById("guess-list");
+  list.innerHTML = "";
+  Object.keys(ghostProfiles).forEach(g=>{
+    const b = document.createElement("button");
+    b.textContent = g;
+    b.onclick = ()=>{
+      makeGuess(g);
+      document.getElementById("guess-popup").style.display = "none";
+    };
+    list.appendChild(b);
+  });
+  document.getElementById("guess-popup").style.display = "flex";
 }
 function openMoveOverlay(){
   const o=mapConnections[game.playerRoom]||[];
