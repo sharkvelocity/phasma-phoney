@@ -673,6 +673,9 @@ function lookAround(){
 /***********************
  === INVENTORY OVERLAY & VAN MENU ===
 ************************/
+/***********************
+ === INVENTORY OVERLAY & VAN MENU ===
+************************/
 function openInventoryOverlay() {
   const existing = document.getElementById("inventory-temp");
   if (existing) document.body.removeChild(existing);
@@ -688,6 +691,7 @@ function openInventoryOverlay() {
   c.style.maxHeight = "70%";
   c.style.overflowY = "auto";
   c.style.maxWidth = "90%";
+  c.style.width = "90%"; // mobile scaling
 
   let html = "<h3>Inventory</h3>";
   game.inventory.forEach(i => {
@@ -716,10 +720,16 @@ function openVanMenu(){
 
   const c=document.createElement("div");
   c.id="inventory-temp";
-  c.style.position="fixed"; c.style.top="50%"; c.style.left="50%";
+  c.style.position="fixed"; 
+  c.style.top="50%"; 
+  c.style.left="50%";
   c.style.transform="translate(-50%,-50%)";
-  c.style.background="#111"; c.style.padding="10px";
-  c.style.maxHeight="70%"; c.style.overflowY="auto"; c.style.maxWidth="90%";
+  c.style.background="#111"; 
+  c.style.padding="10px";
+  c.style.maxHeight="70%"; 
+  c.style.overflowY="auto"; 
+  c.style.maxWidth="90%";
+  c.style.width = "90%"; // mobile scaling
 
   let html="<h3>Check Gear / Swap Items</h3>";
   html+="<p><strong>Held Items:</strong></p>";
@@ -731,6 +741,9 @@ function openVanMenu(){
   game.vanStock.forEach(i=>{
     html+=`<button onclick="takeItemFromVan('${i}')">Take: ${i}</button>`;
   });
+
+  // New Monitor button (consumes a turn)
+  html+="<hr/><button onclick='checkVanMonitor();document.body.removeChild(document.getElementById(\"inventory-temp\"))'>Use Van Monitor</button>";
   html+="<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
 
   c.innerHTML=html;
@@ -756,6 +769,17 @@ function takeItemFromVan(i){
     openVanMenu();
     renderHUD();
   }
+}
+
+function checkVanMonitor(){
+  game.currentTurn++;
+  logToGame("[Van Monitor] Checking sensors...");
+  Object.keys(game.roomItems).forEach(r=>{
+    if(game.roomItems[r].includes("Motion Sensor") && Math.random()<0.5){
+      logToGame("[Van Monitor] Activity detected in "+r+"!");
+    }
+  });
+  checkTurnEvents();
 }
 
 /***********************
