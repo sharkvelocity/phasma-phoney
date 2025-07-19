@@ -203,13 +203,10 @@
     <canvas id="fog-layer"></canvas>
     <canvas id="orbCanvas"></canvas>
     <div id="hud">
-      <div>Location: 
-        <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
-      <div>Turns: 
-      <span id="hud-turns">0</span></div>
+      <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
+      <div>Turns: <span id="hud-turns">0</span></div>
       <div>Sanity:</div>
-      <div id="sanity-bar-container">
-      <div id="sanity-bar"></div></div>
+      <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
       <div>Temp: <span id="hud-temp">--°C</span></div>
     </div>
     <div id="inventory-display">
@@ -319,7 +316,7 @@ const game = {
 };
 
 /***********************
- === BASIC UTILS ===
+ === UTILS & CORE ===
 ************************/
 function logToGame(t){
   const log=document.getElementById("game-log");
@@ -372,6 +369,7 @@ function renderLoadout(){
     v.appendChild(b);
   });
 }
+
 /***********************
  === STARTUP & INVESTIGATION ===
 ************************/
@@ -441,31 +439,15 @@ function updateBackground(d="N"){
 /***********************
  === COMMAND HANDLER ===
 ************************/
-/***********************
- === COMMAND HANDLER (FIXED) ===
-************************/
 function handleCommand(c){
   switch(c){
-    case "move": openMoveOverlay(); break;
-    case "look": lookAround(); break;
-    case "inventory": openInventoryOverlay(); break;
-    case "guess": openGuess(); break;
-    case "van": returnToVan(); break; // ✅ NEW
-    default: logToGame("Unknown command: " + c);
+    case"move":openMoveOverlay();break;
+    case"look":lookAround();break;
+    case"inventory":openInventoryOverlay();break;
+    case"guess":openGuess();break;
+    case"van":moveToRoom("Van");break;
+    default:logToGame("Unknown command.");break;
   }
-}
-
-function returnToVan(){
-  if(game.playerRoom==="Van"){
-    logToGame("You are already in the van.");
-    return;
-  }
-  game.playerRoom = "Van";
-  game.currentTurn++;
-  logToGame("You return to the van to regroup.");
-  renderHUD();
-  updateBackground();
-  checkTurnEvents();
 }
 
 function openMoveOverlay(){
@@ -497,6 +479,9 @@ function lookAround(){
   renderHUD(); checkTurnEvents();
 }
 
+/***********************
+ === INVENTORY OVERLAY, ITEMS, HUNT, VISUALS
+************************/
 /***********************
  === INVENTORY OVERLAY ===
 ************************/
@@ -543,6 +528,7 @@ function dropItem(i){
   }
   game.inventory=game.inventory.filter(x=>x!==i); renderHUD();
 }
+
 function pickItem(i){
   if(game.inventory.length>=3){logToGame("Max 3 items.");return;}
   if(cursedItemDescriptions[i] && i==="Summoning Circle"){logToGame("The circle cannot be moved.");return;}
@@ -563,7 +549,10 @@ const cursedItemDescriptions={
   "Summoning Circle":"Forces ghost manifestation.",
   "Monkey Paw":"Grants wishes with consequences."
 };
-const cursedItemSanityCost={"Ouija Board":10,"Tarot Cards":5,"Music Box":8,"Voodoo Doll":6,"Haunted Mirror":15,"Summoning Circle":20,"Monkey Paw":25};
+const cursedItemSanityCost={
+  "Ouija Board":10,"Tarot Cards":5,"Music Box":8,"Voodoo Doll":6,
+  "Haunted Mirror":15,"Summoning Circle":20,"Monkey Paw":25
+};
 
 function useItem(i){
   switch(i){
@@ -578,6 +567,13 @@ function useItem(i){
         game.cameraActive=!game.cameraActive;
         logToGame(game.cameraActive?"Camera on: watching for orbs.":"Camera off.");
       } else logToGame("Cannot use cameras in the van.");
+      break;
+    case"Crucifix":
+      if(game.playerRoom!=="Van"){
+        game.placedCrucifix[game.playerRoom]=2;
+        logToGame("You place the crucifix. It may stop two hunts.");
+        game.inventory=game.inventory.filter(x=>x!==i);
+      } else logToGame("Cannot place crucifix in van.");
       break;
     default:
       if(cursedItemDescriptions[i])handleCursedItem(i);
@@ -617,15 +613,21 @@ function checkTurnEvents(){
   }
   if(game.playerRoom===game.ghostRoom){
     game.sanity -= 3 + Math.random()*3;
+    if(Math.random()<0.3){
+      const g=(game.ghost==="TheMimic"?game.mimicForm:game.ghost);
+      logToGame("[Ambient] "+(ghostProfiles[g].behavior || "The air feels heavy..."));
+    }
   } else {game.sanity -=1;}
   if(game.sanity<0)game.sanity=0;
   updateSanityBar(); attemptHunt();
 }
+
 function attemptHunt(){
   if(game.smudgeActive>0){game.smudgeActive--;return;}
   if(game.huntCooldown>0){game.huntCooldown--;return;}
   if(game.sanity<30 && Math.random()<0.25)startHunt();
 }
+
 function startHunt(){
   logToGame("💀 The ghost is hunting!");
   flashRed();
@@ -634,24 +636,25 @@ function startHunt(){
       game.placedCrucifix[game.playerRoom]--;
       logToGame("The crucifix burns, stopping the hunt. ("+game.placedCrucifix[game.playerRoom]+" uses left)");
     } else {
-      alert("The ghost caught you! You died.");
-      resetGame(); showLoadout();
+      setTimeout(()=>{alert("The ghost caught you! You died."); resetGame(); showLoadout();},1500);
     }
   } else logToGame("You survived the hunt...");
   game.huntCooldown=5;
 }
+
 function flashRed(){
   const l=document.getElementById("lightning");
   l.style.background="red"; l.style.opacity=0.6;
   setTimeout(()=>{l.style.opacity=0;},600);
 }
+
 /***********************
- === AMBIENT VISUALS (RAIN REMOVED) ===
+ === AMBIENT VISUALS ===
 ************************/
 function bootVisuals(){
-  if(game.weather==="Stormy" || game.weather==="Bloodmoon"){randomLightning();}
-  if(game.weather==="Foggy" || game.weather==="Stormy" || game.weather==="Bloodmoon"){initFog();}
-  initOrbs(); // orbs are camera-dependent below
+  if(game.weather==="Stormy" || game.weather==="Blood Moon"){randomLightning();}
+  if(game.weather==="Foggy" || game.weather==="Stormy" || game.weather==="Blood Moon"){initFog();}
+  initOrbs();
 }
 
 function randomLightning(){
@@ -664,22 +667,19 @@ function randomLightning(){
 }
 
 function initFog(){
-  const c=document.getElementById("fog-layer"),
-        ctx=c.getContext("2d");
+  const c=document.getElementById("fog-layer"),ctx=c.getContext("2d");
   c.width=window.innerWidth; c.height=window.innerHeight;
   const fogs=[];
   for(let i=0;i<3;i++){
     fogs.push({x:Math.random()*c.width,y:Math.random()*c.height,alpha:0.1+i*0.05,speed:0.1+i*0.05});
   }
-  const fogImg=new Image();
-  fogImg.src="fog.png";
+  const fogImg=new Image(); fogImg.src="fog.png";
   function draw(){
     ctx.clearRect(0,0,c.width,c.height);
     fogs.forEach(f=>{
       ctx.globalAlpha=f.alpha;
       ctx.drawImage(fogImg,f.x,f.y,c.width,200);
-      f.y+=f.speed;
-      if(f.y>c.height)f.y=-200;
+      f.y+=f.speed; if(f.y>c.height)f.y=-200;
     });
     ctx.globalAlpha=1; requestAnimationFrame(draw);
   }
@@ -691,7 +691,6 @@ function initOrbs(){
   c.width=window.innerWidth; c.height=window.innerHeight;
   let o=[];
   function spawn(){
-    // only spawn if camera active or monitor (future)
     if(game.cameraActive && o.length<10){
       o.push({x:Math.random()*c.width,y:Math.random()*c.height,
         r:Math.random()*3+2,alpha:Math.random(),fade:Math.random()*0.02+0.005});
@@ -701,8 +700,7 @@ function initOrbs(){
     x.clearRect(0,0,c.width,c.height);
     if(game.cameraActive){
       for(let i=0;i<o.length;i++){
-        const b=o[i];
-        b.alpha+=b.fade;
+        const b=o[i]; b.alpha+=b.fade;
         if(b.alpha<=0||b.alpha>=1)b.fade*=-1;
         b.y-=0.2;
         x.beginPath();
@@ -711,7 +709,7 @@ function initOrbs(){
         x.fill();
         if(b.y<-10)o.splice(i,1);
       }
-    } else {o=[];} // clear orbs if camera off
+    } else {o=[];}
     requestAnimationFrame(animate);
   }
   setInterval(spawn,2000); animate();
@@ -724,20 +722,30 @@ window.addEventListener("resize",()=>{
 });
 
 /***********************
- === END GAME FLOW ===
+ === GHOST GUESS & RESTART ===
 ************************/
+function openGuess(){
+  const list=document.getElementById("guess-list");
+  list.innerHTML="";
+  Object.keys(ghostProfiles).forEach(g=>{
+    const b=document.createElement("button");
+    b.textContent=g;
+    b.onclick=()=>{makeGuess(g); document.getElementById("guess-popup").style.display="none";};
+    list.appendChild(b);
+  });
+  document.getElementById("guess-popup").style.display="flex";
+}
+
 function makeGuess(g){
-  if(g===game.ghost){
-    logToGame("✅ Correct! The ghost was "+g+"!");
-  } else logToGame("❌ Wrong. The ghost was "+game.ghost+".");
+  if(g===game.ghost){logToGame("✅ Correct! The ghost was "+g+"!");}
+  else logToGame("❌ Wrong. The ghost was "+game.ghost+".");
   setTimeout(endGame,1500);
 }
 
 function endGame(){
   const overlay=document.createElement("div");
   overlay.id="end-game";
-  overlay.style.position="fixed";
-  overlay.style.top="0";overlay.style.left="0";
+  overlay.style.position="fixed";overlay.style.top="0";overlay.style.left="0";
   overlay.style.width="100vw";overlay.style.height="100vh";
   overlay.style.background="rgba(0,0,0,0.8)";
   overlay.style.display="flex";overlay.style.justifyContent="center";
