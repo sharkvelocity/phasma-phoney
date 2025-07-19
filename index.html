@@ -193,8 +193,33 @@ const mapConnections={Van:["Foyer"],Foyer:["Van","LivingRoom","Kitchen","Bathroo
 /***********************
  === GAME STATE ===
 ************************/
-const game={ghost:null,ghostRoom:null,playerRoom:"Van",inventory:[],vanStock:[...allLoadoutItems],selectedEvidence:new Set(),currentTurn:0,sanity:100,weather:null,mimicForm:null,nextMimicShift:0,cameraActive:false,huntCooldown:0,smudgeActive:0,placedCrucifix:{},roomItems:{},usedCursedItems:{}};
-let tempHeld=[],tempVan=[...allLoadoutItems],vanMonitorBooted=false;
+/***********************
+ === GAME STATE ===
+************************/
+const game = {
+  ghost: null,
+  ghostRoom: null,
+  playerRoom: "Van",
+  inventory: [],
+  vanStock: [...allLoadoutItems],
+  selectedEvidence: new Set(),
+  currentTurn: 0,
+  sanity: 100,
+  weather: null,
+  mimicForm: null,
+  nextMimicShift: 0,
+  cameraActive: false,
+  huntCooldown: 0,
+  smudgeActive: 0,
+  placedCrucifix: {},
+  roomItems: {},
+  usedCursedItems: {}
+};
+
+let tempHeld = [];
+let tempVan = [...allLoadoutItems];
+let vanMonitorBooted = false; // ✅ Place here only
+
 /***********************
  === BASIC UTILS ===
 ************************/
@@ -202,7 +227,6 @@ function logToGame(t){const log=document.getElementById("game-log");const e=docu
 function randomFromArray(a){return a[Math.floor(Math.random()*a.length)];}
 function updateSanityBar(){const b=document.getElementById("sanity-bar");b.style.width=game.sanity+"%";b.style.background=game.sanity>66?"#0f0":game.sanity>33?"#ff0":"#f00";}
 
-/***********************
 /***********************
  === RESET & START GAME (FIXED) ===
 ************************/
@@ -603,13 +627,15 @@ function endGame(){
   document.body.appendChild(overlay);
 }
 
-function resetAndRestart(){
-  const e=document.getElementById("end-game");
-  if(e)document.body.removeChild(e);
-  vanMonitorBooted=false;
+function resetAndRestart() {
+  const e = document.getElementById("end-game");
+  if (e) document.body.removeChild(e);
+
+  vanMonitorBooted = false; // ✅ Reset every new game
   resetGame();
   showLoadout();
 }
+
 
 /***********************
  === LOADOUT SCREEN LOGIC (NOTEBOOK & LIGHTER FIXED) ===
