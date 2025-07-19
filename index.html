@@ -357,6 +357,9 @@ function flashRed(){const l=document.getElementById("lightning");l.style.backgro
 /***********************
  === VAN MONITOR FULL BOOT (1x PER INVESTIGATION) ===
 ************************/
+/***********************
+ === VAN MONITOR FULL BOOT (1x PER INVESTIGATION) ===
+************************/
 let vanMonitorBooted = false;
 
 function openVanMonitor() {
@@ -375,12 +378,15 @@ function openVanMonitor() {
     fontSize: "16px",
     padding: "10px",
     zIndex: "4000",
-    overflow: "hidden",
+    overflow: "hidden"
   });
 
-  monitor.innerHTML = `<div id="monitor-text" style="white-space:pre-line;"></div>
-    <button style="position:absolute;top:5px;right:5px;background:#222;color:#eee;border:1px solid #555;cursor:pointer;"
-      onclick="document.body.removeChild(document.getElementById('van-monitor'))">X</button>`;
+  monitor.innerHTML = `
+    <div id="monitor-text" style="white-space:pre-line;"></div>
+    <button style="position:absolute;top:5px;right:5px;background:#222;color:#eee;
+      border:1px solid #555;cursor:pointer;"
+      onclick="document.body.removeChild(document.getElementById('van-monitor'))">X</button>
+  `;
   document.body.appendChild(monitor);
 
   if (!vanMonitorBooted) {
@@ -390,6 +396,9 @@ function openVanMonitor() {
     showCameraGrid();
   }
 
+  /***********************
+   === BOOT SEQUENCE ===
+  ************************/
   function runBootSequence() {
     const text = document.getElementById("monitor-text");
     let cursorBlink = 0;
@@ -421,7 +430,8 @@ function openVanMonitor() {
     function showLogoLoading() {
       const text = document.getElementById("monitor-text");
       text.innerHTML = `
-        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
+        <div style="display:flex;flex-direction:column;align-items:center;
+            justify-content:center;height:100%;">
           <img src="logo.png" style="max-width:60%;margin-bottom:20px;">
           <div style="width:60%;height:20px;border:1px solid #0f0;">
             <div id="boot-bar" style="width:0%;height:100%;background:#0f0"></div>
@@ -480,8 +490,13 @@ function openVanMonitor() {
       }
       typeUsername();
     }
+
+    blinkCursor();
   }
 
+  /***********************
+   === CAMERA GRID ===
+  ************************/
   function showCameraGrid() {
     const text = document.getElementById("monitor-text");
     text.style.textAlign = "left";
