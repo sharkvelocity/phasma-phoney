@@ -1101,28 +1101,11 @@ function resetAndRestart(){
   const e=document.getElementById("end-game");
   if(e)document.body.removeChild(e);
   resetGame();
-  showLoadout();
+  showLoadout(); // ✅ will work now because it's defined earlier in the script
 }
-  // === CONFIRM LOADOUT ===
-  confirmBtn.addEventListener("click", () => {
-    if (typeof tempHeld === "undefined") tempHeld = [];
-    if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
 
-    // ✅ Notebook and Lighter are always included by default
-    game.inventory = [...tempHeld, "Notebook", "Lighter"];
-    game.vanStock = [...tempVan];
-
-    document.getElementById("loadout-screen").style.display = "none";
-    startInvestigation();
-    window.dispatchEvent(new Event("resize")); // Adjust HUD for mobile
-  });
-
-  // === COMMAND BUTTONS ===
-  document.querySelectorAll("#command-buttons button").forEach((b) => {
-    b.addEventListener("click", () => handleCommand(b.dataset.cmd));
-  });
 /***********************
- === FINAL EVENT LISTENERS ===
+ === FINAL EVENT LISTENERS (ALL IN ONE PLACE) ===
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
   resetGame();
@@ -1137,11 +1120,27 @@ document.addEventListener("DOMContentLoaded", () => {
     t.style.opacity = "0";
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout(); // ✅ must be defined BEFORE this block
+      showLoadout(); // ✅ must be defined ABOVE this whole block
     }, 1500);
   });
 
+  // === CONFIRM LOADOUT ===
+  confirmBtn.addEventListener("click", () => {
+    if (typeof tempHeld === "undefined") tempHeld = [];
+    if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
 
+    game.inventory = [...tempHeld, "Notebook", "Lighter"];
+    game.vanStock = [...tempVan];
+
+    document.getElementById("loadout-screen").style.display = "none";
+    startInvestigation();
+    window.dispatchEvent(new Event("resize")); // Adjust HUD for mobile
+  });
+
+  // === COMMAND BUTTONS ===
+  document.querySelectorAll("#command-buttons button").forEach((b) => {
+    b.addEventListener("click", () => handleCommand(b.dataset.cmd));
+  });
 });
 
 </script>
