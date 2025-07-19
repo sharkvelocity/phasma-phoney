@@ -1109,32 +1109,41 @@ function resetAndRestart(){
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
   resetGame();
-  const startBtn=document.getElementById("startButton");
-  const confirmBtn=document.getElementById("confirm-loadout");
 
+  const startBtn = document.getElementById("startButton");
+  const confirmBtn = document.getElementById("confirm-loadout");
+
+  // === START NEW GAME ===
   startBtn.addEventListener("click", () => {
     startBtn.disabled = true; // prevent double click
-    const t=document.getElementById("title-screen");
-    t.style.opacity="0";
-    setTimeout(()=>{ t.style.display="none"; showLoadout(); },1500);
+    const t = document.getElementById("title-screen");
+    t.style.opacity = "0";
+    setTimeout(() => {
+      t.style.display = "none";
+      showLoadout(); // ✅ must be defined BEFORE this block
+    }, 1500);
   });
 
+  // === CONFIRM LOADOUT ===
   confirmBtn.addEventListener("click", () => {
-    if(typeof tempHeld==="undefined")tempHeld=[];
-    if(typeof tempVan==="undefined")tempVan=[...allLoadoutItems];
+    if (typeof tempHeld === "undefined") tempHeld = [];
+    if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
 
-    game.inventory=[...tempHeld,"Notebook","Lighter"];
-    game.vanStock=[...tempVan];
+    // ✅ Notebook and Lighter are always included by default
+    game.inventory = [...tempHeld, "Notebook", "Lighter"];
+    game.vanStock = [...tempVan];
 
-    document.getElementById("loadout-screen").style.display="none";
+    document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
-    window.dispatchEvent(new Event("resize")); 
+    window.dispatchEvent(new Event("resize")); // Adjust HUD for mobile
   });
 
-  document.querySelectorAll("#command-buttons button").forEach((b)=>{
-    b.addEventListener("click",()=>handleCommand(b.dataset.cmd));
+  // === COMMAND BUTTONS ===
+  document.querySelectorAll("#command-buttons button").forEach((b) => {
+    b.addEventListener("click", () => handleCommand(b.dataset.cmd));
   });
 });
+
 </script>
 </body>
 </html>
