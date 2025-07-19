@@ -258,7 +258,7 @@
       font-size: calc(14px + 0.5vw);
     }
 
-    #held-list, #van-list {
+    #held-list, #-list {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
@@ -404,7 +404,7 @@
 
     <!-- HUD (Top Left) -->
     <div id="hud">
-      <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
+      <div>Location: <span id="hud-location"></span> | Weather: <span id="hud-weather">--</span></div>
       <div>Turns: <span id="hud-turns">0</span></div>
       <div>Sanity:</div>
       <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
@@ -420,14 +420,15 @@
     <!-- Narrator UI (Bottom Panel with Vertical Command Buttons on Right) -->
     <div id="narrator-ui">
       <div id="game-log"></div>
-     <div id="command-buttons">
+    <div id="command-buttons">
   <button data-cmd="move">Move</button>
   <button data-cmd="look">Look Around</button>
   <button data-cmd="inventory">Inventory</button>
   <button data-cmd="guess">Ghost Guess</button>
-  <button data-cmd="van">Check Gear</button>
-  <button data-cmd="monitor">Van Monitor</button>
+  <button id="van-action" data-cmd="van">Return to Van</button>
+  <button id="van-monitor-btn" style="display:none;" onclick="openVanMonitor()">Use Van Monitor</button>
 </div>
+
 
     </div>
   </div>
@@ -584,17 +585,20 @@ function renderHUD() {
   document.getElementById("hud-location").textContent = game.playerRoom;
   document.getElementById("hud-weather").textContent = game.weather || "--";
   document.getElementById("hud-turns").textContent = game.currentTurn;
-  document.getElementById("held-items-display").textContent = game.inventory.join(", ") || "None";
+  document.getElementById("held-items-display").textContent =
+    game.inventory.filter(i => i !== "Notebook" && i !== "Lighter").join(", ") || "None";
 
-  // ✅ Dynamic button label (van vs outside)
-  const vanBtn = document.querySelector("#command-buttons button[data-cmd='van']");
+  // ✅ Van / Check Gear toggle
+  const vanAction = document.getElementById("van-action");
+  const monitorBtn = document.getElementById("van-monitor-btn");
   if (game.playerRoom === "Van") {
-    vanBtn.textContent = "Check Gear";
+    vanAction.textContent = "Check Gear";
+    monitorBtn.style.display = "inline-block";
   } else {
-    vanBtn.textContent = "Return to Van";
+    vanAction.textContent = "Return to Van";
+    monitorBtn.style.display = "none";
   }
 
-  // ✅ Update temp (as before)
   if (game.inventory.includes("Thermometer") && game.playerRoom !== "Van") {
     const t = game.playerRoom === game.ghostRoom
       ? (Math.random() < 0.3 ? -5 : 2 + Math.random() * 3)
@@ -866,10 +870,16 @@ function openVanMenu() {
   const c = document.createElement("div");
   c.id = "inventory-temp";
   Object.assign(c.style, {
-    position: "fixed", top: "50%", left: "50%",
-    transform: "translate(-50%,-50%)", background: "#111",
-    padding: "10px", maxHeight: "70%", overflowY: "auto",
-    maxWidth: "90%", width: "90%"
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%,-50%)",
+    background: "#111",
+    padding: "10px",
+    maxHeight: "70%",
+    overflowY: "auto",
+    maxWidth: "90%",
+    width: "90%"
   });
 
   let html = "<h3>Check Gear / Swap Items</h3>";
@@ -878,18 +888,17 @@ function openVanMenu() {
     if (i !== "Notebook" && i !== "Lighter")
       html += `<button onclick="returnItemToVan('${i}')">Return: ${i}</button>`;
   });
-
   html += "<p><strong>Van Inventory:</strong></p>";
   game.vanStock.forEach(i => {
     html += `<button onclick="takeItemFromVan('${i}')">Take: ${i}</button>`;
   });
 
-  html += `<hr/><button onclick="initVanMonitor();document.body.removeChild(document.getElementById('inventory-temp'))">Use Van Monitor</button>`;
+  // ❌ Removed Van Monitor button from here
   html += "<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
-
   c.innerHTML = html;
   document.body.appendChild(c);
 }
+
 
 function returnItemToVan(i) {
   if (i === "Notebook" || i === "Lighter") {
@@ -923,122 +932,108 @@ function takeItemFromVan(i) {
 /***********************
  === VAN MONITOR FULL BOOT (1x PER INVESTIGATION) ===
 ************************/
-let vanMonitorBooted = false;
-function initVanMonitor() {
-  if (!vanMonitorBooted) {
-    vanMonitorBooted = true;
-    runVanBootSequence();
-  } else {
-    showCameraViewer();
+function openVanMonitor() {
+  if (document.getElementById("van-monitor")) return;
+
+  const monitor = document.createElement("div");
+  monitor.id = "van-monitor";
+  Object.assign(monitor.style, {
+    position: "fixed",
+    top: "10%",
+    left: "10%",
+    width: "80%",
+    height: "80%",
+    background: "#000",
+    border: "2px solid #0f0",
+    color: "#0f0",
+    fontFamily: "monospace",
+    fontSize: "14px",
+    padding: "10px",
+    zIndex: "4000",
+    overflow: "hidden",
+  });
+
+  monitor.innerHTML = `<div id="monitor-text" style="white-space:pre-line;"></div>
+    <button style="position:absolute;top:5px;right:5px;background:#222;color:#eee;border:1px solid #555;cursor:pointer;"
+      onclick="document.body.removeChild(document.getElementById('van-monitor'))">X</button>`;
+  document.body.appendChild(monitor);
+
+  // ✅ Boot Animation
+  const text = document.getElementById("monitor-text");
+  const funnyUsers = [
+    "GhostLover99", "VanCamStan", "BooHunter3000", "Orbs4Life",
+    "CursedCandle", "PhasmaFan88", "I_Luv_Smudge", "CamperGhost",
+    "SpookySimp", "DeadNotClickbait"
+  ];
+  const user = funnyUsers[Math.floor(Math.random() * funnyUsers.length)];
+
+  let steps = [
+    ">C:/", // typing cursor effect
+    "boot ghost.os", // replaced by logo below
+    "Loading...",
+    `[Login]\nUsername: ${user}\nPassword: ********`
+  ];
+
+  let i = 0;
+  function nextStep() {
+    if (i === 1) {
+      // ✅ Show logo instead of ghost.os text
+      text.innerHTML += `\n<img src="logo.png" style="max-width:120px;display:block;margin:5px auto;">\n`;
+    } else {
+      text.innerHTML += steps[i] + "\n";
+    }
+    i++;
+    if (i < steps.length) {
+      setTimeout(nextStep, 1000);
+    } else {
+      setTimeout(showCameraGrid, 1500);
+    }
   }
+  nextStep();
+
+  function showCameraGrid() {
+    const grid = document.createElement("div");
+    Object.assign(grid.style, {
+      display: "grid",
+      gridTemplateColumns: "1fr 1fr",
+      gridTemplateRows: "1fr 1fr",
+      gap: "4px",
+      width: "100%",
+      height: "calc(100% - 50px)",
+      marginTop: "10px"
+    });
+
+    let cams = 0;
+    Object.keys(game.roomItems).forEach(r => {
+      if (game.roomItems[r].includes("Video Camera")) cams++;
+    });
+
+    for (let j = 1; j <= 4; j++) {
+      const cell = document.createElement("div");
+      Object.assign(cell.style, {
+        background: "#111",
+        color: "#eee",
+        border: "1px solid #0f0",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "12px"
+      });
+      if (j <= cams) {
+        cell.style.backgroundImage = `url('${roomVisuals[game.ghostRoom]?.N || "Van_N.png"}')`;
+        cell.style.backgroundSize = "cover";
+      } else {
+        cell.textContent = "NO SIGNAL";
+      }
+      grid.appendChild(cell);
+    }
+    monitor.appendChild(grid);
+  }
+
   game.currentTurn++;
   checkTurnEvents();
 }
 
-function runVanBootSequence() {
-  const overlay = document.createElement("div");
-  overlay.id = "van-monitor";
-  Object.assign(overlay.style, {
-    position: "fixed", top: "0", left: "0",
-    width: "100vw", height: "100vh", background: "#000",
-    color: "#0f0", fontFamily: "monospace", fontSize: "18px",
-    padding: "20px", zIndex: "4000"
-  });
-  document.body.appendChild(overlay);
-
-  let content = ">C:/";
-  overlay.textContent = content;
-  let step = 0;
-  const funnyUsernames = [
-    "ghost_buster69","sp00kyLad","orbSlurper","saltDaddy",
-    "cameraGremlin","crucifixFan","vanGoblin","Ada4Lyfe",
-    "freezingTemps4u","bootLoopPhantom"
-  ];
-  const randomUser = funnyUsernames[Math.floor(Math.random() * funnyUsernames.length)];
-
-  function typeNext() {
-    switch (step) {
-      case 0:
-        content += "|";
-        overlay.textContent = content;
-        setTimeout(() => {
-          content = ">C:/boot ghost.os";
-          overlay.textContent = content;
-          step++;
-          setTimeout(typeNext, 1200);
-        }, 600);
-        break;
-      case 1:
-        overlay.style.color = "#fff";
-        overlay.style.textAlign = "center";
-        overlay.innerHTML =
-          "<h2 style='color:#0ff'>GhostOS Loading...</h2>" +
-          "<div style='width:200px;height:20px;border:1px solid #0ff;margin:20px auto;overflow:hidden'>" +
-          "<div id='boot-bar' style='width:0%;height:100%;background:#0ff'></div></div>";
-        let bar = overlay.querySelector("#boot-bar");
-        let width = 0;
-        const loadInterval = setInterval(() => {
-          width += 5;
-          bar.style.width = width + "%";
-          if (width >= 100) {
-            clearInterval(loadInterval);
-            step++;
-            setTimeout(typeNext, 500);
-          }
-        }, 120);
-        break;
-      case 2:
-        overlay.style.textAlign = "center";
-        overlay.style.color = "#0f0";
-        overlay.innerHTML =
-          "<h2>GhostOS Login</h2>" +
-          `<p>Username: ${randomUser}</p>` +
-          "<p>Password: ********</p>";
-        setTimeout(() => {
-          step++;
-          typeNext();
-        }, 1200);
-        break;
-      case 3:
-        showCameraViewer();
-        break;
-    }
-  }
-  typeNext();
-}
-
-function showCameraViewer() {
-  const overlay = document.getElementById("van-monitor") || document.createElement("div");
-  overlay.id = "van-monitor";
-  Object.assign(overlay.style, {
-    position: "fixed", top: "0", left: "0",
-    width: "100vw", height: "100vh", background: "#000",
-    color: "#fff", display: "grid", gridTemplateColumns: "1fr 1fr",
-    gridTemplateRows: "1fr 1fr", gap: "5px", zIndex: "4000"
-  });
-  document.body.appendChild(overlay);
-
-  overlay.innerHTML = "";
-  ["Cam 1","Cam 2","Cam 3","Cam 4"].forEach((c, i) => {
-    const camDiv = document.createElement("div");
-    Object.assign(camDiv.style, {
-      border: "1px solid #444", background: "#111", display: "flex",
-      justifyContent: "center", alignItems: "center", color: "#0f0"
-    });
-    camDiv.textContent = i === 0 ? "Live Feed: " + game.ghostRoom : "NO SIGNAL";
-    overlay.appendChild(camDiv);
-  });
-
-  const closeBtn = document.createElement("button");
-  Object.assign(closeBtn.style, {
-    position: "absolute", bottom: "10px", left: "50%",
-    transform: "translateX(-50%)", padding: "8px 16px",
-    background: "#222", color: "#eee", border: "1px solid #555", cursor: "pointer"
-  });
-  closeBtn.textContent = "Close Monitor";
-  closeBtn.onclick = () => document.body.removeChild(overlay);
-  overlay.appendChild(closeBtn);
-}
 
 /***********************
  === RESTART LOGIC FIXED ===
