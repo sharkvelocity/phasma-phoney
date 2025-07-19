@@ -35,16 +35,12 @@ button {
 
 /* === TITLE SCREEN === */
 #title-screen {
-  position: fixed;
-  top: 0; left: 0;
+  position: fixed; top: 0; left: 0;
   width: 100vw; height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  display: flex; justify-content: center; align-items: center;
   background: transparent;
   z-index: 1000;
-  opacity: 1;
-  transition: opacity 2s ease-in-out;
+  opacity: 1; transition: opacity 2s ease-in-out;
 }
 
 #title-screen img {
@@ -54,7 +50,7 @@ button {
 }
 
 @keyframes pulse {
-  0%, 100% { opacity: 0.9; transform: scale(1); }
+  0%,100% { opacity: 0.9; transform: scale(1); }
   50% { opacity: 1; transform: scale(1.04); }
 }
 
@@ -80,18 +76,15 @@ button {
 /* === MAIN SCENE LAYERS === */
 #main-scene {
   position: relative;
-  width: 100vw;
-  height: 100vh;
+  width: 100vw; height: 100vh;
   display: none;
   overflow: hidden;
   background: black;
 }
 
 #background, #lightning, #fog-layer, #orbCanvas {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute; top: 0; left: 0;
+  width: 100%; height: 100%;
 }
 
 #background {
@@ -100,22 +93,9 @@ button {
   background-position: center;
 }
 
-#lightning {
-  z-index: 3;
-  background: white;
-  opacity: 0;
-  pointer-events: none;
-}
-
-#fog-layer {
-  z-index: 4;
-  pointer-events: none;
-}
-
-#orbCanvas {
-  z-index: 5;
-  pointer-events: none;
-}
+#lightning { z-index: 3; background: white; opacity: 0; pointer-events: none; }
+#fog-layer { z-index: 4; pointer-events: none; }
+#orbCanvas { z-index: 5; pointer-events: none; }
 
 /* === HUD === */
 #hud {
@@ -140,8 +120,7 @@ button {
 }
 
 #sanity-bar {
-  position: absolute;
-  top: 0; left: 0;
+  position: absolute; top: 0; left: 0;
   height: 100%;
   background: #0f0;
   width: 100%;
@@ -150,8 +129,7 @@ button {
 
 #inventory-display {
   position: absolute;
-  top: 1%;
-  right: 1%;
+  top: 1%; right: 1%;
   background: rgba(0,0,0,0.5);
   padding: 0.4em 0.6em;
   border: 1px solid #444;
@@ -161,12 +139,12 @@ button {
   word-wrap: break-word;
 }
 
-/* === NARRATOR UI === */
+/* === NARRATOR UI (BOTTOM PANEL) === */
 #narrator-ui {
   position: absolute;
   bottom: 0; left: 0;
   width: 100%;
-  height: 40%;
+  height: 35%; /* slightly higher for mobile */
   background: rgba(0,0,0,0.4);
   backdrop-filter: blur(4px);
   display: none;
@@ -189,10 +167,7 @@ button {
   opacity: 0.85;
   transition: opacity 1s ease-in-out;
 }
-
-.log-entry.fade {
-  opacity: 0.4;
-}
+.log-entry.fade { opacity: 0.4; }
 
 #command-buttons {
   display: flex;
@@ -219,10 +194,8 @@ button {
 
 /* === LOADOUT SCREEN === */
 #loadout-screen {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
   background: rgba(0,0,0,0.85);
   display: none;
   justify-content: center;
@@ -298,16 +271,53 @@ button {
   cursor: pointer;
 }
 
-/* === GUESS POPUP === */
+/* === INVENTORY OVERLAY (CLEAN GRID) === */
+#inventory-temp {
+  background: rgba(15, 15, 15, 0.95);
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 90%;
+  width: 400px;
+  text-align: center;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
+}
+
+#inventory-temp h3 {
+  margin-bottom: 10px;
+  font-size: 18px;
+  color: #0ff;
+}
+
+#inventory-temp .inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 6px;
+  margin-bottom: 10px;
+}
+
+#inventory-temp button {
+  background: #222;
+  color: #eee;
+  border: 1px solid #555;
+  border-radius: 4px;
+  padding: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+#inventory-temp button:hover {
+  background: #333;
+  border-color: #0ff;
+}
+
+/* === GHOST GUESS POPUP === */
 #guess-popup {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw;
-  height: 100vh;
+  position: fixed; top: 0; left: 0;
+  width: 100vw; height: 100vh;
   background: rgba(0,0,0,0.8);
   display: none;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; align-items: center;
   z-index: 3000;
 }
 
@@ -348,29 +358,21 @@ footer {
   z-index: 3500;
 }
 
+/* === TEMP OVERLAYS === */
 #move-temp, #inventory-temp {
   z-index: 3000 !important;
   max-width: 90%;
   overflow-y: auto;
 }
 
-/* === MOBILE BUTTON POSITION FIX === */
+/* === MOBILE FIX: COMMAND BUTTONS HIGHER === */
 @media (max-width: 768px) {
   #narrator-ui {
-    height: auto;
-    min-height: 35%;
-    flex-direction: column-reverse; /* Buttons above log */
+    height: 45%; /* move buttons higher for small screens */
   }
-
-  #command-buttons {
-    order: -1;
-    padding: 0.5em;
-    margin-bottom: 0.5em;
-  }
-
-  #game-log {
-    max-height: 50vh;
-    overflow-y: auto;
+  #command-buttons button {
+    font-size: 14px;
+    flex: 1 1 45%;
   }
 }
 
@@ -645,7 +647,6 @@ function lookAround(){
  === INVENTORY OVERLAY ===
 ************************/
 function openInventoryOverlay() {
-  // ✅ Remove any existing overlay before creating a new one
   const existing = document.getElementById("inventory-temp");
   if (existing) document.body.removeChild(existing);
 
@@ -654,31 +655,25 @@ function openInventoryOverlay() {
   c.style.position = "fixed";
   c.style.top = "50%";
   c.style.left = "50%";
-  c.style.transform = "translate(-50%,-50%)";
-  c.style.background = "#111";
-  c.style.padding = "10px";
-  c.style.maxHeight = "70%";
-  c.style.overflowY = "auto";
-  c.style.maxWidth = "90%";
+  c.style.transform = "translate(-50%, -50%)";
+  c.style.zIndex = "3000";
 
-  let html = "<h3>Inventory</h3>";
+  let html = "<h3>Inventory</h3><div class='inventory-grid'>";
 
   game.inventory.forEach(i => {
-    html += `<button onclick="inspectItem('${i}')">Inspect: ${i}</button>`;
-    html += `<button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>`;
-    html += `<button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use: ${i}</button>`;
+    html += `
+      <button onclick="inspectItem('${i}')">Inspect: ${i}</button>
+      <button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>
+      <button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use: ${i}</button>
+    `;
   });
 
-  const roomInv = game.roomItems && game.roomItems[game.playerRoom] || [];
-  roomInv.forEach(i => {
-    html += `<button onclick="pickItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Pick up: ${i}</button>`;
-  });
-
-  html += "<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
+  html += "</div><button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
 
   c.innerHTML = html;
   document.body.appendChild(c);
 }
+
 
 
 function inspectItem(i){
