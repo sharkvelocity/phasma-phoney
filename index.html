@@ -420,13 +420,15 @@
     <!-- Narrator UI (Bottom Panel with Vertical Command Buttons on Right) -->
     <div id="narrator-ui">
       <div id="game-log"></div>
-      <div id="command-buttons">
-        <button data-cmd="move">Move</button>
-        <button data-cmd="look">Look Around</button>
-        <button data-cmd="inventory">Inventory</button>
-        <button data-cmd="guess">Ghost Guess</button>
-        <button data-cmd="van">Return to Van</button>
-      </div>
+     <div id="command-buttons">
+  <button data-cmd="move">Move</button>
+  <button data-cmd="look">Look Around</button>
+  <button data-cmd="inventory">Inventory</button>
+  <button data-cmd="guess">Ghost Guess</button>
+  <button data-cmd="van">Check Gear</button>
+  <button data-cmd="monitor">Van Monitor</button>
+</div>
+
     </div>
   </div>
 
@@ -578,18 +580,31 @@ function assignMimicForm(){
   game.nextMimicShift=game.currentTurn+3+Math.floor(Math.random()*4);
 }
 
-function renderHUD(){
-  document.getElementById("hud-location").textContent=game.playerRoom;
-  document.getElementById("hud-weather").textContent=game.weather || "--";
-  document.getElementById("hud-turns").textContent=game.currentTurn;
-  document.getElementById("held-items-display").textContent=game.inventory.join(", ")||"None";
-  if(game.inventory.includes("Thermometer") && game.playerRoom!=="Van"){
-    const t = game.playerRoom===game.ghostRoom ? 
-      (Math.random()<0.3?-5:2+Math.random()*3) : 15+Math.random()*5;
-    document.getElementById("hud-temp").textContent=t.toFixed(1)+"°C";
-  } else document.getElementById("hud-temp").textContent="--°C";
+function renderHUD() {
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-weather").textContent = game.weather || "--";
+  document.getElementById("hud-turns").textContent = game.currentTurn;
+  document.getElementById("held-items-display").textContent = game.inventory.join(", ") || "None";
+
+  // ✅ Dynamic button label (van vs outside)
+  const vanBtn = document.querySelector("#command-buttons button[data-cmd='van']");
+  if (game.playerRoom === "Van") {
+    vanBtn.textContent = "Check Gear";
+  } else {
+    vanBtn.textContent = "Return to Van";
+  }
+
+  // ✅ Update temp (as before)
+  if (game.inventory.includes("Thermometer") && game.playerRoom !== "Van") {
+    const t = game.playerRoom === game.ghostRoom
+      ? (Math.random() < 0.3 ? -5 : 2 + Math.random() * 3)
+      : 15 + Math.random() * 5;
+    document.getElementById("hud-temp").textContent = t.toFixed(1) + "°C";
+  } else document.getElementById("hud-temp").textContent = "--°C";
+
   updateSanityBar();
 }
+
 
 function updateBackground(d="N"){
   const v=roomVisuals[game.playerRoom]||roomVisuals["Van"];
@@ -602,16 +617,36 @@ function updateBackground(d="N"){
 /***********************
  === COMMAND HANDLER ===
 ************************/
-function handleCommand(c){
-  switch(c){
-    case"move":openMoveOverlay();break;
-    case"look":lookAround();break;
-    case"inventory":openInventoryOverlay();break;
-    case"guess":openGuess();break;
-    case"van":openVanMenu();break;
-    default:logToGame("Unknown command.");break;
+function handleCommand(c) {
+  switch (c) {
+    case "move":
+      openMoveOverlay();
+      break;
+    case "look":
+      lookAround();
+      break;
+    case "inventory":
+      openInventoryOverlay();
+      break;
+    case "guess":
+      openGuess();
+      break;
+    case "van":
+      openVanMenu();
+      break;
+    case "monitor":
+      if (game.playerRoom !== "Van") {
+        logToGame("You need to be in the van to use the monitor.");
+      } else {
+        checkVanMonitor();
+      }
+      break;
+    default:
+      logToGame("Unknown command.");
+      break;
   }
 }
+
 
 /***********************
  === MOVEMENT & LOOK ===
