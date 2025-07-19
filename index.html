@@ -813,6 +813,54 @@ function resetAndRestart(){
   resetGame();
   showLoadout();
 }
+// === SHOW LOADOUT FUNCTION ===
+let tempHeld = [];
+let tempVan = [...allLoadoutItems];
+
+function showLoadout() {
+  tempHeld = [];
+  tempVan = [...allLoadoutItems];
+
+  const heldList = document.getElementById("held-list");
+  const vanList = document.getElementById("van-list");
+  heldList.innerHTML = "";
+  vanList.innerHTML = "";
+
+  function renderLoadout() {
+    heldList.innerHTML = tempHeld
+      .map(
+        (i) =>
+          `<button class="item-button" onclick="removeHeldItem('${i}')">${i}</button>`
+      )
+      .join("");
+    vanList.innerHTML = tempVan
+      .map(
+        (i) =>
+          `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`
+      )
+      .join("");
+    document.getElementById("confirm-loadout").disabled = tempHeld.length === 0;
+  }
+
+  window.addHeldItem = function (item) {
+    if (tempHeld.length >= 3) {
+      alert("You can only hold 3 items.");
+      return;
+    }
+    tempHeld.push(item);
+    tempVan = tempVan.filter((v) => v !== item);
+    renderLoadout();
+  };
+
+  window.removeHeldItem = function (item) {
+    tempVan.push(item);
+    tempHeld = tempHeld.filter((h) => h !== item);
+    renderLoadout();
+  };
+
+  renderLoadout();
+  document.getElementById("loadout-screen").style.display = "flex";
+}
 
 /***********************
  === FINAL EVENT LISTENERS ===
