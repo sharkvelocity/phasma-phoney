@@ -6,7 +6,6 @@
   <title>Phasma‑Phoney v2.4 — Master Build (Full Systems, Mobile Ready)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="Phasma‑Phoney: Turn-based ghost investigation horror with 25 ghosts, cursed items, mimic logic, and full hunt system." />
-
   <style>
     html, body {
       margin: 0;
@@ -22,8 +21,6 @@
       user-select: none;
       touch-action: manipulation;
     }
-
-    /* === RESPONSIVE TEXT & BUTTONS === */
     body, button, #hud, #game-log {
       font-size: calc(10px + 0.8vw);
     }
@@ -33,8 +30,6 @@
       padding: calc(4px + 0.4vw) calc(6px + 0.6vw);
       border-radius: 4px;
     }
-
-    /* === TITLE SCREEN === */
     #title-screen {
       position: fixed; top: 0; left: 0;
       width: 100vw; height: 100vh;
@@ -65,8 +60,6 @@
       transition: all 0.3s ease;
     }
     #startButton:hover { background: #222; border-color: #888; }
-
-    /* === MAIN SCENE LAYERS === */
     #main-scene {
       position: relative;
       width: 100vw; height: 100vh;
@@ -75,16 +68,13 @@
       background: black;
     }
     #background, #lightning, #fog-layer, #orbCanvas {
-      position: absolute;
-      top: 0; left: 0;
+      position: absolute; top: 0; left: 0;
       width: 100%; height: 100%;
     }
     #background { z-index: 1; background-size: cover; background-position: center; }
     #lightning { z-index: 3; background: white; opacity: 0; pointer-events: none; }
     #fog-layer { z-index: 4; pointer-events: none; }
     #orbCanvas { z-index: 5; pointer-events: none; }
-
-    /* === HUD (Responsive) === */
     #hud {
       position: absolute;
       top: 1%; left: 1%;
@@ -93,8 +83,7 @@
       border: 1px solid #444;
       font-size: calc(10px + 0.5vw);
       z-index: 10;
-      max-width: 45%;
-      word-wrap: break-word;
+      max-width: 45%; word-wrap: break-word;
     }
     #sanity-bar-container {
       width: calc(60px + 5vw); height: 10px;
@@ -117,8 +106,6 @@
       max-width: 40%;
       word-wrap: break-word;
     }
-
-    /* === NARRATOR UI (Bottom Panel) === */
     #narrator-ui {
       position: absolute;
       bottom: 0; left: 0;
@@ -152,8 +139,6 @@
       border: 1px solid #555; cursor: pointer;
     }
     #command-buttons button:hover { background: #333; }
-
-    /* === LOADOUT SCREEN (Responsive) === */
     #loadout-screen {
       position: fixed; top: 0; left: 0;
       width: 100vw; height: 100vh;
@@ -184,15 +169,12 @@
       cursor: pointer; font-size: calc(9px + 0.4vw);
     }
     .item-button:hover { background: #333; }
-
-    /* === GUESS POPUP === */
     #guess-popup {
       position: fixed; top: 0; left: 0;
       width: 100vw; height: 100vh;
       background: rgba(0,0,0,0.8);
       display: none;
-      justify-content: center;
-      align-items: center;
+      justify-content: center; align-items: center;
       z-index: 3000;
     }
     #guess-list {
@@ -209,8 +191,6 @@
       font-size: calc(9px + 0.5vw);
     }
     #guess-list button:hover { background: #333; }
-
-    /* === FOOTER === */
     footer {
       position: fixed;
       bottom: 0; width: 100%;
@@ -220,8 +200,6 @@
       padding: 2px 0;
       z-index: 3500;
     }
-
-    /* === TEMP OVERLAYS === */
     #move-temp, #inventory-temp {
       z-index: 3000 !important;
       max-width: 90%;
@@ -230,21 +208,15 @@
   </style>
 </head>
 <body>
-  <!-- === TITLE SCREEN === -->
   <div id="title-screen">
     <img src="logo.png" alt="Phasma-Phoney Logo" />
     <button id="startButton">Start New Game</button>
   </div>
-
-  <!-- === MAIN SCENE === -->
   <div id="main-scene">
-    <!-- Background Layers -->
     <div id="background"></div>
     <div id="lightning"></div>
     <canvas id="fog-layer"></canvas>
     <canvas id="orbCanvas"></canvas>
-
-    <!-- HUD (Top Left) -->
     <div id="hud">
       <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
       <div>Turns: <span id="hud-turns">0</span></div>
@@ -252,14 +224,10 @@
       <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
       <div>Temp: <span id="hud-temp">--°C</span></div>
     </div>
-
-    <!-- Inventory Display (Top Right) -->
     <div id="inventory-display">
       <div>Held:</div>
       <div id="held-items-display">None</div>
     </div>
-
-    <!-- Narrator UI (Bottom) -->
     <div id="narrator-ui">
       <div id="game-log"></div>
       <div id="command-buttons">
@@ -271,8 +239,6 @@
       </div>
     </div>
   </div>
-
-  <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen">
     <div id="loadout-container">
       <h3>Select Your Starting Loadout (Max 3 Items)</h3>
@@ -281,13 +247,7 @@
       <button id="confirm-loadout">Confirm</button>
     </div>
   </div>
-
-  <!-- === GHOST GUESS POPUP === -->
-  <div id="guess-popup">
-    <div id="guess-list"></div>
-  </div>
-
-  <!-- === FOOTER === -->
+  <div id="guess-popup"><div id="guess-list"></div></div>
   <footer>Phasma‑Phoney v2.4 — Master Build (Mobile & Full Systems)</footer>
 <script>
 "use strict";
@@ -356,8 +316,7 @@ const mapConnections = {
   LivingRoom:["Foyer","DiningRoom","Garage","KidsBedroom","MasterBedroom"],
   Kitchen:["Foyer","DiningRoom","Basement"],
   DiningRoom:["Kitchen","LivingRoom"],
-  Basement:["Kitchen"], Garage:["LivingRoom"],
-  Bathroom:["Foyer"]
+  Basement:["Kitchen"], Garage:["LivingRoom"], Bathroom:["Foyer"]
 };
 
 /***********************
@@ -485,17 +444,18 @@ function lookAround(){
   game.currentTurn++;
   if(game.playerRoom===game.ghostRoom){
     logToGame("You feel an eerie presence...");
-    // Salt + UV footprints logic
+    // Salt footprints + UV Light trigger
     if(game.roomItems[game.playerRoom] && game.roomItems[game.playerRoom].includes("Salt")){
-      if(Math.random()<0.5){ // ghost may step in salt
+      if(Math.random()<0.5){
         logToGame("You notice disturbed salt... Try using a UV Light.");
-        game.roomItems[game.playerRoom].push("Footprints");
-        setTimeout(()=>{ 
+        if(!game.roomItems[game.playerRoom].includes("Footprints"))
+          game.roomItems[game.playerRoom].push("Footprints");
+        setTimeout(()=>{
           if(game.roomItems[game.playerRoom]){
             game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom].filter(x=>x!=="Footprints");
             logToGame("The footprints have faded.");
           }
-        }, 3*1000*game.currentTurn); // vanish after ~3 turns (approx turn timing)
+        },3000*3); // ~3 turns worth
       }
     }
     // Onryo candle snuffing
@@ -506,9 +466,7 @@ function lookAround(){
       }
     }
     if(game.ghost==="TheMimic"||game.mimicForm==="TheMimic")logToGame("Fake orbs shimmer briefly.");
-  } else {
-    logToGame("Nothing unusual.");
-  }
+  } else logToGame("Nothing unusual.");
   renderHUD(); checkTurnEvents();
 }
 
@@ -541,10 +499,10 @@ function inspectItem(i){
   let desc="Standard investigation gear.";
   if(cursedItemDescriptions[i])desc=cursedItemDescriptions[i];
   if(i==="Crucifix")desc="Placed to prevent hunts. 2 uses.";
-  if(i==="Camera"||i==="Video Camera")desc="Used to detect orbs via night vision.";
-  if(i==="UV Light")desc="Reveals fingerprints or footprints if salt is present.";
-  if(i==="Salt")desc="Sprinkle on the ground to reveal ghost footprints when UV used.";
-  if(i==="Motion Sensor")desc="Alerts you in the van if triggered by ghost movement.";
+  if(i==="Camera"||i==="Video Camera")desc="Detects orbs via night vision.";
+  if(i==="UV Light")desc="Reveals fingerprints or footprints (salt needed).";
+  if(i==="Salt")desc="Sprinkle to reveal footprints with UV.";
+  if(i==="Motion Sensor")desc="Alerts you in van when ghost triggers it.";
   if(i==="Candle")desc="Prevents Onryo hunts while lit.";
   logToGame("Inspecting "+i+": "+desc);
 }
@@ -568,7 +526,7 @@ function pickItem(i){
 }
 
 /***********************
- === ITEM USE & PASSIVE ITEMS ===
+ === ITEM USE (ALL ITEMS) ===
 ************************/
 const cursedItemList=["Ouija Board","Tarot Cards","Music Box","Voodoo Doll","Haunted Mirror","Summoning Circle","Monkey Paw"];
 const cursedItemDescriptions={
@@ -667,7 +625,7 @@ function handleCursedItem(i){
 }
 
 /***********************
- === TURN EVENTS, HUNT, PASSIVE SENSOR LOGIC ===
+ === TURN EVENTS, MIMIC, HUNT, PASSIVE SENSOR LOGIC ===
 ************************/
 function checkTurnEvents(){
   if(game.ghost==="TheMimic" && game.currentTurn>=game.nextMimicShift){
@@ -681,7 +639,7 @@ function checkTurnEvents(){
     }
   } else {game.sanity -=1;}
   
-  // Motion sensor trigger alerts in van
+  // Motion sensor alerts if in van
   if(game.playerRoom==="Van"){
     Object.keys(game.roomItems).forEach(r=>{
       if(game.roomItems[r].includes("Motion Sensor") && Math.random()<0.2){
@@ -697,7 +655,7 @@ function checkTurnEvents(){
 function attemptHunt(){
   if(game.smudgeActive>0){game.smudgeActive--;return;}
   if(game.huntCooldown>0){game.huntCooldown--;return;}
-  // Onryo candle logic: if candle present, Onryo won't hunt
+  // Onryo won't hunt if any candle lit
   if(game.ghost==="Onryo" && Object.values(game.roomItems).some(a=>a.includes("Candle")))return;
   if(game.sanity<30 && Math.random()<0.25)startHunt();
 }
@@ -721,6 +679,9 @@ function flashRed(){
   l.style.background="red"; l.style.opacity=0.6;
   setTimeout(()=>{l.style.opacity=0;},600);
 }
+</script>
+<script>
+"use strict";
 
 /***********************
  === AMBIENT VISUALS & ORBS ===
@@ -766,9 +727,8 @@ function initOrbs(){
   let o=[];
   function spawn(){
     if(game.cameraActive && o.length<10){
-      // Only spawn if ghost has Orbs evidence or is The Mimic
       const g=(game.ghost==="TheMimic"?game.mimicForm:game.ghost);
-      if(ghostProfiles[g].evidence.includes("Orbs")||game.ghost==="TheMimic"){
+      if(ghostProfiles[g].evidence.includes("Orbs") || game.ghost==="TheMimic"){
         o.push({x:Math.random()*c.width,y:Math.random()*c.height,
           r:Math.random()*3+2,alpha:Math.random(),fade:Math.random()*0.02+0.005});
       }
@@ -778,7 +738,8 @@ function initOrbs(){
     x.clearRect(0,0,c.width,c.height);
     if(game.cameraActive){
       for(let i=0;i<o.length;i++){
-        const b=o[i]; b.alpha+=b.fade;
+        const b=o[i];
+        b.alpha+=b.fade;
         if(b.alpha<=0||b.alpha>=1)b.fade*=-1;
         b.y-=0.2;
         x.beginPath();
@@ -798,9 +759,6 @@ window.addEventListener("resize",()=>{
   orb.width=window.innerWidth; orb.height=window.innerHeight;
   fog.width=window.innerWidth; fog.height=window.innerHeight;
 });
-</script>
-<script>
-"use strict";
 
 /***********************
  === GHOST GUESS & ENDGAME ===
