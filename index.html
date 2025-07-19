@@ -932,6 +932,8 @@ function takeItemFromVan(i) {
 /***********************
  === VAN MONITOR FULL BOOT (1x PER INVESTIGATION) ===
 ************************/
+let vanMonitorBooted = false;
+
 function openVanMonitor() {
   if (document.getElementById("van-monitor")) return;
 
@@ -947,7 +949,7 @@ function openVanMonitor() {
     border: "2px solid #0f0",
     color: "#0f0",
     fontFamily: "monospace",
-    fontSize: "14px",
+    fontSize: "16px",
     padding: "10px",
     zIndex: "4000",
     overflow: "hidden",
@@ -958,40 +960,110 @@ function openVanMonitor() {
       onclick="document.body.removeChild(document.getElementById('van-monitor'))">X</button>`;
   document.body.appendChild(monitor);
 
-  // ✅ Boot Animation
-  const text = document.getElementById("monitor-text");
-  const funnyUsers = [
-    "GhostLover99", "VanCamStan", "BooHunter3000", "Orbs4Life",
-    "CursedCandle", "PhasmaFan88", "I_Luv_Smudge", "CamperGhost",
-    "SpookySimp", "DeadNotClickbait"
-  ];
-  const user = funnyUsers[Math.floor(Math.random() * funnyUsers.length)];
+  if (!vanMonitorBooted) {
+    vanMonitorBooted = true;
+    runBootSequence();
+  } else {
+    showCameraGrid();
+  }
 
-  let steps = [
-    ">C:/", // typing cursor effect
-    "boot ghost.os", // replaced by logo below
-    "Loading...",
-    `[Login]\nUsername: ${user}\nPassword: ********`
-  ];
+  function runBootSequence() {
+    const text = document.getElementById("monitor-text");
+    let cursorBlink = 0;
 
-  let i = 0;
-  function nextStep() {
-    if (i === 1) {
-      // ✅ Show logo instead of ghost.os text
-      text.innerHTML += `\n<img src="logo.png" style="max-width:120px;display:block;margin:5px auto;">\n`;
-    } else {
-      text.innerHTML += steps[i] + "\n";
+    function blinkCursor() {
+      text.textContent = `>C:/` + (cursorBlink % 2 === 0 ? "|" : " ");
+      cursorBlink++;
+      if (cursorBlink < 6) {
+        setTimeout(blinkCursor, 500);
+      } else {
+        typeBootCommand();
+      }
     }
-    i++;
-    if (i < steps.length) {
-      setTimeout(nextStep, 1000);
-    } else {
-      setTimeout(showCameraGrid, 1500);
+
+    function typeBootCommand() {
+      let cmd = ">C:/boot ghost.os";
+      let i = 0;
+      text.textContent = "";
+      const typer = setInterval(() => {
+        text.textContent += cmd[i];
+        i++;
+        if (i >= cmd.length) {
+          clearInterval(typer);
+          setTimeout(showLogoLoading, 800);
+        }
+      }, 80);
+    }
+
+    function showLogoLoading() {
+      const text = document.getElementById("monitor-text");
+      text.innerHTML = `
+        <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;">
+          <img src="logo.png" style="max-width:60%;margin-bottom:20px;">
+          <div style="width:60%;height:20px;border:1px solid #0f0;">
+            <div id="boot-bar" style="width:0%;height:100%;background:#0f0"></div>
+          </div>
+        </div>`;
+      let bar = document.getElementById("boot-bar");
+      let width = 0;
+      const loadInterval = setInterval(() => {
+        width += 4;
+        bar.style.width = width + "%";
+        if (width >= 100) {
+          clearInterval(loadInterval);
+          setTimeout(showLoginScreen, 800);
+        }
+      }, 100);
+    }
+
+    function showLoginScreen() {
+      const text = document.getElementById("monitor-text");
+      const funnyUsers = [
+        "ghost_buster69","sp00kyLad","orbSlurper","saltDaddy",
+        "cameraGremlin","crucifixFan","vanGoblin","Ada4Lyfe",
+        "freezingTemps4u","bootLoopPhantom"
+      ];
+      const user = funnyUsers[Math.floor(Math.random() * funnyUsers.length)];
+
+      text.style.textAlign = "center";
+      text.style.color = "#0f0";
+      text.innerHTML = `<h2>GhostOS Login</h2>
+        <p id="login-username">Username: </p>
+        <p id="login-password">Password: </p>`;
+
+      let uField = document.getElementById("login-username");
+      let pField = document.getElementById("login-password");
+
+      let i = 0;
+      function typeUsername() {
+        if (i < user.length) {
+          uField.textContent += user[i];
+          i++;
+          setTimeout(typeUsername, 100);
+        } else {
+          typePassword();
+        }
+      }
+
+      let pCount = 0;
+      function typePassword() {
+        if (pCount < 8) {
+          pField.textContent += "*";
+          pCount++;
+          setTimeout(typePassword, 150);
+        } else {
+          setTimeout(showCameraGrid, 1200);
+        }
+      }
+      typeUsername();
     }
   }
-  nextStep();
 
   function showCameraGrid() {
+    const text = document.getElementById("monitor-text");
+    text.style.textAlign = "left";
+    text.innerHTML = "";
+
     const grid = document.createElement("div");
     Object.assign(grid.style, {
       display: "grid",
@@ -1015,25 +1087,7 @@ function openVanMonitor() {
         color: "#eee",
         border: "1px solid #0f0",
         display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        fontSize: "12px"
-      });
-      if (j <= cams) {
-        cell.style.backgroundImage = `url('${roomVisuals[game.ghostRoom]?.N || "Van_N.png"}')`;
-        cell.style.backgroundSize = "cover";
-      } else {
-        cell.textContent = "NO SIGNAL";
-      }
-      grid.appendChild(cell);
-    }
-    monitor.appendChild(grid);
-  }
-
-  game.currentTurn++;
-  checkTurnEvents();
-}
-
+        alig
 
 /***********************
  === RESTART LOGIC FIXED ===
