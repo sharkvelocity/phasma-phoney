@@ -204,15 +204,56 @@ function randomFromArray(a){return a[Math.floor(Math.random()*a.length)];}
 function updateSanityBar(){const b=document.getElementById("sanity-bar");b.style.width=game.sanity+"%";b.style.background=game.sanity>66?"#0f0":game.sanity>33?"#ff0":"#f00";}
 
 /***********************
- === RESET & START ===
+/***********************
+ === RESET & START GAME (FIXED) ===
 ************************/
-function resetGame(){game.ghost=null;game.ghostRoom=null;game.playerRoom="Van";game.inventory=[];game.vanStock=[...allLoadoutItems];game.selectedEvidence.clear();game.currentTurn=0;game.sanity=100;game.weather=null;game.mimicForm=null;game.nextMimicShift=0;game.huntCooldown=0;game.smudgeActive=0;game.placedCrucifix={};game.roomItems={};game.usedCursedItems={};updateSanityBar();}
-function startInvestigation(){document.getElementById("main-scene").style.display="block";document.getElementById("narrator-ui").style.display="flex";document.getElementById("game-log").innerHTML="";game.weather=randomFromArray(possibleWeather);game.ghost=randomFromArray(Object.keys(ghostProfiles));if(game.ghost==="TheMimic")assignMimicForm();game.ghostRoom=randomFromArray(Object.keys(roomVisuals).filter(r=>r!=="Van"));logToGame("You are in the van. Weather is "+game.weather.toLowerCase()+".");renderHUD();updateBackground();bootVisuals();}
-function assignMimicForm(){const g=Object.keys(ghostProfiles).filter(x=>x!=="TheMimic");game.mimicForm=randomFromArray(g);game.nextMimicShift=game.currentTurn+3+Math.floor(Math.random()*4);}
-function renderHUD(){document.getElementById("hud-location").textContent=game.playerRoom;document.getElementById("hud-weather").textContent=game.weather||"--";document.getElementById("hud-turns").textContent=game.currentTurn;document.getElementById("held-items-display").textContent=game.inventory.join(", ")||"None";updateSanityBar();}
-function updateBackground(){document.getElementById("background").style.backgroundImage=`url('${roomVisuals[game.playerRoom].N}')`;}
+function resetGame() {
+  game.ghost = null;
+  game.ghostRoom = null;
+  game.playerRoom = "Van";
+  game.inventory = [];
+  game.vanStock = [...allLoadoutItems];
+  game.selectedEvidence.clear();
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.weather = null;
+  game.mimicForm = null;
+  game.nextMimicShift = 0;
+  game.huntCooldown = 0;
+  game.smudgeActive = 0;
+  game.placedCrucifix = {};
+  game.roomItems = {};
+  game.usedCursedItems = {};
+  vanMonitorBooted = false; // ✅ reset monitor boot state
+  updateSanityBar();
+  renderHUD();
+}
 
-"use strict";
+function startInvestigation() {
+  document.getElementById("main-scene").style.display = "block";
+  document.getElementById("narrator-ui").style.display = "flex";
+  document.getElementById("game-log").innerHTML = "";
+
+  game.weather = randomFromArray(possibleWeather);
+  game.ghost = randomFromArray(Object.keys(ghostProfiles));
+  if (game.ghost === "TheMimic") assignMimicForm();
+
+  game.ghostRoom = randomFromArray(
+    Object.keys(roomVisuals).filter(r => r !== "Van")
+  );
+
+  logToGame("You are in the van. Weather is " + game.weather.toLowerCase() + ".");
+  renderHUD();
+  updateBackground();
+  bootVisuals();
+}
+
+function resetAndRestart() {
+  const e = document.getElementById("end-game");
+  if (e) document.body.removeChild(e);
+  resetGame();
+  showLoadout(); // ✅ properly triggers the loadout screen again
+}
 
 /***********************
  === COMMAND HANDLER ===
@@ -348,15 +389,9 @@ function startHunt(){
 }
 function flashRed(){const l=document.getElementById("lightning");l.style.background="red";l.style.opacity=0.6;setTimeout(()=>{l.style.opacity=0;},600);}
 
-/***********************
- === NEXT: Van Monitor Boot + Guess + Endgame ===
-************************/
-
 "use strict";
 
-/***********************
- === VAN MONITOR FULL BOOT (1x PER INVESTIGATION) ===
-************************/
+
 /***********************
  === VAN MONITOR FULL BOOT (1x PER INVESTIGATION) ===
 ************************/
@@ -608,33 +643,41 @@ function showLoadout(){
 }
 
 /***********************
- === FINAL EVENT LISTENERS ===
+ === FINAL EVENT LISTENERS (START BUTTON FIXED) ===
 ************************/
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
   resetGame();
-  const startBtn=document.getElementById("startButton");
-  const confirmBtn=document.getElementById("confirm-loadout");
 
-  startBtn.addEventListener("click",()=>{
-    startBtn.disabled=true;
-    const t=document.getElementById("title-screen");
-    t.style.opacity="0";
-    setTimeout(()=>{t.style.display="none";showLoadout();},1500);
+  const startBtn = document.getElementById("startButton");
+  const confirmBtn = document.getElementById("confirm-loadout");
+
+  startBtn.addEventListener("click", () => {
+    startBtn.disabled = true; // ✅ prevents double-click issue
+    const t = document.getElementById("title-screen");
+    t.style.opacity = "0";
+    setTimeout(() => {
+      t.style.display = "none";
+      showLoadout();
+    }, 1500);
   });
 
-  confirmBtn.addEventListener("click",()=>{
-    if(typeof tempHeld==="undefined")tempHeld=[];
-    if(typeof tempVan==="undefined")tempVan=[...allLoadoutItems];
-    game.inventory=[...tempHeld,"Notebook","Lighter"];
-    game.vanStock=[...tempVan];
-    document.getElementById("loadout-screen").style.display="none";
+  confirmBtn.addEventListener("click", () => {
+    if (typeof tempHeld === "undefined") tempHeld = [];
+    if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
+
+    game.inventory = [...tempHeld, "Notebook", "Lighter"];
+    game.vanStock = [...tempVan];
+
+    document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
     window.dispatchEvent(new Event("resize"));
   });
 
-  document.querySelectorAll("#command-buttons button").forEach((b)=>{
-    b.addEventListener("click",()=>handleCommand(b.dataset.cmd));
-  });
+  document
+    .querySelectorAll("#command-buttons button")
+    .forEach((b) => {
+      b.addEventListener("click", () => handleCommand(b.dataset.cmd));
+    });
 });
 </script>
 
