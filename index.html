@@ -212,7 +212,6 @@ function assignMimicForm(){const g=Object.keys(ghostProfiles).filter(x=>x!=="The
 function renderHUD(){document.getElementById("hud-location").textContent=game.playerRoom;document.getElementById("hud-weather").textContent=game.weather||"--";document.getElementById("hud-turns").textContent=game.currentTurn;document.getElementById("held-items-display").textContent=game.inventory.join(", ")||"None";updateSanityBar();}
 function updateBackground(){document.getElementById("background").style.backgroundImage=`url('${roomVisuals[game.playerRoom].N}')`;}
 
-<script>
 "use strict";
 
 /***********************
@@ -352,8 +351,7 @@ function flashRed(){const l=document.getElementById("lightning");l.style.backgro
 /***********************
  === NEXT: Van Monitor Boot + Guess + Endgame ===
 ************************/
-</script>
-<script>
+
 "use strict";
 
 /***********************
