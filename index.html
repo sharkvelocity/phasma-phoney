@@ -522,27 +522,42 @@ function lookAround(){
 /***********************
  === INVENTORY OVERLAY ===
 ************************/
-function openInventoryOverlay(){
-  const c=document.createElement("div");
-  c.id="inventory-temp";
-  c.style.position="fixed"; c.style.top="50%"; c.style.left="50%";
-  c.style.transform="translate(-50%,-50%)";
-  c.style.background="#111"; c.style.padding="10px";
-  c.style.maxHeight="70%"; c.style.overflowY="auto";
-  c.style.maxWidth="90%";
-  let html="<h3>Inventory</h3>";
-  game.inventory.forEach(i=>{
-    html+=`<button onclick="inspectItem('${i}')">Inspect: ${i}</button>`;
-    html+=`<button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>`;
-    html+=`<button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use: ${i}</button>`;
+function openInventoryOverlay() {
+  // ✅ Remove any existing overlay before creating a new one
+  const existing = document.getElementById("inventory-temp");
+  if (existing) document.body.removeChild(existing);
+
+  const c = document.createElement("div");
+  c.id = "inventory-temp";
+  c.style.position = "fixed";
+  c.style.top = "50%";
+  c.style.left = "50%";
+  c.style.transform = "translate(-50%,-50%)";
+  c.style.background = "#111";
+  c.style.padding = "10px";
+  c.style.maxHeight = "70%";
+  c.style.overflowY = "auto";
+  c.style.maxWidth = "90%";
+
+  let html = "<h3>Inventory</h3>";
+
+  game.inventory.forEach(i => {
+    html += `<button onclick="inspectItem('${i}')">Inspect: ${i}</button>`;
+    html += `<button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>`;
+    html += `<button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use: ${i}</button>`;
   });
-  const roomInv=game.roomItems && game.roomItems[game.playerRoom]||[];
-  roomInv.forEach(i=>{
-    html+=`<button onclick="pickItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Pick up: ${i}</button>`;
+
+  const roomInv = game.roomItems && game.roomItems[game.playerRoom] || [];
+  roomInv.forEach(i => {
+    html += `<button onclick="pickItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Pick up: ${i}</button>`;
   });
-  html+="<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
-  c.innerHTML=html; document.body.appendChild(c);
+
+  html += "<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
+
+  c.innerHTML = html;
+  document.body.appendChild(c);
 }
+
 
 function inspectItem(i){
   let desc="Standard investigation gear.";
