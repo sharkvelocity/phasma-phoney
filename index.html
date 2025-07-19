@@ -1090,15 +1090,24 @@ function openVanMonitor() {
         alig
 
 /***********************
- === RESTART LOGIC FIXED ===
+ === RESTART LOGIC (FIXED) ===
 ************************/
 function resetAndRestart() {
   const e = document.getElementById("end-game");
   if (e) document.body.removeChild(e);
+
+  // ✅ Ensure van monitor resets between investigations
   vanMonitorBooted = false;
+
+  // ✅ Reset full game state
   resetGame();
+
+  // ✅ Bring back the loadout selection screen
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("narrator-ui").style.display = "none";
   showLoadout();
 }
+
 /***********************
  === MOVEMENT & LOOK LOGIC ===
 ************************/
