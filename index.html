@@ -1,371 +1,408 @@
-<!-- === PHASMA‑PHONEY v2.4 — MASTER BUILD (FULL SYSTEMS, MOBILE READY) === -->
+<!-- === PHASMA‑PHONEY v2.5 — MASTER BUILD (FULL SYSTEMS, MOBILE READY, VAN FIXED) === -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Phasma‑Phoney v2.4 — Master Build (Full Systems, Mobile Ready)</title>
+  <title>Phasma‑Phoney v2.5 — Master Build</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="description" content="Phasma‑Phoney: Turn-based ghost investigation horror with 25 ghosts, cursed items, mimic logic, and full hunt system." />
   <style>
-html, body {
-  margin: 0;
-  padding: 0;
-  width: 100vw;
-  height: 100vh;
-  background: black;
-  color: #eee;
-  font-family: monospace, sans-serif;
-  overflow: hidden;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
-  touch-action: manipulation;
-}
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background: black;
+      color: #eee;
+      font-family: monospace, sans-serif;
+      overflow: hidden;
+      -webkit-user-select: none;
+      -ms-user-select: none;
+      user-select: none;
+      touch-action: manipulation;
+    }
 
-body, button, #hud, #game-log {
-  font-size: calc(10px + 0.8vw);
-}
+    body, button, #hud, #game-log {
+      font-size: calc(10px + 0.8vw);
+    }
 
-button {
-  min-width: 60px;
-  min-height: 30px;
-  padding: calc(4px + 0.4vw) calc(6px + 0.6vw);
-  border-radius: 4px;
-}
+    button {
+      min-width: 60px;
+      min-height: 30px;
+      padding: calc(4px + 0.4vw) calc(6px + 0.6vw);
+      border-radius: 4px;
+    }
 
-/* === TITLE SCREEN === */
-#title-screen {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: transparent;
-  z-index: 1000;
-  opacity: 1;
-  transition: opacity 2s ease-in-out;
-}
-#title-screen img {
-  max-width: 70%;
-  animation: pulse 5s infinite ease-in-out;
-  opacity: 0.9;
-}
-@keyframes pulse {
-  0%, 100% { opacity: 0.9; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.04); }
-}
-#startButton {
-  position: absolute;
-  bottom: 20%;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: calc(12px + 1vw);
-  background: #111;
-  color: #eee;
-  border: 2px solid #444;
-  cursor: pointer;
-  z-index: 101;
-  transition: all 0.3s ease;
-}
-#startButton:hover {
-  background: #222;
-  border-color: #888;
-}
+    /* === TITLE SCREEN === */
+    #title-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: transparent;
+      z-index: 1000;
+      opacity: 1;
+      transition: opacity 2s ease-in-out;
+    }
 
-/* === MAIN SCENE === */
-#main-scene {
-  position: relative;
-  width: 100vw;
-  height: 100vh;
-  display: none;
-  overflow: hidden;
-  background: black;
-}
-#background, #lightning, #fog-layer, #orbCanvas {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-}
-#background {
-  z-index: 1;
-  background-size: cover;
-  background-position: center;
-}
-#lightning { z-index: 3; background: white; opacity: 0; pointer-events: none; }
-#fog-layer { z-index: 4; pointer-events: none; }
-#orbCanvas { z-index: 5; pointer-events: none; }
+    #title-screen img {
+      max-width: 70%;
+      animation: pulse 5s infinite ease-in-out;
+      opacity: 0.9;
+    }
 
-/* === HUD === */
-#hud {
-  position: absolute;
-  top: 1%; left: 1%;
-  background: rgba(0,0,0,0.5);
-  padding: 0.6em 0.8em;
-  border: 1px solid #444;
-  font-size: calc(10px + 0.5vw);
-  z-index: 10;
-  max-width: 45%;
-  word-wrap: break-word;
-}
-#sanity-bar-container {
-  width: calc(60px + 5vw);
-  height: 10px;
-  background: #222;
-  border: 1px solid #555;
-  margin-top: 4px;
-  position: relative;
-}
-#sanity-bar {
-  position: absolute;
-  top: 0; left: 0;
-  height: 100%;
-  background: #0f0;
-  width: 100%;
-  transition: width 0.3s ease;
-}
+    @keyframes pulse {
+      0%,100% { opacity: 0.9; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.04); }
+    }
 
-/* === HELD ITEMS DISPLAY === */
-#inventory-display {
-  position: absolute;
-  top: 1%; right: 1%;
-  background: rgba(0,0,0,0.5);
-  padding: 0.4em 0.6em;
-  border: 1px solid #444;
-  font-size: calc(9px + 0.4vw);
-  z-index: 10;
-  max-width: 40%;
-  word-wrap: break-word;
-}
+    #startButton {
+      position: absolute;
+      bottom: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: calc(12px + 1vw);
+      background: #111;
+      color: #eee;
+      border: 2px solid #444;
+      cursor: pointer;
+      z-index: 101;
+      transition: all 0.3s ease;
+    }
 
-/* === LOG INTERFACE & COMMAND BUTTONS (VERTICAL RIGHT) === */
-#narrator-ui {
-  position: absolute;
-  bottom: 0; left: 0;
-  width: 100%; height: 40%;
-  background: rgba(0,0,0,0.4);
-  backdrop-filter: blur(4px);
-  display: none;
-  z-index: 10;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-}
+    #startButton:hover {
+      background: #222;
+      border-color: #888;
+    }
 
-#game-log {
-  flex: 1;
-  overflow-y: auto;
-  padding: 10px;
-  font-size: calc(9px + 0.5vw);
-  line-height: 1.4;
-  opacity: 0.95;
-  max-height: 100%;
-}
+    /* === MAIN SCENE LAYERS === */
+    #main-scene {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      display: none;
+      overflow: hidden;
+      background: black;
+    }
 
-.log-entry { opacity: 0.85; transition: opacity 1s ease-in-out; }
-.log-entry.fade { opacity: 0.4; }
+    #background, #lightning, #fog-layer, #orbCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-#command-buttons {
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
-  padding: 0.5em;
-  border-left: 1px solid #555;
-  background: rgba(0,0,0,0.5);
-  min-width: 120px;
-}
-#command-buttons button {
-  width: 100%;
-  margin: 0.3em 0;
-  font-size: calc(9px + 0.5vw);
-  background: #222;
-  color: #eee;
-  border: 1px solid #555;
-  cursor: pointer;
-}
-#command-buttons button:hover {
-  background: #333;
-}
+    #background {
+      z-index: 1;
+      background-size: cover;
+      background-position: center;
+    }
 
-/* === LOADOUT SCREEN === */
-#loadout-screen {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.85);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  flex-direction: column;
-  z-index: 2000;
-}
-#loadout-container {
-  background: rgba(15,15,15,0.9);
-  padding: 2em;
-  border: 2px solid #444;
-  border-radius: 8px;
-  max-width: 480px;
-  width: 90%;
-  color: #eee;
-  text-align: center;
-  box-shadow: 0 0 15px rgba(0,255,255,0.2);
-}
-#loadout-container h3 {
-  margin-bottom: 1em;
-  color: #0ff;
-  font-size: calc(14px + 0.5vw);
-}
-#held-list, #van-list {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  margin: 10px 0;
-  padding: 5px;
-}
-.item-button {
-  background: #222;
-  color: #eee;
-  border: 1px solid #555;
-  border-radius: 4px;
-  padding: 6px 10px;
-  margin: 4px;
-  cursor: pointer;
-  transition: all 0.2s ease-in-out;
-  font-size: calc(10px + 0.3vw);
-}
-.item-button:hover { background: #333; border-color: #0ff; }
-.item-button.selected {
-  background: #0a0;
-  border-color: #0f0;
-  color: #fff;
-}
-#confirm-loadout {
-  margin-top: 1em;
-  padding: 10px 20px;
-  background: #111;
-  color: #666;
-  border: 1px solid #333;
-  cursor: not-allowed;
-  border-radius: 4px;
-  transition: all 0.3s ease;
-}
-#confirm-loadout.active {
-  background: #0a0;
-  color: #fff;
-  border-color: #0f0;
-  cursor: pointer;
-}
+    #lightning {
+      z-index: 3;
+      background: white;
+      opacity: 0;
+      pointer-events: none;
+    }
 
-/* === INVENTORY SUBMENU OVERLAY === */
-#inventory-temp {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  background: #111;
-  padding: 15px;
-  max-width: 90%;
-  max-height: 70%;
-  overflow-y: auto;
-  border: 2px solid #444;
-  border-radius: 6px;
-  position: fixed;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 3000;
-}
-.inventory-item {
-  background: rgba(20,20,20,0.9);
-  border: 1px solid #555;
-  border-radius: 6px;
-  margin: 6px;
-  padding: 8px;
-  min-width: 120px;
-  text-align: center;
-  cursor: pointer;
-}
-.inventory-item h4 {
-  margin: 0;
-  font-size: 14px;
-  color: #0ff;
-}
-.submenu {
-  display: none;
-  margin-top: 6px;
-}
-.submenu button {
-  display: block;
-  width: 100%;
-  margin: 2px 0;
-  padding: 4px 6px;
-  background: #222;
-  color: #eee;
-  border: 1px solid #555;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 12px;
-}
-.submenu button:hover {
-  background: #333;
-  border-color: #0ff;
-}
+    #fog-layer {
+      z-index: 4;
+      pointer-events: none;
+    }
 
-/* === GUESS POPUP === */
-#guess-popup {
-  position: fixed;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background: rgba(0,0,0,0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-}
-#guess-list {
-  background: #111;
-  padding: 20px;
-  border: 1px solid #444;
-  max-height: 70%;
-  overflow-y: auto;
-}
-#guess-list button {
-  display: block;
-  width: 100%;
-  margin: 4px 0;
-  padding: 6px;
-  background: #222;
-  color: #eee;
-  border: 1px solid #555;
-  cursor: pointer;
-  font-size: calc(9px + 0.5vw);
-}
-#guess-list button:hover { background: #333; }
+    #orbCanvas {
+      z-index: 5;
+      pointer-events: none;
+    }
 
-/* === FOOTER === */
-footer {
-  position: fixed;
-  bottom: 0; width: 100%;
-  text-align: center;
-  background: #111;
-  color: #555;
-  font-size: calc(7px + 0.3vw);
-  padding: 2px 0;
-  z-index: 3500;
-}
+    /* === HUD (Top Left) === */
+    #hud {
+      position: absolute;
+      top: 1%;
+      left: 1%;
+      background: rgba(0,0,0,0.5);
+      padding: 0.6em 0.8em;
+      border: 1px solid #444;
+      font-size: calc(10px + 0.5vw);
+      z-index: 10;
+      max-width: 45%;
+      word-wrap: break-word;
+    }
 
+    #sanity-bar-container {
+      width: calc(60px + 5vw);
+      height: 10px;
+      background: #222;
+      border: 1px solid #555;
+      margin-top: 4px;
+      position: relative;
+    }
 
+    #sanity-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      background: #0f0;
+      width: 100%;
+      transition: width 0.3s ease;
+    }
+
+    /* === INVENTORY DISPLAY (Top Right) === */
+    #inventory-display {
+      position: absolute;
+      top: 1%;
+      right: 1%;
+      background: rgba(0,0,0,0.5);
+      padding: 0.4em 0.6em;
+      border: 1px solid #444;
+      font-size: calc(9px + 0.4vw);
+      z-index: 10;
+      max-width: 40%;
+      word-wrap: break-word;
+    }
+
+    /* === NARRATOR UI (Bottom Panel — Repositioned Buttons) === */
+    #narrator-ui {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 40%;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      display: none;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: stretch;
+      z-index: 10;
+    }
+
+    #game-log {
+      flex: 3;
+      overflow-y: auto;
+      padding: 10px;
+      font-size: calc(9px + 0.5vw);
+      line-height: 1.4;
+      opacity: 0.95;
+      max-height: 100%;
+    }
+
+    .log-entry {
+      opacity: 0.85;
+      transition: opacity 1s ease-in-out;
+    }
+
+    .log-entry.fade {
+      opacity: 0.4;
+    }
+
+    #command-buttons {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-around;
+      padding: 0.5em;
+      border-left: 1px solid #555;
+      background: rgba(0,0,0,0.5);
+    }
+
+    #command-buttons button {
+      width: 100%;
+      margin: 0.2em 0;
+      font-size: calc(9px + 0.5vw);
+      background: #222;
+      color: #eee;
+      border: 1px solid #555;
+      cursor: pointer;
+    }
+
+    #command-buttons button:hover {
+      background: #333;
+    }
+    /* === LOADOUT SCREEN (Responsive, Mobile-Friendly) === */
+    #loadout-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+      z-index: 2000;
+    }
+
+    #loadout-container {
+      background: rgba(15,15,15,0.9);
+      padding: 2em;
+      border: 2px solid #444;
+      border-radius: 8px;
+      max-width: 480px;
+      width: 90%;
+      color: #eee;
+      text-align: center;
+      box-shadow: 0 0 15px rgba(0,255,255,0.2);
+    }
+
+    #loadout-container h3 {
+      margin-bottom: 1em;
+      color: #0ff;
+      font-size: calc(14px + 0.5vw);
+    }
+
+    #held-list, #van-list {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin: 10px 0;
+      padding: 5px;
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+
+    .item-button {
+      background: #222;
+      color: #eee;
+      border: 1px solid #555;
+      border-radius: 4px;
+      padding: 6px 10px;
+      margin: 4px;
+      cursor: pointer;
+      transition: all 0.2s ease-in-out;
+      font-size: calc(10px + 0.3vw);
+    }
+
+    .item-button:hover {
+      background: #333;
+      border-color: #0ff;
+    }
+
+    .item-button.selected {
+      background: #0a0;
+      border-color: #0f0;
+      color: #fff;
+    }
+
+    #confirm-loadout {
+      margin-top: 1em;
+      padding: 10px 20px;
+      background: #111;
+      color: #666;
+      border: 1px solid #333;
+      cursor: not-allowed;
+      border-radius: 4px;
+      transition: all 0.3s ease;
+    }
+
+    #confirm-loadout.active {
+      background: #0a0;
+      color: #fff;
+      border-color: #0f0;
+      cursor: pointer;
+    }
+
+    /* === GUESS POPUP === */
+    #guess-popup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.8);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 3000;
+    }
+
+    #guess-list {
+      background: #111;
+      padding: 20px;
+      border: 1px solid #444;
+      max-height: 70%;
+      overflow-y: auto;
+    }
+
+    #guess-list button {
+      display: block;
+      width: 100%;
+      margin: 4px 0;
+      padding: 6px;
+      background: #222;
+      color: #eee;
+      border: 1px solid #555;
+      cursor: pointer;
+      font-size: calc(9px + 0.5vw);
+    }
+
+    #guess-list button:hover {
+      background: #333;
+    }
+
+    /* === FOOTER === */
+    footer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      text-align: center;
+      background: #111;
+      color: #555;
+      font-size: calc(7px + 0.3vw);
+      padding: 2px 0;
+      z-index: 3500;
+    }
+
+    /* === TEMP OVERLAYS (Move & Inventory) === */
+    #move-temp, #inventory-temp {
+      z-index: 3000 !important;
+      max-width: 90%;
+      overflow-y: auto;
+    }
+
+    /* === MOBILE-SPECIFIC ADJUSTMENTS === */
+    @media (max-width: 768px) {
+      #narrator-ui {
+        height: 45%;
+      }
+      #game-log {
+        font-size: calc(12px + 0.6vw);
+      }
+      #command-buttons {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      #command-buttons button {
+        flex: 1 1 45%;
+        margin: 0.2em;
+      }
+    }
   </style>
 </head>
 <body>
+  <!-- === TITLE SCREEN === -->
   <div id="title-screen">
     <img src="logo.png" alt="Phasma-Phoney Logo" />
     <button id="startButton">Start New Game</button>
   </div>
+
+  <!-- === MAIN SCENE === -->
   <div id="main-scene">
+    <!-- Background Layers -->
     <div id="background"></div>
     <div id="lightning"></div>
     <canvas id="fog-layer"></canvas>
     <canvas id="orbCanvas"></canvas>
+
+    <!-- HUD (Top Left) -->
     <div id="hud">
       <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
       <div>Turns: <span id="hud-turns">0</span></div>
@@ -373,10 +410,14 @@ footer {
       <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
       <div>Temp: <span id="hud-temp">--°C</span></div>
     </div>
+
+    <!-- Inventory Display (Top Right) -->
     <div id="inventory-display">
       <div>Held:</div>
       <div id="held-items-display">None</div>
     </div>
+
+    <!-- Narrator UI (Bottom Panel with Vertical Command Buttons on Right) -->
     <div id="narrator-ui">
       <div id="game-log"></div>
       <div id="command-buttons">
@@ -388,6 +429,8 @@ footer {
       </div>
     </div>
   </div>
+
+  <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen">
     <div id="loadout-container">
       <h3>Select Your Starting Loadout (Max 3 Items)</h3>
@@ -396,7 +439,13 @@ footer {
       <button id="confirm-loadout">Confirm</button>
     </div>
   </div>
-  <div id="guess-popup"><div id="guess-list"></div></div>
+
+  <!-- === GHOST GUESS POPUP === -->
+  <div id="guess-popup">
+    <div id="guess-list"></div>
+  </div>
+
+  <!-- === FOOTER === -->
   <footer>Phasma‑Phoney v2.4 — Master Build (Mobile & Full Systems)</footer>
 <script>
 "use strict";
@@ -410,13 +459,12 @@ const allLoadoutItems = [
   "Smudge Stick", "Salt", "Parabolic Microphone", "Motion Sensor",
   "Sound Sensor", "Candle"
 ];
-// Lighter and Notebook are *default items* always given at game start
-
+// Notebook and Lighter are always given by default, not part of selectable items
 
 const possibleWeather = ["Stormy", "Clear", "Foggy", "Blood Moon"];
 
 /***********************
- === FULL GHOST PROFILES (25) ===
+ === FULL GHOST PROFILES (25 Ghosts) ===
 ************************/
 const ghostProfiles = {
   Spirit:{evidence:["EMF Reader","Spirit Box","Ghost Writing"],behavior:"Standard activity; calmer with smudge."},
@@ -560,7 +608,7 @@ function handleCommand(c){
     case"look":lookAround();break;
     case"inventory":openInventoryOverlay();break;
     case"guess":openGuess();break;
-    case"van":moveToRoom("Van");break;
+    case"van":openVanMenu();break;
     default:logToGame("Unknown command.");break;
   }
 }
@@ -584,7 +632,8 @@ function openMoveOverlay(){
 }
 
 function moveToRoom(r){
-  game.playerRoom=r; game.currentTurn++;
+  if(r==="Van" && game.playerRoom!=="Van"){ game.currentTurn++; }
+  game.playerRoom=r;
   logToGame("You move to "+r+".");
   renderHUD(); updateBackground();
   if(document.getElementById("move-temp"))document.body.removeChild(document.getElementById("move-temp"));
@@ -622,7 +671,7 @@ function lookAround(){
 }
 
 /***********************
- === INVENTORY OVERLAY ===
+ === INVENTORY OVERLAY & VAN MENU ===
 ************************/
 function openInventoryOverlay() {
   const existing = document.getElementById("inventory-temp");
@@ -630,47 +679,88 @@ function openInventoryOverlay() {
 
   const c = document.createElement("div");
   c.id = "inventory-temp";
+  c.style.position = "fixed";
+  c.style.top = "50%";
+  c.style.left = "50%";
+  c.style.transform = "translate(-50%,-50%)";
+  c.style.background = "#111";
+  c.style.padding = "10px";
+  c.style.maxHeight = "70%";
+  c.style.overflowY = "auto";
+  c.style.maxWidth = "90%";
 
-  let html = "<h3 style='width:100%;text-align:center;margin-bottom:10px;color:#fff;'>Inventory</h3>";
-
+  let html = "<h3>Inventory</h3>";
   game.inventory.forEach(i => {
-    html += `
-      <div class="inventory-item" onclick="toggleSubmenu(this)">
-        <h4>${i}</h4>
-        <div class="submenu">
-          <button onclick="inspectItem('${i}')">Inspect</button>
-          <button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop</button>
-          <button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use</button>
-        </div>
-      </div>
-    `;
+    html += `<button onclick="inspectItem('${i}')">Inspect: ${i}</button>`;
+    html += `<button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>`;
+    html += `<button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use: ${i}</button>`;
   });
 
   const roomInv = game.roomItems && game.roomItems[game.playerRoom] || [];
   roomInv.forEach(i => {
-    html += `
-      <div class="inventory-item" onclick="toggleSubmenu(this)">
-        <h4>${i}</h4>
-        <div class="submenu">
-          <button onclick="pickItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Pick Up</button>
-        </div>
-      </div>
-    `;
+    html += `<button onclick="pickItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Pick up: ${i}</button>`;
   });
 
-  html += `<div style='width:100%;text-align:center;'><button onclick="document.body.removeChild(document.getElementById('inventory-temp'))">Close</button></div>`;
+  html += "<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
   c.innerHTML = html;
   document.body.appendChild(c);
 }
 
-function toggleSubmenu(el) {
-  const submenu = el.querySelector(".submenu");
-  submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+function openVanMenu(){
+  if(game.playerRoom!=="Van"){
+    moveToRoom("Van"); 
+    return; 
+  }
+  const existing = document.getElementById("inventory-temp");
+  if (existing) document.body.removeChild(existing);
+
+  const c=document.createElement("div");
+  c.id="inventory-temp";
+  c.style.position="fixed"; c.style.top="50%"; c.style.left="50%";
+  c.style.transform="translate(-50%,-50%)";
+  c.style.background="#111"; c.style.padding="10px";
+  c.style.maxHeight="70%"; c.style.overflowY="auto"; c.style.maxWidth="90%";
+
+  let html="<h3>Check Gear / Swap Items</h3>";
+  html+="<p><strong>Held Items:</strong></p>";
+  game.inventory.forEach(i=>{
+    if(i!=="Notebook" && i!=="Lighter")
+      html+=`<button onclick="returnItemToVan('${i}')">Return: ${i}</button>`;
+  });
+  html+="<p><strong>Van Inventory:</strong></p>";
+  game.vanStock.forEach(i=>{
+    html+=`<button onclick="takeItemFromVan('${i}')">Take: ${i}</button>`;
+  });
+  html+="<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
+
+  c.innerHTML=html;
+  document.body.appendChild(c);
 }
 
+function returnItemToVan(i){
+  if(game.inventory.includes(i)){
+    game.inventory=game.inventory.filter(x=>x!==i);
+    game.vanStock.push(i);
+    logToGame("Returned "+i+" to van.");
+    openVanMenu();
+    renderHUD();
+  }
+}
 
+function takeItemFromVan(i){
+  if(game.inventory.length>=3){logToGame("Max 3 items.");return;}
+  if(game.vanStock.includes(i)){
+    game.vanStock=game.vanStock.filter(x=>x!==i);
+    game.inventory.push(i);
+    logToGame("Took "+i+" from van.");
+    openVanMenu();
+    renderHUD();
+  }
+}
 
-
+/***********************
+ === ITEM INSPECT, DROP, PICK, USE ===
+************************/
 function inspectItem(i){
   let desc="Standard investigation gear.";
   if(cursedItemDescriptions[i])desc=cursedItemDescriptions[i];
@@ -702,7 +792,7 @@ function pickItem(i){
 }
 
 /***********************
- === ITEM USE (ALL ITEMS) ===
+ === ITEM USE (All Items) ===
 ************************/
 const cursedItemList=["Ouija Board","Tarot Cards","Music Box","Voodoo Doll","Haunted Mirror","Summoning Circle","Monkey Paw"];
 const cursedItemDescriptions={
@@ -799,13 +889,17 @@ function handleCursedItem(i){
   }
   game.usedCursedItems[i]=true; updateSanityBar();
 }
+</script>
+<script>
+"use strict";
 
 /***********************
  === TURN EVENTS, MIMIC, HUNT, PASSIVE SENSOR LOGIC ===
 ************************/
 function checkTurnEvents(){
   if(game.ghost==="TheMimic" && game.currentTurn>=game.nextMimicShift){
-    assignMimicForm(); logToGame("The Mimic shifts behavior...");
+    assignMimicForm();
+    logToGame("The Mimic shifts behavior...");
   }
   if(game.playerRoom===game.ghostRoom){
     game.sanity -= 3 + Math.random()*3;
@@ -813,9 +907,9 @@ function checkTurnEvents(){
       const g=(game.ghost==="TheMimic"?game.mimicForm:game.ghost);
       logToGame("[Ambient] "+(ghostProfiles[g].behavior || "The air feels heavy..."));
     }
-  } else {game.sanity -=1;}
-  
-  // Motion sensor alerts if in van
+  } else { game.sanity -= 1; }
+
+  // Motion sensor alerts in van
   if(game.playerRoom==="Van"){
     Object.keys(game.roomItems).forEach(r=>{
       if(game.roomItems[r].includes("Motion Sensor") && Math.random()<0.2){
@@ -823,7 +917,7 @@ function checkTurnEvents(){
       }
     });
   }
-  
+
   if(game.sanity<0)game.sanity=0;
   updateSanityBar(); attemptHunt();
 }
@@ -831,7 +925,7 @@ function checkTurnEvents(){
 function attemptHunt(){
   if(game.smudgeActive>0){game.smudgeActive--;return;}
   if(game.huntCooldown>0){game.huntCooldown--;return;}
-  // Onryo won't hunt if any candle lit
+  // Onryo candle logic: if candle present, Onryo won't hunt
   if(game.ghost==="Onryo" && Object.values(game.roomItems).some(a=>a.includes("Candle")))return;
   if(game.sanity<30 && Math.random()<0.25)startHunt();
 }
@@ -855,9 +949,6 @@ function flashRed(){
   l.style.background="red"; l.style.opacity=0.6;
   setTimeout(()=>{l.style.opacity=0;},600);
 }
-</script>
-<script>
-"use strict";
 
 /***********************
  === AMBIENT VISUALS & ORBS ===
@@ -988,94 +1079,38 @@ function resetAndRestart(){
   resetGame();
   showLoadout();
 }
-// === SHOW LOADOUT FUNCTION ===
-let tempHeld = [];
-let tempVan = [...allLoadoutItems];
-
-function showLoadout() {
-  tempHeld = [];
-  tempVan = [...allLoadoutItems];
-
-  const heldList = document.getElementById("held-list");
-  const vanList = document.getElementById("van-list");
-  heldList.innerHTML = "";
-  vanList.innerHTML = "";
-
-function renderLoadout() {
-  heldList.innerHTML = tempHeld
-    .map((i) => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
-    .join("");
-  vanList.innerHTML = tempVan
-    .map((i) => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
-    .join("");
-
-  const confirmBtn = document.getElementById("confirm-loadout");
-  if (tempHeld.length > 0) {
-    confirmBtn.classList.add("active");
-    confirmBtn.disabled = false;
-  } else {
-    confirmBtn.classList.remove("active");
-    confirmBtn.disabled = true;
-  }
-}
-
-
-  window.addHeldItem = function (item) {
-    if (tempHeld.length >= 3) {
-      alert("You can only hold 3 items.");
-      return;
-    }
-    tempHeld.push(item);
-    tempVan = tempVan.filter((v) => v !== item);
-    renderLoadout();
-  };
-
-  window.removeHeldItem = function (item) {
-    tempVan.push(item);
-    tempHeld = tempHeld.filter((h) => h !== item);
-    renderLoadout();
-  };
-
-  renderLoadout();
-  document.getElementById("loadout-screen").style.display = "flex";
-}
 
 /***********************
  === FINAL EVENT LISTENERS ===
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
   resetGame();
-
-  const startBtn = document.getElementById("startButton");
-  const confirmBtn = document.getElementById("confirm-loadout");
+  const startBtn=document.getElementById("startButton");
+  const confirmBtn=document.getElementById("confirm-loadout");
 
   startBtn.addEventListener("click", () => {
     startBtn.disabled = true; // prevent double click
-    const t = document.getElementById("title-screen");
-    t.style.opacity = "0";
-    setTimeout(() => {
-      t.style.display = "none";
-      showLoadout();
-    }, 1500);
+    const t=document.getElementById("title-screen");
+    t.style.opacity="0";
+    setTimeout(()=>{ t.style.display="none"; showLoadout(); },1500);
   });
 
   confirmBtn.addEventListener("click", () => {
-    if (typeof tempHeld === "undefined") tempHeld = [];
-    if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
+    if(typeof tempHeld==="undefined")tempHeld=[];
+    if(typeof tempVan==="undefined")tempVan=[...allLoadoutItems];
 
-    game.inventory = [...tempHeld, "Notebook", "Lighter"];
-    game.vanStock = [...tempVan];
+    game.inventory=[...tempHeld,"Notebook","Lighter"];
+    game.vanStock=[...tempVan];
 
-    document.getElementById("loadout-screen").style.display = "none";
+    document.getElementById("loadout-screen").style.display="none";
     startInvestigation();
-    window.dispatchEvent(new Event("resize")); // ensure HUD adjusts to screen
+    window.dispatchEvent(new Event("resize")); 
   });
 
-  document.querySelectorAll("#command-buttons button").forEach((b) => {
-    b.addEventListener("click", () => handleCommand(b.dataset.cmd));
+  document.querySelectorAll("#command-buttons button").forEach((b)=>{
+    b.addEventListener("click",()=>handleCommand(b.dataset.cmd));
   });
 });
-
 </script>
 </body>
 </html>
