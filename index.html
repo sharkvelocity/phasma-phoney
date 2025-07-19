@@ -706,10 +706,7 @@ function lookAround(){
 }
 
 /***********************
- === INVENTORY OVERLAY & VAN MENU ===
-************************/
-/***********************
- === INVENTORY OVERLAY & VAN MENU ===
+ === INVENTORY OVERLAY & VAN MENU (FIXED NOTEBOOK/ LIGHTER LOGIC) ===
 ************************/
 function openInventoryOverlay() {
   const existing = document.getElementById("inventory-temp");
@@ -731,7 +728,9 @@ function openInventoryOverlay() {
   let html = "<h3>Inventory</h3>";
   game.inventory.forEach(i => {
     html += `<button onclick="inspectItem('${i}')">Inspect: ${i}</button>`;
-    html += `<button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>`;
+    if (i !== "Notebook" && i !== "Lighter") {
+      html += `<button onclick="dropItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Drop: ${i}</button>`;
+    }
     html += `<button onclick="useItem('${i}');document.body.removeChild(document.getElementById('inventory-temp'))">Use: ${i}</button>`;
   });
 
@@ -745,78 +744,80 @@ function openInventoryOverlay() {
   document.body.appendChild(c);
 }
 
-function openVanMenu(){
-  if(game.playerRoom!=="Van"){
-    moveToRoom("Van"); 
-    return; 
+function openVanMenu() {
+  if (game.playerRoom !== "Van") {
+    moveToRoom("Van");
+    return;
   }
+
   const existing = document.getElementById("inventory-temp");
   if (existing) document.body.removeChild(existing);
 
-  const c=document.createElement("div");
-  c.id="inventory-temp";
-  c.style.position="fixed"; 
-  c.style.top="50%"; 
-  c.style.left="50%";
-  c.style.transform="translate(-50%,-50%)";
-  c.style.background="#111"; 
-  c.style.padding="10px";
-  c.style.maxHeight="70%"; 
-  c.style.overflowY="auto"; 
-  c.style.maxWidth="90%";
+  const c = document.createElement("div");
+  c.id = "inventory-temp";
+  c.style.position = "fixed";
+  c.style.top = "50%";
+  c.style.left = "50%";
+  c.style.transform = "translate(-50%,-50%)";
+  c.style.background = "#111";
+  c.style.padding = "10px";
+  c.style.maxHeight = "70%";
+  c.style.overflowY = "auto";
+  c.style.maxWidth = "90%";
   c.style.width = "90%"; // mobile scaling
 
-  let html="<h3>Check Gear / Swap Items</h3>";
-  html+="<p><strong>Held Items:</strong></p>";
-  game.inventory.forEach(i=>{
-    if(i!=="Notebook" && i!=="Lighter")
-      html+=`<button onclick="returnItemToVan('${i}')">Return: ${i}</button>`;
-  });
-  html+="<p><strong>Van Inventory:</strong></p>";
-  game.vanStock.forEach(i=>{
-    html+=`<button onclick="takeItemFromVan('${i}')">Take: ${i}</button>`;
+  let html = "<h3>Check Gear / Swap Items</h3>";
+  html += "<p><strong>Held Items:</strong></p>";
+
+  game.inventory.forEach(i => {
+    if (i !== "Notebook" && i !== "Lighter") {
+      html += `<button onclick="returnItemToVan('${i}')">Return: ${i}</button>`;
+    }
   });
 
-  // New Monitor button (consumes a turn)
-  html+="<hr/><button onclick='checkVanMonitor();document.body.removeChild(document.getElementById(\"inventory-temp\"))'>Use Van Monitor</button>";
-  html+="<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
+  html += "<p><strong>Van Inventory:</strong></p>";
+  game.vanStock.forEach(i => {
+    html += `<button onclick="takeItemFromVan('${i}')">Take: ${i}</button>`;
+  });
 
-  c.innerHTML=html;
+  // ✅ Van Monitor button
+  html += "<hr/><button onclick='checkVanMonitor();document.body.removeChild(document.getElementById(\"inventory-temp\"))'>Use Van Monitor</button>";
+  html += "<button onclick=\"document.body.removeChild(document.getElementById('inventory-temp'))\">Close</button>";
+
+  c.innerHTML = html;
   document.body.appendChild(c);
 }
 
-function returnItemToVan(i){
-  if(game.inventory.includes(i)){
-    game.inventory=game.inventory.filter(x=>x!==i);
+function returnItemToVan(i) {
+  if (i === "Notebook" || i === "Lighter") {
+    logToGame("You cannot return this item.");
+    return;
+  }
+  if (game.inventory.includes(i)) {
+    game.inventory = game.inventory.filter(x => x !== i);
     game.vanStock.push(i);
-    logToGame("Returned "+i+" to van.");
+    logToGame("Returned " + i + " to van.");
     openVanMenu();
     renderHUD();
   }
 }
 
-function takeItemFromVan(i){
-  if(game.inventory.length>=3){logToGame("Max 3 items.");return;}
-  if(game.vanStock.includes(i)){
-    game.vanStock=game.vanStock.filter(x=>x!==i);
+function takeItemFromVan(i) {
+  // ✅ Ignore Notebook & Lighter in count
+  const gearCount = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter").length;
+  if (gearCount >= 3) {
+    logToGame("Max 3 items (Notebook & Lighter don’t count).");
+    return;
+  }
+  if (game.vanStock.includes(i)) {
+    game.vanStock = game.vanStock.filter(x => x !== i);
     game.inventory.push(i);
-    logToGame("Took "+i+" from van.");
+    logToGame("Took " + i + " from van.");
     openVanMenu();
-    renderHUD();  
- 
+    renderHUD();
   }
 }
 
-function checkVanMonitor(){
-  game.currentTurn++;
-  logToGame("[Van Monitor] Checking sensors...");
-  Object.keys(game.roomItems).forEach(r=>{
-    if(game.roomItems[r].includes("Motion Sensor") && Math.random()<0.5){
-      logToGame("[Van Monitor] Activity detected in "+r+"!");
-    }
-  });
-  checkTurnEvents();
-}
 
 /***********************
  === ITEM INSPECT, DROP, PICK, USE ===
