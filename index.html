@@ -1150,7 +1150,7 @@ function showLoadout() {
   window.removeHeldItem = function (item) {
     tempVan.push(item);
     tempHeld = tempHeld.filter(h => h !== item);
-    renderLoadout(); 
+    renderLoadout();
   };
 
   renderLoadout();
@@ -1158,27 +1158,24 @@ function showLoadout() {
 }
 
 /***********************
- === FINAL EVENT LISTENERS (ALL IN ONE PLACE) ===
-************************/  
-  showLoadout();
+ === FINAL EVENT LISTENERS ===
+************************/
 document.addEventListener("DOMContentLoaded", () => {
   resetGame();
 
   const startBtn = document.getElementById("startButton");
   const confirmBtn = document.getElementById("confirm-loadout");
 
-  // === START NEW GAME ===
   startBtn.addEventListener("click", () => {
-    startBtn.disabled = true; // prevent double click
+    startBtn.disabled = true;
     const t = document.getElementById("title-screen");
     t.style.opacity = "0";
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout(); // ✅ must be defined ABOVE this whole block
+      showLoadout();  // ✅ CALLED HERE, AFTER DOM LOADED
     }, 1500);
   });
 
-  // === CONFIRM LOADOUT ===
   confirmBtn.addEventListener("click", () => {
     if (typeof tempHeld === "undefined") tempHeld = [];
     if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
@@ -1188,10 +1185,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
-    window.dispatchEvent(new Event("resize")); // Adjust HUD for mobile
+    window.dispatchEvent(new Event("resize"));
   });
 
-  // === COMMAND BUTTONS ===
   document.querySelectorAll("#command-buttons button").forEach((b) => {
     b.addEventListener("click", () => handleCommand(b.dataset.cmd));
   });
