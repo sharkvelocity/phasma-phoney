@@ -817,23 +817,39 @@ function resetAndRestart(){
 /***********************
  === FINAL EVENT LISTENERS ===
 ************************/
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
   resetGame();
-  document.getElementById("startButton").addEventListener("click",()=>{
-    const t=document.getElementById("title-screen");
-    t.style.opacity="0";
-    setTimeout(()=>{t.style.display="none";showLoadout();},1500);
+
+  const startBtn = document.getElementById("startButton");
+  const confirmBtn = document.getElementById("confirm-loadout");
+
+  startBtn.addEventListener("click", () => {
+    startBtn.disabled = true; // prevent double click
+    const t = document.getElementById("title-screen");
+    t.style.opacity = "0";
+    setTimeout(() => {
+      t.style.display = "none";
+      showLoadout();
+    }, 1500);
   });
-  document.getElementById("confirm-loadout").addEventListener("click",()=>{
-    game.inventory=[...tempHeld,"Notebook","Lighter"];
-    game.vanStock=[...tempVan];
-    document.getElementById("loadout-screen").style.display="none";
+
+  confirmBtn.addEventListener("click", () => {
+    if (typeof tempHeld === "undefined") tempHeld = [];
+    if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
+
+    game.inventory = [...tempHeld, "Notebook", "Lighter"];
+    game.vanStock = [...tempVan];
+
+    document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
+    window.dispatchEvent(new Event("resize")); // ensure HUD adjusts to screen
   });
-  document.querySelectorAll("#command-buttons button").forEach(b=>
-    b.addEventListener("click",()=>handleCommand(b.dataset.cmd))
-  );
+
+  document.querySelectorAll("#command-buttons button").forEach((b) => {
+    b.addEventListener("click", () => handleCommand(b.dataset.cmd));
+  });
 });
+
 </script>
 </body>
 </html>
