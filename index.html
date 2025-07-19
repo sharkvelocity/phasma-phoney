@@ -767,7 +767,8 @@ function takeItemFromVan(i){
     game.inventory.push(i);
     logToGame("Took "+i+" from van.");
     openVanMenu();
-    renderHUD();
+    renderHUD();  
+    showLoadout();
   }
 }
 
@@ -818,6 +819,7 @@ function pickItem(i){
 /***********************
  === ITEM USE (All Items) ===
 ************************/
+
 const cursedItemList=["Ouija Board","Tarot Cards","Music Box","Voodoo Doll","Haunted Mirror","Summoning Circle","Monkey Paw"];
 const cursedItemDescriptions={
   "Ouija Board":"Ask ghost questions; drains sanity, can break triggering hunt.",
@@ -1101,7 +1103,6 @@ function resetAndRestart(){
   const e=document.getElementById("end-game");
   if(e)document.body.removeChild(e);
   resetGame();
-  showLoadout(); // ✅ will work now because it's defined earlier in the script
 }
 
 /***********************
