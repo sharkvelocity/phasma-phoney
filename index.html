@@ -1425,36 +1425,41 @@ function showLoadout() {
 }
 
 /***********************
- === FINAL EVENT LISTENERS ===
+ === FINAL EVENT LISTENERS (FIXED START INVESTIGATION) ===
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
   resetGame();
+  vanMonitorBooted = false; // ensure monitor reset between games
 
   const startBtn = document.getElementById("startButton");
   const confirmBtn = document.getElementById("confirm-loadout");
 
+  // === START NEW GAME ===
   startBtn.addEventListener("click", () => {
     startBtn.disabled = true;
     const t = document.getElementById("title-screen");
     t.style.opacity = "0";
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout();
+      showLoadout();  // ✅ always defined BEFORE this block
     }, 1500);
   });
 
+  // === CONFIRM LOADOUT ===
   confirmBtn.addEventListener("click", () => {
     if (typeof tempHeld === "undefined") tempHeld = [];
     if (typeof tempVan === "undefined") tempVan = [...allLoadoutItems];
 
+    // ✅ Notebook & Lighter auto-added
     game.inventory = [...tempHeld, "Notebook", "Lighter"];
     game.vanStock = [...tempVan];
 
     document.getElementById("loadout-screen").style.display = "none";
-    startInvestigation();
-    window.dispatchEvent(new Event("resize"));
+    startInvestigation(); // ✅ START GAME PROPERLY
+    window.dispatchEvent(new Event("resize")); // HUD adjusts for mobile
   });
 
+  // === COMMAND BUTTONS ===
   document.querySelectorAll("#command-buttons button").forEach((b) => {
     b.addEventListener("click", () => handleCommand(b.dataset.cmd));
   });
