@@ -1148,7 +1148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     t.style.opacity = "0";
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout(); // ✅ Now works because it's defined above
+      showLoadout(); // ✅ Loadout screen appears after title fades
     }, 1500);
   });
 
@@ -1176,17 +1176,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1500);
   });
 
-commandContainer.addEventListener("click", (e) => {
-  if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
-    handleCommand(e.target.dataset.cmd);
-  }
-});
-
+  // ✅ EVENT DELEGATION for action buttons
+  commandContainer.addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
+      handleCommand(e.target.dataset.cmd);
+    }
   });
 
+  // ✅ Check for existing save AFTER everything is ready
   if (localStorage.getItem("phasmaPhoneySave")) {
     logToGame("💾 Previous save detected. Use 'Load Game'.");
   }
+});
 
 </script>
 
