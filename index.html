@@ -693,26 +693,7 @@ function updateBackground() {
 /***********************
  === STARTUP ===
 ************************/
-document.addEventListener("DOMContentLoaded", () => {
-  "use strict";
-  resetGame(); // ✅ Ensure fresh state on page load
 
-  const startBtn = document.getElementById("startButton");
-  const confirmBtn = document.getElementById("confirm-loadout");
-
-  // === Start New Game ===
-  startBtn.addEventListener("click", () => {
-    if (startBtn.disabled) return; // ✅ Prevent accidental double-clicks
-    startBtn.disabled = true;
-
-    const t = document.getElementById("title-screen");
-    t.style.opacity = "0";
-
-    setTimeout(() => {
-      t.style.display = "none";
-      showLoadout(); // ✅ Open the loadout menu
-    }, 1500);
-  });
 
   // === Confirm Loadout & Begin Investigation ===
   confirmBtn.addEventListener("click", () => {
@@ -1806,8 +1787,10 @@ function renderActionButtons() {
 /***********************
  === STARTUP & EVENT WIRING ===
 ************************/
+<script>
 document.addEventListener("DOMContentLoaded", () => {
-  resetGame();
+  "use strict";
+  resetGame(); // ✅ Fresh state on page load
 
   const startBtn = document.getElementById("startButton");
   const confirmBtn = document.getElementById("confirm-loadout");
@@ -1815,7 +1798,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === Start New Game ===
   startBtn.addEventListener("click", () => {
-    if (startBtn.disabled) return; // ✅ double-click fail-safe
+    if (startBtn.disabled) return; // ✅ Prevent double-clicks
     startBtn.disabled = true;
 
     const t = document.getElementById("title-screen");
@@ -1823,7 +1806,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout();
+      showLoadout(); // ✅ Open the loadout menu
     }, 1500);
   });
 
@@ -1837,10 +1820,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
-    renderActionButtons(); // ✅ Ensure buttons display immediately
+    renderActionButtons(); // ✅ Show buttons immediately
 
     saveGame(); // ✅ Immediate save after starting
-
     window.dispatchEvent(new Event("resize")); // ✅ HUD adjusts for mobile
   });
 
@@ -1855,11 +1837,8 @@ document.addEventListener("DOMContentLoaded", () => {
   if (localStorage.getItem("phasmaPhoneySave")) {
     logToGame("💾 Previous save detected. Use the 'Load Game' button or type loadGame() in console.");
   }
-
-  // ✅ Optional: Auto-load for debugging
-  // if (autoLoadEnabled && localStorage.getItem("phasmaPhoneySave")) loadGame();
 });
-
 </script>
+
 </body>
 </html>
