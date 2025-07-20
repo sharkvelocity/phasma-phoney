@@ -955,53 +955,115 @@ function renderActionButtons(){
   logToGame("✅ Actions ready. Select an option below.");
 }
 
+"use strict";
+
+/***********************
+ === LOADOUT SELECTION ===
+************************/
+function showLoadout() {
+  // ✅ Always reset temporary arrays to defaults
+  tempHeld = [];
+  tempVan = [...allLoadoutItems];
+
+  const heldList = document.getElementById("held-list");
+  const vanList = document.getElementById("van-list");
+  const confirmBtn = document.getElementById("confirm-loadout");
+
+  function renderLoadout() {
+    heldList.innerHTML = tempHeld
+      .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
+      .join("");
+
+    vanList.innerHTML = tempVan
+      .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
+      .join("");
+
+    if (tempHeld.length > 0) {
+      confirmBtn.classList.add("active");
+      confirmBtn.disabled = false;
+    } else {
+      confirmBtn.classList.remove("active");
+      confirmBtn.disabled = true;
+    }
+  }
+
+  window.addHeldItem = function (item) {
+    if (tempHeld.length >= 3) {
+      logToGame("⚠️ You can only hold 3 items.");
+      return;
+    }
+    tempHeld.push(item);
+    tempVan = tempVan.filter(v => v !== item);
+    renderLoadout();
+  };
+
+  window.removeHeldItem = function (item) {
+    tempVan.push(item);
+    tempHeld = tempHeld.filter(h => h !== item);
+    renderLoadout();
+  };
+
+  renderLoadout();
+  document.getElementById("loadout-screen").style.display = "flex";
+  logToGame("📦 Select up to 3 starting items. Notebook & Lighter are free.");
+}
+
 /***********************
  === STARTUP & EVENT WIRING ===
 ************************/
-document.addEventListener("DOMContentLoaded",()=>{
+document.addEventListener("DOMContentLoaded", () => {
   resetGame();
-  const startBtn=document.getElementById("startButton");
-  const confirmBtn=document.getElementById("confirm-loadout");
-  const commandContainer=document.getElementById("command-buttons");
+  const startBtn = document.getElementById("startButton");
+  const confirmBtn = document.getElementById("confirm-loadout");
+  const commandContainer = document.getElementById("command-buttons");
 
-  startBtn.addEventListener("click",()=>{
-    if(startBtn.disabled)return;
-    startBtn.disabled=true;
-    const t=document.getElementById("title-screen");
-    t.style.opacity="0";
-    setTimeout(()=>{
-      t.style.display="none";
-      showLoadout();
-    },1500);
+  startBtn.addEventListener("click", () => {
+    if (startBtn.disabled) return;
+    startBtn.disabled = true;
+    const t = document.getElementById("title-screen");
+    t.style.opacity = "0";
+    setTimeout(() => {
+      t.style.display = "none";
+      showLoadout(); // ✅ Now works because it's defined above
+    }, 1500);
   });
 
-  confirmBtn.addEventListener("click",()=>{
-    if(confirmBtn.disabled||!confirmBtn.classList.contains("active")){
-      logToGame("⚠️ Select at least one item before confirming.");return;
+  confirmBtn.addEventListener("click", () => {
+    if (confirmBtn.disabled || !confirmBtn.classList.contains("active")) {
+      logToGame("⚠️ Select at least one item before confirming.");
+      return;
     }
-    confirmBtn.disabled=true;
-    if(!Array.isArray(tempHeld))tempHeld=[];
-    if(!Array.isArray(tempVan))tempVan=[...allLoadoutItems];
-    game.inventory=[...tempHeld,"Notebook","Lighter"];
-    game.vanStock=[...tempVan];
-    document.getElementById("loadout-screen").style.display="none";
-    startInvestigation();renderActionButtons();
+    confirmBtn.disabled = true;
+
+    if (!Array.isArray(tempHeld)) tempHeld = [];
+    if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
+
+    game.inventory = [...tempHeld, "Notebook", "Lighter"];
+    game.vanStock = [...tempVan];
+
+    document.getElementById("loadout-screen").style.display = "none";
+    startInvestigation();
+    renderActionButtons();
     logToGame("🎮 Game state saved after loadout.");
     saveGame();
     window.dispatchEvent(new Event("resize"));
-    setTimeout(()=>{confirmBtn.disabled=false;},1500);
+
+    setTimeout(() => {
+      confirmBtn.disabled = false;
+    }, 1500);
   });
 
-  commandContainer.addEventListener("click",(e)=>{
-    if(e.target.tagName==="BUTTON"&&e.target.dataset.cmd){
+  commandContainer.addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
       handleCommand(e.target.dataset.cmd);
     }
   });
 
-  if(localStorage.getItem("phasmaPhoneySave")){
+  if (localStorage.getItem("phasmaPhoneySave")) {
     logToGame("💾 Previous save detected. Use 'Load Game'.");
   }
 });
+
 </script>
 
 </body>
