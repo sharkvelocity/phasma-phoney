@@ -242,8 +242,6 @@
 
 <script>
 "use strict";
-let tempHeld = [];
-let tempVan = [...allLoadoutItems]; // allLoadoutItems must also be defined before this line
 
 /***********************
  === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) ===
@@ -346,6 +344,8 @@ const allLoadoutItems = [
   "Sound Sensor", "Candle"
 ];
 
+let tempHeld = [];
+let tempVan = [...allLoadoutItems]; 
 
 const cursedItems = {
   "Ouija Board": {desc: "Ask ghost questions, drains sanity.", cost: 15},
