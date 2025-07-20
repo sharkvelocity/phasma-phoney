@@ -1703,8 +1703,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // === Confirm Loadout & Begin Investigation ===
   confirmBtn.addEventListener("click", () => {
-    if (!tempHeld) tempHeld = [];
-    if (!tempVan) tempVan = [...allLoadoutItems];
+    if (!Array.isArray(tempHeld)) tempHeld = [];
+    if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
 
     game.inventory = [...tempHeld, "Notebook", "Lighter"];
     game.vanStock = [...tempVan];
@@ -1717,7 +1717,7 @@ document.addEventListener("DOMContentLoaded", () => {
     window.dispatchEvent(new Event("resize")); // ✅ HUD adjusts for mobile
   });
 
-  // === Command Button Delegation (Single Listener) ===
+  // === Command Button Delegation ===
   commandContainer.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
       handleCommand(e.target.dataset.cmd);
