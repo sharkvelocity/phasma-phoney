@@ -110,13 +110,16 @@
   }
   .log-entry {opacity: 0.85; transition: opacity 1s ease-in-out;}
   .log-entry.fade {opacity: 0.4;}
-  #command-buttons {
-    display: flex; flex-wrap: wrap;
-    justify-content: space-around;
-    padding: 0.5em;
-    border-top: 1px solid #555;
-    background: rgba(0, 0, 0, 0.5);
-  }
+#command-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-around;
+  padding: 0.5em;
+  border-top: 1px solid #555;
+  background: rgba(0, 0, 0, 0.5);
+  margin-bottom: 32px; /* ✅ keeps buttons above the footer */
+}
+
   #command-buttons button {
     flex: 1 1 18%;
     margin: 0.2em;
@@ -220,14 +223,11 @@
   <div>Sanity:</div>
   <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
   <div>Temp: <span id="hud-temp">--°C</span></div>
-  <div id="save-indicator" style="
-    display:none;
-    margin-top:4px;
-    font-size:12px;
-    opacity:0.7;
-  ">💾</div>
 </div>
-
+    <div id="save-indicator" style="
+  position: absolute; top: 1%; left: 50%; transform: translateX(-50%);
+  font-size: 1.2em; color: #0f0; opacity: 0; transition: opacity 0.5s ease;
+">💾</div>
     <div id="inventory-display"><div>Held:</div><div id="held-items-display">None</div></div>
     <div id="narrator-ui"><div id="game-log"></div><div id="command-buttons"></div></div>
   </div>
