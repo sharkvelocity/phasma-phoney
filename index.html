@@ -358,7 +358,6 @@ footer a:hover {
 
 <body>
   <!-- === TITLE SCREEN === -->
- <!-- === TITLE SCREEN === -->
 <div id="title-screen">
   <img src="logo.png" alt="Phasma-Phoney Logo">
   <button id="startButton">Start New Game</button>
@@ -612,13 +611,16 @@ function resetGame() {
 /***********************
  === INVESTIGATION STARTUP ===
 ************************/
+/***********************
+ === RANDOMIZED INVESTIGATION SETUP ===
+************************/
 function startInvestigation() {
   // ✅ Ensure proper scene visibility
   document.getElementById("main-scene").style.display = "block";
   document.getElementById("narrator-ui").style.display = "flex";
   document.getElementById("game-log").innerHTML = "";
 
-  // ✅ Randomized investigation setup
+  // ✅ Randomized setup
   game.weather = randomFromArray(possibleWeather);
   game.ghost = randomFromArray(Object.keys(ghostProfiles));
   if (game.ghost === "TheMimic") assignMimicForm();
@@ -640,9 +642,6 @@ function startInvestigation() {
   saveGame();
 }
 
-/***********************
- === MIMIC FORM ASSIGNMENT ===
-************************/
 /***********************
  === MIMIC LOGIC & HUD RENDERING ===
 ************************/
@@ -761,9 +760,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 "use strict";
 
-/***********************
- === COMMAND HANDLER & MOVEMENT ===
-************************/
 /***********************
  === ACTION BUTTONS & MOVE OVERLAY ===
 ************************/
