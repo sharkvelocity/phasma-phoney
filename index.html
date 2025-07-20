@@ -242,6 +242,8 @@
 
 <script>
 "use strict";
+let tempHeld = [];
+let tempVan = [...allLoadoutItems]; // allLoadoutItems must also be defined before this line
 
 /***********************
  === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) ===
@@ -338,11 +340,12 @@ function closeVanMonitor() {
  === GLOBAL CONSTANTS & GHOST PROFILES ===
 ************************/
 const allLoadoutItems = [
-  "EMF Reader","Spirit Box","Camera","UV Light","D.O.T.S Projector",
-  "Thermometer","Ghost Writing Book","Video Camera","Crucifix",
-  "Smudge Stick","Salt","Parabolic Microphone","Motion Sensor",
-  "Sound Sensor","Candle"
+  "EMF Reader", "Spirit Box", "Camera", "UV Light", "D.O.T.S Projector",
+  "Thermometer", "Ghost Writing Book", "Video Camera", "Crucifix",
+  "Smudge Stick", "Salt", "Parabolic Microphone", "Motion Sensor",
+  "Sound Sensor", "Candle"
 ];
+
 
 const cursedItems = {
   "Ouija Board": {desc: "Ask ghost questions, drains sanity.", cost: 15},
@@ -472,22 +475,36 @@ function resetGame(){
 /***********************
  === RANDOMIZED INVESTIGATION SETUP ===
 ************************/
-function startInvestigation(){
-  document.getElementById("main-scene").style.display="block";
-  document.getElementById("narrator-ui").style.display="flex";
-  document.getElementById("game-log").innerHTML="";
+function startInvestigation() {
+  // ✅ Show the main scene & clear any previous log
+  document.getElementById("main-scene").style.display = "block";
+  document.getElementById("narrator-ui").style.display = "flex";
+  document.getElementById("game-log").innerHTML = "";
 
-  game.weather=randomFromArray(possibleWeather);
-  game.ghost=randomFromArray(Object.keys(ghostProfiles));
-  if(game.ghost==="TheMimic")assignMimicForm();
-  game.ghostRoom=randomFromArray(Object.keys(roomVisuals).filter(r=>r!=="Van"));
+  // ✅ Randomized setup for investigation
+  game.weather = randomFromArray(possibleWeather);
+  game.ghost = randomFromArray(Object.keys(ghostProfiles));
 
+  if (game.ghost === "TheMimic") assignMimicForm();
+
+  game.ghostRoom = randomFromArray(Object.keys(roomVisuals).filter(r => r !== "Van"));
+
+  // ✅ Place cursed items at start
   placeCursedItems();
+
+  // ✅ First narration log
   logToGame(`You are in the van. The weather is ${game.weather.toLowerCase()}.`);
 
-  renderHUD(); updateBackground(); bootVisuals(); renderActionButtons();
+  // ✅ Update HUD, visuals, and buttons
+  renderHUD();
+  updateBackground();
+  bootVisuals();
+  renderActionButtons();
+
+  // ✅ Save immediately after setup
   saveGame();
 }
+
 
 /***********************
  === MIMIC LOGIC ===
