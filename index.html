@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Phasma‑Phoney v2.7 — Narration Master Build</title>
+  <title>Phasma‑Phoney v2.8 — Corrected Master Build</title>
   <style>
     /* === GLOBAL RESET === */
     html, body {
@@ -24,7 +24,6 @@
       width: 100%; height: 100%;
       background: rgba(0,0,0,0.9);
       color: #eee;
-      font-family: monospace;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -82,9 +81,7 @@
       border: 1px solid #555;
       cursor: pointer;
     }
-    #confirm-loadout:hover {
-      background: #444;
-    }
+    #confirm-loadout:hover { background: #444; }
 
     /* === MAIN SCENE === */
     #main-scene {
@@ -118,6 +115,14 @@
       top:0; left:0;
       width:100%; height:100%;
       z-index: 3;
+    }
+
+    #orb-layer {
+      position: absolute;
+      top:0; left:0;
+      width:100%; height:100%;
+      pointer-events:none;
+      z-index: 5;
     }
 
     /* === HUD === */
@@ -161,14 +166,7 @@
       animation: fadeIn 0.3s ease;
     }
 
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-
-    #narrator-log p:nth-child(n+15) {
-      opacity: 0.3;
-    }
+    @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
 
     #narrator-buttons {
       display:flex;
@@ -187,11 +185,18 @@
       font-size:14px;
       cursor:pointer;
     }
-    #narrator-buttons button:hover {
-      background:#444;
+    #narrator-buttons button:hover { background:#444; }
+
+    .spirit-orb {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.5);
+      box-shadow: 0 0 6px 2px rgba(255,255,255,0.7);
+      opacity: 0;
+      transition: opacity 2s ease, top 5s linear, left 5s linear;
+      z-index: 5;
     }
 
-    /* === MOBILE === */
     @media (max-width: 600px) {
       #hud { font-size: 12px; }
       #narrator-log { font-size: 12px; max-height: 35%; }
@@ -221,6 +226,7 @@
   <div id="main-scene">
     <div id="background-layer"></div>
     <div id="fog-layer"></div>
+    <div id="orb-layer"></div>
     <div id="foreground-layer"></div>
 
     <div id="hud">
@@ -228,17 +234,12 @@
       <div>Turn: <span id="hud-turn">0</span></div>
       <div>Location: <span id="hud-location">Van</span></div>
       <div>Temp: <span id="hud-temp">--°C</span></div>
+      <div>Direction: <span id="hud-direction">N</span></div>
     </div>
 
     <div id="narrator-ui">
       <div id="narrator-log"></div>
-      <div id="narrator-buttons">
-        <button onclick="handleNarratorCommand('move')">Move</button>
-        <button onclick="handleNarratorCommand('use-item')">Use Item</button>
-        <button onclick="handleNarratorCommand('check-gear')">Check Gear</button>
-        <button onclick="handleNarratorCommand('guess-ghost')">Guess Ghost</button>
-        <button onclick="handleNarratorCommand('return-van')">Return to Van</button>
-      </div>
+      <div id="narrator-buttons"></div>
     </div>
   </div>
 
@@ -248,6 +249,7 @@ const game = {
   ghost: null,
   ghostRoom: null,
   playerRoom: "Van",
+  playerDirection: "N",
   inventory: [],
   vanStock: {
     "EMF Reader": true,
@@ -260,10 +262,8 @@ const game = {
     "Smudge Stick": true,
     "Salt": true
   },
-  selectedEvidence: {},
   currentTurn: 0,
   sanity: 100,
-  weather: "Clear", // updated in initializeGame
   huntActive: false,
   smudgeCooldown: 0,
   huntCooldown: 0,
@@ -271,7 +271,358 @@ const game = {
   nextMimicShift: 0
 };
 
-/* === POPULATE LOADOUT === */
+/* === ROOMS MAP WITH DIRECTIONS === */
+const roomsMap = {
+  "Van": { N: "Foyer", S: null, E: null, W: null },
+  "Foyer": { N: "Living Room", S: "Van", E: "Dining Room", W: "Bathroom" },
+  "Living Room": { N: "Kitchen", S: "Foyer", E: "Garage", W: "Kids Bedroom" },
+  "Kitchen": { N: "Basement", S: "Living Room", E: null, W: "Dining Room" },
+  "Dining Room": { N: "Kitchen", S: "Foyer", E: null, W: "Master Bedroom" },
+  "Garage": { N: null, S: "Living Room", E: null, W: null },
+  "Basement": { N: null, S: "Kitchen", E: null, W: null },
+  "Bathroom": { N: null, S: null, E: "Foyer", W: null },
+  "Kids Bedroom": { N: null, S: null, E: "Living Room", W: null },
+  "Master Bedroom": { N: null, S: null, E: "Dining Room", W: null }
+};
+
+/* === BACKGROUND UPDATE === */
+function updateBackground() {
+  const bg = document.getElementById("background-layer");
+  const img = `${game.playerRoom.replace(/ /g,"")}_${game.playerDirection}.png`;
+  bg.style.background = `url('${img}') center center no-repeat`;
+  bg.style.backgroundSize = "cover";
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-direction").textContent = game.playerDirection;
+}
+
+<script>
+/* === GHOST PROFILES === */
+const ghostProfiles = {
+  "Spirit": {
+    evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Standard ghost. Repelled by smudge for ~3 mins."
+  },
+  "Wraith": {
+    evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S Projector"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Can teleport randomly to player."
+  },
+  "Phantom": {
+    evidence: ["Spirit Box", "Fingerprints", "D.O.T.S Projector"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Drops sanity quickly when looked at."
+  },
+  "Poltergeist": {
+    evidence: ["Spirit Box", "Fingerprints", "Ghost Writing"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Throws multiple items at once."
+  },
+  "Banshee": {
+    evidence: ["Fingerprints", "Orbs", "D.O.T.S Projector"],
+    sanityThreshold: "Early", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Targets a specific player."
+  },
+  "Jinn": {
+    evidence: ["EMF Level 5", "Fingerprints", "Freezing Temps"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Fast-LOS",
+    behavior: "Moves faster if it has line of sight."
+  },
+  "Mare": {
+    evidence: ["Spirit Box", "Ghost Writing", "Orbs"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Prefers darkness, avoids light."
+  },
+  "Revenant": {
+    evidence: ["Ghost Writing", "Freezing Temps", "Orbs"],
+    sanityThreshold: "Average", huntCooldown: 25, speedCategory: "Fast",
+    behavior: "Very fast when chasing; slow if no LOS."
+  },
+  "Shade": {
+    evidence: ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
+    sanityThreshold: "Late", huntCooldown: 25, speedCategory: "Slow",
+    behavior: "Shy, rarely hunts if players are grouped."
+  },
+  "Demon": {
+    evidence: ["Fingerprints", "Freezing Temps", "Ghost Writing"],
+    sanityThreshold: "VeryEarly", huntCooldown: 10, speedCategory: "Normal",
+    behavior: "Aggressive, frequent hunts; smudge very short."
+  },
+  "Yurei": {
+    evidence: ["Freezing Temps", "Orbs", "D.O.T.S Projector"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Can drop sanity sharply; stuck in room for 5 turns after smudge."
+  },
+  "Oni": {
+    evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S Projector"],
+    sanityThreshold: "Early", huntCooldown: 20, speedCategory: "Fast-LOS",
+    behavior: "More visible, very active."
+  },
+  "Hantu": {
+    evidence: ["Fingerprints", "Freezing Temps", "Orbs"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Fast",
+    behavior: "Faster in cold rooms."
+  },
+  "Goryo": {
+    evidence: ["EMF Level 5", "Fingerprints", "D.O.T.S Projector"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Never leaves its ghost room."
+  },
+  "Myling": {
+    evidence: ["EMF Level 5", "Fingerprints", "Ghost Writing"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Quieter footsteps during hunts; has sound timer (~30s)."
+  },
+  "Onryo": {
+    evidence: ["Spirit Box", "Freezing Temps", "Orbs"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Can hunt more often if candles are out."
+  },
+  "The Twins": {
+    evidence: ["EMF Level 5", "Spirit Box", "Freezing Temps"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Interacts in two places at once."
+  },
+  "Raiju": {
+    evidence: ["EMF Level 5", "Orbs", "D.O.T.S Projector"],
+    sanityThreshold: "Early", huntCooldown: 20, speedCategory: "Fast",
+    behavior: "Faster near active electronics."
+  },
+  "Obake": {
+    evidence: ["EMF Level 5", "Fingerprints", "Orbs"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Rarely leaves unique fingerprints."
+  },
+  "The Mimic": {
+    evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"],
+    sanityThreshold: "Average", huntCooldown: 20, speedCategory: "Normal",
+    behavior: "Mimics other ghosts every 3–6 turns; always shows fake orbs on camera."
+  },
+  "Moroi": {
+    evidence: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
+    sanityThreshold: "Early", huntCooldown: 20, speedCategory: "Fast",
+    behavior: "Cursed sanity drain; very fast at low sanity."
+  },
+  "Deogen": {
+    evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S Projector"],
+    sanityThreshold: "VeryEarly", huntCooldown: 20, speedCategory: "Slow",
+    behavior: "Knows where you are but moves very slowly."
+  },
+  "Thaye": {
+    evidence: ["Ghost Writing", "Orbs", "D.O.T.S Projector"],
+    sanityThreshold: "Early", huntCooldown: 20, speedCategory: "Fast",
+    behavior: "Very active early; weakens over time."
+  },
+  "Succubus": {
+    evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"],
+    sanityThreshold: "VeryEarly", huntCooldown: 15, speedCategory: "Fast",
+    behavior: "Aggressive at low sanity; drains extra sanity when near player."
+  }
+};
+
+/* === WEATHER SYSTEM === */
+let currentWeather = "Clear";
+let bloodMoonActive = false;
+
+function randomizeWeather() {
+  const roll = Math.random();
+  if (roll < 0.1) {
+    currentWeather = "Blood Moon";
+    bloodMoonActive = true;
+    narratorLog("🌕 A Blood Moon rises. The air feels cursed.");
+  } else if (roll < 0.4) {
+    currentWeather = "Rain";
+    bloodMoonActive = false;
+    narratorLog("🌧️ Rain patters against the windows.");
+  } else {
+    currentWeather = "Clear";
+    bloodMoonActive = false;
+    narratorLog("The night is calm and clear.");
+  }
+  updateWeatherVisuals();
+}
+
+function updateWeatherVisuals() {
+  const fogLayer = document.getElementById("fog-layer");
+  const foreground = document.getElementById("foreground-layer");
+  if (currentWeather === "Rain") {
+    fogLayer.style.background = `repeating-linear-gradient(
+      0deg,
+      rgba(200,200,255,0.15),
+      rgba(200,200,255,0.15) 2px,
+      transparent 3px,
+      transparent 6px
+    )`;
+  } else { fogLayer.style.background = "transparent"; }
+  if (bloodMoonActive) { foreground.style.background = "rgba(255,0,0,0.15)"; }
+  else { foreground.style.background = "transparent"; }
+}
+
+/* === CAMERA ORBS EVIDENCE === */
+function showCameraOrbs() {
+  const orbLayer = document.getElementById("orb-layer");
+  orbLayer.innerHTML = "";
+  if (game.playerRoom === game.ghostRoom &&
+    (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
+    for (let i = 0; i < 3; i++) {
+      const orb = document.createElement("div");
+      orb.className = "spirit-orb";
+      orb.style.width = `${6 + Math.random() * 6}px`;
+      orb.style.height = orb.style.width;
+      orb.style.top = `${Math.random() * 80}%`;
+      orb.style.left = `${Math.random() * 80}%`;
+      orb.style.opacity = 0;
+      orbLayer.appendChild(orb);
+      setTimeout(() => {
+        orb.style.opacity = 1;
+        setTimeout(() => { orb.style.opacity = 0; orb.remove(); },
+          4000 + Math.random() * 2000);
+      }, 200 + i * 300);
+    }
+  }
+}
+
+/* === MIMIC SHIFT === */
+function mimicShift() {
+  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
+  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
+  narratorLog(`The Mimic alters its behavior... now imitating a ${game.mimicForm}.`);
+}
+
+/* === HUNT CHANCE CALCULATION === */
+function huntChance() {
+  const profile = ghostProfiles[game.ghost];
+  let threshold;
+  switch (profile.sanityThreshold) {
+    case "VeryEarly": threshold = 75; break;
+    case "Early": threshold = 50; break;
+    case "Average": threshold = 40; break;
+    case "Late": threshold = 30; break;
+    default: threshold = 40;
+  }
+  return game.sanity <= threshold ? 30 : 5;
+}
+
+/* === START HUNT === */
+function startHunt() {
+  if (game.huntCooldown > 0) { game.huntCooldown--; return; }
+  game.huntActive = true;
+  narratorLog("⚠️ The air grows cold... A hunt has begun!");
+}
+
+/* === RESOLVE HUNT === */
+function resolveHunt() {
+  if (!game.huntActive) return;
+  if (defendDuringHunt()) return;
+  const aggression = getGhostAggression(game.ghost);
+  const deathChance = aggression + (100 - game.sanity) * 0.2;
+  if (Math.random() * 100 < deathChance) { playerDeath(); }
+  else { narratorLog("The ghost stalks you... but you evade it."); endHunt(); }
+}
+
+/* === END HUNT === */
+function endHunt() {
+  game.huntActive = false;
+  game.huntCooldown = ghostProfiles[game.ghost].huntCooldown;
+}
+
+/* === DEFENSE CHECK === */
+function defendDuringHunt() {
+  if (game.inventory.includes("Crucifix") && game.playerRoom === game.ghostRoom) {
+    narratorLog("✝️ The Crucifix burns and prevents the hunt!");
+    game.huntActive = false;
+    return true;
+  }
+  return false;
+}
+
+/* === GHOST AGGRESSION === */
+function getGhostAggression(ghost) {
+  switch (ghost) {
+    case "Demon": return 60;
+    case "Moroi": return 50;
+    case "Thaye": return game.currentTurn < 15 ? 40 : 20;
+    case "Succubus": return 55;
+    case "The Mimic": return game.mimicForm ? getGhostAggression(game.mimicForm) : 30;
+    default: return 30;
+  }
+}
+
+/* === PLAYER DEATH === */
+function playerDeath() {
+  game.huntActive = false;
+  narratorLog("💀 The ghost catches you! Your vision fades to black...");
+  setTimeout(() => {
+    narratorLog(`GAME OVER — The ghost was a ${game.ghost}.`);
+    const buttons = document.getElementById("narrator-buttons");
+    buttons.innerHTML = `<button onclick="restartGame()">Start New Game</button>`;
+  }, 2000);
+}
+
+<script>
+/* === ITEM USE (CAMERA & SMUDGE INCLUDED) === */
+function useItem(item) {
+  if (!game.inventory.includes(item)) {
+    narratorLog(`You aren't carrying a ${item}.`);
+    return;
+  }
+  switch (item) {
+    case "Smudge Stick":
+      if (game.playerRoom === game.ghostRoom) {
+        narratorLog("🔥 You smudge the ghost's room. It retreats!");
+        game.smudgeCooldown = game.ghost === "Yurei" ? 5 : 3;
+        game.huntActive = false;
+        const index = game.inventory.indexOf("Smudge Stick");
+        game.inventory.splice(index, 1);
+      } else {
+        narratorLog("You smudge, but nothing happens here.");
+      }
+      break;
+
+    case "Camera":
+      if (game.playerRoom === game.ghostRoom &&
+        (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
+        narratorLog("📷 You see ghost orbs through the camera!");
+        showCameraOrbs();
+      } else {
+        narratorLog("📷 No orbs detected in this room.");
+      }
+      break;
+
+    default:
+      narratorLog(`You use the ${item}, but nothing significant happens.`);
+  }
+  updateHUD();
+}
+
+/* === MOVEMENT (ROOM-TO-ROOM) === */
+function moveTo(room) {
+  if (!Object.values(roomsMap[game.playerRoom]).includes(room)) {
+    narratorLog("You can't move there directly.");
+    return;
+  }
+  game.playerRoom = room;
+  narratorLog(`You move to the ${room}.`);
+  advanceTurn();
+  updateBackground();
+  if (game.inventory.includes("Camera")) showCameraOrbs();
+}
+
+/* === DIRECTIONAL MOVE FUNCTION === */
+function moveDirection(dir) {
+  const target = roomsMap[game.playerRoom][dir];
+  if (!target) {
+    narratorLog("You can't go that way.");
+    return;
+  }
+  game.playerRoom = target;
+  game.playerDirection = dir;
+  narratorLog(`You move ${dir} into the ${target}.`);
+  updateBackground();
+  advanceTurn();
+}
+
+/* === LOADOUT SYSTEM === */
 function populateLoadout() {
   const held = document.getElementById("held-items");
   const van = document.getElementById("van-items");
@@ -312,438 +663,12 @@ function populateLoadout() {
 
 /* === CONFIRM LOADOUT === */
 function confirmLoadout() {
-  if (game.inventory.length === 0) {
-    alert("Select at least one item before starting!");
-    return;
-  }
   document.getElementById("loadout-screen").style.display = "none";
   document.getElementById("main-scene").style.display = "block";
   initializeGame();
   renderActionButtons();
-}
-
-/* === INITIALIZE GAME === */
-function initializeGame() {
-  game.currentTurn = 0;
-  game.sanity = 100;
-  game.playerRoom = "Van";
-
-  const possibleWeather = ["Clear", "Rain", "Blood Moon"];
-  game.weather = possibleWeather[Math.floor(Math.random()*possibleWeather.length)];
-
-  const ghosts = Object.keys(ghostProfiles);
-  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
-
-  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
-  game.ghostRoom = roomKeys[Math.floor(Math.random() * roomKeys.length)];
-  if (game.ghost === "Goryo") game.ghostRoom = "Garage";
-
-  narratorLog(`You arrive at the location. Weather: ${game.weather}. Investigation begins.`);
-  narratorLog(`Current location: ${game.playerRoom}`);
-  updateHUD();
-}
-
-/* === HUD UPDATE === */
-function updateHUD() {
-  document.getElementById("hud-sanity").textContent = `${game.sanity}%`;
-  document.getElementById("hud-turn").textContent = game.currentTurn;
-  document.getElementById("hud-location").textContent = game.playerRoom;
-  document.getElementById("hud-temp").textContent = 
-    game.inventory.includes("Thermometer") 
-      ? `${(Math.random() * 10 + 5).toFixed(1)}°C` 
-      : "--°C";
-}
-
-/* === STARTUP ON PAGE LOAD === */
-document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("loadout-screen").style.display = "flex";
-  document.getElementById("main-scene").style.display = "none";
-  populateLoadout();
-});
-</script>
-
-<script>
-/* === GHOST PROFILES === */
-const ghostProfiles = {
-  "Spirit": {
-    evidence: ["EMF Level 5", "Spirit Box", "Ghost Writing"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Standard ghost. Repelled by smudge for ~3 mins."
-  },
-  "Wraith": {
-    evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S Projector"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Can teleport randomly to player."
-  },
-  "Phantom": {
-    evidence: ["Spirit Box", "Fingerprints", "D.O.T.S Projector"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Drops sanity quickly when looked at."
-  },
-  "Poltergeist": {
-    evidence: ["Spirit Box", "Fingerprints", "Ghost Writing"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Throws multiple items at once."
-  },
-  "Banshee": {
-    evidence: ["Fingerprints", "Orbs", "D.O.T.S Projector"],
-    sanityThreshold: "Early",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Targets a specific player."
-  },
-  "Jinn": {
-    evidence: ["EMF Level 5", "Fingerprints", "Freezing Temps"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Fast-LOS",
-    behavior: "Moves faster if it has line of sight."
-  },
-  "Mare": {
-    evidence: ["Spirit Box", "Ghost Writing", "Orbs"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Prefers darkness, avoids light."
-  },
-  "Revenant": {
-    evidence: ["Ghost Writing", "Freezing Temps", "Orbs"],
-    sanityThreshold: "Average",
-    huntCooldown: 25,
-    speedCategory: "Fast",
-    behavior: "Very fast when chasing; slow if no LOS."
-  },
-  "Shade": {
-    evidence: ["EMF Level 5", "Ghost Writing", "Freezing Temps"],
-    sanityThreshold: "Late",
-    huntCooldown: 25,
-    speedCategory: "Slow",
-    behavior: "Shy, rarely hunts if players are grouped."
-  },
-  "Demon": {
-    evidence: ["Fingerprints", "Freezing Temps", "Ghost Writing"],
-    sanityThreshold: "VeryEarly",
-    huntCooldown: 10,
-    speedCategory: "Normal",
-    behavior: "Aggressive, frequent hunts; smudge very short."
-  },
-  "Yurei": {
-    evidence: ["Freezing Temps", "Orbs", "D.O.T.S Projector"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Can drop sanity sharply; stuck in room for 5 turns after smudge."
-  },
-  "Oni": {
-    evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S Projector"],
-    sanityThreshold: "Early",
-    huntCooldown: 20,
-    speedCategory: "Fast-LOS",
-    behavior: "More visible, very active."
-  },
-  "Hantu": {
-    evidence: ["Fingerprints", "Freezing Temps", "Orbs"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Fast",
-    behavior: "Faster in cold rooms."
-  },
-  "Goryo": {
-    evidence: ["EMF Level 5", "Fingerprints", "D.O.T.S Projector"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Never leaves its ghost room."
-  },
-  "Myling": {
-    evidence: ["EMF Level 5", "Fingerprints", "Ghost Writing"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Quieter footsteps during hunts; has sound timer (~30s)."
-  },
-  "Onryo": {
-    evidence: ["Spirit Box", "Freezing Temps", "Orbs"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Can hunt more often if candles are out."
-  },
-  "The Twins": {
-    evidence: ["EMF Level 5", "Spirit Box", "Freezing Temps"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Interacts in two places at once."
-  },
-  "Raiju": {
-    evidence: ["EMF Level 5", "Orbs", "D.O.T.S Projector"],
-    sanityThreshold: "Early",
-    huntCooldown: 20,
-    speedCategory: "Fast",
-    behavior: "Faster near active electronics."
-  },
-  "Obake": {
-    evidence: ["EMF Level 5", "Fingerprints", "Orbs"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Rarely leaves unique fingerprints."
-  },
-  "The Mimic": {
-    evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"],
-    sanityThreshold: "Average",
-    huntCooldown: 20,
-    speedCategory: "Normal",
-    behavior: "Mimics other ghosts every 3–6 turns; always shows fake orbs on camera."
-  },
-  "Moroi": {
-    evidence: ["Spirit Box", "Ghost Writing", "Freezing Temps"],
-    sanityThreshold: "Early",
-    huntCooldown: 20,
-    speedCategory: "Fast",
-    behavior: "Cursed sanity drain; very fast at low sanity."
-  },
-  "Deogen": {
-    evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S Projector"],
-    sanityThreshold: "VeryEarly",
-    huntCooldown: 20,
-    speedCategory: "Slow",
-    behavior: "Knows where you are but moves very slowly."
-  },
-  "Thaye": {
-    evidence: ["Ghost Writing", "Orbs", "D.O.T.S Projector"],
-    sanityThreshold: "Early",
-    huntCooldown: 20,
-    speedCategory: "Fast",
-    behavior: "Very active early; weakens over time."
-  },
-  "Succubus": {
-    evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"],
-    sanityThreshold: "VeryEarly",
-    huntCooldown: 15,
-    speedCategory: "Fast",
-    behavior: "Aggressive at low sanity; drains extra sanity when near player."
-  }
-};
-
-/* === ROOMS MAP === */
-const roomsMap = {
-  "Van": ["Foyer"],
-  "Foyer": ["Van","Living Room","Dining Room","Bathroom","Kids Bedroom","Master Bedroom"],
-  "Living Room": ["Foyer","Kitchen","Garage"],
-  "Kitchen": ["Living Room","Dining Room","Basement"],
-  "Dining Room": ["Foyer","Kitchen"],
-  "Garage": ["Living Room"],
-  "Basement": ["Kitchen"],
-  "Bathroom": ["Foyer"],
-  "Kids Bedroom": ["Foyer"],
-  "Master Bedroom": ["Foyer"]
-};
-
-/* === TURN SYSTEM & ADVANCEMENT === */
-function advanceTurn() {
-  game.currentTurn++;
-
-  // Sanity drain baseline
-  if (game.sanity > 0) {
-    game.sanity -= (Math.random() * 2 + 1);
-    if (game.sanity < 0) game.sanity = 0;
-  }
-
-  // Mimic mimicry shift
-  if (game.ghost === "The Mimic" && game.currentTurn >= game.nextMimicShift) {
-    mimicShift();
-    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-  }
-
-  // Ghost room shifting (all except Goryo)
-  if (game.ghost !== "Goryo" && Math.random() < 0.2) {
-    if (game.ghost === "Yurei" && game.smudgeCooldown > 0) {
-      game.smudgeCooldown--;
-    } else {
-      const rooms = Object.keys(roomsMap).filter(r => r !== "Van");
-      game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
-    }
-  }
-
-  // Hunt trigger
-  if (!game.huntActive && Math.random() * 100 < huntChance()) {
-    startHunt();
-  }
-
-  if (game.huntActive) resolveHunt();
-
-  updateHUD();
-  ambientNarration();
-}
-
-/* === HUNT CHANCE === */
-function huntChance() {
-  let threshold;
-  const profile = ghostProfiles[game.ghost];
-  switch (profile.sanityThreshold) {
-    case "VeryEarly": threshold = 75; break;
-    case "Early": threshold = 50; break;
-    case "Average": threshold = 40; break;
-    case "Late": threshold = 30; break;
-    default: threshold = 40;
-  }
-  return game.sanity <= threshold ? 30 : 5;
-}
-
-/* === START HUNT === */
-function startHunt() {
-  if (game.huntCooldown > 0) {
-    game.huntCooldown--;
-    return;
-  }
-  game.huntActive = true;
-  narratorLog("⚠️ The air grows cold... A hunt has begun!");
-}
-
-/* === RESOLVE HUNT === */
-function resolveHunt() {
-  if (!game.huntActive) return;
-  if (defendDuringHunt()) return;
-
-  const aggression = getGhostAggression(game.ghost);
-  const deathChance = aggression + (100 - game.sanity) * 0.2;
-  if (Math.random() * 100 < deathChance) {
-    playerDeath();
-  } else {
-    narratorLog("The ghost stalks you... but you evade it this time.");
-    endHunt();
-  }
-}
-
-/* === END HUNT === */
-function endHunt() {
-  game.huntActive = false;
-  game.huntCooldown = ghostProfiles[game.ghost].huntCooldown;
-}
-
-/* === DEFENSE CHECK === */
-function defendDuringHunt() {
-  if (game.inventory.includes("Crucifix") && game.playerRoom === game.ghostRoom) {
-    narratorLog("✝️ The Crucifix burns and prevents the hunt!");
-    game.huntActive = false;
-    return true;
-  }
-  return false;
-}
-
-/* === GHOST AGGRESSION FACTOR === */
-function getGhostAggression(ghost) {
-  switch (ghost) {
-    case "Demon": return 60;
-    case "Moroi": return 50;
-    case "Thaye": return game.currentTurn < 15 ? 40 : 20;
-    case "Succubus": return 55;
-    case "The Mimic":
-      if (game.mimicForm) return getGhostAggression(game.mimicForm);
-      return 30;
-    default: return 30;
-  }
-}
-
-/* === PLAYER DEATH === */
-function playerDeath() {
-  game.huntActive = false;
-  narratorLog("💀 The ghost catches you! Your vision fades to black...");
-  setTimeout(() => {
-    narratorLog(`GAME OVER — The ghost was a ${game.ghost}.`);
-    const btnContainer = document.getElementById("narrator-buttons");
-    btnContainer.innerHTML = `<button onclick="restartGame()">Start New Game</button>`;
-  }, 2000);
-}
-
-/* === MIMIC SHIFT === */
-function mimicShift() {
-  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
-  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
-  narratorLog(`The Mimic alters its behavior... now imitating a ${game.mimicForm}.`);
-}
-
-/* === CAMERA ORB CHECK === */
-function useItem(item) {
-  if (!game.inventory.includes(item)) {
-    narratorLog(`You aren't carrying a ${item}.`);
-    return;
-  }
-  switch (item) {
-    case "Smudge Stick":
-      if (game.playerRoom === game.ghostRoom) {
-        narratorLog("🔥 You smudge the ghost's room. It retreats!");
-        game.smudgeCooldown = game.ghost === "Yurei" ? 5 : 3;
-        game.huntActive = false;
-        const index = game.inventory.indexOf("Smudge Stick");
-        game.inventory.splice(index, 1);
-      } else {
-        narratorLog("You smudge, but nothing happens here.");
-      }
-      break;
-    case "Camera":
-      if (game.playerRoom === game.ghostRoom &&
-          (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
-        narratorLog("📷 You see ghost orbs through the camera!");
-      } else {
-        narratorLog("📷 No orbs detected in this room.");
-      }
-      break;
-    default:
-      narratorLog(`You use the ${item}, but nothing significant happens.`);
-  }
-  updateHUD();
-}
-</script>
-
-<script>
-/* === MOVEMENT LOGIC === */
-function moveTo(room) {
-  if (!roomsMap[game.playerRoom].includes(room)) {
-    narratorLog("You can't move there directly.");
-    return;
-  }
-  game.playerRoom = room;
-  narratorLog(`You move to the ${room}.`);
-  advanceTurn();
-}
-
-/* === NARRATOR LOG APPEND === */
-function narratorLog(message) {
-  const log = document.getElementById("narrator-log");
-  const p = document.createElement("p");
-  p.textContent = message;
-  log.appendChild(p);
-  log.scrollTop = log.scrollHeight;
-}
-
-/* === RESTART GAME === */
-function restartGame() {
-  game.inventory = [];
-  game.vanStock = {
-    "EMF Reader": true,
-    "Spirit Box": true,
-    "Camera": true,
-    "UV Light": true,
-    "D.O.T.S Projector": true,
-    "Thermometer": true,
-    "Crucifix": true,
-    "Smudge Stick": true,
-    "Salt": true
-  };
-  document.getElementById("main-scene").style.display = "none";
-  document.getElementById("loadout-screen").style.display = "flex";
-  populateLoadout();
+  updateBackground();
+  narratorLog("🎒 Loadout confirmed. The investigation begins!");
 }
 
 /* === NARRATOR BUTTON HANDLER === */
@@ -777,15 +702,20 @@ function handleNarratorCommand(cmd) {
 function openMoveMenu() {
   const buttons = document.getElementById("narrator-buttons");
   buttons.innerHTML = "";
-  roomsMap[game.playerRoom].forEach(room => {
-    const btn = document.createElement("button");
-    btn.textContent = `Go to ${room}`;
-    btn.onclick = () => {
-      moveTo(room);
-      renderActionButtons();
-    };
-    buttons.appendChild(btn);
+  const exits = roomsMap[game.playerRoom];
+
+  Object.keys(exits).forEach(dir => {
+    if (exits[dir]) {
+      const btn = document.createElement("button");
+      btn.textContent = `Go ${dir} to ${exits[dir]}`;
+      btn.onclick = () => {
+        moveDirection(dir);
+        renderActionButtons();
+      };
+      buttons.appendChild(btn);
+    }
   });
+
   const backBtn = document.createElement("button");
   backBtn.textContent = "Cancel";
   backBtn.onclick = renderActionButtons;
@@ -850,8 +780,6 @@ function endGameGuess(guess) {
 function openVanSwapMenu() {
   const buttons = document.getElementById("narrator-buttons");
   buttons.innerHTML = "";
-
-  // Take items from van
   Object.keys(game.vanStock).forEach(item => {
     if (game.vanStock[item]) {
       const btn = document.createElement("button");
@@ -869,8 +797,6 @@ function openVanSwapMenu() {
       buttons.appendChild(btn);
     }
   });
-
-  // Leave items back to van
   game.inventory.forEach(item => {
     const btn = document.createElement("button");
     btn.textContent = `Leave ${item}`;
@@ -885,7 +811,6 @@ function openVanSwapMenu() {
     };
     buttons.appendChild(btn);
   });
-
   const backBtn = document.createElement("button");
   backBtn.textContent = "Done";
   backBtn.onclick = renderActionButtons;
@@ -903,220 +828,56 @@ function renderActionButtons() {
     <button onclick="handleNarratorCommand('return-van')">${game.playerRoom==="Van"?"Check Gear":"Return to Van"}</button>
   `;
 }
-</script>
 
-<script>
-/* === LOADOUT SYSTEM === */
-function populateLoadout() {
-  const held = document.getElementById("held-items");
-  const van = document.getElementById("van-items");
-  held.innerHTML = "";
-  van.innerHTML = "";
-
-  // Populate van stock
-  Object.keys(game.vanStock).forEach(item => {
-    if (game.vanStock[item]) {
-      const btn = document.createElement("button");
-      btn.textContent = item;
-      btn.onclick = () => {
-        if (game.inventory.length < 3) {
-          game.inventory.push(item);
-          game.vanStock[item] = false;
-          populateLoadout();
-        } else {
-          alert("You can only hold 3 items.");
-        }
-      };
-      van.appendChild(btn);
-    }
-  });
-
-  // Populate held items
-  game.inventory.forEach(item => {
-    const btn = document.createElement("button");
-    btn.textContent = item;
-    btn.onclick = () => {
-      const idx = game.inventory.indexOf(item);
-      if (idx !== -1) {
-        game.inventory.splice(idx,1);
-        game.vanStock[item] = true;
-        populateLoadout();
-      }
-    };
-    held.appendChild(btn);
-  });
+/* === NARRATOR LOG APPEND === */
+function narratorLog(message) {
+  const log = document.getElementById("narrator-log");
+  const p = document.createElement("p");
+  p.textContent = message;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
 }
 
-/* === CONFIRM LOADOUT === */
-function confirmLoadout() {
-  if (game.inventory.length === 0) {
-    alert("Take at least 1 item before starting!");
-    return;
-  }
-  document.getElementById("loadout-screen").style.display = "none";
-  document.getElementById("main-scene").style.display = "block";
-  initializeGame();
-  renderActionButtons();
+/* === RESTART GAME === */
+function restartGame() {
+  game.inventory = [];
+  game.vanStock = {
+    "EMF Reader": true, "Spirit Box": true, "Camera": true,
+    "UV Light": true, "D.O.T.S Projector": true, "Thermometer": true,
+    "Crucifix": true, "Smudge Stick": true, "Salt": true
+  };
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("loadout-screen").style.display = "flex";
+  document.getElementById("narrator-log").innerHTML = "";
+  populateLoadout();
 }
 
-/* === INITIALIZE GAME === */
-function initializeGame() {
-  // Reset state
-  game.currentTurn = 0;
-  game.sanity = 100;
-  game.huntActive = false;
-  game.playerRoom = "Van";
-
-  // Pick random ghost
-  const ghosts = Object.keys(ghostProfiles);
-  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
-
-  // Pick random ghost room (Goryo fixed)
-  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
-  game.ghostRoom = roomKeys[Math.floor(Math.random() * roomKeys.length)];
-  if (game.ghost === "Goryo") game.ghostRoom = "Garage";
-
-  // Mimic setup
-  if (game.ghost === "The Mimic") {
-    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-    mimicShift();
-  }
-
-  // Weather setup (random chance for rain or blood moon)
-  determineWeather();
-
-  narratorLog(`You arrive at the location. The investigation begins...`);
-  narratorLog(`Current location: ${game.playerRoom}`);
-  updateHUD();
-}
-
-/* === HUD UPDATER === */
-function updateHUD() {
-  document.getElementById("hud-sanity").textContent = `${Math.round(game.sanity)}%`;
-  document.getElementById("hud-turn").textContent = game.currentTurn;
-  document.getElementById("hud-location").textContent = game.playerRoom;
-  document.getElementById("hud-temp").textContent =
-    game.inventory.includes("Thermometer")
-      ? `${(Math.random() * 10 + 5).toFixed(1)}°C`
-      : "--°C";
-}
-
-/* === WEATHER SYSTEM === */
-let currentWeather = "clear"; // "clear", "rain", "blood-moon"
-
-function determineWeather() {
-  const roll = Math.random();
-  if (roll < 0.15) {
-    currentWeather = "blood-moon";
-    narratorLog("🌕 A blood moon casts an eerie red glow over the house...");
-  } else if (roll < 0.45) {
-    currentWeather = "rain";
-    narratorLog("🌧️ Rain patters against the windows outside...");
-    startRainEffects();
-  } else {
-    currentWeather = "clear";
-    narratorLog("The night is quiet, the air still.");
-  }
-  startWeatherLightning();
-}
-
-/* === LIGHTNING EFFECTS — Only for Rain or Blood Moon === */
-function startWeatherLightning() {
-  const foreground = document.getElementById("foreground-layer");
-  setInterval(() => {
-    if (document.getElementById("main-scene").style.display !== "block") return;
-    if (currentWeather === "rain" || currentWeather === "blood-moon") {
-      if (Math.random() < 0.15) {
-        foreground.style.background =
-          currentWeather === "blood-moon"
-            ? "rgba(255,0,0,0.4)"
-            : "rgba(255,255,255,0.6)";
-        setTimeout(() => (foreground.style.background = "transparent"), 100 + Math.random() * 200);
-      }
-    }
-  }, 5000);
-}
-
-/* === RAIN EFFECTS (SIMPLE TEXTURE MOVEMENT) === */
-let rainCanvas;
-function startRainEffects() {
-  if (!rainCanvas) {
-    rainCanvas = document.createElement("canvas");
-    rainCanvas.id = "rain-layer";
-    rainCanvas.style.position = "absolute";
-    rainCanvas.style.top = 0;
-    rainCanvas.style.left = 0;
-    rainCanvas.style.width = "100%";
-    rainCanvas.style.height = "100%";
-    rainCanvas.style.zIndex = 1;
-    document.getElementById("main-scene").appendChild(rainCanvas);
-  }
-  const ctx = rainCanvas.getContext("2d");
-  const drops = [];
-  for (let i = 0; i < 120; i++) {
-    drops.push({
-      x: Math.random() * rainCanvas.width,
-      y: Math.random() * rainCanvas.height,
-      len: Math.random() * 15 + 5,
-      speed: Math.random() * 2 + 2,
-    });
-  }
-  function animateRain() {
-    ctx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
-    ctx.strokeStyle = "rgba(200,200,255,0.6)";
-    ctx.lineWidth = 1;
-    drops.forEach(d => {
-      ctx.beginPath();
-      ctx.moveTo(d.x, d.y);
-      ctx.lineTo(d.x, d.y + d.len);
-      ctx.stroke();
-      d.y += d.speed;
-      if (d.y > rainCanvas.height) {
-        d.y = -10;
-        d.x = Math.random() * rainCanvas.width;
-      }
-    });
-    if (currentWeather === "rain" && document.getElementById("main-scene").style.display === "block") {
-      requestAnimationFrame(animateRain);
-    }
-  }
-  rainCanvas.width = window.innerWidth;
-  rainCanvas.height = window.innerHeight;
-  animateRain();
-}
-
-/* === FOG EFFECTS (ALWAYS ON) === */
-const fogLayer = document.getElementById("fog-layer");
-function animateFog() {
-  fogLayer.style.background = `radial-gradient(circle at ${Math.random() * 100}% ${Math.random() * 100}%, rgba(200,200,200,0.05), transparent 60%)`;
-}
-setInterval(animateFog, 2000);
-
-/* === AUTO-START LOADOUT === */
+/* === INITIAL DOM SETUP === */
 document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("loadout-screen").style.display = "flex";
+  document.getElementById("main-scene").style.display = "none";
   populateLoadout();
 });
 </script>
 
 <script>
-/* === ADVANCE TURN SYSTEM === */
+/* === TURN SYSTEM & ADVANCEMENT === */
 function advanceTurn() {
   game.currentTurn++;
 
-  // Baseline sanity drain
+  // Sanity drain baseline
   if (game.sanity > 0) {
     game.sanity -= (Math.random() * 2 + 1);
     if (game.sanity < 0) game.sanity = 0;
   }
 
-  // Mimic behavior shifts every 3–6 turns
+  // Mimic mimicry shift
   if (game.ghost === "The Mimic" && game.currentTurn >= game.nextMimicShift) {
     mimicShift();
     game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
   }
 
-  // Ghost room shifting (except Goryo & Yurei with smudge cooldown)
+  // Ghost room shifting (all except Goryo)
   if (game.ghost !== "Goryo" && Math.random() < 0.2) {
     if (game.ghost === "Yurei" && game.smudgeCooldown > 0) {
       game.smudgeCooldown--;
@@ -1126,19 +887,161 @@ function advanceTurn() {
     }
   }
 
-  // Hunt trigger logic
+  // Hunt trigger
   if (!game.huntActive && Math.random() * 100 < huntChance()) {
     startHunt();
   }
 
-  // Hunt resolution if active
+  // Hunt resolution
   if (game.huntActive) resolveHunt();
 
   updateHUD();
+  renderCompassExits();
   ambientNarration();
 }
 
-/* === HUNT CHANCE BASED ON SANITY === */
+/* === COMPASS EXITS ANNOUNCER === */
+function renderCompassExits() {
+  const exits = roomsMap[game.playerRoom];
+  let available = [];
+  Object.keys(exits).forEach(dir => {
+    if (exits[dir]) available.push(`${dir} ➜ ${exits[dir]}`);
+  });
+  if (available.length > 0) {
+    narratorLog(`Exits available: ${available.join(", ")}.`);
+  } else {
+    narratorLog("There are no exits from this room.");
+  }
+}
+
+/* === WEATHER SYSTEM (RAIN OR BLOOD MOON) === */
+let currentWeather = "Clear";
+let bloodMoonActive = false;
+
+function randomizeWeather() {
+  const roll = Math.random();
+  if (roll < 0.1) {
+    currentWeather = "Blood Moon";
+    bloodMoonActive = true;
+    narratorLog("🌕 A Blood Moon rises. The air feels cursed.");
+  } else if (roll < 0.4) {
+    currentWeather = "Rain";
+    bloodMoonActive = false;
+    narratorLog("🌧️ Rain patters against the windows.");
+  } else {
+    currentWeather = "Clear";
+    bloodMoonActive = false;
+    narratorLog("The weather is calm and clear tonight.");
+  }
+  updateWeatherVisuals();
+}
+
+function updateWeatherVisuals() {
+  const fogLayer = document.getElementById("fog-layer");
+  const foreground = document.getElementById("foreground-layer");
+
+  if (currentWeather === "Rain") {
+    fogLayer.style.background = `repeating-linear-gradient(
+      0deg,
+      rgba(200,200,255,0.15),
+      rgba(200,200,255,0.15) 2px,
+      transparent 3px,
+      transparent 6px
+    )`;
+  } else {
+    fogLayer.style.background = "transparent";
+  }
+
+  if (bloodMoonActive) {
+    foreground.style.background = "rgba(255,0,0,0.15)";
+  } else {
+    foreground.style.background = "transparent";
+  }
+}
+
+/* === CAMERA ORB EVIDENCE VISUAL === */
+function showCameraOrbs() {
+  const orbLayer = document.getElementById("orb-layer");
+  orbLayer.innerHTML = "";
+  if (game.playerRoom === game.ghostRoom &&
+    (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
+    for (let i = 0; i < 3; i++) {
+      const orb = document.createElement("div");
+      orb.className = "spirit-orb";
+      orb.style.width = `${6 + Math.random() * 6}px`;
+      orb.style.height = orb.style.width;
+      orb.style.top = `${Math.random() * 80}%`;
+      orb.style.left = `${Math.random() * 80}%`;
+      orb.style.opacity = 0;
+      orbLayer.appendChild(orb);
+
+      setTimeout(() => {
+        orb.style.opacity = 1;
+        setTimeout(() => {
+          orb.style.opacity = 0;
+          orb.remove();
+        }, 4000 + Math.random() * 2000);
+      }, 200 + i * 300);
+    }
+  }
+}
+
+/* === BACKGROUND UPDATE BASED ON ROOM & DIRECTION === */
+function updateBackground() {
+  const bg = document.getElementById("background-layer");
+  const imgName = `${game.playerRoom.replace(/ /g,"")}_${game.playerDirection}.png`;
+  bg.style.background = `url('${imgName}') center center no-repeat`;
+  bg.style.backgroundSize = "cover";
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-direction").textContent = game.playerDirection;
+}
+
+/* === INITIAL GAME START === */
+function initializeGame() {
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.huntActive = false;
+  game.playerRoom = "Van";
+  game.playerDirection = "N";
+
+  const ghosts = Object.keys(ghostProfiles);
+  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
+
+  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
+  game.ghostRoom = roomKeys[Math.floor(Math.random() * roomKeys.length)];
+  if (game.ghost === "Goryo") game.ghostRoom = "Garage";
+
+  if (game.ghost === "The Mimic") {
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+    mimicShift();
+  }
+
+  randomizeWeather();
+  narratorLog(`You arrive at the location. Investigation begins.`);
+  narratorLog(`Ghost has chosen its room...`);
+  narratorLog(`Current location: ${game.playerRoom}`);
+  updateHUD();
+  updateBackground();
+}
+
+/* === STARTUP FIX — ENSURE UI SHOWS === */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("loadout-screen").style.display = "flex";
+  document.getElementById("main-scene").style.display = "none";
+  populateLoadout();
+  narratorLog("Welcome to Phasma‑Phoney v2.7! Select your starting gear.");
+});
+</script>
+
+<script>
+/* === MIMIC SHIFT LOGIC === */
+function mimicShift() {
+  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
+  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
+  narratorLog(`The Mimic alters its behavior... now imitating a ${game.mimicForm}.`);
+}
+
+/* === HUNT CHANCE CALCULATION === */
 function huntChance() {
   const profile = ghostProfiles[game.ghost];
   let threshold;
@@ -1159,7 +1062,7 @@ function startHunt() {
     return;
   }
   game.huntActive = true;
-  narratorLog("⚠️ The air grows icy... A hunt has begun!");
+  narratorLog("⚠️ The air grows cold... A hunt has begun!");
 }
 
 /* === RESOLVE HUNT === */
@@ -1172,7 +1075,7 @@ function resolveHunt() {
   if (Math.random() * 100 < deathChance) {
     playerDeath();
   } else {
-    narratorLog("The ghost prowls nearby, but you manage to evade it.");
+    narratorLog("The ghost stalks you... but you evade it this time.");
     endHunt();
   }
 }
@@ -1183,10 +1086,10 @@ function endHunt() {
   game.huntCooldown = ghostProfiles[game.ghost].huntCooldown;
 }
 
-/* === DEFENSE DURING HUNT === */
+/* === DEFENSE CHECK (SMUDGE & CRUCIFIX) === */
 function defendDuringHunt() {
   if (game.inventory.includes("Crucifix") && game.playerRoom === game.ghostRoom) {
-    narratorLog("✝️ Your Crucifix burns, stopping the hunt!");
+    narratorLog("✝️ The Crucifix burns and prevents the hunt!");
     game.huntActive = false;
     return true;
   }
@@ -1198,9 +1101,10 @@ function getGhostAggression(ghost) {
   switch (ghost) {
     case "Demon": return 60;
     case "Moroi": return 50;
-    case "Succubus": return 55;
     case "Thaye": return game.currentTurn < 15 ? 40 : 20;
-    case "The Mimic": return game.mimicForm ? getGhostAggression(game.mimicForm) : 30;
+    case "Succubus": return 55;
+    case "The Mimic":
+      return game.mimicForm ? getGhostAggression(game.mimicForm) : 30;
     default: return 30;
   }
 }
@@ -1208,38 +1112,39 @@ function getGhostAggression(ghost) {
 /* === PLAYER DEATH === */
 function playerDeath() {
   game.huntActive = false;
-  narratorLog("💀 The ghost catches you... Darkness closes in.");
+  narratorLog("💀 The ghost catches you! Your vision fades to black...");
   setTimeout(() => {
     narratorLog(`GAME OVER — The ghost was a ${game.ghost}.`);
-    const btnContainer = document.getElementById("narrator-buttons");
-    btnContainer.innerHTML = `<button onclick="restartGame()">Start New Game</button>`;
+    const buttons = document.getElementById("narrator-buttons");
+    buttons.innerHTML = `<button onclick="restartGame()">Start New Game</button>`;
   }, 2000);
 }
 
-/* === AMBIENT NARRATION (RANDOM EVENTS) === */
+/* === AMBIENT NARRATION (ATMOSPHERIC HINTS) === */
 function ambientNarration() {
   if (Math.random() < 0.2) {
     const hints = [
-      "You hear faint footsteps in the distance.",
-      "A cold draft brushes past you.",
-      "The floor creaks softly behind you.",
-      "Your breath fogs slightly in the cold air.",
-      "You feel an unsettling presence nearby..."
+      "You hear faint footsteps nearby.",
+      "A distant creak echoes through the halls.",
+      "The temperature seems to drop suddenly.",
+      "Your breath fogs slightly as you exhale.",
+      "You feel like you're being watched..."
     ];
     narratorLog(hints[Math.floor(Math.random() * hints.length)]);
   }
 }
 
-/* === ITEM USE: CAMERA ORBS === */
+/* === ITEM USE OVERRIDES (SMUDGE, CAMERA) === */
 function useItem(item) {
   if (!game.inventory.includes(item)) {
     narratorLog(`You aren't carrying a ${item}.`);
     return;
   }
+
   switch (item) {
     case "Smudge Stick":
       if (game.playerRoom === game.ghostRoom) {
-        narratorLog("🔥 You smudge the ghost's room. The presence retreats briefly.");
+        narratorLog("🔥 You smudge the ghost's room. It retreats!");
         game.smudgeCooldown = game.ghost === "Yurei" ? 5 : 3;
         game.huntActive = false;
         const index = game.inventory.indexOf("Smudge Stick");
@@ -1248,47 +1153,95 @@ function useItem(item) {
         narratorLog("You smudge, but nothing happens here.");
       }
       break;
+
     case "Camera":
-      if (game.playerRoom === game.ghostRoom) {
-        if (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs")) {
-          narratorLog("📷 You see ghost orbs floating in the room!");
-        } else {
-          narratorLog("📷 The room is clear—no orbs visible.");
-        }
+      if (game.playerRoom === game.ghostRoom &&
+        (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
+        narratorLog("📷 You see ghost orbs through the camera!");
+        showCameraOrbs();
       } else {
-        narratorLog("📷 No orbs detected here.");
+        narratorLog("📷 No orbs detected in this room.");
       }
       break;
+
     default:
       narratorLog(`You use the ${item}, but nothing significant happens.`);
   }
   updateHUD();
 }
 
-/* === MIMIC BEHAVIOR SHIFT === */
-function mimicShift() {
-  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
-  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
-  narratorLog(`The Mimic shifts its behavior... imitating a ${game.mimicForm}.`);
+/* === RESTART GAME === */
+function restartGame() {
+  game.inventory = [];
+  game.vanStock = {
+    "EMF Reader": true,
+    "Spirit Box": true,
+    "Camera": true,
+    "UV Light": true,
+    "D.O.T.S Projector": true,
+    "Thermometer": true,
+    "Crucifix": true,
+    "Smudge Stick": true,
+    "Salt": true
+  };
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("loadout-screen").style.display = "flex";
+  const log = document.getElementById("narrator-log");
+  log.innerHTML = "";
+  populateLoadout();
 }
 </script>
 
 <script>
-/* === RENDER ACTION BUTTONS (MAIN INTERFACE) === */
-function renderActionButtons() {
-  const buttons = document.getElementById("narrator-buttons");
-  buttons.innerHTML = `
-    <button onclick="handleNarratorCommand('move')">Move</button>
-    <button onclick="handleNarratorCommand('use-item')">Use Item</button>
-    <button onclick="handleNarratorCommand('check-gear')">Check Gear</button>
-    <button onclick="handleNarratorCommand('guess-ghost')">Guess Ghost</button>
-    <button onclick="handleNarratorCommand('return-van')">${
-      game.playerRoom === "Van" ? "Check Gear" : "Return to Van"
-    }</button>
-  `;
+/* === LOADOUT POPULATION === */
+function populateLoadout() {
+  const held = document.getElementById("held-items");
+  const van = document.getElementById("van-items");
+  held.innerHTML = "";
+  van.innerHTML = "";
+
+  Object.keys(game.vanStock).forEach(item => {
+    if (game.vanStock[item]) {
+      const btn = document.createElement("button");
+      btn.textContent = item;
+      btn.onclick = () => {
+        if (game.inventory.length < 3) {
+          game.inventory.push(item);
+          game.vanStock[item] = false;
+          populateLoadout();
+        } else {
+          alert("You can only hold 3 items.");
+        }
+      };
+      van.appendChild(btn);
+    }
+  });
+
+  game.inventory.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.onclick = () => {
+      const idx = game.inventory.indexOf(item);
+      if (idx !== -1) {
+        game.inventory.splice(idx, 1);
+        game.vanStock[item] = true;
+        populateLoadout();
+      }
+    };
+    held.appendChild(btn);
+  });
 }
 
-/* === HANDLE NARRATOR COMMANDS === */
+/* === CONFIRM LOADOUT === */
+function confirmLoadout() {
+  document.getElementById("loadout-screen").style.display = "none";
+  document.getElementById("main-scene").style.display = "block";
+  initializeGame();
+  renderActionButtons();
+  updateBackground();
+}
+
+/* === NARRATOR BUTTON HANDLER === */
 function handleNarratorCommand(cmd) {
   switch (cmd) {
     case "move":
@@ -1306,7 +1259,7 @@ function handleNarratorCommand(cmd) {
     case "return-van":
       if (game.playerRoom !== "Van") {
         game.playerRoom = "Van";
-        narratorLog("You return to the van to check your gear.");
+        narratorLog("You return to the van to check gear.");
         advanceTurn();
       } else {
         openVanSwapMenu();
@@ -1315,19 +1268,24 @@ function handleNarratorCommand(cmd) {
   }
 }
 
-/* === MOVE MENU === */
+/* === MOVE MENU (COMPASS-BASED) === */
 function openMoveMenu() {
   const buttons = document.getElementById("narrator-buttons");
   buttons.innerHTML = "";
-  roomsMap[game.playerRoom].forEach(room => {
-    const btn = document.createElement("button");
-    btn.textContent = `Go to ${room}`;
-    btn.onclick = () => {
-      moveTo(room);
-      renderActionButtons();
-    };
-    buttons.appendChild(btn);
+  const exits = roomsMap[game.playerRoom];
+
+  Object.keys(exits).forEach(dir => {
+    if (exits[dir]) {
+      const btn = document.createElement("button");
+      btn.textContent = `Go ${dir} → ${exits[dir]}`;
+      btn.onclick = () => {
+        moveDirection(dir);
+        renderActionButtons();
+      };
+      buttons.appendChild(btn);
+    }
   });
+
   const backBtn = document.createElement("button");
   backBtn.textContent = "Cancel";
   backBtn.onclick = renderActionButtons;
@@ -1409,6 +1367,7 @@ function openVanSwapMenu() {
       buttons.appendChild(btn);
     }
   });
+
   game.inventory.forEach(item => {
     const btn = document.createElement("button");
     btn.textContent = `Leave ${item}`;
@@ -1423,246 +1382,145 @@ function openVanSwapMenu() {
     };
     buttons.appendChild(btn);
   });
+
   const backBtn = document.createElement("button");
   backBtn.textContent = "Done";
   backBtn.onclick = renderActionButtons;
   buttons.appendChild(backBtn);
 }
 
-/* === NARRATOR LOG APPEND === */
-function narratorLog(message) {
-  const log = document.getElementById("narrator-log");
-  const p = document.createElement("p");
-  p.textContent = message;
-  log.appendChild(p);
-  log.scrollTop = log.scrollHeight;
+/* === ACTION BUTTONS RENDER === */
+function renderActionButtons() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = `
+    <button onclick="handleNarratorCommand('move')">Move</button>
+    <button onclick="handleNarratorCommand('use-item')">Use Item</button>
+    <button onclick="handleNarratorCommand('check-gear')">Check Gear</button>
+    <button onclick="handleNarratorCommand('guess-ghost')">Guess Ghost</button>
+    <button onclick="handleNarratorCommand('return-van')">${game.playerRoom==="Van"?"Check Gear":"Return to Van"}</button>
+  `;
 }
 
-/* === MOVE TO ROOM === */
-function moveTo(room) {
-  if (!roomsMap[game.playerRoom].includes(room)) {
-    narratorLog("You can't move there directly.");
-    return;
-  }
-  game.playerRoom = room;
-  narratorLog(`You move to the ${room}.`);
-  advanceTurn();
-}
-
-/* === RESTART GAME === */
-function restartGame() {
-  // Reset everything
-  game.inventory = [];
-  game.vanStock = {
-    "EMF Reader": true,
-    "Spirit Box": true,
-    "Camera": true,
-    "UV Light": true,
-    "D.O.T.S Projector": true,
-    "Thermometer": true,
-    "Crucifix": true,
-    "Smudge Stick": true,
-    "Salt": true
-  };
-  document.getElementById("main-scene").style.display = "none";
-  document.getElementById("loadout-screen").style.display = "flex";
-  const log = document.getElementById("narrator-log");
-  log.innerHTML = "";
-  populateLoadout();
-}
-</script>
-
-<script>
-/* === STARTUP GAME INITIALIZATION === */
-function initializeGame() {
-  // Reset core stats
-  game.currentTurn = 0;
-  game.sanity = 100;
-  game.huntActive = false;
-  game.playerRoom = "Van";
-  game.smudgeCooldown = 0;
-  game.huntCooldown = 0;
-  game.mimicForm = null;
-
-  // Pick random ghost
-  const ghosts = Object.keys(ghostProfiles);
-  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
-
-  // Pick random ghost room (Goryo locked)
-  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
-  game.ghostRoom = (game.ghost === "Goryo") 
-    ? "Garage" 
-    : roomKeys[Math.floor(Math.random() * roomKeys.length)];
-
-  // Mimic shift initialization
-  if (game.ghost === "The Mimic") {
-    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-    mimicShift();
-  }
-
-  // Weather setup (clear unless rain/blood moon chosen)
-  resetWeather();
-
-  narratorLog(`You arrive at the haunted location. The investigation begins.`);
-  narratorLog(`Current location: ${game.playerRoom}`);
-  updateHUD();
-}
-
-/* === WEATHER & FOG RESET === */
-function resetWeather() {
-  const fogLayer = document.getElementById("fog-layer");
-  const foreground = document.getElementById("foreground-layer");
-
-  fogLayer.style.background = "transparent";
-  foreground.style.background = "transparent";
-
-  // Rain or Blood Moon randomization
-  const weatherChance = Math.random();
-  if (weatherChance < 0.15) {
-    startRain();
-  } else if (weatherChance >= 0.15 && weatherChance < 0.2) {
-    startBloodMoon();
-  }
-}
-
-/* === RAIN SYSTEM === */
-function startRain() {
-  const fogLayer = document.getElementById("fog-layer");
-  fogLayer.style.background = 
-    `repeating-linear-gradient(0deg, rgba(200,200,255,0.2) 0 2px, transparent 2px 4px)`;
-  narratorLog("🌧️ A steady rain begins to fall outside.");
-  // Optional: Add occasional lightning during rain
-  enableLightning = true;
-}
-
-/* === BLOOD MOON SYSTEM === */
-function startBloodMoon() {
-  const fogLayer = document.getElementById("fog-layer");
-  fogLayer.style.background = 
-    `radial-gradient(circle at 50% 50%, rgba(255,0,0,0.15), transparent 60%)`;
-  narratorLog("🌕 The Blood Moon looms overhead, intensifying the ghost's power.");
-  enableLightning = true;
-}
-
-/* === LIGHTNING EFFECTS (ACTIVE ONLY DURING RAIN/BLOOD MOON) === */
-let enableLightning = false;
-function lightningFlash() {
-  const foreground = document.getElementById("foreground-layer");
-  foreground.style.background = "rgba(255,255,255,0.7)";
-  setTimeout(() => foreground.style.background = "transparent", 100 + Math.random() * 200);
-}
-setInterval(() => {
-  if (enableLightning && document.getElementById("main-scene").style.display === "block") {
-    if (Math.random() < 0.1) lightningFlash();
-  }
-}, 5000);
-
-/* === LOADOUT SYSTEM === */
-function populateLoadout() {
-  const held = document.getElementById("held-items");
-  const van = document.getElementById("van-items");
-  held.innerHTML = "";
-  van.innerHTML = "";
-
-  Object.keys(game.vanStock).forEach(item => {
-    if (game.vanStock[item]) {
-      const btn = document.createElement("button");
-      btn.textContent = item;
-      btn.onclick = () => {
-        if (game.inventory.length < 3) {
-          game.inventory.push(item);
-          game.vanStock[item] = false;
-          populateLoadout();
-        } else {
-          alert("You can only hold 3 items.");
-        }
-      };
-      van.appendChild(btn);
-    }
-  });
-
-  game.inventory.forEach(item => {
-    const btn = document.createElement("button");
-    btn.textContent = item;
-    btn.onclick = () => {
-      const idx = game.inventory.indexOf(item);
-      if (idx !== -1) {
-        game.inventory.splice(idx, 1);
-        game.vanStock[item] = true;
-        populateLoadout();
-      }
-    };
-    held.appendChild(btn);
-  });
-}
-
-/* === CONFIRM LOADOUT === */
-function confirmLoadout() {
-  document.getElementById("loadout-screen").style.display = "none";
-  document.getElementById("main-scene").style.display = "block";
-  initializeGame();
-  renderActionButtons();
-}
-
-/* === PAGE LOAD STARTUP === */
+/* === INITIAL DOM SETUP === */
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("main-scene").style.display = "none";
   document.getElementById("loadout-screen").style.display = "flex";
+  document.getElementById("main-scene").style.display = "none";
   populateLoadout();
+  narratorLog("Welcome to Phasma‑Phoney v2.7! Select your starting gear.");
 });
 </script>
 
 <script>
-/* === HUD UPDATER (FINALIZED) === */
-function updateHUD() {
-  document.getElementById("hud-sanity").textContent = `${Math.max(0, Math.floor(game.sanity))}%`;
-  document.getElementById("hud-turn").textContent = game.currentTurn;
-  document.getElementById("hud-location").textContent = game.playerRoom;
-  document.getElementById("hud-temp").textContent =
-    game.inventory.includes("Thermometer")
-      ? `${(Math.random() * 10 + 5).toFixed(1)}°C`
-      : "--°C";
+/* === WEATHER & LIGHTNING SYSTEM === */
+let currentWeather = "Clear";
+let bloodMoonActive = false;
+let lightningTimer = null;
+
+function randomizeWeather() {
+  const roll = Math.random();
+  if (roll < 0.1) {
+    currentWeather = "Blood Moon";
+    bloodMoonActive = true;
+    narratorLog("🌕 A Blood Moon rises... The air feels cursed.");
+  } else if (roll < 0.4) {
+    currentWeather = "Rain";
+    bloodMoonActive = false;
+    narratorLog("🌧️ Rain patters against the windows.");
+  } else {
+    currentWeather = "Clear";
+    bloodMoonActive = false;
+    narratorLog("The weather is calm and clear tonight.");
+  }
+  updateWeatherVisuals();
 }
 
-/* === ADVANCE TURN (FINALIZED) === */
-function advanceTurn() {
-  game.currentTurn++;
+function updateWeatherVisuals() {
+  const fogLayer = document.getElementById("fog-layer");
+  const foreground = document.getElementById("foreground-layer");
 
-  // Sanity drain baseline
-  if (game.sanity > 0) {
-    game.sanity -= (Math.random() * 2 + 1);
-    if (game.sanity < 0) game.sanity = 0;
+  // Rain visual
+  if (currentWeather === "Rain") {
+    fogLayer.style.background = `repeating-linear-gradient(
+      0deg,
+      rgba(200,200,255,0.1),
+      rgba(200,200,255,0.1) 2px,
+      transparent 3px,
+      transparent 6px
+    )`;
+    startLightning();
+  } else {
+    fogLayer.style.background = "transparent";
+    stopLightning();
   }
 
-  // Mimic mimicry shift
-  if (game.ghost === "The Mimic" && game.currentTurn >= game.nextMimicShift) {
-    mimicShift();
-    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-  }
+  // Blood Moon visual tint
+  foreground.style.background = bloodMoonActive
+    ? "rgba(255,0,0,0.15)"
+    : "transparent";
+}
 
-  // Ghost room shifting (except Goryo; Yurei smudge lock)
-  if (game.ghost !== "Goryo" && Math.random() < 0.2) {
-    if (game.ghost === "Yurei" && game.smudgeCooldown > 0) {
-      game.smudgeCooldown--;
-    } else {
-      const rooms = Object.keys(roomsMap).filter(r => r !== "Van");
-      game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
+function startLightning() {
+  stopLightning();
+  lightningTimer = setInterval(() => {
+    if (Math.random() < 0.15 && document.getElementById("main-scene").style.display === "block") {
+      lightningFlash();
+    }
+  }, 4000);
+}
+
+function stopLightning() {
+  if (lightningTimer) {
+    clearInterval(lightningTimer);
+    lightningTimer = null;
+  }
+}
+
+function lightningFlash() {
+  const foreground = document.getElementById("foreground-layer");
+  foreground.style.background = "rgba(255,255,255,0.6)";
+  setTimeout(() => {
+    foreground.style.background = bloodMoonActive
+      ? "rgba(255,0,0,0.15)"
+      : (currentWeather === "Rain" ? "transparent" : "transparent");
+  }, 100 + Math.random() * 200);
+}
+
+/* === CAMERA ORBS (EVIDENCE ONLY) === */
+function showCameraOrbs() {
+  const orbLayer = document.getElementById("orb-layer");
+  orbLayer.innerHTML = "";
+
+  if (
+    game.playerRoom === game.ghostRoom &&
+    (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))
+  ) {
+    for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
+      const orb = document.createElement("div");
+      orb.className = "spirit-orb";
+      orb.style.width = `${5 + Math.random() * 5}px`;
+      orb.style.height = orb.style.width;
+      orb.style.top = `${10 + Math.random() * 70}%`;
+      orb.style.left = `${10 + Math.random() * 70}%`;
+      orb.style.opacity = 0;
+      orb.style.position = "absolute";
+      orbLayer.appendChild(orb);
+
+      // Animate fade and slow float
+      setTimeout(() => {
+        orb.style.transition = "opacity 2s ease, top 5s linear, left 5s linear";
+        orb.style.opacity = 1;
+        orb.style.top = `${parseFloat(orb.style.top) - (Math.random() * 5)}%`;
+        orb.style.left = `${parseFloat(orb.style.left) + (Math.random() * 5 - 2.5)}%`;
+        setTimeout(() => {
+          orb.style.opacity = 0;
+          setTimeout(() => orb.remove(), 2000);
+        }, 4000 + Math.random() * 2000);
+      }, i * 300);
     }
   }
-
-  // Hunt trigger
-  if (!game.huntActive && Math.random() * 100 < huntChance()) {
-    startHunt();
-  }
-
-  // Resolve active hunt
-  if (game.huntActive) resolveHunt();
-
-  updateHUD();
-  ambientNarration();
 }
 
-/* === CAMERA ORB DETECTION (TRUE EVIDENCE ONLY) === */
+/* === CAMERA ITEM OVERRIDE === */
 function useItem(item) {
   if (!game.inventory.includes(item)) {
     narratorLog(`You aren't carrying a ${item}.`);
@@ -1683,70 +1541,85 @@ function useItem(item) {
       break;
 
     case "Camera":
-      if (game.playerRoom === game.ghostRoom) {
-        if (
-          game.ghost === "The Mimic" ||
-          ghostProfiles[game.ghost].evidence.includes("Orbs")
-        ) {
-          narratorLog("📷 Through the camera, you see ghost orbs swirling in the room!");
-        } else {
-          narratorLog("📷 The room looks clear—no ghost orbs detected.");
-        }
+      if (
+        game.playerRoom === game.ghostRoom &&
+        (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))
+      ) {
+        narratorLog("📷 You see ghost orbs through the camera!");
+        showCameraOrbs();
       } else {
-        narratorLog("📷 You're not in the ghost's room; no orbs detected.");
+        narratorLog("📷 No orbs detected in this room.");
       }
       break;
 
     default:
       narratorLog(`You use the ${item}, but nothing significant happens.`);
   }
-
   updateHUD();
 }
 
-/* === FULL RESTART CLEANUP === */
-function restartGame() {
-  // Reset state
-  game.inventory = [];
-  game.vanStock = {
-    "EMF Reader": true,
-    "Spirit Box": true,
-    "Camera": true,
-    "UV Light": true,
-    "D.O.T.S Projector": true,
-    "Thermometer": true,
-    "Crucifix": true,
-    "Smudge Stick": true,
-    "Salt": true
-  };
-  game.currentTurn = 0;
-  game.sanity = 100;
-  game.huntActive = false;
-  game.smudgeCooldown = 0;
-  game.huntCooldown = 0;
-  game.ghost = null;
-  game.ghostRoom = null;
-  game.playerRoom = "Van";
-  enableLightning = false;
+/* === BACKGROUND UPDATER — DIRECTIONAL FIX === */
+function updateBackground() {
+  const bg = document.getElementById("background-layer");
+  const direction = game.playerDirection || "N";
+  const formattedRoom = game.playerRoom.replace(/\s/g, "");
+  const roomImage = `${formattedRoom}_${direction}.png`;
+  bg.style.background = `url('${roomImage}') center center no-repeat`;
+  bg.style.backgroundSize = "cover";
 
-  // Clear logs
-  document.getElementById("narrator-log").innerHTML = "";
-
-  // Hide main scene, show loadout
-  document.getElementById("main-scene").style.display = "none";
-  document.getElementById("loadout-screen").style.display = "flex";
-
-  // Weather reset
-  resetWeather();
-
-  populateLoadout();
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-direction").textContent = direction;
 }
 
-/* === AUTO PAGE LOAD === */
+/* === TURN SYSTEM — UPDATED WITH WEATHER, CAMERA ORBS === */
+function advanceTurn() {
+  game.currentTurn++;
+
+  if (game.sanity > 0) {
+    game.sanity -= Math.random() * 2 + 1;
+    if (game.sanity < 0) game.sanity = 0;
+  }
+
+  // Weather re-roll every 5 turns
+  if (game.currentTurn % 5 === 0) {
+    randomizeWeather();
+  }
+
+  // Mimic shifts
+  if (game.ghost === "The Mimic" && game.currentTurn >= game.nextMimicShift) {
+    mimicShift();
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+  }
+
+  // Ghost room shifts
+  if (game.ghost !== "Goryo" && Math.random() < 0.2) {
+    if (game.ghost === "Yurei" && game.smudgeCooldown > 0) {
+      game.smudgeCooldown--;
+    } else {
+      const rooms = Object.keys(roomsMap).filter(r => r !== "Van");
+      game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    }
+  }
+
+  // Hunt trigger
+  if (!game.huntActive && Math.random() * 100 < huntChance()) {
+    startHunt();
+  }
+
+  if (game.huntActive) resolveHunt();
+
+  updateHUD();
+  if (game.inventory.includes("Camera")) showCameraOrbs();
+  ambientNarration();
+}
+
+/* === FINAL STARTUP === */
 document.addEventListener("DOMContentLoaded", () => {
-  document.getElementById("main-scene").style.display = "none";
   document.getElementById("loadout-screen").style.display = "flex";
+  document.getElementById("main-scene").style.display = "none";
   populateLoadout();
+  narratorLog("Welcome to Phasma‑Phoney v2.7! Select your starting gear.");
 });
 </script>
-</body></html>
+</body>
+</html>
