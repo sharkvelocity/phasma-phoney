@@ -582,8 +582,10 @@ function openMoveOverlay(){
   document.body.appendChild(overlay);
 
   window.closeMoveOverlay=function(){const t=document.getElementById("move-temp");if(t)document.body.removeChild(t);};
-  window.goRoomAndClose=function(room){moveToRoom(room);closeMoveOverlay();saveGame(true);};
-}
+ window.goRoomAndClose = function (room) {
+  moveToRoom(room);
+  closeMoveOverlay();
+};
 
 function moveToRoom(r){
   if(game.playerRoom===r){logToGame("You are already in "+r+".");return;}
@@ -1034,18 +1036,19 @@ function handleCommand(cmd) {
 /***********************
  === ACTION BUTTONS ===
 ************************/
-function renderActionButtons(){
-  const cmd=document.getElementById("command-buttons");
-  cmd.innerHTML=`
-    <button data-cmd="move" onclick="handleCommand('move')">Move</button>
-    <button data-cmd="look" onclick="handleCommand('look')">Look Around</button>
-    <button data-cmd="inventory" onclick="handleCommand('inventory')">Inventory</button>
-    <button data-cmd="guess" onclick="handleCommand('guess')">Ghost Guess</button>
-    <button data-cmd="van" onclick="handleCommand('van')">Return to Van</button>
-    <button data-cmd="save" onclick="handleCommand('save')">Save Game</button>
-    <button data-cmd="load" onclick="handleCommand('load')">Load Game</button>`;
- 
+function renderActionButtons() {
+  const cmd = document.getElementById("command-buttons");
+  cmd.innerHTML = `
+    <button data-cmd="move">Move</button>
+    <button data-cmd="look">Look Around</button>
+    <button data-cmd="inventory">Inventory</button>
+    <button data-cmd="guess">Ghost Guess</button>
+    <button data-cmd="van">Return to Van</button>
+    <button data-cmd="save">Save Game</button>
+    <button data-cmd="load">Load Game</button>
+  `;
 }
+
 
 "use strict";
 
