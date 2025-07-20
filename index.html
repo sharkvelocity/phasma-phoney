@@ -797,9 +797,9 @@ function updateBackground() {
     logToGame("🎮 Game state saved after loadout.");
     saveGame();
 
-    // ✅ Refresh HUD layout for mobile
-    window.dispatchEvent(new Event("resize"));
-  });
+window.dispatchEvent(new Event("resize"));
+}); // ✅ closes only the confirmBtn.addEventListener
+
 
   // === Auto-Detect Existing Save ===
   if (localStorage.getItem("phasmaPhoneySave")) {
