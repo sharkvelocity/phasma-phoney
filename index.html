@@ -560,42 +560,66 @@ function updateBackground(){
 /***********************
  === ROOM & MOVEMENT ===
 ************************/
-function openMoveOverlay(){
-  const existing=document.getElementById("move-temp");
-  if(existing)document.body.removeChild(existing);
+function openMoveOverlay() {
+  const existing = document.getElementById("move-temp");
+  if (existing) document.body.removeChild(existing);
 
-  const exits=mapConnections[game.playerRoom]||[];
-  if(!exits.length){logToGame("No available exits.");return;}
+  const exits = mapConnections[game.playerRoom] || [];
+  if (!exits.length) {
+    logToGame("No available exits.");
+    return;
+  }
 
-  const overlay=document.createElement("div");
-  overlay.id="move-temp";
-  Object.assign(overlay.style,{
-    position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",
-    background:"#111",padding:"10px",maxWidth:"90%",zIndex:"3000",
-    border:"1px solid #555",borderRadius:"4px"
+  const overlay = document.createElement("div");
+  overlay.id = "move-temp";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%,-50%)",
+    background: "#111",
+    padding: "10px",
+    maxWidth: "90%",
+    zIndex: "3000",
+    border: "1px solid #555",
+    borderRadius: "4px",
   });
 
-  let html=`<h3 style="color:#0ff;margin-top:0;">Available Exits</h3>`;
-  html+=exits.map(r=>`<button onclick="goRoomAndClose('${r}')">Go to ${r}</button>`).join("");
-  html+=`<button style="margin-top:6px;" onclick="closeMoveOverlay()">Close</button>`;
-  overlay.innerHTML=html;
+  let html = `<h3 style="color:#0ff;margin-top:0;">Available Exits</h3>`;
+  html += exits
+    .map((r) => `<button data-move="${r}">Go to ${r}</button>`)
+    .join("");
+  html += `<button style="margin-top:6px;" data-close="true">Close</button>`;
+
+  overlay.innerHTML = html;
   document.body.appendChild(overlay);
 
-  window.closeMoveOverlay=function(){const t=document.getElementById("move-temp");if(t)document.body.removeChild(t);};
- window.goRoomAndClose = function (room) {
-  moveToRoom(room);
-  closeMoveOverlay();
-};
-
-function moveToRoom(r){
-  if(game.playerRoom===r){logToGame("You are already in "+r+".");return;}
-  game.playerRoom=r;game.currentTurn++;game.playerDirection="N";
-  logToGame("You move to "+r+".");
-  renderHUD();updateBackground();
-  const moveOverlay=document.getElementById("move-temp");
-  if(moveOverlay)document.body.removeChild(moveOverlay);
-  checkTurnEvents();saveGame(true);
+  overlay.addEventListener("click", (e) => {
+    if (e.target.dataset.move) {
+      moveToRoom(e.target.dataset.move);
+      document.body.removeChild(overlay);
+    }
+    if (e.target.dataset.close) {
+      document.body.removeChild(overlay);
+    }
+  });
 }
+
+function moveToRoom(r) {
+  if (game.playerRoom === r) {
+    logToGame("You are already in " + r + ".");
+    return;
+  }
+  game.playerRoom = r;
+  game.currentTurn++;
+  game.playerDirection = "N";
+  logToGame("You move to " + r + ".");
+  renderHUD();
+  updateBackground();
+  checkTurnEvents();
+  saveGame(true);
+}
+
 
 /***********************
  === LOOK AROUND ===
@@ -1049,7 +1073,6 @@ function renderActionButtons() {
   `;
 }
 
-
 "use strict";
 
 /***********************
@@ -1146,10 +1169,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1500);
   });
 
-  commandContainer.addEventListener("click", (e) => {
-    if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
-      handleCommand(e.target.dataset.cmd);
-    }
+commandContainer.addEventListener("click", (e) => {
+  if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
+    handleCommand(e.target.dataset.cmd);
+  }
+});
+
   });
 
   if (localStorage.getItem("phasmaPhoneySave")) {
