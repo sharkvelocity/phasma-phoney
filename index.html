@@ -378,7 +378,7 @@ footer a:hover {
 <div id="title-screen">
   <img src="logo.png" alt="Phasma-Phoney Logo">
   <button id="startButton">Start New Game</button>
-  <button id="loadGameButton" style="bottom:10%;left:50%;transform:translateX(-50%);">Load Game</button>
+  <button id="loadGameButton">Load Game</button>
 
 </div>
 
@@ -803,7 +803,7 @@ window.dispatchEvent(new Event("resize"));
 
   // === Auto-Detect Existing Save ===
   if (localStorage.getItem("phasmaPhoneySave")) {
-    logToGame("💾 Previous save detected. Press 'Load Game' or type loadGame() in console.");
+    logToGame("💾 Previous save detected. Press 'Load Game'.");
   }
 
 
