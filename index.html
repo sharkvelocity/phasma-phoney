@@ -856,12 +856,9 @@ function lookAround() {
     const items = game.roomItems[game.playerRoom] || [];
     if (items.includes("Salt") && Math.random() < 0.5) {
       logToGame("You notice disturbed salt... Try using a UV Light.");
-
       if (!items.includes("Footprints")) {
         items.push("Footprints");
       }
-
-      // ✅ Ensure roomItems updated in game state
       game.roomItems[game.playerRoom] = items;
 
       // Fade footprints after ~9 seconds
@@ -870,7 +867,7 @@ function lookAround() {
           game.roomItems[game.playerRoom] =
             game.roomItems[game.playerRoom].filter(x => x !== "Footprints");
           logToGame("The footprints have faded.");
-          saveGame(); // ✅ Save after footprints fade
+          saveGame();
         }
       }, 9000);
     }
@@ -894,63 +891,54 @@ function lookAround() {
     logToGame("Nothing unusual.");
   }
 
-  // ✅ Update HUD, turn events, and auto-save
+  // ✅ Update HUD, events, and auto-save
   renderHUD();
   checkTurnEvents();
   saveGame();
 }
 
 /***********************
- === LOOK AROUND FUNCTION ===
+ === HANDLE COMMANDS ===
 ************************/
-function lookAround() {
-  game.currentTurn++;
+function handleCommand(cmd) {
+  switch (cmd) {
+    case "move":
+      openMoveOverlay();
+      break;
 
-  if (game.playerRoom === game.ghostRoom) {
-    logToGame("You feel an eerie presence...");
+    case "look":
+      lookAround();
+      break;
 
-    // === Salt Footprints Logic ===
-    const items = game.roomItems[game.playerRoom] || [];
-    if (items.includes("Salt") && Math.random() < 0.5) {
-      logToGame("You notice disturbed salt... Try using a UV Light.");
-      if (!items.includes("Footprints")) {
-        items.push("Footprints");
-        game.roomItems[game.playerRoom] = items;
+    case "inventory":
+      openInventoryOverlay();
+      break;
+
+    case "guess":
+      openGuess();
+      break;
+
+    case "van":
+      if (game.playerRoom === "Van") {
+        logToGame("You are already in the van.");
+      } else {
+        moveToRoom("Van");
+        logToGame("You return to the van to regroup.");
       }
+      break;
 
-      // Fade footprints after ~9 seconds
-      setTimeout(() => {
-        if (game.roomItems[game.playerRoom]) {
-          game.roomItems[game.playerRoom] =
-            game.roomItems[game.playerRoom].filter(x => x !== "Footprints");
-          logToGame("The footprints have faded.");
-          saveGame(); // ✅ Save after footprints fade
-        }
-      }, 9000);
-    }
+    case "save":
+      saveGame();
+      break;
 
-    // === Onryo Candle Snuffing ===
-    if (
-      game.ghost === "Onryo" &&
-      items.includes("Candle") &&
-      Math.random() < 0.5
-    ) {
-      game.roomItems[game.playerRoom] = items.filter(x => x !== "Candle");
-      logToGame("The flame suddenly extinguishes!");
-    }
+    case "load":
+      loadGame();
+      break;
 
-    // === Mimic Fake Orbs Ambient ===
-    if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-      logToGame("Fake orbs shimmer briefly.");
-    }
-
-  } else {
-    logToGame("Nothing unusual.");
+    default:
+      logToGame("⚠️ Unknown command: " + cmd);
+      break;
   }
-
-  renderHUD();
-  checkTurnEvents();
-  saveGame(); // ✅ Always save after looking around
 }
 
 /***********************
@@ -983,7 +971,36 @@ function openInventoryOverlay() {
 
   let html = `<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
 
-  // === PLAYER INVENTORY ===
+/***********************
+ === INVENTORY OVERLAY ===
+************************/
+function openInventoryOverlay() {
+  const existing = document.getElementById("inventory-temp");
+  if (existing) document.body.removeChild(existing);
+
+  const c = document.createElement("div");
+  c.id = "inventory-temp";
+  Object.assign(c.style, {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%,-50%)",
+    background: "#111",
+    padding: "12px",
+    maxHeight: "75%",
+    overflowY: "auto",
+    maxWidth: "92%",
+    zIndex: "3000",
+    border: "1px solid #555",
+    borderRadius: "6px",
+    color: "#eee",
+    textAlign: "center",
+    lineHeight: "1.4"
+  });
+
+  let html = `<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
+
+  // ✅ PLAYER INVENTORY
   if (game.inventory.length > 0) {
     html += `<p><strong>Held Items:</strong></p>`;
     game.inventory.forEach(i => {
@@ -999,30 +1016,7 @@ function openInventoryOverlay() {
     html += `<p style="opacity:0.7;">No items held.</p>`;
   }
 
-  // === ROOM ITEMS ===
-  const roomInv = game.roomItems[game.playerRoom] || [];
-  if (roomInv.length > 0) {
-    html += `<p><strong>Items in this Room:</strong></p>`;
-    roomInv.forEach(i => {
-      html += `<button style="margin-bottom:4px;" onclick="pickItem('${i}');closeInventory()">Pick up: ${i}</button>`;
-    });
-  }
-
-  // === CLOSE BUTTON ===
-  html += `<button style="margin-top:8px;" onclick="closeInventory()">Close</button>`;
-
-  c.innerHTML = html;
-  document.body.appendChild(c);
-
-  // ✅ Safe close function
-  window.closeInventory = function () {
-    const temp = document.getElementById("inventory-temp");
-    if (temp) document.body.removeChild(temp);
-    saveGame(); // ✅ Save after inventory action
-  };
-}
-
-  // === ROOM ITEMS ===
+  // ✅ ROOM ITEMS
   const roomInv = game.roomItems[game.playerRoom] || [];
   if (roomInv.length > 0) {
     html += `<p><strong>Items in this Room:</strong></p>`;
@@ -1035,54 +1029,36 @@ function openInventoryOverlay() {
     });
   }
 
-  // === CLOSE BUTTON ===
-  html += `<button onclick="closeInventory()" style="margin-top:10px;">Close</button>`;
-
+  // ✅ CLOSE BUTTON
+  html += `<button style="margin-top:10px;" onclick="closeInventory()">Close</button>`;
   c.innerHTML = html;
   document.body.appendChild(c);
 
-  // ✅ Helper to safely close & save
   window.closeInventory = function () {
     const temp = document.getElementById("inventory-temp");
     if (temp) document.body.removeChild(temp);
-    saveGame(); // ✅ Immediate save after inventory change
+    saveGame();
   };
-
-
-function inspectItem(i) {
-  let desc = cursedItemDescriptions[i] || "Standard investigation gear.";
-  
-  switch (i) {
-    case "Crucifix":
-      desc = "Placed to prevent hunts. 2 uses.";
-      break;
-    case "Camera":
-    case "Video Camera":
-      desc = "Detects orbs via night vision.";
-      break;
-    case "UV Light":
-      desc = "Reveals fingerprints or footprints (salt needed).";
-      break;
-    case "Salt":
-      desc = "Sprinkle to reveal footprints with UV.";
-      break;
-    case "Motion Sensor":
-      desc = "Alerts you in van when ghost triggers it.";
-      break;
-    case "Candle":
-      desc = "Prevents Onryo hunts while lit.";
-      break;
-  }
-
-  logToGame(`Inspecting ${i}: ${desc}`);
 }
 
+function inspectItem(i) {
+  let desc = cursedItems[i]?.desc || "Standard investigation gear.";
+  switch (i) {
+    case "Crucifix": desc = "Placed to prevent hunts. 2 uses."; break;
+    case "Camera":
+    case "Video Camera": desc = "Detects orbs via night vision."; break;
+    case "UV Light": desc = "Reveals fingerprints or footprints (salt needed)."; break;
+    case "Salt": desc = "Sprinkle to reveal footprints with UV."; break;
+    case "Motion Sensor": desc = "Alerts you in van when ghost triggers it."; break;
+    case "Candle": desc = "Prevents Onryo hunts while lit."; break;
+  }
+  logToGame(`Inspecting ${i}: ${desc}`);
+}
 
 function dropItem(i) {
   if (game.playerRoom === "Van") {
     if (!game.vanStock.includes(i)) {
-      game.vanStock.push(i);
-      game.vanStock.sort();
+      game.vanStock.push(i); game.vanStock.sort();
     }
     logToGame(`Returned ${i} to van.`);
   } else {
@@ -1093,74 +1069,40 @@ function dropItem(i) {
     logToGame(`Dropped ${i} here.`);
   }
   game.inventory = game.inventory.filter(x => x !== i);
-  renderHUD();
-  saveGame(); // ✅ optional
+  renderHUD(); saveGame();
 }
 
 function pickItem(i) {
-  if (game.inventory.length >= 3) {
-    logToGame("Max 3 items."); 
-    return;
+  if (game.inventory.length >= 3) { logToGame("Max 3 items."); return; }
+  if (cursedItems[i] && i === "Summoning Circle") {
+    logToGame("The circle cannot be moved."); return;
   }
-  if (cursedItemDescriptions[i] && i === "Summoning Circle") {
-    logToGame("The circle cannot be moved."); 
-    return;
-  }
-  game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom].filter(x => x !== i);
+  game.roomItems[game.playerRoom] =
+    game.roomItems[game.playerRoom].filter(x => x !== i);
   if (!game.inventory.includes(i)) {
-    game.inventory.push(i);
-    game.inventory.sort();
+    game.inventory.push(i); game.inventory.sort();
   }
   logToGame(`Picked up ${i}.`);
-  renderHUD();
-  saveGame(); // ✅ optional
+  renderHUD(); saveGame();
 }
-
 
 /***********************
- === ITEM USE (TOOLS & CURSED) ===
+ === ITEM USE ===
 ************************/
-const cursedItems = {
-  "Ouija Board": { desc: "Ask ghost questions; drains sanity, can break triggering hunt.", cost: 10 },
-  "Tarot Cards": { desc: "Draw cards for random effects.", cost: 5 },
-  "Music Box": { desc: "Plays a melody attracting ghost.", cost: 8 },
-  "Voodoo Doll": { desc: "Forces ghost interaction; costs sanity.", cost: 6 },
-  "Haunted Mirror": { desc: "Shows ghost room but drains sanity rapidly.", cost: 15 },
-  "Summoning Circle": { desc: "Forces ghost manifestation.", cost: 20 },
-  "Monkey Paw": { desc: "Grants wishes with consequences.", cost: 25 }
-};
-
-const cursedItemList = Object.keys(cursedItems);
-
-function getCursedItemCost(item) {
-  return cursedItems[item]?.cost || 0;
-}
-
-function getCursedItemDescription(item) {
-  return cursedItems[item]?.desc || "An eerie cursed item...";
-}
-
 function useItem(i) {
   switch (i) {
     case "Smudge Stick":
       if (game.playerRoom === game.ghostRoom) {
-        game.smudgeActive = 3;
-        logToGame("You smudge the room, calming the ghost.");
-      } else {
-        logToGame("You smudge, but nothing happens.");
-      }
+        game.smudgeActive = 3; logToGame("You smudge the room, calming the ghost.");
+      } else { logToGame("You smudge, but nothing happens."); }
       break;
 
     case "Camera":
     case "Video Camera":
       if (game.playerRoom !== "Van") {
         game.cameraActive = !game.cameraActive;
-        logToGame(game.cameraActive
-          ? "Camera on: watching for orbs."
-          : "Camera off.");
-      } else {
-        logToGame("Cannot use cameras in the van.");
-      }
+        logToGame(game.cameraActive ? "Camera on: watching for orbs." : "Camera off.");
+      } else { logToGame("Cannot use cameras in the van."); }
       break;
 
     case "Crucifix":
@@ -1168,9 +1110,7 @@ function useItem(i) {
         game.placedCrucifix[game.playerRoom] = 2;
         logToGame("You place the crucifix. It may stop two hunts.");
         game.inventory = game.inventory.filter(x => x !== i);
-      } else {
-        logToGame("Cannot place crucifix in van.");
-      }
+      } else { logToGame("Cannot place crucifix in van."); }
       break;
 
     case "Salt":
@@ -1184,15 +1124,10 @@ function useItem(i) {
       break;
 
     case "UV Light":
-      if (
-        game.roomItems[game.playerRoom] &&
-        game.roomItems[game.playerRoom].includes("Footprints")
-      ) {
+      if (game.roomItems[game.playerRoom]?.includes("Footprints")) {
         logToGame("You see glowing footprints under UV!");
         game.selectedEvidence.add("Fingerprints");
-      } else {
-        logToGame("No visible prints under UV.");
-      }
+      } else { logToGame("No visible prints under UV."); }
       break;
 
     case "Candle":
@@ -1216,75 +1151,36 @@ function useItem(i) {
       break;
 
     default:
-      if (cursedItemDescriptions[i]) {
-        handleCursedItem(i);
-      } else {
-        logToGame("You use the " + i + ", but nothing significant occurs.");
-      }
+      if (cursedItems[i]) { handleCursedItem(i); }
+      else { logToGame("You use the " + i + ", but nothing significant occurs."); }
   }
 
   game.currentTurn++;
-  renderHUD
-
-function handleCursedItem(i) {
-  // ✅ Prevent reuse of cursed items
-  if (game.usedCursedItems[i]) {
-    logToGame("The " + i + " is inert now.");
-    return;
-  }
-
-  logToGame("You use the " + i + "...");
-
-  // ✅ Apply sanity cost
-  game.sanity -= cursedItemSanityCost[i] || 0;
-  if (game.sanity < 0) game.sanity = 0;
-
-  // ✅ Item-specific effects
-  switch (i) {
-    case "Ouija Board":
-      if (Math.random() < 0.2) startHunt();
-      break;
-
-    case "Tarot Cards":
-      const r = Math.random();
-      if (r < 0.2) {
-        logToGame("The Fool — nothing happens.");
-      } else if (r < 0.4) {
-        logToGame("The Tower — ghost activity spikes!");
-      } else if (r < 0.6) {
-        logToGame("The Death card — hunt triggered!");
-        startHunt();
-      } else {
-        logToGame("The Sun — sanity restored.");
-        game.sanity = Math.min(100, game.sanity + 10);
-      }
-      break;
-
-    case "Music Box":
-      if (Math.random() < 0.3) startHunt();
-      break;
-
-    case "Haunted Mirror":
-      if (Math.random() < 0.3) startHunt();
-      break;
-
-    case "Summoning Circle":
-      startHunt();
-      break;
-
-    case "Monkey Paw":
-      if (Math.random() < 0.5) startHunt();
-      break;
-  }
-
-  // ✅ Mark as used and refresh sanity bar
-  game.usedCursedItems[i] = true;
-  updateSanityBar();
-
-  // ✅ Auto-save after using cursed items
-  saveGame();
+  renderHUD(); checkTurnEvents(); saveGame();
 }
 
+function handleCursedItem(i) {
+  if (game.usedCursedItems[i]) { logToGame("The " + i + " is inert now."); return; }
+  logToGame("You use the " + i + "...");
+  game.sanity -= getCursedItemCost(i); if (game.sanity < 0) game.sanity = 0;
+
+  switch (i) {
+    case "Ouija Board": if (Math.random() < 0.2) startHunt(); break;
+    case "Tarot Cards":
+      const r = Math.random();
+      if (r < 0.2) logToGame("The Fool — nothing happens.");
+      else if (r < 0.4) logToGame("The Tower — ghost activity spikes!");
+      else if (r < 0.6) { logToGame("The Death card — hunt triggered!"); startHunt(); }
+      else { logToGame("The Sun — sanity restored."); game.sanity = Math.min(100, game.sanity + 10); }
+      break;
+    case "Music Box": case "Haunted Mirror": if (Math.random() < 0.3) startHunt(); break;
+    case "Summoning Circle": startHunt(); break;
+    case "Monkey Paw": if (Math.random() < 0.5) startHunt(); break;
+  }
+
+  game.usedCursedItems[i] = true;
+  updateSanityBar(); saveGame();
+}
 
 /***********************
  === TURN EVENTS, AMBIENT & HUNT ===
@@ -1701,8 +1597,6 @@ function clearSave() {
   logToGame("🗑️ Save data cleared.");
 }
 
-</script>
-<script>
 "use strict";
 
 let tempHeld = [];
