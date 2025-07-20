@@ -75,6 +75,23 @@ button {
   background: #222;
   border-color: #888;
 }
+#loadGameButton {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: calc(12px + 1vw);
+  background: #111;
+  color: #eee;
+  border: 2px solid #444;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#loadGameButton:hover {
+  background: #222;
+  border-color: #888;
+}
 
 /* === MAIN SCENE === */
 #main-scene {
@@ -1747,27 +1764,40 @@ document.addEventListener("DOMContentLoaded", () => {
   /***********************
    === CONFIRM LOADOUT & BEGIN INVESTIGATION ===
   ************************/
-  confirmBtn.addEventListener("click", () => {
-    // ✅ Ensure temp arrays exist and are valid
-    if (!Array.isArray(tempHeld)) tempHeld = [];
-    if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
+confirmBtn.addEventListener("click", () => {
+  // ✅ Prevent accidental double-clicks while processing
+  if (confirmBtn.disabled || !confirmBtn.classList.contains("active")) {
+    logToGame("⚠️ Select at least one item before confirming.");
+    return;
+  }
+  confirmBtn.disabled = true;
 
-    // ✅ Apply chosen loadout to game state
-    game.inventory = [...tempHeld, "Notebook", "Lighter"];
-    game.vanStock = [...tempVan];
+  // ✅ Ensure temp arrays exist and are valid
+  if (!Array.isArray(tempHeld)) tempHeld = [];
+  if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
 
-    // ✅ Transition to main investigation scene
-    document.getElementById("loadout-screen").style.display = "none";
-    startInvestigation();
-    renderActionButtons();
+  // ✅ Apply chosen loadout to game state
+  game.inventory = [...tempHeld, "Notebook", "Lighter"];
+  game.vanStock = [...tempVan];
 
-    // ✅ Auto-save immediately
-    logToGame("🎮 Game state saved after loadout.");
-    saveGame();
+  // ✅ Transition to main investigation scene
+  document.getElementById("loadout-screen").style.display = "none";
+  startInvestigation();
+  renderActionButtons();
 
-    // ✅ Refresh HUD layout for mobile devices
-    window.dispatchEvent(new Event("resize"));
-  });
+  // ✅ Auto-save immediately
+  logToGame("🎮 Game state saved after loadout.");
+  saveGame();
+
+  // ✅ Refresh HUD layout for mobile devices
+  window.dispatchEvent(new Event("resize"));
+
+  // ✅ Re-enable after slight delay (safety for mobile taps)
+  setTimeout(() => {
+    confirmBtn.disabled = false;
+  }, 1500);
+});
+
 
   /***********************
    === COMMAND BUTTONS (DELEGATED LISTENER) ===
