@@ -113,14 +113,6 @@
       opacity:0.3;
     }
 
-    #orb-layer {
-      position: absolute;
-      top:0; left:0;
-      width:100%; height:100%;
-      pointer-events:none;
-      z-index: 5;
-    }
-
     #foreground-layer {
       position: absolute;
       top:0; left:0;
@@ -199,17 +191,6 @@
       background:#444;
     }
 
-    /* === ORBS === */
-    .spirit-orb {
-      position: absolute;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.5);
-      box-shadow: 0 0 6px 2px rgba(255,255,255,0.7);
-      opacity: 0;
-      transition: opacity 2s ease, top 5s linear, left 5s linear;
-      z-index: 5;
-    }
-
     /* === MOBILE === */
     @media (max-width: 600px) {
       #hud { font-size: 12px; }
@@ -240,7 +221,6 @@
   <div id="main-scene">
     <div id="background-layer"></div>
     <div id="fog-layer"></div>
-    <div id="orb-layer"></div>
     <div id="foreground-layer"></div>
 
     <div id="hud">
@@ -263,7 +243,7 @@
   </div>
 
 <script>
-/* === GAME STATE OBJECT === */
+/* === GAME STATE === */
 const game = {
   ghost: null,
   ghostRoom: null,
@@ -283,6 +263,7 @@ const game = {
   selectedEvidence: {},
   currentTurn: 0,
   sanity: 100,
+  weather: "Clear", // updated in initializeGame
   huntActive: false,
   smudgeCooldown: 0,
   huntCooldown: 0,
@@ -290,6 +271,98 @@ const game = {
   nextMimicShift: 0
 };
 
+/* === POPULATE LOADOUT === */
+function populateLoadout() {
+  const held = document.getElementById("held-items");
+  const van = document.getElementById("van-items");
+  held.innerHTML = "";
+  van.innerHTML = "";
+
+  Object.keys(game.vanStock).forEach(item => {
+    if (game.vanStock[item]) {
+      const btn = document.createElement("button");
+      btn.textContent = item;
+      btn.onclick = () => {
+        if (game.inventory.length < 3) {
+          game.inventory.push(item);
+          game.vanStock[item] = false;
+          populateLoadout();
+        } else {
+          alert("You can only hold 3 items.");
+        }
+      };
+      van.appendChild(btn);
+    }
+  });
+
+  game.inventory.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.onclick = () => {
+      const idx = game.inventory.indexOf(item);
+      if (idx !== -1) {
+        game.inventory.splice(idx,1);
+        game.vanStock[item] = true;
+        populateLoadout();
+      }
+    };
+    held.appendChild(btn);
+  });
+}
+
+/* === CONFIRM LOADOUT === */
+function confirmLoadout() {
+  if (game.inventory.length === 0) {
+    alert("Select at least one item before starting!");
+    return;
+  }
+  document.getElementById("loadout-screen").style.display = "none";
+  document.getElementById("main-scene").style.display = "block";
+  initializeGame();
+  renderActionButtons();
+}
+
+/* === INITIALIZE GAME === */
+function initializeGame() {
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.playerRoom = "Van";
+
+  const possibleWeather = ["Clear", "Rain", "Blood Moon"];
+  game.weather = possibleWeather[Math.floor(Math.random()*possibleWeather.length)];
+
+  const ghosts = Object.keys(ghostProfiles);
+  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
+
+  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
+  game.ghostRoom = roomKeys[Math.floor(Math.random() * roomKeys.length)];
+  if (game.ghost === "Goryo") game.ghostRoom = "Garage";
+
+  narratorLog(`You arrive at the location. Weather: ${game.weather}. Investigation begins.`);
+  narratorLog(`Current location: ${game.playerRoom}`);
+  updateHUD();
+}
+
+/* === HUD UPDATE === */
+function updateHUD() {
+  document.getElementById("hud-sanity").textContent = `${game.sanity}%`;
+  document.getElementById("hud-turn").textContent = game.currentTurn;
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-temp").textContent = 
+    game.inventory.includes("Thermometer") 
+      ? `${(Math.random() * 10 + 5).toFixed(1)}°C` 
+      : "--°C";
+}
+
+/* === STARTUP ON PAGE LOAD === */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("loadout-screen").style.display = "flex";
+  document.getElementById("main-scene").style.display = "none";
+  populateLoadout();
+});
+</script>
+
+<script>
 /* === GHOST PROFILES === */
 const ghostProfiles = {
   "Spirit": {
@@ -300,14 +373,14 @@ const ghostProfiles = {
     behavior: "Standard ghost. Repelled by smudge for ~3 mins."
   },
   "Wraith": {
-    evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S"],
+    evidence: ["EMF Level 5", "Spirit Box", "D.O.T.S Projector"],
     sanityThreshold: "Average",
     huntCooldown: 20,
     speedCategory: "Normal",
     behavior: "Can teleport randomly to player."
   },
   "Phantom": {
-    evidence: ["Spirit Box", "Fingerprints", "D.O.T.S"],
+    evidence: ["Spirit Box", "Fingerprints", "D.O.T.S Projector"],
     sanityThreshold: "Average",
     huntCooldown: 20,
     speedCategory: "Normal",
@@ -321,7 +394,7 @@ const ghostProfiles = {
     behavior: "Throws multiple items at once."
   },
   "Banshee": {
-    evidence: ["Fingerprints", "Orbs", "D.O.T.S"],
+    evidence: ["Fingerprints", "Orbs", "D.O.T.S Projector"],
     sanityThreshold: "Early",
     huntCooldown: 20,
     speedCategory: "Normal",
@@ -363,14 +436,14 @@ const ghostProfiles = {
     behavior: "Aggressive, frequent hunts; smudge very short."
   },
   "Yurei": {
-    evidence: ["Freezing Temps", "Orbs", "D.O.T.S"],
+    evidence: ["Freezing Temps", "Orbs", "D.O.T.S Projector"],
     sanityThreshold: "Average",
     huntCooldown: 20,
     speedCategory: "Normal",
     behavior: "Can drop sanity sharply; stuck in room for 5 turns after smudge."
   },
   "Oni": {
-    evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S"],
+    evidence: ["EMF Level 5", "Freezing Temps", "D.O.T.S Projector"],
     sanityThreshold: "Early",
     huntCooldown: 20,
     speedCategory: "Fast-LOS",
@@ -384,7 +457,7 @@ const ghostProfiles = {
     behavior: "Faster in cold rooms."
   },
   "Goryo": {
-    evidence: ["EMF Level 5", "Fingerprints", "D.O.T.S"],
+    evidence: ["EMF Level 5", "Fingerprints", "D.O.T.S Projector"],
     sanityThreshold: "Average",
     huntCooldown: 20,
     speedCategory: "Normal",
@@ -412,7 +485,7 @@ const ghostProfiles = {
     behavior: "Interacts in two places at once."
   },
   "Raiju": {
-    evidence: ["EMF Level 5", "Orbs", "D.O.T.S"],
+    evidence: ["EMF Level 5", "Orbs", "D.O.T.S Projector"],
     sanityThreshold: "Early",
     huntCooldown: 20,
     speedCategory: "Fast",
@@ -426,7 +499,7 @@ const ghostProfiles = {
     behavior: "Rarely leaves unique fingerprints."
   },
   "The Mimic": {
-    evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"], 
+    evidence: ["Spirit Box", "Fingerprints", "Freezing Temps"],
     sanityThreshold: "Average",
     huntCooldown: 20,
     speedCategory: "Normal",
@@ -440,14 +513,14 @@ const ghostProfiles = {
     behavior: "Cursed sanity drain; very fast at low sanity."
   },
   "Deogen": {
-    evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S"],
+    evidence: ["Spirit Box", "Ghost Writing", "D.O.T.S Projector"],
     sanityThreshold: "VeryEarly",
     huntCooldown: 20,
     speedCategory: "Slow",
     behavior: "Knows where you are but moves very slowly."
   },
   "Thaye": {
-    evidence: ["Ghost Writing", "Orbs", "D.O.T.S"],
+    evidence: ["Ghost Writing", "Orbs", "D.O.T.S Projector"],
     sanityThreshold: "Early",
     huntCooldown: 20,
     speedCategory: "Fast",
@@ -465,7 +538,7 @@ const ghostProfiles = {
 /* === ROOMS MAP === */
 const roomsMap = {
   "Van": ["Foyer"],
-  "Foyer": ["Van","Living Room","Dining Room"],
+  "Foyer": ["Van","Living Room","Dining Room","Bathroom","Kids Bedroom","Master Bedroom"],
   "Living Room": ["Foyer","Kitchen","Garage"],
   "Kitchen": ["Living Room","Dining Room","Basement"],
   "Dining Room": ["Foyer","Kitchen"],
@@ -476,53 +549,13 @@ const roomsMap = {
   "Master Bedroom": ["Foyer"]
 };
 
-/* === GAME INITIALIZATION === */
-function initializeGame() {
-  // Reset state
-  game.currentTurn = 0;
-  game.sanity = 100;
-  game.huntActive = false;
-  game.playerRoom = "Van";
-
-  // Pick random ghost
-  const ghosts = Object.keys(ghostProfiles);
-  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
-
-  // Pick random ghost room (except Goryo locked)
-  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
-  game.ghostRoom = roomKeys[Math.floor(Math.random() * roomKeys.length)];
-  if (game.ghost === "Goryo") game.ghostRoom = "Garage";
-
-  // Mimic mimicry shift
-  if (game.ghost === "The Mimic") {
-    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
-    mimicShift();
-  }
-
-  narratorLog(`You arrive at the location. Ghost chosen. Investigation begins.`);
-  narratorLog(`Current location: ${game.playerRoom}`);
-  updateHUD();
-}
-
-/* === HUD UPDATER === */
-function updateHUD() {
-  document.getElementById("hud-sanity").textContent = `${game.sanity}%`;
-  document.getElementById("hud-turn").textContent = game.currentTurn;
-  document.getElementById("hud-location").textContent = game.playerRoom;
-  document.getElementById("hud-temp").textContent = 
-    game.inventory.includes("Thermometer") 
-    ? `${(Math.random() * 10 + 5).toFixed(1)}°C` 
-    : "--°C";
-}
-
-<script>
 /* === TURN SYSTEM & ADVANCEMENT === */
 function advanceTurn() {
   game.currentTurn++;
 
   // Sanity drain baseline
   if (game.sanity > 0) {
-    game.sanity -= (Math.random() * 2 + 1); 
+    game.sanity -= (Math.random() * 2 + 1);
     if (game.sanity < 0) game.sanity = 0;
   }
 
@@ -547,7 +580,6 @@ function advanceTurn() {
     startHunt();
   }
 
-  // Hunt active resolution
   if (game.huntActive) resolveHunt();
 
   updateHUD();
@@ -601,7 +633,6 @@ function endHunt() {
 
 /* === DEFENSE CHECK === */
 function defendDuringHunt() {
-  // Crucifix defense
   if (game.inventory.includes("Crucifix") && game.playerRoom === game.ghostRoom) {
     narratorLog("✝️ The Crucifix burns and prevents the hunt!");
     game.huntActive = false;
@@ -635,21 +666,14 @@ function playerDeath() {
   }, 2000);
 }
 
-/* === AMBIENT NARRATION === */
-function ambientNarration() {
-  if (Math.random() < 0.2) {
-    const hints = [
-      "You hear faint footsteps nearby.",
-      "A distant creak echoes through the halls.",
-      "The temperature seems to drop suddenly.",
-      "Your breath fogs slightly as you exhale.",
-      "You feel like you're being watched..."
-    ];
-    narratorLog(hints[Math.floor(Math.random() * hints.length)]);
-  }
+/* === MIMIC SHIFT === */
+function mimicShift() {
+  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
+  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
+  narratorLog(`The Mimic alters its behavior... now imitating a ${game.mimicForm}.`);
 }
 
-/* === ITEM USE === */
+/* === CAMERA ORB CHECK === */
 function useItem(item) {
   if (!game.inventory.includes(item)) {
     narratorLog(`You aren't carrying a ${item}.`);
@@ -668,7 +692,8 @@ function useItem(item) {
       }
       break;
     case "Camera":
-      if (game.playerRoom === game.ghostRoom && (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
+      if (game.playerRoom === game.ghostRoom &&
+          (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs"))) {
         narratorLog("📷 You see ghost orbs through the camera!");
       } else {
         narratorLog("📷 No orbs detected in this room.");
@@ -679,15 +704,10 @@ function useItem(item) {
   }
   updateHUD();
 }
+</script>
 
-/* === MIMIC SHIFT === */
-function mimicShift() {
-  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
-  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
-  narratorLog(`The Mimic alters its behavior... now imitating a ${game.mimicForm}.`);
-}
-
-/* === MOVEMENT === */
+<script>
+/* === MOVEMENT LOGIC === */
 function moveTo(room) {
   if (!roomsMap[game.playerRoom].includes(room)) {
     narratorLog("You can't move there directly.");
@@ -707,9 +727,8 @@ function narratorLog(message) {
   log.scrollTop = log.scrollHeight;
 }
 
-/* === RESTART === */
+/* === RESTART GAME === */
 function restartGame() {
-  // Reset everything
   game.inventory = [];
   game.vanStock = {
     "EMF Reader": true,
@@ -726,9 +745,7 @@ function restartGame() {
   document.getElementById("loadout-screen").style.display = "flex";
   populateLoadout();
 }
-</script>
 
-<script>
 /* === NARRATOR BUTTON HANDLER === */
 function handleNarratorCommand(cmd) {
   switch (cmd) {
@@ -833,6 +850,548 @@ function endGameGuess(guess) {
 function openVanSwapMenu() {
   const buttons = document.getElementById("narrator-buttons");
   buttons.innerHTML = "";
+
+  // Take items from van
+  Object.keys(game.vanStock).forEach(item => {
+    if (game.vanStock[item]) {
+      const btn = document.createElement("button");
+      btn.textContent = `Take ${item}`;
+      btn.onclick = () => {
+        if (game.inventory.length < 3) {
+          game.inventory.push(item);
+          game.vanStock[item] = false;
+          narratorLog(`You take the ${item}.`);
+        } else {
+          narratorLog("You can only hold 3 items at once.");
+        }
+        openVanSwapMenu();
+      };
+      buttons.appendChild(btn);
+    }
+  });
+
+  // Leave items back to van
+  game.inventory.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = `Leave ${item}`;
+    btn.onclick = () => {
+      const idx = game.inventory.indexOf(item);
+      if (idx !== -1) {
+        game.inventory.splice(idx,1);
+        game.vanStock[item] = true;
+        narratorLog(`You leave the ${item} in the van.`);
+      }
+      openVanSwapMenu();
+    };
+    buttons.appendChild(btn);
+  });
+
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "Done";
+  backBtn.onclick = renderActionButtons;
+  buttons.appendChild(backBtn);
+}
+
+/* === RENDER ACTION BUTTONS === */
+function renderActionButtons() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = `
+    <button onclick="handleNarratorCommand('move')">Move</button>
+    <button onclick="handleNarratorCommand('use-item')">Use Item</button>
+    <button onclick="handleNarratorCommand('check-gear')">Check Gear</button>
+    <button onclick="handleNarratorCommand('guess-ghost')">Guess Ghost</button>
+    <button onclick="handleNarratorCommand('return-van')">${game.playerRoom==="Van"?"Check Gear":"Return to Van"}</button>
+  `;
+}
+</script>
+
+<script>
+/* === LOADOUT SYSTEM === */
+function populateLoadout() {
+  const held = document.getElementById("held-items");
+  const van = document.getElementById("van-items");
+  held.innerHTML = "";
+  van.innerHTML = "";
+
+  // Populate van stock
+  Object.keys(game.vanStock).forEach(item => {
+    if (game.vanStock[item]) {
+      const btn = document.createElement("button");
+      btn.textContent = item;
+      btn.onclick = () => {
+        if (game.inventory.length < 3) {
+          game.inventory.push(item);
+          game.vanStock[item] = false;
+          populateLoadout();
+        } else {
+          alert("You can only hold 3 items.");
+        }
+      };
+      van.appendChild(btn);
+    }
+  });
+
+  // Populate held items
+  game.inventory.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = item;
+    btn.onclick = () => {
+      const idx = game.inventory.indexOf(item);
+      if (idx !== -1) {
+        game.inventory.splice(idx,1);
+        game.vanStock[item] = true;
+        populateLoadout();
+      }
+    };
+    held.appendChild(btn);
+  });
+}
+
+/* === CONFIRM LOADOUT === */
+function confirmLoadout() {
+  if (game.inventory.length === 0) {
+    alert("Take at least 1 item before starting!");
+    return;
+  }
+  document.getElementById("loadout-screen").style.display = "none";
+  document.getElementById("main-scene").style.display = "block";
+  initializeGame();
+  renderActionButtons();
+}
+
+/* === INITIALIZE GAME === */
+function initializeGame() {
+  // Reset state
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.huntActive = false;
+  game.playerRoom = "Van";
+
+  // Pick random ghost
+  const ghosts = Object.keys(ghostProfiles);
+  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
+
+  // Pick random ghost room (Goryo fixed)
+  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
+  game.ghostRoom = roomKeys[Math.floor(Math.random() * roomKeys.length)];
+  if (game.ghost === "Goryo") game.ghostRoom = "Garage";
+
+  // Mimic setup
+  if (game.ghost === "The Mimic") {
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+    mimicShift();
+  }
+
+  // Weather setup (random chance for rain or blood moon)
+  determineWeather();
+
+  narratorLog(`You arrive at the location. The investigation begins...`);
+  narratorLog(`Current location: ${game.playerRoom}`);
+  updateHUD();
+}
+
+/* === HUD UPDATER === */
+function updateHUD() {
+  document.getElementById("hud-sanity").textContent = `${Math.round(game.sanity)}%`;
+  document.getElementById("hud-turn").textContent = game.currentTurn;
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-temp").textContent =
+    game.inventory.includes("Thermometer")
+      ? `${(Math.random() * 10 + 5).toFixed(1)}°C`
+      : "--°C";
+}
+
+/* === WEATHER SYSTEM === */
+let currentWeather = "clear"; // "clear", "rain", "blood-moon"
+
+function determineWeather() {
+  const roll = Math.random();
+  if (roll < 0.15) {
+    currentWeather = "blood-moon";
+    narratorLog("🌕 A blood moon casts an eerie red glow over the house...");
+  } else if (roll < 0.45) {
+    currentWeather = "rain";
+    narratorLog("🌧️ Rain patters against the windows outside...");
+    startRainEffects();
+  } else {
+    currentWeather = "clear";
+    narratorLog("The night is quiet, the air still.");
+  }
+  startWeatherLightning();
+}
+
+/* === LIGHTNING EFFECTS — Only for Rain or Blood Moon === */
+function startWeatherLightning() {
+  const foreground = document.getElementById("foreground-layer");
+  setInterval(() => {
+    if (document.getElementById("main-scene").style.display !== "block") return;
+    if (currentWeather === "rain" || currentWeather === "blood-moon") {
+      if (Math.random() < 0.15) {
+        foreground.style.background =
+          currentWeather === "blood-moon"
+            ? "rgba(255,0,0,0.4)"
+            : "rgba(255,255,255,0.6)";
+        setTimeout(() => (foreground.style.background = "transparent"), 100 + Math.random() * 200);
+      }
+    }
+  }, 5000);
+}
+
+/* === RAIN EFFECTS (SIMPLE TEXTURE MOVEMENT) === */
+let rainCanvas;
+function startRainEffects() {
+  if (!rainCanvas) {
+    rainCanvas = document.createElement("canvas");
+    rainCanvas.id = "rain-layer";
+    rainCanvas.style.position = "absolute";
+    rainCanvas.style.top = 0;
+    rainCanvas.style.left = 0;
+    rainCanvas.style.width = "100%";
+    rainCanvas.style.height = "100%";
+    rainCanvas.style.zIndex = 1;
+    document.getElementById("main-scene").appendChild(rainCanvas);
+  }
+  const ctx = rainCanvas.getContext("2d");
+  const drops = [];
+  for (let i = 0; i < 120; i++) {
+    drops.push({
+      x: Math.random() * rainCanvas.width,
+      y: Math.random() * rainCanvas.height,
+      len: Math.random() * 15 + 5,
+      speed: Math.random() * 2 + 2,
+    });
+  }
+  function animateRain() {
+    ctx.clearRect(0, 0, rainCanvas.width, rainCanvas.height);
+    ctx.strokeStyle = "rgba(200,200,255,0.6)";
+    ctx.lineWidth = 1;
+    drops.forEach(d => {
+      ctx.beginPath();
+      ctx.moveTo(d.x, d.y);
+      ctx.lineTo(d.x, d.y + d.len);
+      ctx.stroke();
+      d.y += d.speed;
+      if (d.y > rainCanvas.height) {
+        d.y = -10;
+        d.x = Math.random() * rainCanvas.width;
+      }
+    });
+    if (currentWeather === "rain" && document.getElementById("main-scene").style.display === "block") {
+      requestAnimationFrame(animateRain);
+    }
+  }
+  rainCanvas.width = window.innerWidth;
+  rainCanvas.height = window.innerHeight;
+  animateRain();
+}
+
+/* === FOG EFFECTS (ALWAYS ON) === */
+const fogLayer = document.getElementById("fog-layer");
+function animateFog() {
+  fogLayer.style.background = `radial-gradient(circle at ${Math.random() * 100}% ${Math.random() * 100}%, rgba(200,200,200,0.05), transparent 60%)`;
+}
+setInterval(animateFog, 2000);
+
+/* === AUTO-START LOADOUT === */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("loadout-screen").style.display = "flex";
+  populateLoadout();
+});
+</script>
+
+<script>
+/* === ADVANCE TURN SYSTEM === */
+function advanceTurn() {
+  game.currentTurn++;
+
+  // Baseline sanity drain
+  if (game.sanity > 0) {
+    game.sanity -= (Math.random() * 2 + 1);
+    if (game.sanity < 0) game.sanity = 0;
+  }
+
+  // Mimic behavior shifts every 3–6 turns
+  if (game.ghost === "The Mimic" && game.currentTurn >= game.nextMimicShift) {
+    mimicShift();
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+  }
+
+  // Ghost room shifting (except Goryo & Yurei with smudge cooldown)
+  if (game.ghost !== "Goryo" && Math.random() < 0.2) {
+    if (game.ghost === "Yurei" && game.smudgeCooldown > 0) {
+      game.smudgeCooldown--;
+    } else {
+      const rooms = Object.keys(roomsMap).filter(r => r !== "Van");
+      game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    }
+  }
+
+  // Hunt trigger logic
+  if (!game.huntActive && Math.random() * 100 < huntChance()) {
+    startHunt();
+  }
+
+  // Hunt resolution if active
+  if (game.huntActive) resolveHunt();
+
+  updateHUD();
+  ambientNarration();
+}
+
+/* === HUNT CHANCE BASED ON SANITY === */
+function huntChance() {
+  const profile = ghostProfiles[game.ghost];
+  let threshold;
+  switch (profile.sanityThreshold) {
+    case "VeryEarly": threshold = 75; break;
+    case "Early": threshold = 50; break;
+    case "Average": threshold = 40; break;
+    case "Late": threshold = 30; break;
+    default: threshold = 40;
+  }
+  return game.sanity <= threshold ? 30 : 5;
+}
+
+/* === START HUNT === */
+function startHunt() {
+  if (game.huntCooldown > 0) {
+    game.huntCooldown--;
+    return;
+  }
+  game.huntActive = true;
+  narratorLog("⚠️ The air grows icy... A hunt has begun!");
+}
+
+/* === RESOLVE HUNT === */
+function resolveHunt() {
+  if (!game.huntActive) return;
+  if (defendDuringHunt()) return;
+
+  const aggression = getGhostAggression(game.ghost);
+  const deathChance = aggression + (100 - game.sanity) * 0.2;
+  if (Math.random() * 100 < deathChance) {
+    playerDeath();
+  } else {
+    narratorLog("The ghost prowls nearby, but you manage to evade it.");
+    endHunt();
+  }
+}
+
+/* === END HUNT === */
+function endHunt() {
+  game.huntActive = false;
+  game.huntCooldown = ghostProfiles[game.ghost].huntCooldown;
+}
+
+/* === DEFENSE DURING HUNT === */
+function defendDuringHunt() {
+  if (game.inventory.includes("Crucifix") && game.playerRoom === game.ghostRoom) {
+    narratorLog("✝️ Your Crucifix burns, stopping the hunt!");
+    game.huntActive = false;
+    return true;
+  }
+  return false;
+}
+
+/* === GHOST AGGRESSION FACTOR === */
+function getGhostAggression(ghost) {
+  switch (ghost) {
+    case "Demon": return 60;
+    case "Moroi": return 50;
+    case "Succubus": return 55;
+    case "Thaye": return game.currentTurn < 15 ? 40 : 20;
+    case "The Mimic": return game.mimicForm ? getGhostAggression(game.mimicForm) : 30;
+    default: return 30;
+  }
+}
+
+/* === PLAYER DEATH === */
+function playerDeath() {
+  game.huntActive = false;
+  narratorLog("💀 The ghost catches you... Darkness closes in.");
+  setTimeout(() => {
+    narratorLog(`GAME OVER — The ghost was a ${game.ghost}.`);
+    const btnContainer = document.getElementById("narrator-buttons");
+    btnContainer.innerHTML = `<button onclick="restartGame()">Start New Game</button>`;
+  }, 2000);
+}
+
+/* === AMBIENT NARRATION (RANDOM EVENTS) === */
+function ambientNarration() {
+  if (Math.random() < 0.2) {
+    const hints = [
+      "You hear faint footsteps in the distance.",
+      "A cold draft brushes past you.",
+      "The floor creaks softly behind you.",
+      "Your breath fogs slightly in the cold air.",
+      "You feel an unsettling presence nearby..."
+    ];
+    narratorLog(hints[Math.floor(Math.random() * hints.length)]);
+  }
+}
+
+/* === ITEM USE: CAMERA ORBS === */
+function useItem(item) {
+  if (!game.inventory.includes(item)) {
+    narratorLog(`You aren't carrying a ${item}.`);
+    return;
+  }
+  switch (item) {
+    case "Smudge Stick":
+      if (game.playerRoom === game.ghostRoom) {
+        narratorLog("🔥 You smudge the ghost's room. The presence retreats briefly.");
+        game.smudgeCooldown = game.ghost === "Yurei" ? 5 : 3;
+        game.huntActive = false;
+        const index = game.inventory.indexOf("Smudge Stick");
+        game.inventory.splice(index, 1);
+      } else {
+        narratorLog("You smudge, but nothing happens here.");
+      }
+      break;
+    case "Camera":
+      if (game.playerRoom === game.ghostRoom) {
+        if (game.ghost === "The Mimic" || ghostProfiles[game.ghost].evidence.includes("Orbs")) {
+          narratorLog("📷 You see ghost orbs floating in the room!");
+        } else {
+          narratorLog("📷 The room is clear—no orbs visible.");
+        }
+      } else {
+        narratorLog("📷 No orbs detected here.");
+      }
+      break;
+    default:
+      narratorLog(`You use the ${item}, but nothing significant happens.`);
+  }
+  updateHUD();
+}
+
+/* === MIMIC BEHAVIOR SHIFT === */
+function mimicShift() {
+  const otherGhosts = Object.keys(ghostProfiles).filter(g => g !== "The Mimic");
+  game.mimicForm = otherGhosts[Math.floor(Math.random() * otherGhosts.length)];
+  narratorLog(`The Mimic shifts its behavior... imitating a ${game.mimicForm}.`);
+}
+</script>
+
+<script>
+/* === RENDER ACTION BUTTONS (MAIN INTERFACE) === */
+function renderActionButtons() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = `
+    <button onclick="handleNarratorCommand('move')">Move</button>
+    <button onclick="handleNarratorCommand('use-item')">Use Item</button>
+    <button onclick="handleNarratorCommand('check-gear')">Check Gear</button>
+    <button onclick="handleNarratorCommand('guess-ghost')">Guess Ghost</button>
+    <button onclick="handleNarratorCommand('return-van')">${
+      game.playerRoom === "Van" ? "Check Gear" : "Return to Van"
+    }</button>
+  `;
+}
+
+/* === HANDLE NARRATOR COMMANDS === */
+function handleNarratorCommand(cmd) {
+  switch (cmd) {
+    case "move":
+      openMoveMenu();
+      break;
+    case "use-item":
+      openUseItemMenu();
+      break;
+    case "check-gear":
+      narratorLog(`Current gear: ${game.inventory.join(", ") || "None"}.`);
+      break;
+    case "guess-ghost":
+      openGhostGuess();
+      break;
+    case "return-van":
+      if (game.playerRoom !== "Van") {
+        game.playerRoom = "Van";
+        narratorLog("You return to the van to check your gear.");
+        advanceTurn();
+      } else {
+        openVanSwapMenu();
+      }
+      break;
+  }
+}
+
+/* === MOVE MENU === */
+function openMoveMenu() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = "";
+  roomsMap[game.playerRoom].forEach(room => {
+    const btn = document.createElement("button");
+    btn.textContent = `Go to ${room}`;
+    btn.onclick = () => {
+      moveTo(room);
+      renderActionButtons();
+    };
+    buttons.appendChild(btn);
+  });
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "Cancel";
+  backBtn.onclick = renderActionButtons;
+  buttons.appendChild(backBtn);
+}
+
+/* === ITEM USE MENU === */
+function openUseItemMenu() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = "";
+  if (game.inventory.length === 0) {
+    narratorLog("You have no items to use.");
+    renderActionButtons();
+    return;
+  }
+  game.inventory.forEach(item => {
+    const btn = document.createElement("button");
+    btn.textContent = `Use ${item}`;
+    btn.onclick = () => {
+      useItem(item);
+      renderActionButtons();
+    };
+    buttons.appendChild(btn);
+  });
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "Cancel";
+  backBtn.onclick = renderActionButtons;
+  buttons.appendChild(backBtn);
+}
+
+/* === GHOST GUESS MENU === */
+function openGhostGuess() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = "";
+  Object.keys(ghostProfiles).forEach(g => {
+    const btn = document.createElement("button");
+    btn.textContent = g;
+    btn.onclick = () => {
+      narratorLog(`You guess the ghost is a ${g}...`);
+      endGameGuess(g);
+    };
+    buttons.appendChild(btn);
+  });
+  const backBtn = document.createElement("button");
+  backBtn.textContent = "Cancel";
+  backBtn.onclick = renderActionButtons;
+  buttons.appendChild(backBtn);
+}
+
+/* === END GAME GUESS === */
+function endGameGuess(guess) {
+  if (guess === game.ghost) {
+    narratorLog(`✅ Correct! The ghost was indeed a ${game.ghost}.`);
+  } else {
+    narratorLog(`❌ Wrong. The ghost was actually a ${game.ghost}.`);
+  }
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = `<button onclick="restartGame()">Start New Game</button>`;
+}
+
+/* === VAN SWAP MENU === */
+function openVanSwapMenu() {
+  const buttons = document.getElementById("narrator-buttons");
+  buttons.innerHTML = "";
   Object.keys(game.vanStock).forEach(item => {
     if (game.vanStock[item]) {
       const btn = document.createElement("button");
@@ -856,7 +1415,7 @@ function openVanSwapMenu() {
     btn.onclick = () => {
       const idx = game.inventory.indexOf(item);
       if (idx !== -1) {
-        game.inventory.splice(idx,1);
+        game.inventory.splice(idx, 1);
         game.vanStock[item] = true;
         narratorLog(`You leave the ${item} in the van.`);
       }
@@ -870,17 +1429,133 @@ function openVanSwapMenu() {
   buttons.appendChild(backBtn);
 }
 
-/* === RENDER ACTION BUTTONS === */
-function renderActionButtons() {
-  const buttons = document.getElementById("narrator-buttons");
-  buttons.innerHTML = `
-    <button onclick="handleNarratorCommand('move')">Move</button>
-    <button onclick="handleNarratorCommand('use-item')">Use Item</button>
-    <button onclick="handleNarratorCommand('check-gear')">Check Gear</button>
-    <button onclick="handleNarratorCommand('guess-ghost')">Guess Ghost</button>
-    <button onclick="handleNarratorCommand('return-van')">${game.playerRoom==="Van"?"Check Gear":"Return to Van"}</button>
-  `;
+/* === NARRATOR LOG APPEND === */
+function narratorLog(message) {
+  const log = document.getElementById("narrator-log");
+  const p = document.createElement("p");
+  p.textContent = message;
+  log.appendChild(p);
+  log.scrollTop = log.scrollHeight;
 }
+
+/* === MOVE TO ROOM === */
+function moveTo(room) {
+  if (!roomsMap[game.playerRoom].includes(room)) {
+    narratorLog("You can't move there directly.");
+    return;
+  }
+  game.playerRoom = room;
+  narratorLog(`You move to the ${room}.`);
+  advanceTurn();
+}
+
+/* === RESTART GAME === */
+function restartGame() {
+  // Reset everything
+  game.inventory = [];
+  game.vanStock = {
+    "EMF Reader": true,
+    "Spirit Box": true,
+    "Camera": true,
+    "UV Light": true,
+    "D.O.T.S Projector": true,
+    "Thermometer": true,
+    "Crucifix": true,
+    "Smudge Stick": true,
+    "Salt": true
+  };
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("loadout-screen").style.display = "flex";
+  const log = document.getElementById("narrator-log");
+  log.innerHTML = "";
+  populateLoadout();
+}
+</script>
+
+<script>
+/* === STARTUP GAME INITIALIZATION === */
+function initializeGame() {
+  // Reset core stats
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.huntActive = false;
+  game.playerRoom = "Van";
+  game.smudgeCooldown = 0;
+  game.huntCooldown = 0;
+  game.mimicForm = null;
+
+  // Pick random ghost
+  const ghosts = Object.keys(ghostProfiles);
+  game.ghost = ghosts[Math.floor(Math.random() * ghosts.length)];
+
+  // Pick random ghost room (Goryo locked)
+  const roomKeys = Object.keys(roomsMap).filter(r => r !== "Van");
+  game.ghostRoom = (game.ghost === "Goryo") 
+    ? "Garage" 
+    : roomKeys[Math.floor(Math.random() * roomKeys.length)];
+
+  // Mimic shift initialization
+  if (game.ghost === "The Mimic") {
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+    mimicShift();
+  }
+
+  // Weather setup (clear unless rain/blood moon chosen)
+  resetWeather();
+
+  narratorLog(`You arrive at the haunted location. The investigation begins.`);
+  narratorLog(`Current location: ${game.playerRoom}`);
+  updateHUD();
+}
+
+/* === WEATHER & FOG RESET === */
+function resetWeather() {
+  const fogLayer = document.getElementById("fog-layer");
+  const foreground = document.getElementById("foreground-layer");
+
+  fogLayer.style.background = "transparent";
+  foreground.style.background = "transparent";
+
+  // Rain or Blood Moon randomization
+  const weatherChance = Math.random();
+  if (weatherChance < 0.15) {
+    startRain();
+  } else if (weatherChance >= 0.15 && weatherChance < 0.2) {
+    startBloodMoon();
+  }
+}
+
+/* === RAIN SYSTEM === */
+function startRain() {
+  const fogLayer = document.getElementById("fog-layer");
+  fogLayer.style.background = 
+    `repeating-linear-gradient(0deg, rgba(200,200,255,0.2) 0 2px, transparent 2px 4px)`;
+  narratorLog("🌧️ A steady rain begins to fall outside.");
+  // Optional: Add occasional lightning during rain
+  enableLightning = true;
+}
+
+/* === BLOOD MOON SYSTEM === */
+function startBloodMoon() {
+  const fogLayer = document.getElementById("fog-layer");
+  fogLayer.style.background = 
+    `radial-gradient(circle at 50% 50%, rgba(255,0,0,0.15), transparent 60%)`;
+  narratorLog("🌕 The Blood Moon looms overhead, intensifying the ghost's power.");
+  enableLightning = true;
+}
+
+/* === LIGHTNING EFFECTS (ACTIVE ONLY DURING RAIN/BLOOD MOON) === */
+let enableLightning = false;
+function lightningFlash() {
+  const foreground = document.getElementById("foreground-layer");
+  foreground.style.background = "rgba(255,255,255,0.7)";
+  setTimeout(() => foreground.style.background = "transparent", 100 + Math.random() * 200);
+}
+setInterval(() => {
+  if (enableLightning && document.getElementById("main-scene").style.display === "block") {
+    if (Math.random() < 0.1) lightningFlash();
+  }
+}, 5000);
 
 /* === LOADOUT SYSTEM === */
 function populateLoadout() {
@@ -912,7 +1587,7 @@ function populateLoadout() {
     btn.onclick = () => {
       const idx = game.inventory.indexOf(item);
       if (idx !== -1) {
-        game.inventory.splice(idx,1);
+        game.inventory.splice(idx, 1);
         game.vanStock[item] = true;
         populateLoadout();
       }
@@ -929,30 +1604,149 @@ function confirmLoadout() {
   renderActionButtons();
 }
 
-/* === AMBIENT FOG === */
-const fogLayer = document.getElementById("fog-layer");
-function animateFog() {
-  fogLayer.style.background = `radial-gradient(circle at ${Math.random()*100}% ${Math.random()*100}%, rgba(200,200,200,0.05), transparent 60%)`;
-}
-setInterval(animateFog,2000);
-
-/* === LIGHTNING EFFECTS === */
-function lightningFlash() {
-  const foreground = document.getElementById("foreground-layer");
-  foreground.style.background = "rgba(255,255,255,0.7)";
-  setTimeout(()=>foreground.style.background="transparent",100 + Math.random()*200);
-}
-setInterval(()=>{
-  if(Math.random()<0.1 && document.getElementById("main-scene").style.display==="block"){
-    lightningFlash();
-  }
-},5000);
-
-/* === AUTO-START LOADOUT ON PAGE LOAD === */
+/* === PAGE LOAD STARTUP === */
 document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("main-scene").style.display = "none";
   document.getElementById("loadout-screen").style.display = "flex";
   populateLoadout();
 });
 </script>
-</body>
-</html>
+
+<script>
+/* === HUD UPDATER (FINALIZED) === */
+function updateHUD() {
+  document.getElementById("hud-sanity").textContent = `${Math.max(0, Math.floor(game.sanity))}%`;
+  document.getElementById("hud-turn").textContent = game.currentTurn;
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-temp").textContent =
+    game.inventory.includes("Thermometer")
+      ? `${(Math.random() * 10 + 5).toFixed(1)}°C`
+      : "--°C";
+}
+
+/* === ADVANCE TURN (FINALIZED) === */
+function advanceTurn() {
+  game.currentTurn++;
+
+  // Sanity drain baseline
+  if (game.sanity > 0) {
+    game.sanity -= (Math.random() * 2 + 1);
+    if (game.sanity < 0) game.sanity = 0;
+  }
+
+  // Mimic mimicry shift
+  if (game.ghost === "The Mimic" && game.currentTurn >= game.nextMimicShift) {
+    mimicShift();
+    game.nextMimicShift = game.currentTurn + (3 + Math.floor(Math.random() * 4));
+  }
+
+  // Ghost room shifting (except Goryo; Yurei smudge lock)
+  if (game.ghost !== "Goryo" && Math.random() < 0.2) {
+    if (game.ghost === "Yurei" && game.smudgeCooldown > 0) {
+      game.smudgeCooldown--;
+    } else {
+      const rooms = Object.keys(roomsMap).filter(r => r !== "Van");
+      game.ghostRoom = rooms[Math.floor(Math.random() * rooms.length)];
+    }
+  }
+
+  // Hunt trigger
+  if (!game.huntActive && Math.random() * 100 < huntChance()) {
+    startHunt();
+  }
+
+  // Resolve active hunt
+  if (game.huntActive) resolveHunt();
+
+  updateHUD();
+  ambientNarration();
+}
+
+/* === CAMERA ORB DETECTION (TRUE EVIDENCE ONLY) === */
+function useItem(item) {
+  if (!game.inventory.includes(item)) {
+    narratorLog(`You aren't carrying a ${item}.`);
+    return;
+  }
+
+  switch (item) {
+    case "Smudge Stick":
+      if (game.playerRoom === game.ghostRoom) {
+        narratorLog("🔥 You smudge the ghost's room. It retreats!");
+        game.smudgeCooldown = game.ghost === "Yurei" ? 5 : 3;
+        game.huntActive = false;
+        const index = game.inventory.indexOf("Smudge Stick");
+        game.inventory.splice(index, 1);
+      } else {
+        narratorLog("You smudge, but nothing happens here.");
+      }
+      break;
+
+    case "Camera":
+      if (game.playerRoom === game.ghostRoom) {
+        if (
+          game.ghost === "The Mimic" ||
+          ghostProfiles[game.ghost].evidence.includes("Orbs")
+        ) {
+          narratorLog("📷 Through the camera, you see ghost orbs swirling in the room!");
+        } else {
+          narratorLog("📷 The room looks clear—no ghost orbs detected.");
+        }
+      } else {
+        narratorLog("📷 You're not in the ghost's room; no orbs detected.");
+      }
+      break;
+
+    default:
+      narratorLog(`You use the ${item}, but nothing significant happens.`);
+  }
+
+  updateHUD();
+}
+
+/* === FULL RESTART CLEANUP === */
+function restartGame() {
+  // Reset state
+  game.inventory = [];
+  game.vanStock = {
+    "EMF Reader": true,
+    "Spirit Box": true,
+    "Camera": true,
+    "UV Light": true,
+    "D.O.T.S Projector": true,
+    "Thermometer": true,
+    "Crucifix": true,
+    "Smudge Stick": true,
+    "Salt": true
+  };
+  game.currentTurn = 0;
+  game.sanity = 100;
+  game.huntActive = false;
+  game.smudgeCooldown = 0;
+  game.huntCooldown = 0;
+  game.ghost = null;
+  game.ghostRoom = null;
+  game.playerRoom = "Van";
+  enableLightning = false;
+
+  // Clear logs
+  document.getElementById("narrator-log").innerHTML = "";
+
+  // Hide main scene, show loadout
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("loadout-screen").style.display = "flex";
+
+  // Weather reset
+  resetWeather();
+
+  populateLoadout();
+}
+
+/* === AUTO PAGE LOAD === */
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("main-scene").style.display = "none";
+  document.getElementById("loadout-screen").style.display = "flex";
+  populateLoadout();
+});
+</script>
+</body></html>
