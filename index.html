@@ -508,7 +508,7 @@ function startInvestigation() {
   renderActionButtons();
 
   // ✅ Save immediately after setup
-  saveGame();
+  saveGame(true);
 }
 
 
@@ -578,7 +578,7 @@ function openMoveOverlay(){
   document.body.appendChild(overlay);
 
   window.closeMoveOverlay=function(){const t=document.getElementById("move-temp");if(t)document.body.removeChild(t);};
-  window.goRoomAndClose=function(room){moveToRoom(room);closeMoveOverlay();saveGame();};
+  window.goRoomAndClose=function(room){moveToRoom(room);closeMoveOverlay();saveGame(true);};
 }
 
 function moveToRoom(r){
@@ -588,7 +588,7 @@ function moveToRoom(r){
   renderHUD();updateBackground();
   const moveOverlay=document.getElementById("move-temp");
   if(moveOverlay)document.body.removeChild(moveOverlay);
-  checkTurnEvents();saveGame();
+  checkTurnEvents();saveGame(true);
 }
 
 /***********************
@@ -609,7 +609,7 @@ function lookAround(){
         if(game.roomItems[game.playerRoom]){
           game.roomItems[game.playerRoom]=
             game.roomItems[game.playerRoom].filter(x=>x!=="Footprints");
-          logToGame("The footprints have faded.");saveGame();
+          logToGame("The footprints have faded.");saveGame(true);
         }
       },9000);
     }
@@ -624,7 +624,7 @@ function lookAround(){
       logToGame("Fake orbs shimmer briefly.");
   } else {logToGame("Nothing unusual.");}
 
-  renderHUD();checkTurnEvents();saveGame();
+  renderHUD();checkTurnEvents();saveGame(true);
 }
 
 /***********************
@@ -779,7 +779,7 @@ function openInventoryOverlay(){
   window.closeInventory=function(){
     const t=document.getElementById("inventory-temp");
     if(t)document.body.removeChild(t);
-    saveGame();
+   saveGame(true);
   };
 }
 
@@ -807,7 +807,7 @@ function dropItem(i){
     logToGame(`Dropped ${i} here.`);
   }
   game.inventory=game.inventory.filter(x=>x!==i);
-  renderHUD();saveGame();
+  renderHUD();saveGame(true);
 }
 
 function pickItem(i){
@@ -821,7 +821,7 @@ function pickItem(i){
     game.inventory.push(i);game.inventory.sort();
   }
   logToGame(`Picked up ${i}.`);
-  renderHUD();saveGame();
+  renderHUD();saveGame(true);
 }
 
 /***********************
@@ -892,7 +892,7 @@ function useItem(i){
       else logToGame("You use the "+i+", but nothing significant occurs.");
   }
 
-  game.currentTurn++;renderHUD();checkTurnEvents();saveGame();
+  game.currentTurn++;renderHUD();checkTurnEvents();saveGame(true);
 }
 
 function handleCursedItem(i){
@@ -915,28 +915,51 @@ function handleCursedItem(i){
     case"Monkey Paw":if(Math.random()<0.5)startHunt();break;
   }
 
-  game.usedCursedItems[i]=true;updateSanityBar();saveGame();
+  game.usedCursedItems[i]=true;updateSanityBar();saveGame(true);
 }
 
 /***********************
  === SAVE & LOAD SYSTEM ===
 ************************/
-function saveGame(){
-  try{
-    const saveData={
-      ghost:game.ghost,ghostRoom:game.ghostRoom,playerRoom:game.playerRoom,
-      playerDirection:game.playerDirection,inventory:game.inventory,
-      vanStock:game.vanStock,selectedEvidence:Array.from(game.selectedEvidence),
-      currentTurn:game.currentTurn,sanity:game.sanity,weather:game.weather,
-      mimicForm:game.mimicForm,nextMimicShift:game.nextMimicShift,
-      cameraActive:game.cameraActive,huntCooldown:game.huntCooldown,
-      smudgeActive:game.smudgeActive,placedCrucifix:game.placedCrucifix,
-      roomItems:game.roomItems,usedCursedItems:game.usedCursedItems
+function saveGame() {
+  try {
+    const saveData = {
+      ghost: game.ghost,
+      ghostRoom: game.ghostRoom,
+      playerRoom: game.playerRoom,
+      playerDirection: game.playerDirection,
+      inventory: game.inventory,
+      vanStock: game.vanStock,
+      selectedEvidence: Array.from(game.selectedEvidence),
+      currentTurn: game.currentTurn,
+      sanity: game.sanity,
+      weather: game.weather,
+      mimicForm: game.mimicForm,
+      nextMimicShift: game.nextMimicShift,
+      cameraActive: game.cameraActive,
+      huntCooldown: game.huntCooldown,
+      smudgeActive: game.smudgeActive,
+      placedCrucifix: game.placedCrucifix,
+      roomItems: game.roomItems,
+      usedCursedItems: game.usedCursedItems
     };
-    localStorage.setItem("phasmaPhoneySave",JSON.stringify(saveData));
-    logToGame("💾 Game saved.");
-  }catch(e){console.error("Save failed:",e);logToGame("⚠️ Save failed.");}
+    localStorage.setItem("phasmaPhoneySave", JSON.stringify(saveData));
+    showSaveIndicator();
+  } catch (e) {
+    console.error("Save failed:", e);
+    logToGame("⚠️ Save failed.");
+  }
 }
+
+function showSaveIndicator() {
+  const ind = document.getElementById("save-indicator");
+  if (!ind) return;
+  ind.style.display = "block";
+  ind.style.opacity = "1";
+  setTimeout(() => { ind.style.opacity = "0.3"; }, 300);
+  setTimeout(() => { ind.style.display = "none"; }, 1000);
+}
+
 
 function loadGame(){
   const data=localStorage.getItem("phasmaPhoneySave");
@@ -992,7 +1015,7 @@ function handleCommand(cmd) {
       break;
 
     case "save":
-      saveGame();
+      saveGame(true); // silent save
       break;
 
     case "load":
@@ -1109,8 +1132,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
     renderActionButtons();
-    logToGame("🎮 Game state saved after loadout.");
-    saveGame();
+    saveGame(true); // silent save
     window.dispatchEvent(new Event("resize"));
 
     setTimeout(() => {
