@@ -363,10 +363,14 @@ function startInvestigation(){
   game.ghost=randomFromArray(Object.keys(ghostProfiles));
   if(game.ghost==="TheMimic")assignMimicForm();
   game.ghostRoom=randomFromArray(Object.keys(roomVisuals).filter(r=>r!=="Van"));
+  placeCursedItems();
   logToGame("You are in the van. The weather is "+game.weather.toLowerCase()+".");
-  renderHUD(); updateBackground();
+  renderHUD();
+  updateBackground();
   bootVisuals();
+  renderActionButtons();
 }
+
 
 function assignMimicForm(){
   const g=Object.keys(ghostProfiles).filter(x=>x!=="TheMimic");
@@ -958,6 +962,19 @@ function showLoadout(){
 
   renderLoadout();
   document.getElementById("loadout-screen").style.display="flex";
+}
+  /***********************
+ === Buttons for investigation ===
+************************/
+function renderActionButtons(){
+  const btns=document.getElementById("command-buttons");
+  btns.innerHTML=`
+    <button data-cmd="move" onclick="handleCommand('move')">Move</button>
+    <button data-cmd="look" onclick="handleCommand('look')">Look Around</button>
+    <button data-cmd="inventory" onclick="handleCommand('inventory')">Inventory</button>
+    <button data-cmd="guess" onclick="handleCommand('guess')">Ghost Guess</button>
+    <button data-cmd="van" onclick="handleCommand('van')">Return to Van</button>
+  `;
 }
 
 /***********************
