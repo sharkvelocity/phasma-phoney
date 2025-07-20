@@ -954,6 +954,48 @@ function clearSave(){
   localStorage.removeItem("phasmaPhoneySave");
   logToGame("🗑️ Save data cleared.");
 }
+/***********************
+ === COMMAND HANDLER ===
+************************/
+function handleCommand(cmd) {
+  switch (cmd) {
+    case "move":
+      openMoveOverlay();
+      break;
+
+    case "look":
+      lookAround();
+      break;
+
+    case "inventory":
+      openInventoryOverlay();
+      break;
+
+    case "guess":
+      openGuess();
+      break;
+
+    case "van":
+      if (game.playerRoom !== "Van") {
+        moveToRoom("Van");
+        logToGame("You return to the van.");
+      } else {
+        openVanMonitor();
+      }
+      break;
+
+    case "save":
+      saveGame();
+      break;
+
+    case "load":
+      loadGame();
+      break;
+
+    default:
+      logToGame("⚠️ Unknown command: " + cmd);
+  }
+}
 
 /***********************
  === ACTION BUTTONS ===
