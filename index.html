@@ -422,6 +422,105 @@ footer a:hover {
   </div>
 </footer>
 <script>
+/* === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) === */
+let vanMonitorBooted = false;
+
+function openVanMonitor() {
+  // ✅ Prevent multiple monitors
+  if (document.getElementById("van-monitor")) return;
+
+  const monitor = document.createElement("div");
+  monitor.id = "van-monitor";
+  Object.assign(monitor.style, {
+    position: "fixed",
+    top: "10%", left: "10%",
+    width: "80%", height: "80%",
+    background: "#000",
+    border: "2px solid #0f0",
+    color: "#0f0",
+    fontFamily: "monospace",
+    fontSize: "16px",
+    padding: "10px",
+    zIndex: "4000",
+    overflow: "hidden",
+    boxShadow: "0 0 15px #0f0 inset"
+  });
+
+  document.body.appendChild(monitor);
+
+  if (!vanMonitorBooted) {
+    vanMonitorBooted = true;
+    runVanBootSequence(monitor);
+  } else {
+    renderCameraGrid(monitor);
+  }
+}
+
+function runVanBootSequence(monitor) {
+  let lines = [
+    ">C:/boot ghost.os",
+    "Loading modules [##########] 100%",
+    "Starting Phasma‑Phoney Monitoring Service...",
+    "Initializing Camera System...",
+    "Connecting to ghost network..."
+  ];
+  let i = 0;
+
+  function addLine() {
+    if (i < lines.length) {
+      monitor.innerHTML += `<div>${lines[i++]}</div>`;
+      setTimeout(addLine, 800);
+    } else {
+      setTimeout(() => showLogin(monitor), 1000);
+    }
+  }
+  addLine();
+}
+
+function showLogin(monitor) {
+  monitor.innerHTML += `<br><div>Login: sharkvelocity</div>`;
+  let dots = "";
+  let interval = setInterval(() => {
+    dots += "•";
+    monitor.innerHTML = monitor.innerHTML.replace(/•*$/, "") + dots;
+    if (dots.length >= 8) {
+      clearInterval(interval);
+      setTimeout(() => {
+        monitor.innerHTML += `<div>Access Granted.</div>`;
+        setTimeout(() => renderCameraGrid(monitor), 1000);
+      }, 500);
+    }
+  }, 200);
+}
+
+function renderCameraGrid(monitor) {
+  monitor.innerHTML = `
+    <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;height:70%;">
+      ${generateCameraFeeds()}
+    </div>
+    <button style="margin-top:8px;padding:6px 12px;background:#111;color:#0f0;border:1px solid #0f0;cursor:pointer;"
+      onclick="closeVanMonitor()">Close Monitor</button>
+  `;
+}
+
+function generateCameraFeeds() {
+  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
+  return rooms.slice(0, 4).map(r => {
+    const active = (game.ghostRoom === r && Math.random() < 0.6);
+    return `<div style="background:#000;border:1px solid #0f0;
+      display:flex;justify-content:center;align-items:center;
+      color:#0f0;font-size:12px;">
+      ${active ? r + " — ACTIVE" : "NO SIGNAL"}
+    </div>`;
+  }).join("");
+}
+
+function closeVanMonitor() {
+  const monitor = document.getElementById("van-monitor");
+  if (monitor) document.body.removeChild(monitor);
+}
+
 "use strict";
 
 /***********************
@@ -884,14 +983,15 @@ function handleCommand(cmd) {
       openGuess();
       break;
 
-    case "van":
-      if (game.playerRoom === "Van") {
-        logToGame("You are already in the van.");
-      } else {
-        moveToRoom("Van");
-        logToGame("You return to the van to regroup.");
-      }
-      break;
+   case "van":
+  if (game.playerRoom === "Van") {
+    openVanMonitor(); // ✅ Opens the monitor instead of just a log line
+  } else {
+    moveToRoom("Van");
+    logToGame("You return to the van to regroup.");
+  }
+  break;
+
 
     case "save":
       saveGame();
