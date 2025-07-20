@@ -361,6 +361,8 @@ footer a:hover {
 <div id="title-screen">
   <img src="logo.png" alt="Phasma-Phoney Logo">
   <button id="startButton">Start New Game</button>
+  <button id="loadGameButton" style="bottom:10%;left:50%;transform:translateX(-50%);">Load Game</button>
+
 </div>
 
 <!-- === MAIN SCENE === -->
@@ -431,6 +433,15 @@ const allLoadoutItems = [
   "Smudge Stick","Salt","Parabolic Microphone","Motion Sensor",
   "Sound Sensor","Candle"
 ];
+const cursedItems = {
+  "Ouija Board": {desc: "Ask ghost questions, drains sanity.", cost: 15},
+  "Tarot Cards": {desc: "Random effects, risky.", cost: 5},
+  "Music Box": {desc: "Attracts ghost, risky.", cost: 10},
+  "Haunted Mirror": {desc: "Reveals ghost room, drains sanity.", cost: 20},
+  "Summoning Circle": {desc: "Forces ghost appearance.", cost: 25},
+  "Monkey Paw": {desc: "Grants risky wishes.", cost: 10}
+};
+function getCursedItemCost(i){return cursedItems[i]?.cost||5;}
 
 const possibleWeather = ["Stormy","Clear","Foggy","Blood Moon"];
 
@@ -518,41 +529,6 @@ const game = {
 };
 
 /***********************
- === SAVE / LOAD SYSTEM ===
-************************/
-function saveGame() {
-  try {
-    localStorage.setItem("phasmaPhoneySave", JSON.stringify(game));
-    logToGame("💾 Game saved.");
-  } catch (e) {
-    console.error("Save failed:", e);
-  }
-}
-
-function loadGame() {
-  const saved = localStorage.getItem("phasmaPhoneySave");
-  if (saved) {
-    Object.assign(game, JSON.parse(saved));
-    logToGame("✅ Save loaded. Continuing investigation...");
-
-    // Restore scene and visuals
-    document.getElementById("main-scene").style.display = "block";
-    document.getElementById("narrator-ui").style.display = "flex";
-
-    renderHUD();
-    updateBackground();
-    bootVisuals();
-  } else {
-    logToGame("No saved game found.");
-  }
-}
-
-function clearSave() {
-  localStorage.removeItem("phasmaPhoneySave");
-  logToGame("🗑️ Save data cleared.");
-}
-
-/***********************
  === UTILITY HELPERS ===
 ************************/
 function logToGame(msg) {
@@ -607,10 +583,6 @@ function resetGame() {
   updateBackground();
 }
 
-
-/***********************
- === INVESTIGATION STARTUP ===
-************************/
 /***********************
  === RANDOMIZED INVESTIGATION SETUP ===
 ************************/
@@ -695,11 +667,6 @@ function updateBackground() {
 ************************/
 
 
-  // === Confirm Loadout & Begin Investigation ===
-  confirmBtn.addEventListener("click", () => {
-    // ✅ Ensure temp arrays exist and are valid
-    if (!Array.isArray(tempHeld)) tempHeld = [];
-    if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
 
     // ✅ Apply selected items to the game state
     game.inventory = [...tempHeld, "Notebook", "Lighter"];
@@ -724,6 +691,10 @@ function updateBackground() {
   }
 
 
+document.getElementById("loadGameButton").addEventListener("click",()=>{
+  if(localStorage.getItem("phasmaPhoneySave")) loadGame();
+  else alert("No save found.");
+});
 
   // === Button Handling Using Delegation (Cleaner) ===
   document.getElementById("command-buttons").addEventListener("click", (e) => {
@@ -739,22 +710,6 @@ function updateBackground() {
 
 "use strict";
 
-/***********************
- === ACTION BUTTONS & MOVE OVERLAY ===
-************************/
-
-function renderActionButtons() {
-  const btns = document.getElementById("command-buttons");
-  btns.innerHTML = `
-    <button onclick="handleCommand('move')">Move</button>
-    <button onclick="handleCommand('look')">Look Around</button>
-    <button onclick="handleCommand('inventory')">Inventory</button>
-    <button onclick="handleCommand('guess')">Ghost Guess</button>
-    <button onclick="handleCommand('van')">Return to Van</button>
-    <button onclick="handleCommand('save')">Save Game</button>
-    <button onclick="handleCommand('load')">Load Game</button>
-  `;
-}
 
 function openMoveOverlay() {
   // ✅ Remove any existing overlay before creating a new one
@@ -809,6 +764,17 @@ function openMoveOverlay() {
   };
 }
 
+function placeCursedItems(){
+  const rooms = Object.keys(roomVisuals).filter(r=>r!=="Van");
+  const chosen = randomFromArray(rooms);
+  game.roomItems[chosen] = game.roomItems[chosen] || [];
+  const keys = Object.keys(cursedItems);
+  if(!keys.length) return;
+  const pick = randomFromArray(keys);
+  game.roomItems[chosen].push(pick);
+}
+
+  
 /***********************
  === MOVE TO ROOM FUNCTION ===
 ************************/
@@ -940,41 +906,12 @@ function handleCommand(cmd) {
       break;
   }
 }
-
-/***********************
- === INVENTORY SYSTEM OVERLAY ===
-************************/
-function openInventoryOverlay() {
-  // ✅ Remove existing overlay to prevent duplicates
-  const existing = document.getElementById("inventory-temp");
-  if (existing) document.body.removeChild(existing);
-
-  const c = document.createElement("div");
-  c.id = "inventory-temp";
-  Object.assign(c.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%,-50%)",
-    background: "#111",
-    padding: "12px",
-    maxHeight: "75%",
-    overflowY: "auto",
-    maxWidth: "92%",
-    zIndex: "3000",
-    border: "1px solid #555",
-    borderRadius: "6px",
-    color: "#eee",
-    textAlign: "center",
-    lineHeight: "1.4"
-  });
-
-  let html = `<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
-
 /***********************
  === INVENTORY OVERLAY ===
 ************************/
-function openInventoryOverlay() {
+
+  
+  function openInventoryOverlay() {
   const existing = document.getElementById("inventory-temp");
   if (existing) document.body.removeChild(existing);
 
@@ -1508,6 +1445,7 @@ function endGame(){
   });
   overlay.innerHTML="<h2>Investigation Complete</h2>"+
     "<button style='padding:10px 20px;background:#222;color:#eee;border:1px solid #555;cursor:pointer;' onclick='resetAndRestart()'>Start New Game</button>";
+  
   document.body.appendChild(overlay);
 }
 
@@ -1681,13 +1619,18 @@ function renderActionButtons() {
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
   "use strict";
-  resetGame(); // ✅ Fresh state on page load
 
+  // ✅ Always reset game to fresh state when page loads
+  resetGame();
+
+  // ✅ Grab important buttons only AFTER DOM is fully loaded
   const startBtn = document.getElementById("startButton");
   const confirmBtn = document.getElementById("confirm-loadout");
   const commandContainer = document.getElementById("command-buttons");
 
-  // === Start New Game ===
+  /***********************
+   === START NEW GAME ===
+  ************************/
   startBtn.addEventListener("click", () => {
     if (startBtn.disabled) return; // ✅ Prevent double-clicks
     startBtn.disabled = true;
@@ -1697,39 +1640,52 @@ document.addEventListener("DOMContentLoaded", () => {
 
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout(); // ✅ Open the loadout menu
+      showLoadout(); // ✅ Open loadout selection screen
     }, 1500);
   });
 
-  // === Confirm Loadout & Begin Investigation ===
+  /***********************
+   === CONFIRM LOADOUT & BEGIN INVESTIGATION ===
+  ************************/
   confirmBtn.addEventListener("click", () => {
+    // ✅ Ensure temp arrays exist and are valid
     if (!Array.isArray(tempHeld)) tempHeld = [];
     if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
 
+    // ✅ Apply chosen loadout to game state
     game.inventory = [...tempHeld, "Notebook", "Lighter"];
     game.vanStock = [...tempVan];
 
+    // ✅ Transition to main investigation scene
     document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
-    renderActionButtons(); // ✅ Show buttons immediately
+    renderActionButtons();
 
-    saveGame(); // ✅ Immediate save after starting
-    window.dispatchEvent(new Event("resize")); // ✅ HUD adjusts for mobile
+    // ✅ Auto-save immediately
+    logToGame("🎮 Game state saved after loadout.");
+    saveGame();
+
+    // ✅ Refresh HUD layout for mobile devices
+    window.dispatchEvent(new Event("resize"));
   });
 
-  // === Command Button Delegation ===
+  /***********************
+   === COMMAND BUTTONS (DELEGATED LISTENER) ===
+  ************************/
   commandContainer.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
       handleCommand(e.target.dataset.cmd);
     }
   });
 
-  // === Auto-Detect Existing Save ===
+  /***********************
+   === AUTO-DETECT EXISTING SAVE ===
+  ************************/
   if (localStorage.getItem("phasmaPhoneySave")) {
     logToGame("💾 Previous save detected. Use the 'Load Game' button or type loadGame() in console.");
   }
 });
-}
+
 </script>
 </body>
 </html>
