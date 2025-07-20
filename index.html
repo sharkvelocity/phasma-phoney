@@ -498,7 +498,6 @@ function startInvestigation() {
   // ✅ Update HUD, visuals, and buttons
   renderHUD();
   updateBackground();
-  bootVisuals();
   renderActionButtons();
 
   // ✅ Save immediately after setup
@@ -947,7 +946,7 @@ function loadGame(){
     document.getElementById("loadout-screen").style.display="none";
     document.getElementById("main-scene").style.display="block";
     document.getElementById("narrator-ui").style.display="flex";
-    renderHUD();updateBackground();bootVisuals();renderActionButtons();
+    renderHUD();updateBackground();renderActionButtons();
   }catch(e){console.error("Load failed:",e);logToGame("⚠️ Load failed.");}
 }
 
