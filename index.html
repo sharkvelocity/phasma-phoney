@@ -486,7 +486,6 @@ function resetGame(){
   game.huntCooldown=0; game.smudgeActive=0; game.placedCrucifix={}; game.roomItems={}; game.usedCursedItems={};
   updateSanityBar(); renderHUD(); updateBackground();
 }
-</script>
 <script>
 "use strict";
 
@@ -494,73 +493,62 @@ function resetGame(){
  === RANDOMIZED INVESTIGATION SETUP ===
 ************************/
 function startInvestigation() {
-  // ✅ Show the main scene & clear any previous log
   document.getElementById("main-scene").style.display = "block";
   document.getElementById("narrator-ui").style.display = "flex";
   document.getElementById("game-log").innerHTML = "";
 
-  // ✅ Randomized setup for investigation
   game.weather = randomFromArray(possibleWeather);
   game.ghost = randomFromArray(Object.keys(ghostProfiles));
-
   if (game.ghost === "TheMimic") assignMimicForm();
-
   game.ghostRoom = randomFromArray(Object.keys(roomVisuals).filter(r => r !== "Van"));
 
-  // ✅ Place cursed items at start
   placeCursedItems();
-
-  // ✅ First narration log
   logToGame(`You are in the van. The weather is ${game.weather.toLowerCase()}.`);
 
-  // ✅ Update HUD, visuals, and buttons
   renderHUD();
   updateBackground();
   renderActionButtons();
-
-  // ✅ Save immediately after setup
   saveGame(true);
 }
-
 
 /***********************
  === MIMIC LOGIC ===
 ************************/
-function assignMimicForm(){
-  const g=Object.keys(ghostProfiles).filter(x=>x!=="TheMimic");
-  game.mimicForm=randomFromArray(g);
-  game.nextMimicShift=game.currentTurn+3+Math.floor(Math.random()*4);
+function assignMimicForm() {
+  const g = Object.keys(ghostProfiles).filter(x => x !== "TheMimic");
+  game.mimicForm = randomFromArray(g);
+  game.nextMimicShift = game.currentTurn + 3 + Math.floor(Math.random() * 4);
 }
 
 /***********************
  === HUD & BACKGROUND ===
 ************************/
-function renderHUD(){
-  document.getElementById("hud-location").textContent=game.playerRoom;
-  document.getElementById("hud-weather").textContent=game.weather||"--";
-  document.getElementById("hud-turns").textContent=game.currentTurn;
-  document.getElementById("held-items-display").textContent=
-    game.inventory.length?game.inventory.join(", "):"None";
+function renderHUD() {
+  document.getElementById("hud-location").textContent = game.playerRoom;
+  document.getElementById("hud-weather").textContent = game.weather || "--";
+  document.getElementById("hud-turns").textContent = game.currentTurn;
+  document.getElementById("held-items-display").textContent =
+    game.inventory.length ? game.inventory.join(", ") : "None";
 
-  if(game.inventory.includes("Thermometer")&&game.playerRoom!=="Van"){
-    const t=game.playerRoom===game.ghostRoom
-      ?(Math.random()<0.3?-5:2+Math.random()*3)
-      :15+Math.random()*5;
-    document.getElementById("hud-temp").textContent=t.toFixed(1)+"°C";
+  if (game.inventory.includes("Thermometer") && game.playerRoom !== "Van") {
+    const t = game.playerRoom === game.ghostRoom
+      ? (Math.random() < 0.3 ? -5 : 2 + Math.random() * 3)
+      : 15 + Math.random() * 5;
+    document.getElementById("hud-temp").textContent = t.toFixed(1) + "°C";
   } else {
-    document.getElementById("hud-temp").textContent="--°C";
+    document.getElementById("hud-temp").textContent = "--°C";
   }
   updateSanityBar();
 }
 
-function updateBackground(){
-  const v=roomVisuals[game.playerRoom]||roomVisuals["Van"];
-  const d=game.playerDirection||"N";
-  const bg=document.getElementById("background");
-  if(v&&v[d]) bg.style.backgroundImage=`url('${v[d]}')`;
+function updateBackground() {
+  const v = roomVisuals[game.playerRoom] || roomVisuals["Van"];
+  const d = game.playerDirection || "N";
+  const bg = document.getElementById("background");
+  if (v && v[d]) bg.style.backgroundImage = `url('${v[d]}')`;
   else {
     console.warn(`Missing background for ${game.playerRoom} (${d}).`);
-    bg.style.backgroundImage=`url('${roomVisuals["Van"]["N"]}')`;
+    bg.style.backgroundImage = `url('${roomVisuals["Van"]["N"]}')`;
   }
 }
 
@@ -580,22 +568,14 @@ function openMoveOverlay() {
   const overlay = document.createElement("div");
   overlay.id = "move-temp";
   Object.assign(overlay.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
+    position: "fixed", top: "50%", left: "50%",
     transform: "translate(-50%,-50%)",
-    background: "#111",
-    padding: "10px",
-    maxWidth: "90%",
-    zIndex: "3000",
-    border: "1px solid #555",
-    borderRadius: "4px",
+    background: "#111", padding: "10px", maxWidth: "90%",
+    zIndex: "3000", border: "1px solid #555", borderRadius: "4px"
   });
 
   let html = `<h3 style="color:#0ff;margin-top:0;">Available Exits</h3>`;
-  html += exits
-    .map((r) => `<button data-move="${r}">Go to ${r}</button>`)
-    .join("");
+  html += exits.map(r => `<button data-move="${r}">Go to ${r}</button>`).join("");
   html += `<button style="margin-top:6px;" data-close="true">Close</button>`;
 
   overlay.innerHTML = html;
@@ -627,86 +607,90 @@ function moveToRoom(r) {
   saveGame(true);
 }
 
-
 /***********************
  === LOOK AROUND ===
 ************************/
-function lookAround(){
+function lookAround() {
   game.currentTurn++;
-  if(game.playerRoom===game.ghostRoom){
+  if (game.playerRoom === game.ghostRoom) {
     logToGame("You feel an eerie presence...");
-    const items=game.roomItems[game.playerRoom]||[];
+    const items = game.roomItems[game.playerRoom] || [];
 
-    // Salt footprints
-    if(items.includes("Salt")&&Math.random()<0.5){
+    if (items.includes("Salt") && Math.random() < 0.5) {
       logToGame("You notice disturbed salt... Try using a UV Light.");
-      if(!items.includes("Footprints")) items.push("Footprints");
-      game.roomItems[game.playerRoom]=items;
-      setTimeout(()=>{
-        if(game.roomItems[game.playerRoom]){
-          game.roomItems[game.playerRoom]=
-            game.roomItems[game.playerRoom].filter(x=>x!=="Footprints");
-          logToGame("The footprints have faded.");saveGame(true);
+      if (!items.includes("Footprints")) items.push("Footprints");
+      game.roomItems[game.playerRoom] = items;
+      setTimeout(() => {
+        if (game.roomItems[game.playerRoom]) {
+          game.roomItems[game.playerRoom] =
+            game.roomItems[game.playerRoom].filter(x => x !== "Footprints");
+          logToGame("The footprints have faded."); saveGame(true);
         }
-      },9000);
+      }, 9000);
     }
 
-    // Onryo snuff candle
-    if(game.ghost==="Onryo"&&items.includes("Candle")&&Math.random()<0.5){
-      game.roomItems[game.playerRoom]=items.filter(x=>x!=="Candle");
+    if (game.ghost === "Onryo" && items.includes("Candle") && Math.random() < 0.5) {
+      game.roomItems[game.playerRoom] = items.filter(x => x !== "Candle");
       logToGame("The flame suddenly extinguishes!");
     }
 
-    if(game.ghost==="TheMimic"||game.mimicForm==="TheMimic")
+    if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic")
       logToGame("Fake orbs shimmer briefly.");
-  } else {logToGame("Nothing unusual.");}
+  } else {
+    logToGame("Nothing unusual.");
+  }
 
-  renderHUD();checkTurnEvents();saveGame(true);
+  renderHUD();
+  checkTurnEvents();
+  saveGame(true);
 }
 
 /***********************
  === CURSED ITEMS ===
 ************************/
-function placeCursedItems(){
-  const rooms=Object.keys(roomVisuals).filter(r=>r!=="Van");
-  const chosen=randomFromArray(rooms);
-  game.roomItems[chosen]=game.roomItems[chosen]||[];
-  const keys=Object.keys(cursedItems);
-  if(!keys.length)return;
-  const pick=randomFromArray(keys);
+function placeCursedItems() {
+  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
+  const chosen = randomFromArray(rooms);
+  game.roomItems[chosen] = game.roomItems[chosen] || [];
+  const keys = Object.keys(cursedItems);
+  if (!keys.length) return;
+  const pick = randomFromArray(keys);
   game.roomItems[chosen].push(pick);
 }
-
 /***********************
  === TURN EVENTS & AMBIENCE ===
 ************************/
-function checkTurnEvents(){
-  if(game.ghost==="TheMimic"&&game.currentTurn>=game.nextMimicShift){
+function checkTurnEvents() {
+  if (game.ghost === "TheMimic" && game.currentTurn >= game.nextMimicShift) {
     assignMimicForm();
-    game.nextMimicShift=game.currentTurn+3+Math.floor(Math.random()*4);
+    game.nextMimicShift = game.currentTurn + 3 + Math.floor(Math.random() * 4);
     logToGame("The Mimic shifts behavior...");
   }
 
-  if(game.playerRoom===game.ghostRoom){
-    game.sanity-=3+Math.random()*3;
-    if(game.currentTurn%2===0&&Math.random()<0.3){
-      const g=(game.ghost==="TheMimic"?game.mimicForm:game.ghost);
-      logToGame("[Ambient] "+(ghostProfiles[g].behavior||"The air feels heavy..."));
+  if (game.playerRoom === game.ghostRoom) {
+    game.sanity -= 3 + Math.random() * 3;
+    if (game.currentTurn % 2 === 0 && Math.random() < 0.3) {
+      const g = (game.ghost === "TheMimic" ? game.mimicForm : game.ghost);
+      logToGame("[Ambient] " + (ghostProfiles[g].behavior || "The air feels heavy..."));
     }
-  } else {game.sanity-=1;}
+  } else {
+    game.sanity -= 1;
+  }
 
-  Object.keys(game.roomItems).forEach(r=>{
-    if(!game.roomItems[r]?.includes("Motion Sensor"))return;
-    if(Math.random()<0.25){
-      if(game.playerRoom==="Van"){logToGame("[Van Monitor] Motion detected in "+r+"!");}
-      else if(game.playerRoom===r){logToGame("You hear the motion sensor *beep* nearby.");}
-      else if(mapConnections[game.playerRoom]?.includes(r)&&Math.random()<0.4){
+  Object.keys(game.roomItems).forEach(r => {
+    if (!game.roomItems[r]?.includes("Motion Sensor")) return;
+    if (Math.random() < 0.25) {
+      if (game.playerRoom === "Van") {
+        logToGame("[Van Monitor] Motion detected in " + r + "!");
+      } else if (game.playerRoom === r) {
+        logToGame("You hear the motion sensor *beep* nearby.");
+      } else if (mapConnections[game.playerRoom]?.includes(r) && Math.random() < 0.4) {
         logToGame("You faintly hear a muffled *beep* through the walls...");
       }
     }
   });
 
-  game.sanity=Math.max(0,game.sanity);
+  game.sanity = Math.max(0, game.sanity);
   updateSanityBar();
   attemptHunt();
 }
@@ -714,210 +698,248 @@ function checkTurnEvents(){
 /***********************
  === HUNT SYSTEM ===
 ************************/
-function attemptHunt(){
-  if(game.smudgeActive>0){game.smudgeActive--;return;}
-  if(game.huntCooldown>0){game.huntCooldown--;return;}
-  if(game.ghost==="Onryo"&&Object.values(game.roomItems).some(a=>a.includes("Candle")))return;
-  if(game.sanity<30&&Math.random()<0.25)startHunt();
+function attemptHunt() {
+  if (game.smudgeActive > 0) { game.smudgeActive--; return; }
+  if (game.huntCooldown > 0) { game.huntCooldown--; return; }
+  if (game.ghost === "Onryo" && Object.values(game.roomItems).some(a => a.includes("Candle"))) return;
+  if (game.sanity < 30 && Math.random() < 0.25) startHunt();
 }
 
-function startHunt(){
+function startHunt() {
   logToGame("💀 The ghost is hunting!");
   flashRed();
   logToGame("You hear your heartbeat pounding as the ghost searches...");
 
-  if(game.playerRoom===game.ghostRoom){
-    if(game.placedCrucifix&&game.placedCrucifix[game.playerRoom]>0){
+  if (game.playerRoom === game.ghostRoom) {
+    if (game.placedCrucifix && game.placedCrucifix[game.playerRoom] > 0) {
       game.placedCrucifix[game.playerRoom]--;
-      if(game.placedCrucifix[game.playerRoom]===0){
+      if (game.placedCrucifix[game.playerRoom] === 0) {
         delete game.placedCrucifix[game.playerRoom];
         logToGame("The crucifix has burned away completely.");
       } else {
         logToGame(`The crucifix burns, stopping the hunt. (${game.placedCrucifix[game.playerRoom]} uses left)`);
       }
     } else {
-      setTimeout(playerDeath,1500);
+      setTimeout(playerDeath, 1500);
     }
-  } else {logToGame("You survived the hunt...");}
+  } else {
+    logToGame("You survived the hunt...");
+  }
 
-  const aggressiveGhosts=["Demon","Oni","Raiju","Moroi"];
-  game.huntCooldown=aggressiveGhosts.includes(game.ghost)
-    ?3+Math.floor(Math.random()*2):5+Math.floor(Math.random()*3);
+  const aggressiveGhosts = ["Demon", "Oni", "Raiju", "Moroi"];
+  game.huntCooldown = aggressiveGhosts.includes(game.ghost)
+    ? 3 + Math.floor(Math.random() * 2)
+    : 5 + Math.floor(Math.random() * 3);
 }
 
-function flashRed(){
-  const l=document.getElementById("lightning");
-  let flashes=3,count=0;
-  function pulse(){
-    if(count>=flashes){l.style.opacity=0;return;}
-    l.style.background="red";
-    l.style.opacity=0.6+Math.random()*0.2;
-    setTimeout(()=>{
-      l.style.opacity=0;count++;
-      setTimeout(pulse,150+Math.random()*200);
-    },150+Math.random()*100);
+function flashRed() {
+  const l = document.getElementById("lightning");
+  let flashes = 3, count = 0;
+  function pulse() {
+    if (count >= flashes) { l.style.opacity = 0; return; }
+    l.style.background = "red";
+    l.style.opacity = 0.6 + Math.random() * 0.2;
+    setTimeout(() => {
+      l.style.opacity = 0; count++;
+      setTimeout(pulse, 150 + Math.random() * 200);
+    }, 150 + Math.random() * 100);
   }
   pulse();
 }
 
-function playerDeath(){
+function playerDeath() {
   logToGame("💀 The ghost finds you. Everything goes cold...");
-  setTimeout(()=>{
-    alert("You died.");resetGame();showLoadout();
-  },800);
+  setTimeout(() => {
+    alert("You died.");
+    resetGame();
+    showLoadout();
+  }, 800);
 }
-</script>
-<script>
-"use strict";
-
 /***********************
  === INVENTORY OVERLAY ===
 ************************/
-function openInventoryOverlay(){
-  const existing=document.getElementById("inventory-temp");
-  if(existing)document.body.removeChild(existing);
+function openInventoryOverlay() {
+  const existing = document.getElementById("inventory-temp");
+  if (existing) document.body.removeChild(existing);
 
-  const c=document.createElement("div");
-  c.id="inventory-temp";
-  Object.assign(c.style,{
-    position:"fixed",top:"50%",left:"50%",transform:"translate(-50%,-50%)",
-    background:"#111",padding:"12px",maxHeight:"75%",overflowY:"auto",
-    maxWidth:"92%",zIndex:"3000",border:"1px solid #555",borderRadius:"6px",
-    color:"#eee",textAlign:"center",lineHeight:"1.4"
+  const c = document.createElement("div");
+  c.id = "inventory-temp";
+  Object.assign(c.style, {
+    position: "fixed",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%,-50%)",
+    background: "#111",
+    padding: "12px",
+    maxHeight: "75%",
+    overflowY: "auto",
+    maxWidth: "92%",
+    zIndex: "3000",
+    border: "1px solid #555",
+    borderRadius: "6px",
+    color: "#eee",
+    textAlign: "center",
+    lineHeight: "1.4"
   });
 
-  let html=`<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
-  if(game.inventory.length>0){
-    html+=`<p><strong>Held Items:</strong></p>`;
-    game.inventory.forEach(i=>{
-      html+=`
+  let html = `<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
+  if (game.inventory.length > 0) {
+    html += `<p><strong>Held Items:</strong></p>`;
+    game.inventory.forEach(i => {
+      html += `
         <div style="margin-bottom:4px;">
           <button onclick="inspectItem('${i}')">Inspect: ${i}</button>
           <button onclick="dropItem('${i}');closeInventory()">Drop: ${i}</button>
           <button onclick="useItem('${i}');closeInventory()">Use: ${i}</button>
         </div>`;
     });
-  } else {html+=`<p style="opacity:0.7;">No items held.</p>`;}
+  } else {
+    html += `<p style="opacity:0.7;">No items held.</p>`;
+  }
 
-  const roomInv=game.roomItems[game.playerRoom]||[];
-  if(roomInv.length>0){
-    html+=`<p><strong>Items in this Room:</strong></p>`;
-    roomInv.forEach(i=>{
-      html+=`
+  const roomInv = game.roomItems[game.playerRoom] || [];
+  if (roomInv.length > 0) {
+    html += `<p><strong>Items in this Room:</strong></p>`;
+    roomInv.forEach(i => {
+      html += `
         <div style="margin-bottom:4px;">
           <button onclick="pickItem('${i}');closeInventory()">Pick up: ${i}</button>
         </div>`;
     });
   }
 
-  html+=`<button style="margin-top:10px;" onclick="closeInventory()">Close</button>`;
-  c.innerHTML=html;document.body.appendChild(c);
+  html += `<button style="margin-top:10px;" onclick="closeInventory()">Close</button>`;
+  c.innerHTML = html;
+  document.body.appendChild(c);
 
-  window.closeInventory=function(){
-    const t=document.getElementById("inventory-temp");
-    if(t)document.body.removeChild(t);
-   saveGame(true);
+  window.closeInventory = function () {
+    const t = document.getElementById("inventory-temp");
+    if (t) document.body.removeChild(t);
+    saveGame(true);
   };
 }
 
-function inspectItem(i){
-  let desc=cursedItems[i]?.desc||"Standard investigation gear.";
-  switch(i){
-    case"Crucifix":desc="Placed to prevent hunts. 2 uses.";break;
-    case"Camera":case"Video Camera":desc="Detects orbs via night vision.";break;
-    case"UV Light":desc="Reveals fingerprints or footprints (salt needed).";break;
-    case"Salt":desc="Sprinkle to reveal footprints with UV.";break;
-    case"Motion Sensor":desc="Alerts you in van when ghost triggers it.";break;
-    case"Candle":desc="Prevents Onryo hunts while lit.";break;
+function inspectItem(i) {
+  let desc = cursedItems[i]?.desc || "Standard investigation gear.";
+  switch (i) {
+    case "Crucifix": desc = "Placed to prevent hunts. 2 uses."; break;
+    case "Camera":
+    case "Video Camera": desc = "Detects orbs via night vision."; break;
+    case "UV Light": desc = "Reveals fingerprints or footprints (salt needed)."; break;
+    case "Salt": desc = "Sprinkle to reveal footprints with UV."; break;
+    case "Motion Sensor": desc = "Alerts you in van when ghost triggers it."; break;
+    case "Candle": desc = "Prevents Onryo hunts while lit."; break;
   }
   logToGame(`Inspecting ${i}: ${desc}`);
 }
 
-function dropItem(i){
-  if(game.playerRoom==="Van"){
-    if(!game.vanStock.includes(i)){game.vanStock.push(i);game.vanStock.sort();}
+function dropItem(i) {
+  if (game.playerRoom === "Van") {
+    if (!game.vanStock.includes(i)) {
+      game.vanStock.push(i);
+      game.vanStock.sort();
+    }
     logToGame(`Returned ${i} to van.`);
   } else {
-    game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom]||[];
-    if(!game.roomItems[game.playerRoom].includes(i))
+    game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
+    if (!game.roomItems[game.playerRoom].includes(i))
       game.roomItems[game.playerRoom].push(i);
     logToGame(`Dropped ${i} here.`);
   }
-  game.inventory=game.inventory.filter(x=>x!==i);
-  renderHUD();saveGame(true);
+  game.inventory = game.inventory.filter(x => x !== i);
+  renderHUD();
+  saveGame(true);
 }
 
-function pickItem(i){
-  if(game.inventory.length>=3){logToGame("Max 3 items.");return;}
-  if(cursedItems[i]&&i==="Summoning Circle"){
-    logToGame("The circle cannot be moved.");return;
+function pickItem(i) {
+  if (game.inventory.length >= 3) {
+    logToGame("Max 3 items.");
+    return;
   }
-  game.roomItems[game.playerRoom]=
-    game.roomItems[game.playerRoom].filter(x=>x!==i);
-  if(!game.inventory.includes(i)){
-    game.inventory.push(i);game.inventory.sort();
+  if (cursedItems[i] && i === "Summoning Circle") {
+    logToGame("The circle cannot be moved.");
+    return;
+  }
+  game.roomItems[game.playerRoom] =
+    game.roomItems[game.playerRoom].filter(x => x !== i);
+  if (!game.inventory.includes(i)) {
+    game.inventory.push(i);
+    game.inventory.sort();
   }
   logToGame(`Picked up ${i}.`);
-  renderHUD();saveGame(true);
+  renderHUD();
+  saveGame(true);
 }
 
 /***********************
  === ITEM USE ===
 ************************/
-function useItem(i){
-  switch(i){
-    case"Smudge Stick":
-      if(game.playerRoom===game.ghostRoom){
-        game.smudgeActive=3;logToGame("You smudge the room, calming the ghost.");
-      } else {logToGame("You smudge, but nothing happens.");}
+function useItem(i) {
+  switch (i) {
+    case "Smudge Stick":
+      if (game.playerRoom === game.ghostRoom) {
+        game.smudgeActive = 3;
+        logToGame("You smudge the room, calming the ghost.");
+      } else {
+        logToGame("You smudge, but nothing happens.");
+      }
       break;
 
-    case"Camera":case"Video Camera":
-      if(game.playerRoom!=="Van"){
-        game.cameraActive=!game.cameraActive;
-        logToGame(game.cameraActive?"Camera on: watching for orbs.":"Camera off.");
-      } else {logToGame("Cannot use cameras in the van.");}
+    case "Camera":
+    case "Video Camera":
+      if (game.playerRoom !== "Van") {
+        game.cameraActive = !game.cameraActive;
+        logToGame(game.cameraActive
+          ? "Camera on: watching for orbs."
+          : "Camera off.");
+      } else {
+        logToGame("Cannot use cameras in the van.");
+      }
       break;
 
-    case"Crucifix":
-      if(game.playerRoom!=="Van"){
-        game.placedCrucifix[game.playerRoom]=2;
+    case "Crucifix":
+      if (game.playerRoom !== "Van") {
+        game.placedCrucifix[game.playerRoom] = 2;
         logToGame("You place the crucifix. It may stop two hunts.");
-        game.inventory=game.inventory.filter(x=>x!==i);
-      } else {logToGame("Cannot place crucifix in van.");}
+        game.inventory = game.inventory.filter(x => x !== i);
+      } else {
+        logToGame("Cannot place crucifix in van.");
+      }
       break;
 
-    case"Salt":
-      if(game.playerRoom!=="Van"){
-        game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom]||[];
-        if(!game.roomItems[game.playerRoom].includes("Salt")){
+    case "Salt":
+      if (game.playerRoom !== "Van") {
+        game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
+        if (!game.roomItems[game.playerRoom].includes("Salt")) {
           game.roomItems[game.playerRoom].push("Salt");
           logToGame("You sprinkle salt on the ground.");
         }
       }
       break;
 
-    case"UV Light":
-      if(game.roomItems[game.playerRoom]?.includes("Footprints")){
+    case "UV Light":
+      if (game.roomItems[game.playerRoom]?.includes("Footprints")) {
         logToGame("You see glowing footprints under UV!");
         game.selectedEvidence.add("Fingerprints");
-      } else {logToGame("No visible prints under UV.");}
+      } else {
+        logToGame("No visible prints under UV.");
+      }
       break;
 
-    case"Candle":
-      if(game.playerRoom!=="Van"){
-        game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom]||[];
-        if(!game.roomItems[game.playerRoom].includes("Candle")){
+    case "Candle":
+      if (game.playerRoom !== "Van") {
+        game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
+        if (!game.roomItems[game.playerRoom].includes("Candle")) {
           game.roomItems[game.playerRoom].push("Candle");
           logToGame("You place and light a candle here.");
         }
       }
       break;
 
-    case"Motion Sensor":
-      if(game.playerRoom!=="Van"){
-        game.roomItems[game.playerRoom]=game.roomItems[game.playerRoom]||[];
-        if(!game.roomItems[game.playerRoom].includes("Motion Sensor")){
+    case "Motion Sensor":
+      if (game.playerRoom !== "Van") {
+        game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
+        if (!game.roomItems[game.playerRoom].includes("Motion Sensor")) {
           game.roomItems[game.playerRoom].push("Motion Sensor");
           logToGame("You place a motion sensor in this room.");
         }
@@ -925,36 +947,61 @@ function useItem(i){
       break;
 
     default:
-      if(cursedItems[i])handleCursedItem(i);
-      else logToGame("You use the "+i+", but nothing significant occurs.");
+      if (cursedItems[i]) handleCursedItem(i);
+      else logToGame("You use the " + i + ", but nothing significant occurs.");
   }
 
-  game.currentTurn++;renderHUD();checkTurnEvents();saveGame(true);
+  game.currentTurn++;
+  renderHUD();
+  checkTurnEvents();
+  saveGame(true);
 }
 
-function handleCursedItem(i){
-  if(game.usedCursedItems[i]){logToGame("The "+i+" is inert now.");return;}
-  logToGame("You use the "+i+"...");
-  game.sanity-=getCursedItemCost(i);
-  if(game.sanity<0)game.sanity=0;
+function handleCursedItem(i) {
+  if (game.usedCursedItems[i]) {
+    logToGame("The " + i + " is inert now.");
+    return;
+  }
+  logToGame("You use the " + i + "...");
+  game.sanity -= getCursedItemCost(i);
+  if (game.sanity < 0) game.sanity = 0;
 
-  switch(i){
-    case"Ouija Board":if(Math.random()<0.2)startHunt();break;
-    case"Tarot Cards":
-      const r=Math.random();
-      if(r<0.2)logToGame("The Fool — nothing happens.");
-      else if(r<0.4)logToGame("The Tower — ghost activity spikes!");
-      else if(r<0.6){logToGame("The Death card — hunt triggered!");startHunt();}
-      else{logToGame("The Sun — sanity restored.");game.sanity=Math.min(100,game.sanity+10);}
+  switch (i) {
+    case "Ouija Board":
+      if (Math.random() < 0.2) startHunt();
       break;
-    case"Music Box":case"Haunted Mirror":if(Math.random()<0.3)startHunt();break;
-    case"Summoning Circle":startHunt();break;
-    case"Monkey Paw":if(Math.random()<0.5)startHunt();break;
+
+    case "Tarot Cards":
+      const r = Math.random();
+      if (r < 0.2) logToGame("The Fool — nothing happens.");
+      else if (r < 0.4) logToGame("The Tower — ghost activity spikes!");
+      else if (r < 0.6) {
+        logToGame("The Death card — hunt triggered!");
+        startHunt();
+      } else {
+        logToGame("The Sun — sanity restored.");
+        game.sanity = Math.min(100, game.sanity + 10);
+      }
+      break;
+
+    case "Music Box":
+    case "Haunted Mirror":
+      if (Math.random() < 0.3) startHunt();
+      break;
+
+    case "Summoning Circle":
+      startHunt();
+      break;
+
+    case "Monkey Paw":
+      if (Math.random() < 0.5) startHunt();
+      break;
   }
 
-  game.usedCursedItems[i]=true;updateSanityBar();saveGame(true);
+  game.usedCursedItems[i] = true;
+  updateSanityBar();
+  saveGame(true);
 }
-
 /***********************
  === SAVE & LOAD SYSTEM ===
 ************************/
@@ -997,30 +1044,38 @@ function showSaveIndicator() {
   setTimeout(() => { ind.style.display = "none"; }, 1000);
 }
 
-
-function loadGame(){
-  const data=localStorage.getItem("phasmaPhoneySave");
-  if(!data){logToGame("No save data found.");return;}
-  try{
-    const s=JSON.parse(data);
-    Object.assign(game,s);
-    game.selectedEvidence=new Set(s.selectedEvidence);
-    if(!game.placedCrucifix)game.placedCrucifix={};
-    if(!game.roomItems)game.roomItems={};
-    if(!game.usedCursedItems)game.usedCursedItems={};
+function loadGame() {
+  const data = localStorage.getItem("phasmaPhoneySave");
+  if (!data) {
+    logToGame("No save data found.");
+    return;
+  }
+  try {
+    const s = JSON.parse(data);
+    Object.assign(game, s);
+    game.selectedEvidence = new Set(s.selectedEvidence);
+    if (!game.placedCrucifix) game.placedCrucifix = {};
+    if (!game.roomItems) game.roomItems = {};
+    if (!game.usedCursedItems) game.usedCursedItems = {};
     logToGame("📂 Game loaded. Resuming investigation...");
-    document.getElementById("title-screen").style.display="none";
-    document.getElementById("loadout-screen").style.display="none";
-    document.getElementById("main-scene").style.display="block";
-    document.getElementById("narrator-ui").style.display="flex";
-    renderHUD();updateBackground();renderActionButtons();
-  }catch(e){console.error("Load failed:",e);logToGame("⚠️ Load failed.");}
+    document.getElementById("title-screen").style.display = "none";
+    document.getElementById("loadout-screen").style.display = "none";
+    document.getElementById("main-scene").style.display = "block";
+    document.getElementById("narrator-ui").style.display = "flex";
+    renderHUD();
+    updateBackground();
+    renderActionButtons();
+  } catch (e) {
+    console.error("Load failed:", e);
+    logToGame("⚠️ Load failed.");
+  }
 }
 
-function clearSave(){
+function clearSave() {
   localStorage.removeItem("phasmaPhoneySave");
   logToGame("🗑️ Save data cleared.");
 }
+
 /***********************
  === COMMAND HANDLER ===
 ************************/
@@ -1029,19 +1084,15 @@ function handleCommand(cmd) {
     case "move":
       openMoveOverlay();
       break;
-
     case "look":
       lookAround();
       break;
-
     case "inventory":
       openInventoryOverlay();
       break;
-
     case "guess":
       openGuess();
       break;
-
     case "van":
       if (game.playerRoom !== "Van") {
         moveToRoom("Van");
@@ -1050,15 +1101,12 @@ function handleCommand(cmd) {
         openVanMonitor();
       }
       break;
-
     case "save":
-      saveGame(true); // silent save
+      saveGame(true);
       break;
-
     case "load":
       loadGame();
       break;
-
     default:
       logToGame("⚠️ Unknown command: " + cmd);
   }
@@ -1080,13 +1128,10 @@ function renderActionButtons() {
   `;
 }
 
-"use strict";
-
 /***********************
  === LOADOUT SELECTION ===
 ************************/
 function showLoadout() {
-  // ✅ Always reset temporary arrays to defaults
   tempHeld = [];
   tempVan = [...allLoadoutItems];
 
@@ -1098,7 +1143,6 @@ function showLoadout() {
     heldList.innerHTML = tempHeld
       .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
       .join("");
-
     vanList.innerHTML = tempVan
       .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
       .join("");
@@ -1148,7 +1192,7 @@ document.addEventListener("DOMContentLoaded", () => {
     t.style.opacity = "0";
     setTimeout(() => {
       t.style.display = "none";
-      showLoadout(); // ✅ Loadout screen appears after title fades
+      showLoadout();
     }, 1500);
   });
 
@@ -1168,7 +1212,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("loadout-screen").style.display = "none";
     startInvestigation();
     renderActionButtons();
-    saveGame(true); // silent save
+    saveGame(true);
     window.dispatchEvent(new Event("resize"));
 
     setTimeout(() => {
@@ -1176,14 +1220,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1500);
   });
 
-  // ✅ EVENT DELEGATION for action buttons
   commandContainer.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
       handleCommand(e.target.dataset.cmd);
     }
   });
 
-  // ✅ Check for existing save AFTER everything is ready
   if (localStorage.getItem("phasmaPhoneySave")) {
     logToGame("💾 Previous save detected. Use 'Load Game'.");
   }
