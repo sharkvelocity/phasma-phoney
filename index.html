@@ -452,8 +452,29 @@ function renderCameraGrid(monitor) {
 
 function generateCameraFeeds() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
+
   return rooms.slice(0, 4).map(r => {
-    const active = (game.ghostRoom === r && Math.random() < 0.6);
+    // Determine if this room should show an ACTIVE camera feed
+    let feedText = "NO SIGNAL";
+
+    // If the player has placed a Video Camera or Camera in that room
+    const hasCameraInRoom = (game.roomItems[r] || []).includes("Video Camera") 
+                         || (game.roomItems[r] || []).includes("Camera");
+
+    if (hasCameraInRoom) {
+      if (r === game.ghostRoom) {
+        if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
+          feedText = `${r} — FAKE ORBS DETECTED`; // Mimic's fake orbs
+        } else if (game.cameraActive) {
+          feedText = `${r} — ORBS DETECTED`; // Only if ghost has Orbs evidence
+        } else {
+          feedText = `${r} — ACTIVE`;
+        }
+      } else {
+        feedText = `${r} — ACTIVE`;
+      }
+    }
+
     return `<div style="
       background:#000;
       border:1px solid #0f0;
@@ -462,8 +483,9 @@ function generateCameraFeeds() {
       align-items:center;
       color:#0f0;
       font-size:12px;
+      text-align:center;
     ">
-      ${active ? r + " — ACTIVE" : "NO SIGNAL"}
+      ${feedText}
     </div>`;
   }).join("");
 }
