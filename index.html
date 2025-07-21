@@ -102,7 +102,8 @@
   left: 0;
   width: 100%;
   height: 40%;
-  display: flex;
+  z-index: 20; /* ABOVE fog/orbs */
+  display: none; /* Ensure hidden until startInvestigation */
   flex-direction: column;
   justify-content: space-between;
   background: rgba(0, 0, 0, 0.4); /* optional for contrast */
@@ -492,13 +493,14 @@ function resetGame(){
  === RANDOMIZED INVESTIGATION SETUP ===
 ************************/
 function startInvestigation() {
-  // ✅ Make sure UI elements are visible
+  // ✅ Make sure UI elements are visible and layered correctly
   const mainScene = document.getElementById("main-scene");
   const narratorUI = document.getElementById("narrator-ui");
   const gameLog = document.getElementById("game-log");
 
   mainScene.style.display = "block";
   narratorUI.style.display = "flex";
+  narratorUI.style.zIndex = "20"; // <-- ensures it's above fog/orbs
 
   // ✅ Clear and add an initial welcome log so you can confirm it's working
   gameLog.innerHTML = "";
@@ -527,6 +529,7 @@ function startInvestigation() {
   // ✅ Extra confirmation log
   logToGame("✔ All systems ready. Begin your investigation.");
 }
+
 /***********************
  === MIMIC LOGIC ===
 ************************/
