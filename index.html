@@ -335,14 +335,12 @@ function runVanBootSequence(monitor) {
       background:#111;
       border:1px solid #0f0;
       margin-top:4px;
-      overflow:hidden;
-    ">
+      overflow:hidden;">
       <div id="boot-bar" style="
         width:0%;
         height:100%;
         background:#0f0;
-        transition:width 0.3s linear;
-      "></div>
+        transition:width 0.3s linear;"></div>
     </div>
   `;
 
@@ -380,8 +378,7 @@ function showLogin(monitor) {
       border:2px solid #0f0;
       width:300px;
       text-align:left;
-      box-shadow:0 0 12px #0f0;
-    ">
+      box-shadow:0 0 12px #0f0;">
       <h3 style="color:#0f0;margin-top:0;text-align:center;">System Login</h3>
       <div id="login-output" style="font-family:monospace;color:#0f0;min-height:60px;"></div>
     </div>
@@ -419,41 +416,12 @@ function autoType(elementId, text, callback, delay = 100) {
     if (i < text.length) {
       el.textContent += text[i++];
       setTimeout(type, delay);
-    } else if (callback) {
-      callback();
-    }
+    } else if (callback) callback();
   }
   type();
 }
 
-function renderCameraGrid(monitor) {
-  monitor.innerHTML = `
-    <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
-    <div id="camera-grid" style="
-      display:grid;
-      grid-template-columns:repeat(2,200px);
-      grid-template-rows:repeat(2,150px);
-      gap:8px;
-      justify-content:center;
-      align-items:center;
-      margin:10px auto;
-    ">
-      ${generateCameraFeeds()}
-    </div>
-    <button style="
-      margin-top:12px;
-      padding:6px 12px;
-      background:#111;
-      color:#0f0;
-      border:1px solid #0f0;
-      cursor:pointer;
-    " onclick="closeVanMonitor()">Close Monitor</button>
-  `;
-
-  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
-  vanMonitorInterval = setInterval(updateCameraFeeds, 1000);
-}
-
+/* ✅ Unified version: now uses nosignal.gif & orbs */
 function generateCameraFeeds() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
 
@@ -462,7 +430,7 @@ function generateCameraFeeds() {
       (game.roomItems[r] || []).includes("Video Camera") ||
       (game.roomItems[r] || []).includes("Camera");
 
-    let imgSrc = "camera-offline.png";
+    let imgSrc = "nosignal.gif";  // ✅ GIF for inactive
     let label = "NO SIGNAL";
 
     if (hasCameraInRoom) {
@@ -483,14 +451,19 @@ function generateCameraFeeds() {
         background:#000;
         border:1px solid #0f0;
         overflow:hidden;
-        cursor:pointer;
-      " onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
+        cursor:pointer;"
+        onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
         <img id="camera-img-${r}" src="${imgSrc}" alt="${r}" style="
           width:100%;
           height:100%;
           object-fit:cover;
-          filter:contrast(1.2) brightness(0.8) saturate(0.7);
-        ">
+          filter:contrast(1.2) brightness(0.8) saturate(0.7);">
+        <canvas id="camera-orbs-${r}" style="
+          position:absolute;
+          top:0;left:0;
+          width:100%;
+          height:100%;
+          pointer-events:none;"></canvas>
         <div id="camera-label-${r}" style="
           position:absolute;
           bottom:0;
@@ -498,24 +471,7 @@ function generateCameraFeeds() {
           text-align:center;
           font-size:11px;
           background:rgba(0,0,0,0.5);
-          color:#0f0;
-        ">${label}</div>
-        <div class="monitor-overlay" style="
-          position:absolute;
-          top:0;
-          left:0;
-          width:100%;
-          height:100%;
-          background:repeating-linear-gradient(
-            to bottom,
-            rgba(0,255,0,0.05),
-            rgba(0,255,0,0.05) 2px,
-            transparent 2px,
-            transparent 4px
-          );
-          mix-blend-mode:screen;
-          pointer-events:none;
-        "></div>
+          color:#0f0;">${label}</div>
       </div>`;
   }).join("");
 }
@@ -532,7 +488,7 @@ function updateCameraFeeds() {
       (game.roomItems[r] || []).includes("Camera");
 
     if (!hasCameraInRoom) {
-      img.src = "camera-offline.png";
+      img.src = "nosignal.gif";  // ✅ Animated offline feed
       label.textContent = "NO SIGNAL";
       return;
     }
@@ -552,47 +508,31 @@ function updateCameraFeeds() {
   });
 }
 
-function openCameraFullscreen(room, imgSrc, label) {
-  const existing = document.getElementById("camera-fullscreen");
-  if (existing) document.body.removeChild(existing);
-
-  const overlay = document.createElement("div");
-  overlay.id = "camera-fullscreen";
-  Object.assign(overlay.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    width: "100vw",
-    height: "100vh",
-    background: "rgba(0,0,0,0.9)",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: "5000"
-  });
-
-  overlay.innerHTML = `
-    <img src="${imgSrc}" alt="${room}" style="
-      max-width:90%;
-      max-height:80%;
-      border:2px solid #0f0;
-      box-shadow:0 0 10px #0f0;
-      margin-bottom:10px;
-    ">
-    <div style="color:#0f0;margin-bottom:12px;">${label}</div>
+function renderCameraGrid(monitor) {
+  monitor.innerHTML = `
+    <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
+    <div id="camera-grid" style="
+      display:grid;
+      grid-template-columns:repeat(2,200px);
+      grid-template-rows:repeat(2,150px);
+      gap:8px;
+      justify-content:center;
+      align-items:center;
+      margin:10px auto;">
+      ${generateCameraFeeds()}
+    </div>
     <button style="
+      margin-top:12px;
       padding:6px 12px;
       background:#111;
       color:#0f0;
       border:1px solid #0f0;
-      cursor:pointer;
-    " onclick="document.body.removeChild(document.getElementById('camera-fullscreen'))">
-      Close
-    </button>
+      cursor:pointer;"
+      onclick="closeVanMonitor()">Close Monitor</button>
   `;
-
-  document.body.appendChild(overlay);
+  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
+  vanMonitorInterval = setInterval(updateCameraFeeds, 1000);
+  animateAllCameraOrbs();
 }
 
 function closeVanMonitor() {
@@ -600,24 +540,22 @@ function closeVanMonitor() {
   if (monitor) document.body.removeChild(monitor);
   if (vanMonitorInterval) clearInterval(vanMonitorInterval);
 }
-// === ORB ANIMATION INSIDE CAMERA FEEDS ===
+
+/* === Orb Animation === */
 function drawCameraOrbs(room) {
   const canvas = document.getElementById(`camera-orbs-${room}`);
   if (!canvas) return;
   const ctx = canvas.getContext("2d");
 
-  // Match canvas to display size
   canvas.width = canvas.offsetWidth;
   canvas.height = canvas.offsetHeight;
-
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   const active =
     (game.roomItems[room] || []).includes("Video Camera") &&
     (room === game.ghostRoom &&
       (ghostProfiles[game.ghost].evidence.includes("Orbs") ||
-        game.ghost === "TheMimic" ||
-        game.mimicForm === "TheMimic"));
+        game.ghost === "TheMimic" || game.mimicForm === "TheMimic"));
 
   if (!active) return;
 
@@ -637,93 +575,6 @@ function animateAllCameraOrbs() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
   rooms.slice(0, 4).forEach(r => drawCameraOrbs(r));
   requestAnimationFrame(animateAllCameraOrbs);
-}
-
-// Call after camera grid is rendered:
-function renderCameraGrid(monitor) {
-  monitor.innerHTML = `
-    <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
-    <div id="camera-grid" style="
-      display:grid;
-      grid-template-columns:repeat(2,200px);
-      grid-template-rows:repeat(2,150px);
-      gap:8px;
-      justify-content:center;
-      align-items:center;
-      margin:10px auto;
-    ">
-      ${generateCameraFeeds()}
-    </div>
-    <button style="
-      margin-top:12px;
-      padding:6px 12px;
-      background:#111;
-      color:#0f0;
-      border:1px solid #0f0;
-      cursor:pointer;
-    " onclick="closeVanMonitor()">Close Monitor</button>
-  `;
-  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
-  vanMonitorInterval = setInterval(updateCameraFeeds, 1000);
-  animateAllCameraOrbs(); // ✅ Start orbs animation
-}
-
-// Add `<canvas>` for each feed (edit generateCameraFeeds):
-function generateCameraFeeds() {
-  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
-
-  return rooms.slice(0, 4).map(r => {
-    const hasCameraInRoom =
-      (game.roomItems[r] || []).includes("Video Camera") ||
-      (game.roomItems[r] || []).includes("Camera");
-
-    let imgSrc = "camera-offline.png";
-    let label = "NO SIGNAL";
-
-    if (hasCameraInRoom) {
-      imgSrc = roomVisuals[r].N;
-      label = `${r} — ACTIVE`;
-      if (r === game.ghostRoom) {
-        if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-          label = `${r} — FAKE ORBS DETECTED`;
-        } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
-          label = `${r} — ORBS DETECTED`;
-        }
-      }
-    }
-
-    return `
-      <div class="camera-feed" data-room="${r}" style="
-        position:relative;
-        background:#000;
-        border:1px solid #0f0;
-        overflow:hidden;
-        cursor:pointer;
-      " onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
-        <img id="camera-img-${r}" src="${imgSrc}" alt="${r}" style="
-          width:100%;
-          height:100%;
-          object-fit:cover;
-          filter:contrast(1.2) brightness(0.8) saturate(0.7);
-        ">
-        <canvas id="camera-orbs-${r}" style="
-          position:absolute;
-          top:0; left:0;
-          width:100%;
-          height:100%;
-          pointer-events:none;
-        "></canvas>
-        <div id="camera-label-${r}" style="
-          position:absolute;
-          bottom:0;
-          width:100%;
-          text-align:center;
-          font-size:11px;
-          background:rgba(0,0,0,0.5);
-          color:#0f0;
-        ">${label}</div>
-      </div>`;
-  }).join("");
 }
 
 /***********************
