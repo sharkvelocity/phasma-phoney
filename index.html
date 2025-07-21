@@ -790,7 +790,7 @@ function openInventoryOverlay() {
     left: "50%",
     transform: "translate(-50%,-50%)",
     background: "#111",
-    padding: "12px",
+    padding: "16px",
     maxHeight: "75%",
     overflowY: "auto",
     maxWidth: "92%",
@@ -803,32 +803,37 @@ function openInventoryOverlay() {
   });
 
   let html = `<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
+
   if (game.inventory.length > 0) {
-    html += `<p><strong>Held Items:</strong></p>`;
+    html += `<div style="display:flex;flex-direction:column;gap:10px;">`;
     game.inventory.forEach(i => {
       html += `
-        <div style="margin-bottom:4px;">
-          <button onclick="inspectItem('${i}')">Inspect: ${i}</button>
-          <button onclick="dropItem('${i}');closeInventory()">Drop: ${i}</button>
-          <button onclick="useItem('${i}');closeInventory()">Use: ${i}</button>
+        <div style="background:#222;padding:6px;border-radius:4px;">
+          <strong style="color:#0af;">${i}</strong>
+          <div style="display:flex;justify-content:center;gap:6px;margin-top:4px;flex-wrap:wrap;">
+            <button onclick="inspectItem('${i}')">Inspect</button>
+            <button onclick="dropItem('${i}');closeInventory()">Drop</button>
+            <button onclick="useItem('${i}');closeInventory()">Use</button>
+          </div>
         </div>`;
     });
+    html += `</div>`;
   } else {
     html += `<p style="opacity:0.7;">No items held.</p>`;
   }
 
   const roomInv = game.roomItems[game.playerRoom] || [];
   if (roomInv.length > 0) {
-    html += `<p><strong>Items in this Room:</strong></p>`;
+    html += `<h4 style="margin-top:12px;color:#0ff;">Items in This Room</h4>`;
     roomInv.forEach(i => {
       html += `
-        <div style="margin-bottom:4px;">
+        <div style="margin:4px 0;">
           <button onclick="pickItem('${i}');closeInventory()">Pick up: ${i}</button>
         </div>`;
     });
   }
 
-  html += `<button style="margin-top:10px;" onclick="closeInventory()">Close</button>`;
+  html += `<button style="margin-top:12px;" onclick="closeInventory()">Close</button>`;
   c.innerHTML = html;
   document.body.appendChild(c);
 
@@ -838,6 +843,7 @@ function openInventoryOverlay() {
     saveGame(true);
   };
 }
+
 
 function inspectItem(i) {
   let desc = cursedItems[i]?.desc || "Standard investigation gear.";
@@ -1094,6 +1100,74 @@ function loadGame() {
 function clearSave() {
   localStorage.removeItem("phasmaPhoneySave");
   logToGame("🗑️ Save data cleared.");
+}
+/***********************
+ === GHOST GUESS SYSTEM ===
+************************/
+function openGuess() {
+  const popup = document.getElementById("guess-popup");
+  const list = document.getElementById("guess-list");
+  list.innerHTML = "<h3 style='color:#0ff;margin-top:0;'>Select the Ghost</h3>";
+
+  Object.keys(ghostProfiles).forEach(g => {
+    const btn = document.createElement("button");
+    Object.assign(btn.style, {
+      display: "block",
+      width: "100%",
+      margin: "4px 0",
+      padding: "6px",
+      background: "#222",
+      color: "#eee",
+      border: "1px solid #555",
+      cursor: "pointer"
+    });
+    btn.textContent = g;
+    btn.onmouseenter = () => (btn.style.background = "#333");
+    btn.onmouseleave = () => (btn.style.background = "#222");
+    btn.onclick = () => {
+      makeGuess(g);
+      closeGuess();
+    };
+    list.appendChild(btn);
+  });
+
+  const closeBtn = document.createElement("button");
+  Object.assign(closeBtn.style, {
+    marginTop: "8px",
+    padding: "6px 12px",
+    background: "#111",
+    color: "#aaa",
+    border: "1px solid #444",
+    cursor: "pointer"
+  });
+  closeBtn.textContent = "Close";
+  closeBtn.onclick = closeGuess;
+  list.appendChild(closeBtn);
+
+  popup.style.display = "flex";
+}
+
+function closeGuess() {
+  document.getElementById("guess-popup").style.display = "none";
+}
+
+function makeGuess(guess) {
+  if (!game.ghost) {
+    logToGame("⚠️ No active ghost to guess yet!");
+    return;
+  }
+
+  if (guess === game.ghost) {
+    logToGame(`✅ Correct! The ghost was ${guess}.`);
+    alert(`You WON! The ghost was ${guess}.`);
+  } else {
+    logToGame(`❌ Wrong! The ghost was ${game.ghost}.`);
+    alert(`Game Over. The ghost was ${game.ghost}.`);
+  }
+
+  // Reset and return to loadout after guess
+  resetGame();
+  showLoadout();
 }
 
 /***********************
