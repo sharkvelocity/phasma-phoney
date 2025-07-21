@@ -1384,7 +1384,7 @@ function handleCursedItem(i) {
   saveGame(true);
 }
 /***********************
- === SAVE & LOAD SYSTEM ===
+ === Save/Load Block ===
 ************************/
 function saveGame() {
   try {
@@ -1428,27 +1428,41 @@ function showSaveIndicator() {
 function loadGame() {
   const data = localStorage.getItem("phasmaPhoneySave");
   if (!data) {
-    logToGame("No save data found.");
+    logToGame("⚠ No save data found.");
     return;
   }
+
   try {
     const s = JSON.parse(data);
     Object.assign(game, s);
-    game.selectedEvidence = new Set(s.selectedEvidence);
-    if (!game.placedCrucifix) game.placedCrucifix = {};
-    if (!game.roomItems) game.roomItems = {};
-    if (!game.usedCursedItems) game.usedCursedItems = {};
+
+    // ✅ Ensure all critical properties exist even if missing in old saves
+    game.selectedEvidence = new Set(s.selectedEvidence || []);
+    game.placedCrucifix = s.placedCrucifix || {};
+    game.roomItems = s.roomItems || {};
+    game.usedCursedItems = s.usedCursedItems || {};
+
     logToGame("📂 Game loaded. Resuming investigation...");
+
+    // ✅ Show the investigation UI
     document.getElementById("title-screen").style.display = "none";
     document.getElementById("loadout-screen").style.display = "none";
     document.getElementById("main-scene").style.display = "block";
     document.getElementById("narrator-ui").style.display = "flex";
+
+    // ✅ Refresh HUD & action buttons
     renderHUD();
     updateBackground();
-    render();
+    renderActionButtons();
+
+    // ✅ Save snapshot immediately (keeps state updated if older saves are missing new data)
+    saveGame(true);
   } catch (e) {
     console.error("Load failed:", e);
-    logToGame("⚠️ Load failed.");
+    logToGame("⚠ Load failed. Starting new game...");
+    localStorage.removeItem("phasmaPhoneySave");
+    resetGame();
+    showLoadout();
   }
 }
 
@@ -1456,6 +1470,8 @@ function clearSave() {
   localStorage.removeItem("phasmaPhoneySave");
   logToGame("🗑️ Save data cleared.");
 }
+
+
 /***********************
  === GHOST GUESS SYSTEM ===
 ************************/
