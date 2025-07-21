@@ -454,46 +454,89 @@ function generateCameraFeeds() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
 
   return rooms.slice(0, 4).map(r => {
-    // Determine if this room should show an ACTIVE camera feed
-    let feedText = "NO SIGNAL";
-
-    // If the player has placed a Video Camera or Camera in that room
     const hasCameraInRoom = (game.roomItems[r] || []).includes("Video Camera") 
                          || (game.roomItems[r] || []).includes("Camera");
+    let imgSrc = "camera-offline.png"; // Fallback offline camera graphic
+    let label = "NO SIGNAL";
 
     if (hasCameraInRoom) {
+      imgSrc = roomVisuals[r]?.N || "camera-active.png"; // Use north-facing image
+      label = r + " — ACTIVE";
+
       if (r === game.ghostRoom) {
         if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-          feedText = `${r} — FAKE ORBS DETECTED`; // Mimic's fake orbs
-        } else if (game.cameraActive) {
-          feedText = `${r} — ORBS DETECTED`; // Only if ghost has Orbs evidence
-        } else {
-          feedText = `${r} — ACTIVE`;
+          label = r + " — FAKE ORBS DETECTED";
+        } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
+          label = r + " — ORBS DETECTED";
         }
-      } else {
-        feedText = `${r} — ACTIVE`;
       }
     }
 
-    return `<div style="
-      background:#000;
-      border:1px solid #0f0;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      color:#0f0;
-      font-size:12px;
-      text-align:center;
-    ">
-      ${feedText}
-    </div>`;
+    return `
+      <div style="
+        background:#000;
+        border:1px solid #0f0;
+        display:flex;
+        flex-direction:column;
+        justify-content:center;
+        align-items:center;
+        color:#0f0;
+        font-size:11px;
+        text-align:center;
+        cursor:pointer;
+      " onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
+        <img src="${imgSrc}" alt="${r}" style="width:100%;height:100%;object-fit:cover;">
+        <div style="padding:2px;">${label}</div>
+      </div>
+    `;
   }).join("");
 }
-
 
 function closeVanMonitor() {
   const monitor = document.getElementById("van-monitor");
   if (monitor) document.body.removeChild(monitor);
+}
+function openCameraFullscreen(room, imgSrc, label) {
+  const existing = document.getElementById("camera-fullscreen");
+  if (existing) document.body.removeChild(existing);
+
+  const overlay = document.createElement("div");
+  overlay.id = "camera-fullscreen";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(0,0,0,0.9)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: "5000"
+  });
+
+  overlay.innerHTML = `
+    <img src="${imgSrc}" alt="${room}" style="
+      max-width:90%;
+      max-height:80%;
+      border:2px solid #0f0;
+      box-shadow:0 0 10px #0f0;
+      margin-bottom:10px;
+    ">
+    <div style="color:#0f0;margin-bottom:12px;">${label}</div>
+    <button style="
+      padding:6px 12px;
+      background:#111;
+      color:#0f0;
+      border:1px solid #0f0;
+      cursor:pointer;
+    " onclick="document.body.removeChild(document.getElementById('camera-fullscreen'))">
+      Close
+    </button>
+  `;
+
+  document.body.appendChild(overlay);
 }
 
 /***********************
@@ -707,12 +750,73 @@ function updateBackground() {
   const v = roomVisuals[game.playerRoom] || roomVisuals["Van"];
   const d = game.playerDirection || "N";
   const bg = document.getElementById("background");
-  if (v && v[d]) bg.style.backgroundImage = `url('${v[d]}')`;
-  else {
-    console.warn(`Missing background for ${game.playerRoom} (${d}).`);
-    bg.style.backgroundImage = `url('${roomVisuals["Van"]["N"]}')`;
+
+  if (v && v[d]) {
+    bg.style.backgroundImage = `url('${v[d]}')`;
+  }
+
+  if (game.weather === "Foggy") {
+    fogCanvas.style.opacity = "0.5"; // Visible mist
+  } else {
+    fogCanvas.style.opacity = "0";
   }
 }
+
+
+// === ROLLING MIST FOG SYSTEM ===
+const fogCanvas = document.getElementById("fog-layer");
+const fogCtx = fogCanvas.getContext("2d");
+let fogParticles = [];
+
+function initFog() {
+  fogCanvas.width = window.innerWidth;
+  fogCanvas.height = window.innerHeight;
+  fogParticles = [];
+
+  for (let i = 0; i < 40; i++) {
+    fogParticles.push({
+      x: Math.random() * fogCanvas.width,
+      y: Math.random() * fogCanvas.height,
+      radius: 150 + Math.random() * 100,
+      speedX: -0.2 + Math.random() * 0.4,
+      speedY: -0.1 + Math.random() * 0.2,
+      opacity: 0.1 + Math.random() * 0.15
+    });
+  }
+}
+
+function animateFog() {
+  if (game.weather !== "Foggy") {
+    fogCtx.clearRect(0, 0, fogCanvas.width, fogCanvas.height);
+    requestAnimationFrame(animateFog);
+    return;
+  }
+
+  fogCtx.clearRect(0, 0, fogCanvas.width, fogCanvas.height);
+
+  fogParticles.forEach(p => {
+    fogCtx.beginPath();
+    const gradient = fogCtx.createRadialGradient(p.x, p.y, p.radius * 0.2, p.x, p.y, p.radius);
+    gradient.addColorStop(0, `rgba(200,200,200,${p.opacity})`);
+    gradient.addColorStop(1, "rgba(200,200,200,0)");
+    fogCtx.fillStyle = gradient;
+    fogCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+    fogCtx.fill();
+
+    p.x += p.speedX;
+    p.y += p.speedY;
+
+    if (p.x - p.radius > fogCanvas.width) p.x = -p.radius;
+    if (p.x + p.radius < 0) p.x = fogCanvas.width + p.radius;
+    if (p.y - p.radius > fogCanvas.height) p.y = -p.radius;
+    if (p.y + p.radius < 0) p.y = fogCanvas.height + p.radius;
+  });
+
+  requestAnimationFrame(animateFog);
+}
+
+// ✅ Re-init fog on resize
+window.addEventListener("resize", () => initFog());
 
 /***********************
  === ROOM & MOVEMENT ===
@@ -910,13 +1014,60 @@ function flashRed() {
 }
 
 function playerDeath() {
-  logToGame("💀 The ghost finds you. Everything goes cold...");
-  setTimeout(() => {
-    alert("You died.");
-    resetGame();
-    showLoadout();
-  }, 800);
+  const existing = document.getElementById("death-screen");
+  if (existing) document.body.removeChild(existing);
+
+  const overlay = document.createElement("div");
+  overlay.id = "death-screen";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(0,0,0,0.9)",
+    color: "#f00",
+    fontFamily: "monospace",
+    fontSize: "4em",
+    fontWeight: "bold",
+    textAlign: "center",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: "5000",
+    opacity: "0",
+    transition: "opacity 0.3s ease"
+  });
+
+  const ghostName = game.ghost || "Unknown";
+
+  overlay.innerHTML = `
+    <div>YOU DIED</div>
+    <div style="font-size:0.5em;margin-top:10px;color:#faa;">
+      The ghost was <span style="color:#fff;">${ghostName}</span>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+
+  let flashes = 0;
+  function flash() {
+    if (flashes >= 6) {
+      setTimeout(() => {
+        document.body.removeChild(overlay);
+        resetGame();
+        showLoadout();
+      }, 800);
+      return;
+    }
+    overlay.style.opacity = flashes % 2 === 0 ? "1" : "0.2";
+    flashes++;
+    setTimeout(flash, 300);
+  }
+  flash();
 }
+
 /***********************
  === INVENTORY OVERLAY ===
 ************************/
@@ -1329,14 +1480,15 @@ function handleCommand(cmd) {
     case "guess":
       openGuess();
       break;
-    case "van":
-      if (game.playerRoom !== "Van") {
-        moveToRoom("Van");
-        logToGame("You return to the van.");
-      } else {
-        openVanMonitor();
-      }
-      break;
+  case "van":
+  if (game.playerRoom !== "Van") {
+    moveToRoom("Van");
+    logToGame("You return to the van.");
+  } else {
+    openVanMonitor(); // ✅ Opens the camera feed
+  }
+  break;
+
     case "save":
       saveGame(true);
       break;
@@ -1413,14 +1565,21 @@ function showLoadout() {
 }
 
 /***********************
- === STARTUP & EVENT WIRING ===
+ === DOMContentLoaded ===
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
+  // ✅ Reset game state at startup
   resetGame();
+
+  // ✅ Initialize Fog System (so rolling mist is ready if needed)
+  initFog();
+  animateFog();
+
   const startBtn = document.getElementById("startButton");
   const confirmBtn = document.getElementById("confirm-loadout");
   const commandContainer = document.getElementById("command-buttons");
 
+  // ✅ Start Button → Title → Loadout
   startBtn.addEventListener("click", () => {
     if (startBtn.disabled) return;
     startBtn.disabled = true;
@@ -1432,6 +1591,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }, 1500);
   });
 
+  // ✅ Confirm Loadout → Start Investigation
   confirmBtn.addEventListener("click", () => {
     if (confirmBtn.disabled || !confirmBtn.classList.contains("active")) {
       logToGame("⚠️ Select at least one item before confirming.");
@@ -1449,22 +1609,26 @@ document.addEventListener("DOMContentLoaded", () => {
     startInvestigation();
     renderActionButtons();
     saveGame(true);
-    window.dispatchEvent(new Event("resize"));
 
     setTimeout(() => {
       confirmBtn.disabled = false;
     }, 1500);
   });
 
+  // ✅ Handle All Action Buttons
   commandContainer.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
       handleCommand(e.target.dataset.cmd);
     }
   });
 
+  // ✅ Auto Resume if Save Exists (No Escaping Your Mistakes)
   if (localStorage.getItem("phasmaPhoneySave")) {
-    logToGame("💾 Previous save detected. Use 'Load Game'.");
+    loadGame();
   }
+
+  // ✅ Auto Save on Close or Refresh
+  window.addEventListener("beforeunload", () => saveGame(true));
 });
 
 </script>
