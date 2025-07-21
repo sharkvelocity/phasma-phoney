@@ -600,6 +600,131 @@ function closeVanMonitor() {
   if (monitor) document.body.removeChild(monitor);
   if (vanMonitorInterval) clearInterval(vanMonitorInterval);
 }
+// === ORB ANIMATION INSIDE CAMERA FEEDS ===
+function drawCameraOrbs(room) {
+  const canvas = document.getElementById(`camera-orbs-${room}`);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  // Match canvas to display size
+  canvas.width = canvas.offsetWidth;
+  canvas.height = canvas.offsetHeight;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  const active =
+    (game.roomItems[room] || []).includes("Video Camera") &&
+    (room === game.ghostRoom &&
+      (ghostProfiles[game.ghost].evidence.includes("Orbs") ||
+        game.ghost === "TheMimic" ||
+        game.mimicForm === "TheMimic"));
+
+  if (!active) return;
+
+  for (let i = 0; i < 6; i++) {
+    const x = Math.random() * canvas.width;
+    const y = Math.random() * canvas.height;
+    const size = 1.5 + Math.random() * 3;
+    const opacity = 0.15 + Math.random() * 0.4;
+    ctx.beginPath();
+    ctx.arc(x, y, size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(0,255,0,${opacity})`;
+    ctx.fill();
+  }
+}
+
+function animateAllCameraOrbs() {
+  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
+  rooms.slice(0, 4).forEach(r => drawCameraOrbs(r));
+  requestAnimationFrame(animateAllCameraOrbs);
+}
+
+// Call after camera grid is rendered:
+function renderCameraGrid(monitor) {
+  monitor.innerHTML = `
+    <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
+    <div id="camera-grid" style="
+      display:grid;
+      grid-template-columns:repeat(2,200px);
+      grid-template-rows:repeat(2,150px);
+      gap:8px;
+      justify-content:center;
+      align-items:center;
+      margin:10px auto;
+    ">
+      ${generateCameraFeeds()}
+    </div>
+    <button style="
+      margin-top:12px;
+      padding:6px 12px;
+      background:#111;
+      color:#0f0;
+      border:1px solid #0f0;
+      cursor:pointer;
+    " onclick="closeVanMonitor()">Close Monitor</button>
+  `;
+  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
+  vanMonitorInterval = setInterval(updateCameraFeeds, 1000);
+  animateAllCameraOrbs(); // ✅ Start orbs animation
+}
+
+// Add `<canvas>` for each feed (edit generateCameraFeeds):
+function generateCameraFeeds() {
+  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
+
+  return rooms.slice(0, 4).map(r => {
+    const hasCameraInRoom =
+      (game.roomItems[r] || []).includes("Video Camera") ||
+      (game.roomItems[r] || []).includes("Camera");
+
+    let imgSrc = "camera-offline.png";
+    let label = "NO SIGNAL";
+
+    if (hasCameraInRoom) {
+      imgSrc = roomVisuals[r].N;
+      label = `${r} — ACTIVE`;
+      if (r === game.ghostRoom) {
+        if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
+          label = `${r} — FAKE ORBS DETECTED`;
+        } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
+          label = `${r} — ORBS DETECTED`;
+        }
+      }
+    }
+
+    return `
+      <div class="camera-feed" data-room="${r}" style="
+        position:relative;
+        background:#000;
+        border:1px solid #0f0;
+        overflow:hidden;
+        cursor:pointer;
+      " onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
+        <img id="camera-img-${r}" src="${imgSrc}" alt="${r}" style="
+          width:100%;
+          height:100%;
+          object-fit:cover;
+          filter:contrast(1.2) brightness(0.8) saturate(0.7);
+        ">
+        <canvas id="camera-orbs-${r}" style="
+          position:absolute;
+          top:0; left:0;
+          width:100%;
+          height:100%;
+          pointer-events:none;
+        "></canvas>
+        <div id="camera-label-${r}" style="
+          position:absolute;
+          bottom:0;
+          width:100%;
+          text-align:center;
+          font-size:11px;
+          background:rgba(0,0,0,0.5);
+          color:#0f0;
+        ">${label}</div>
+      </div>`;
+  }).join("");
+}
 
 /***********************
  === GLOBAL CONSTANTS & GHOST PROFILES ===
@@ -1208,6 +1333,61 @@ function inspectItem(i) {
   }
   logToGame(`Inspecting ${i}: ${desc}`);
 }
+function openNotebook() {
+  const existing = document.getElementById("notebook-popup");
+  if (existing) document.body.removeChild(existing);
+
+  const overlay = document.createElement("div");
+  overlay.id = "notebook-popup";
+  Object.assign(overlay.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    background: "rgba(0,0,0,0.9)",
+    color: "#0f0",
+    fontFamily: "monospace",
+    fontSize: "14px",
+    zIndex: "6000",
+    overflowY: "auto",
+    padding: "20px"
+  });
+
+  let html = `<h2 style="text-align:center;color:#0ff;margin-top:0;">
+    Ghost Investigation Notebook</h2>
+    <p style="font-size:12px;color:#aaa;text-align:center;">
+    ✅ Evidence you’ve already found will be highlighted.</p>`;
+
+  Object.keys(ghostProfiles).forEach(g => {
+    const evList = ghostProfiles[g].evidence
+      .map(ev =>
+        `<span style="color:${
+          game.selectedEvidence.has(ev) ? '#0f0' : '#aaa'
+        }">${ev}${game.selectedEvidence.has(ev) ? ' ✅' : ''}</span>`
+      ).join(", ");
+    html += `
+      <div style="border-bottom:1px solid #044;padding:6px 0;">
+        <strong style="color:#0ff;">${g}</strong><br>
+        <em>Evidence:</em> ${evList}<br>
+        <em>Behavior:</em> ${ghostProfiles[g].behavior}
+      </div>`;
+  });
+
+  html += `<div style="text-align:center;margin-top:12px;">
+    <button style="
+      padding:6px 12px;
+      background:#111;
+      color:#0f0;
+      border:1px solid #0f0;
+      cursor:pointer;"
+      onclick="document.body.removeChild(document.getElementById('notebook-popup'))">
+      Close
+    </button></div>`;
+
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
 
 function dropItem(i) {
   if (game.playerRoom === "Van") {
@@ -1228,30 +1408,41 @@ function dropItem(i) {
 }
 
 function pickItem(i) {
-  if (game.inventory.length >= 3) {
-    logToGame("Max 3 items.");
+  // ✅ Don't count Notebook/Lighter toward 3-item limit
+  const carryableItems = game.inventory.filter(
+    x => x !== "Notebook" && x !== "Lighter"
+  );
+
+  if (carryableItems.length >= 3) {
+    logToGame("Max 3 investigation items (Notebook & Lighter excluded).");
     return;
   }
+
   if (cursedItems[i] && i === "Summoning Circle") {
     logToGame("The circle cannot be moved.");
     return;
   }
+
   game.roomItems[game.playerRoom] =
     game.roomItems[game.playerRoom].filter(x => x !== i);
+
   if (!game.inventory.includes(i)) {
     game.inventory.push(i);
     game.inventory.sort();
   }
+
   logToGame(`Picked up ${i}.`);
   renderHUD();
   saveGame(true);
 }
+
 
 /***********************
  === ITEM USE ===
 ************************/
 function useItem(i) {
   switch (i) {
+    // === Defensive / Utility Items ===
     case "Smudge Stick":
       if (game.playerRoom === game.ghostRoom) {
         game.smudgeActive = 3;
@@ -1259,18 +1450,7 @@ function useItem(i) {
       } else {
         logToGame("You smudge, but nothing happens.");
       }
-      break;
-
-    case "Camera":
-    case "Video Camera":
-      if (game.playerRoom !== "Van") {
-        game.cameraActive = !game.cameraActive;
-        logToGame(game.cameraActive
-          ? "Camera on: watching for orbs."
-          : "Camera off.");
-      } else {
-        logToGame("Cannot use cameras in the van.");
-      }
+      game.inventory = game.inventory.filter(x => x !== i); // Smudge is consumed
       break;
 
     case "Crucifix":
@@ -1279,7 +1459,7 @@ function useItem(i) {
         logToGame("You place the crucifix. It may stop two hunts.");
         game.inventory = game.inventory.filter(x => x !== i);
       } else {
-        logToGame("Cannot place crucifix in van.");
+        logToGame("Cannot place crucifix in the van.");
       }
       break;
 
@@ -1289,16 +1469,9 @@ function useItem(i) {
         if (!game.roomItems[game.playerRoom].includes("Salt")) {
           game.roomItems[game.playerRoom].push("Salt");
           logToGame("You sprinkle salt on the ground.");
+        } else {
+          logToGame("Salt already sprinkled here.");
         }
-      }
-      break;
-
-    case "UV Light":
-      if (game.roomItems[game.playerRoom]?.includes("Footprints")) {
-        logToGame("You see glowing footprints under UV!");
-        game.selectedEvidence.add("Fingerprints");
-      } else {
-        logToGame("No visible prints under UV.");
       }
       break;
 
@@ -1308,6 +1481,8 @@ function useItem(i) {
         if (!game.roomItems[game.playerRoom].includes("Candle")) {
           game.roomItems[game.playerRoom].push("Candle");
           logToGame("You place and light a candle here.");
+        } else {
+          logToGame("A candle is already lit here.");
         }
       }
       break;
@@ -1318,13 +1493,142 @@ function useItem(i) {
         if (!game.roomItems[game.playerRoom].includes("Motion Sensor")) {
           game.roomItems[game.playerRoom].push("Motion Sensor");
           logToGame("You place a motion sensor in this room.");
+        } else {
+          logToGame("A motion sensor is already active here.");
         }
       }
       break;
 
+    case "Sound Sensor":
+      if (game.playerRoom !== "Van") {
+        game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
+        if (!game.roomItems[game.playerRoom].includes("Sound Sensor")) {
+          game.roomItems[game.playerRoom].push("Sound Sensor");
+          logToGame("You place a sound sensor in this room.");
+        } else {
+          logToGame("A sound sensor is already active here.");
+        }
+      }
+      break;
+
+    case "Parabolic Microphone":
+      if (game.playerRoom !== "Van") {
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
+          logToGame("You pick up strange whispers on the parabolic mic...");
+        } else {
+          logToGame("No significant sound detected.");
+        }
+      } else {
+        logToGame("Cannot use parabolic mic in van.");
+      }
+      break;
+
+    case "Thermometer":
+      if (game.playerRoom !== "Van") {
+        if (game.playerRoom === game.ghostRoom) {
+          const temp = Math.random() < 0.4 ? -4 + Math.random() * 2 : 5 + Math.random() * 3;
+          logToGame(`Thermometer reading: ${temp.toFixed(1)}°C`);
+          if (temp <= 0) game.selectedEvidence.add("Freezing Temps");
+        } else {
+          logToGame(`Thermometer reading: ${(15 + Math.random() * 5).toFixed(1)}°C`);
+        }
+      } else {
+        logToGame("No reason to check temperature in van.");
+      }
+      break;
+
+    // === Cameras & Orbs ===
+    case "Camera":
+    case "Video Camera":
+      if (game.playerRoom !== "Van") {
+        game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
+        if (!game.roomItems[game.playerRoom].includes("Video Camera")) {
+          game.roomItems[game.playerRoom].push("Video Camera");
+          logToGame("You set up a video camera in this room.");
+          game.inventory = game.inventory.filter(x => x !== i);
+        } else {
+          logToGame("A camera is already set up here.");
+        }
+      } else {
+        logToGame("Cannot place cameras in the van.");
+      }
+      break;
+
+    // === EMF & Spirit Box ===
+    case "EMF Reader":
+      if (game.playerRoom !== "Van") {
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
+          logToGame("The EMF Reader spikes to Level 5!");
+          game.selectedEvidence.add("EMF Level 5");
+        } else {
+          logToGame("EMF shows no significant reading.");
+        }
+      } else {
+        logToGame("No EMF readings in the van.");
+      }
+      break;
+
+    case "Spirit Box":
+      if (game.playerRoom !== "Van") {
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
+          logToGame(`The Spirit Box crackles: "${Math.random() < 0.5 ? 'Leave...' : 'Behind you...'}"`);
+          game.selectedEvidence.add("Spirit Box");
+        } else {
+          logToGame("Spirit Box stays silent.");
+        }
+      } else {
+        logToGame("Too far from the ghost to use the Spirit Box.");
+      }
+      break;
+
+    // === UV Light & D.O.T.S ===
+    case "UV Light":
+      if (game.roomItems[game.playerRoom]?.includes("Footprints") || Math.random() < 0.3) {
+        logToGame("You see glowing fingerprints or footprints under UV!");
+        game.selectedEvidence.add("Fingerprints");
+      } else {
+        logToGame("No visible prints under UV.");
+      }
+      break;
+
+    case "D.O.T.S Projector":
+      if (game.playerRoom !== "Van") {
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.4) {
+          logToGame("A faint shadow flickers across the D.O.T.S grid!");
+          game.selectedEvidence.add("D.O.T.S");
+        } else {
+          logToGame("No movement detected in D.O.T.S grid.");
+        }
+      } else {
+        logToGame("D.O.T.S cannot be placed in van.");
+      }
+      break;
+
+    // === Ghost Writing ===
+    case "Ghost Writing Book":
+      if (game.playerRoom !== "Van") {
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
+          logToGame("The ghost has written in the book!");
+          game.selectedEvidence.add("Ghost Writing");
+        } else {
+          logToGame("The book remains empty.");
+        }
+      } else {
+        logToGame("Notebook just for notes, not evidence.");
+      }
+      break;
+
+    // === Notebook (Cheat Sheet) ===
+    case "Notebook":
+      openNotebook();
+      break;
+
     default:
-      if (cursedItems[i]) handleCursedItem(i);
-      else logToGame("You use the " + i + ", but nothing significant occurs.");
+      if (cursedItems[i]) {
+        handleCursedItem(i);
+      } else {
+        logToGame(`You use the ${i}, but nothing significant occurs.`);
+      }
   }
 
   game.currentTurn++;
@@ -1335,49 +1639,84 @@ function useItem(i) {
 
 function handleCursedItem(i) {
   if (game.usedCursedItems[i]) {
-    logToGame("The " + i + " is inert now.");
+    logToGame(`The ${i} is inert now.`);
     return;
   }
-  logToGame("You use the " + i + "...");
+
+  logToGame(`You use the ${i}...`);
   game.sanity -= getCursedItemCost(i);
   if (game.sanity < 0) game.sanity = 0;
+  updateSanityBar();
+  logToGame(`Sanity now at ${Math.floor(game.sanity)}%.`);
 
   switch (i) {
     case "Ouija Board":
-      if (Math.random() < 0.2) startHunt();
+      logToGame("The board moves by itself, letters slowly spelling words...");
+      if (Math.random() < 0.2) {
+        logToGame("The planchette flies violently across the board!");
+        startHunt();
+      }
       break;
 
     case "Tarot Cards":
       const r = Math.random();
-      if (r < 0.2) logToGame("The Fool — nothing happens.");
-      else if (r < 0.4) logToGame("The Tower — ghost activity spikes!");
-      else if (r < 0.6) {
-        logToGame("The Death card — hunt triggered!");
+      if (r < 0.15) {
+        logToGame("The Fool — nothing happens.");
+      } else if (r < 0.3) {
+        logToGame("The Tower — ghost activity spikes!");
+      } else if (r < 0.45) {
+        logToGame("The Moon — your sanity drops sharply.");
+        game.sanity = Math.max(0, game.sanity - 25);
+        updateSanityBar();
+      } else if (r < 0.6) {
+        logToGame("The Death card — the ghost begins hunting!");
         startHunt();
+      } else if (r < 0.8) {
+        logToGame("The Devil — ghost becomes aggressive for a while!");
+        game.huntCooldown = 1; // very short cooldown
       } else {
-        logToGame("The Sun — sanity restored.");
-        game.sanity = Math.min(100, game.sanity + 10);
+        logToGame("The Sun — a warm light fills you, sanity restored.");
+        game.sanity = Math.min(100, game.sanity + 25);
+        updateSanityBar();
       }
       break;
 
     case "Music Box":
+      logToGame("A soft, eerie melody plays... the ghost is drawn to it.");
+      if (Math.random() < 0.4) startHunt();
+      break;
+
     case "Haunted Mirror":
+      logToGame("You glimpse a distorted reflection... a room you haven’t visited?");
       if (Math.random() < 0.3) startHunt();
       break;
 
     case "Summoning Circle":
+      logToGame("You light the circle... the flames roar! The ghost manifests violently.");
       startHunt();
       break;
 
     case "Monkey Paw":
-      if (Math.random() < 0.5) startHunt();
+      if (Math.random() < 0.5) {
+        logToGame("The paw curls, granting your wish... but you feel cursed.");
+        if (Math.random() < 0.5) {
+          logToGame("Your wish backfires! The ghost starts hunting.");
+          startHunt();
+        } else {
+          logToGame("Your wish succeeds. Sanity restored.");
+          game.sanity = Math.min(100, game.sanity + 20);
+          updateSanityBar();
+        }
+      } else {
+        logToGame("The paw remains still, as if judging you.");
+      }
       break;
   }
 
   game.usedCursedItems[i] = true;
-  updateSanityBar();
   saveGame(true);
 }
+
 /***********************
  === Save/Load Block ===
 ************************/
@@ -1600,42 +1939,50 @@ function showLoadout() {
   const vanList = document.getElementById("van-list");
   const confirmBtn = document.getElementById("confirm-loadout");
 
-  function renderLoadout() {
-    heldList.innerHTML = tempHeld
-      .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
-      .join("");
-    vanList.innerHTML = tempVan
-      .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
-      .join("");
+function renderLoadout() {
+  heldList.innerHTML = tempHeld
+    .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
+    .join("");
 
-    if (tempHeld.length > 0) {
-      confirmBtn.classList.add("active");
-      confirmBtn.disabled = false;
-    } else {
-      confirmBtn.classList.remove("active");
-      confirmBtn.disabled = true;
-    }
+  vanList.innerHTML = tempVan
+    .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
+    .join("");
+
+  // ✅ You must hold at least 1 investigation item to start
+  if (tempHeld.length > 0) {
+    confirmBtn.classList.add("active");
+    confirmBtn.disabled = false;
+  } else {
+    confirmBtn.classList.remove("active");
+    confirmBtn.disabled = true;
+  }
+}
+
+window.addHeldItem = function (item) {
+  // ✅ Exclude Notebook and Lighter from the 3-item limit
+  const carryableHeld = tempHeld.filter(
+    x => x !== "Notebook" && x !== "Lighter"
+  );
+
+  if (carryableHeld.length >= 3) {
+    logToGame("⚠️ You can only hold 3 items (Notebook & Lighter excluded).");
+    return;
   }
 
-  window.addHeldItem = function (item) {
-    if (tempHeld.length >= 3) {
-      logToGame("⚠️ You can only hold 3 items.");
-      return;
-    }
-    tempHeld.push(item);
-    tempVan = tempVan.filter(v => v !== item);
-    renderLoadout();
-  };
-
-  window.removeHeldItem = function (item) {
-    tempVan.push(item);
-    tempHeld = tempHeld.filter(h => h !== item);
-    renderLoadout();
-  };
-
+  tempHeld.push(item);
+  tempVan = tempVan.filter(v => v !== item);
   renderLoadout();
-  document.getElementById("loadout-screen").style.display = "flex";
-}
+};
+
+window.removeHeldItem = function (item) {
+  tempVan.push(item);
+  tempHeld = tempHeld.filter(h => h !== item);
+  renderLoadout();
+};
+
+renderLoadout();
+document.getElementById("loadout-screen").style.display = "flex";
+
 
 /***********************
  === DOMContentLoaded ===
