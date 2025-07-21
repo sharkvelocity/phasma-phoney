@@ -293,16 +293,26 @@
 let vanMonitorBooted = false;
 
 function openVanMonitor() {
-  if (document.getElementById("van-monitor")) return;
+  if (document.getElementById("van-monitor")) return; // prevent duplicates
+
   const monitor = document.createElement("div");
   monitor.id = "van-monitor";
   Object.assign(monitor.style, {
-    position: "fixed", top: "10%", left: "10%",
-    width: "80%", height: "80%", background: "#000",
-    border: "2px solid #0f0", color: "#0f0",
-    fontFamily: "monospace", fontSize: "16px",
-    padding: "10px", zIndex: "4000",
-    overflow: "hidden", boxShadow: "0 0 15px #0f0 inset"
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: "100vw",
+    height: "100vh",
+    background: "#000",
+    color: "#0f0",
+    fontFamily: "monospace",
+    fontSize: "16px",
+    zIndex: "4000",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "center",
+    overflow: "hidden"
   });
   document.body.appendChild(monitor);
 
@@ -315,18 +325,45 @@ function openVanMonitor() {
 }
 
 function runVanBootSequence(monitor) {
-  let lines = [
+  monitor.innerHTML = `
+    <img src="logo.png" alt="Phasma-Phoney Logo" style="max-width:200px;margin-bottom:20px;opacity:0.9;">
+    <div id="boot-text" style="width:80%;text-align:left;margin-bottom:10px;"></div>
+    <div id="boot-bar-container" style="
+      width:80%;
+      height:20px;
+      background:#111;
+      border:1px solid #0f0;
+      margin-top:4px;
+      overflow:hidden;
+    ">
+      <div id="boot-bar" style="
+        width:0%;
+        height:100%;
+        background:#0f0;
+        transition:width 0.3s linear;
+      "></div>
+    </div>
+  `;
+
+  const lines = [
     ">C:/boot ghost.os",
-    "Loading modules [##########] 100%",
-    "Starting Phasma‑Phoney Monitoring Service...",
-    "Initializing Camera System...",
-    "Connecting to ghost network..."
+    "Loading modules...",
+    "Initializing ghost detection services...",
+    "Connecting to spectral network...",
+    "Starting Phasma‑Phoney Monitoring Service..."
   ];
+
   let i = 0;
+  let progress = 0;
+  const bootText = document.getElementById("boot-text");
+  const bootBar = document.getElementById("boot-bar");
+
   function addLine() {
     if (i < lines.length) {
-      monitor.innerHTML += `<div>${lines[i++]}</div>`;
-      setTimeout(addLine, 800);
+      bootText.innerHTML += `<div>${lines[i++]}</div>`;
+      progress += 100 / lines.length;
+      bootBar.style.width = progress + "%";
+      setTimeout(addLine, 800 + Math.random() * 400);
     } else {
       setTimeout(() => showLogin(monitor), 1000);
     }
@@ -335,19 +372,57 @@ function runVanBootSequence(monitor) {
 }
 
 function showLogin(monitor) {
-  monitor.innerHTML += `<br><div>Login: sharkvelocity</div>`;
-  let dots = "";
-  let interval = setInterval(() => {
-    dots += "•";
-    monitor.innerHTML = monitor.innerHTML.replace(/•*$/, "") + dots;
-    if (dots.length >= 8) {
-      clearInterval(interval);
-      setTimeout(() => {
-        monitor.innerHTML += `<div>Access Granted.</div>`;
-        setTimeout(() => renderCameraGrid(monitor), 1000);
-      }, 500);
+  monitor.innerHTML = `
+    <div style="
+      background:#111;
+      padding:20px;
+      border:2px solid #0f0;
+      width:300px;
+      text-align:left;
+      box-shadow:0 0 12px #0f0;
+    ">
+      <h3 style="color:#0f0;margin-top:0;text-align:center;">System Login</h3>
+      <div id="login-output" style="font-family:monospace;color:#0f0;min-height:60px;"></div>
+    </div>
+  `;
+
+  const output = document.getElementById("login-output");
+  const username = "sharkvelocity";
+  const password = "********";
+  let step = 0;
+
+  function typeLogin() {
+    if (step === 0) {
+      output.innerHTML += `<div>Username: <span id="user-type"></span></div>`;
+      autoType("user-type", username, () => {
+        step = 1;
+        setTimeout(typeLogin, 500);
+      });
+    } else if (step === 1) {
+      output.innerHTML += `<div>Password: <span id="pass-type"></span></div>`;
+      autoType("pass-type", password, () => {
+        setTimeout(() => {
+          output.innerHTML += `<div>Access Granted.</div>`;
+          setTimeout(() => renderCameraGrid(monitor), 1000);
+        }, 400);
+      }, 150);
     }
-  }, 200);
+  }
+  typeLogin();
+}
+
+function autoType(elementId, text, callback, delay = 100) {
+  const el = document.getElementById(elementId);
+  let i = 0;
+  function type() {
+    if (i < text.length) {
+      el.textContent += text[i++];
+      setTimeout(type, delay);
+    } else if (callback) {
+      callback();
+    }
+  }
+  type();
 }
 
 function renderCameraGrid(monitor) {
