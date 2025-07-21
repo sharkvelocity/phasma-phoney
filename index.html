@@ -428,11 +428,25 @@ function autoType(elementId, text, callback, delay = 100) {
 function renderCameraGrid(monitor) {
   monitor.innerHTML = `
     <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;height:70%;">
+    <div style="
+      display:grid;
+      grid-template-columns:repeat(2, 200px);
+      grid-template-rows:repeat(2, 150px);
+      gap:8px;
+      justify-content:center;
+      align-items:center;
+      margin:10px auto;
+    ">
       ${generateCameraFeeds()}
     </div>
-    <button style="margin-top:8px;padding:6px 12px;background:#111;color:#0f0;border:1px solid #0f0;cursor:pointer;"
-      onclick="closeVanMonitor()">Close Monitor</button>
+    <button style="
+      margin-top:12px;
+      padding:6px 12px;
+      background:#111;
+      color:#0f0;
+      border:1px solid #0f0;
+      cursor:pointer;
+    " onclick="closeVanMonitor()">Close Monitor</button>
   `;
 }
 
@@ -440,13 +454,20 @@ function generateCameraFeeds() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
   return rooms.slice(0, 4).map(r => {
     const active = (game.ghostRoom === r && Math.random() < 0.6);
-    return `<div style="background:#000;border:1px solid #0f0;
-      display:flex;justify-content:center;align-items:center;
-      color:#0f0;font-size:12px;">
+    return `<div style="
+      background:#000;
+      border:1px solid #0f0;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      color:#0f0;
+      font-size:12px;
+    ">
       ${active ? r + " — ACTIVE" : "NO SIGNAL"}
     </div>`;
   }).join("");
 }
+
 
 function closeVanMonitor() {
   const monitor = document.getElementById("van-monitor");
