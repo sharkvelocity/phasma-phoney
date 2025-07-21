@@ -492,24 +492,41 @@ function resetGame(){
  === RANDOMIZED INVESTIGATION SETUP ===
 ************************/
 function startInvestigation() {
-  document.getElementById("main-scene").style.display = "block";
-  document.getElementById("narrator-ui").style.display = "flex";
-  document.getElementById("game-log").innerHTML = "";
+  // ✅ Make sure UI elements are visible
+  const mainScene = document.getElementById("main-scene");
+  const narratorUI = document.getElementById("narrator-ui");
+  const gameLog = document.getElementById("game-log");
 
+  mainScene.style.display = "block";
+  narratorUI.style.display = "flex";
+
+  // ✅ Clear and add an initial welcome log so you can confirm it's working
+  gameLog.innerHTML = "";
+  logToGame("📖 Investigation started. Setting up environment...");
+
+  // ✅ Randomized ghost/weather setup
   game.weather = randomFromArray(possibleWeather);
   game.ghost = randomFromArray(Object.keys(ghostProfiles));
   if (game.ghost === "TheMimic") assignMimicForm();
-  game.ghostRoom = randomFromArray(Object.keys(roomVisuals).filter(r => r !== "Van"));
+  game.ghostRoom = randomFromArray(
+    Object.keys(roomVisuals).filter(r => r !== "Van")
+  );
 
+  // ✅ Place cursed items & first log entry
   placeCursedItems();
   logToGame(`You are in the van. The weather is ${game.weather.toLowerCase()}.`);
 
+  // ✅ Render updated HUD, background, and buttons
   renderHUD();
   updateBackground();
   renderActionButtons();
-  saveGame(true);
-}
 
+  // ✅ Ensure a save snapshot right away
+  saveGame(true);
+
+  // ✅ Extra confirmation log
+  logToGame("✔ All systems ready. Begin your investigation.");
+}
 /***********************
  === MIMIC LOGIC ===
 ************************/
