@@ -291,6 +291,7 @@
  === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) ===
 ************************/
 let vanMonitorBooted = false;
+let vanMonitorInterval = null;
 
 function openVanMonitor() {
   if (document.getElementById("van-monitor")) return; // prevent duplicates
@@ -363,7 +364,7 @@ function runVanBootSequence(monitor) {
       bootText.innerHTML += `<div>${lines[i++]}</div>`;
       progress += 100 / lines.length;
       bootBar.style.width = progress + "%";
-      setTimeout(addLine, 800 + Math.random() * 400);
+      setTimeout(addLine, 700 + Math.random() * 400);
     } else {
       setTimeout(() => showLogin(monitor), 1000);
     }
@@ -403,7 +404,7 @@ function showLogin(monitor) {
       autoType("pass-type", password, () => {
         setTimeout(() => {
           output.innerHTML += `<div>Access Granted.</div>`;
-          setTimeout(() => renderCameraGrid(monitor), 1000);
+          setTimeout(() => renderCameraGrid(monitor), 800);
         }, 400);
       }, 150);
     }
@@ -428,10 +429,10 @@ function autoType(elementId, text, callback, delay = 100) {
 function renderCameraGrid(monitor) {
   monitor.innerHTML = `
     <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
-    <div style="
+    <div id="camera-grid" style="
       display:grid;
-      grid-template-columns:repeat(2, 200px);
-      grid-template-rows:repeat(2, 150px);
+      grid-template-columns:repeat(2,200px);
+      grid-template-rows:repeat(2,150px);
       gap:8px;
       justify-content:center;
       align-items:center;
@@ -448,54 +449,109 @@ function renderCameraGrid(monitor) {
       cursor:pointer;
     " onclick="closeVanMonitor()">Close Monitor</button>
   `;
+
+  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
+  vanMonitorInterval = setInterval(updateCameraFeeds, 1000);
 }
 
 function generateCameraFeeds() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
 
   return rooms.slice(0, 4).map(r => {
-    const hasCameraInRoom = (game.roomItems[r] || []).includes("Video Camera") 
-                         || (game.roomItems[r] || []).includes("Camera");
-    let imgSrc = "camera-offline.png"; // Fallback offline camera graphic
+    const hasCameraInRoom =
+      (game.roomItems[r] || []).includes("Video Camera") ||
+      (game.roomItems[r] || []).includes("Camera");
+
+    let imgSrc = "camera-offline.png";
     let label = "NO SIGNAL";
 
     if (hasCameraInRoom) {
-      imgSrc = roomVisuals[r]?.N || "camera-active.png"; // Use north-facing image
-      label = r + " — ACTIVE";
-
+      imgSrc = roomVisuals[r].N;
+      label = `${r} — ACTIVE`;
       if (r === game.ghostRoom) {
         if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-          label = r + " — FAKE ORBS DETECTED";
+          label = `${r} — FAKE ORBS DETECTED`;
         } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
-          label = r + " — ORBS DETECTED";
+          label = `${r} — ORBS DETECTED`;
         }
       }
     }
 
     return `
-      <div style="
+      <div class="camera-feed" data-room="${r}" style="
+        position:relative;
         background:#000;
         border:1px solid #0f0;
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-        color:#0f0;
-        font-size:11px;
-        text-align:center;
+        overflow:hidden;
         cursor:pointer;
       " onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
-        <img src="${imgSrc}" alt="${r}" style="width:100%;height:100%;object-fit:cover;">
-        <div style="padding:2px;">${label}</div>
-      </div>
-    `;
+        <img id="camera-img-${r}" src="${imgSrc}" alt="${r}" style="
+          width:100%;
+          height:100%;
+          object-fit:cover;
+          filter:contrast(1.2) brightness(0.8) saturate(0.7);
+        ">
+        <div id="camera-label-${r}" style="
+          position:absolute;
+          bottom:0;
+          width:100%;
+          text-align:center;
+          font-size:11px;
+          background:rgba(0,0,0,0.5);
+          color:#0f0;
+        ">${label}</div>
+        <div class="monitor-overlay" style="
+          position:absolute;
+          top:0;
+          left:0;
+          width:100%;
+          height:100%;
+          background:repeating-linear-gradient(
+            to bottom,
+            rgba(0,255,0,0.05),
+            rgba(0,255,0,0.05) 2px,
+            transparent 2px,
+            transparent 4px
+          );
+          mix-blend-mode:screen;
+          pointer-events:none;
+        "></div>
+      </div>`;
   }).join("");
 }
 
-function closeVanMonitor() {
-  const monitor = document.getElementById("van-monitor");
-  if (monitor) document.body.removeChild(monitor);
+function updateCameraFeeds() {
+  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
+  rooms.slice(0, 4).forEach(r => {
+    const img = document.getElementById(`camera-img-${r}`);
+    const label = document.getElementById(`camera-label-${r}`);
+    if (!img || !label) return;
+
+    const hasCameraInRoom =
+      (game.roomItems[r] || []).includes("Video Camera") ||
+      (game.roomItems[r] || []).includes("Camera");
+
+    if (!hasCameraInRoom) {
+      img.src = "camera-offline.png";
+      label.textContent = "NO SIGNAL";
+      return;
+    }
+
+    img.src = roomVisuals[r].N;
+    if (r === game.ghostRoom) {
+      if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
+        label.textContent = `${r} — FAKE ORBS DETECTED`;
+      } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
+        label.textContent = `${r} — ORBS DETECTED`;
+      } else {
+        label.textContent = `${r} — ACTIVE`;
+      }
+    } else {
+      label.textContent = `${r} — ACTIVE`;
+    }
+  });
 }
+
 function openCameraFullscreen(room, imgSrc, label) {
   const existing = document.getElementById("camera-fullscreen");
   if (existing) document.body.removeChild(existing);
@@ -537,6 +593,12 @@ function openCameraFullscreen(room, imgSrc, label) {
   `;
 
   document.body.appendChild(overlay);
+}
+
+function closeVanMonitor() {
+  const monitor = document.getElementById("van-monitor");
+  if (monitor) document.body.removeChild(monitor);
+  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
 }
 
 /***********************
@@ -1383,7 +1445,7 @@ function loadGame() {
     document.getElementById("narrator-ui").style.display = "flex";
     renderHUD();
     updateBackground();
-    renderActionButtons();
+    render();
   } catch (e) {
     console.error("Load failed:", e);
     logToGame("⚠️ Load failed.");
