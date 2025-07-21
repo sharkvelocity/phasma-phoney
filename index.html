@@ -1782,6 +1782,9 @@ function renderActionButtons() {
 /***********************
  === LOADOUT SELECTION ===
 ************************/
+/***********************
+ === LOADOUT SELECTION ===
+************************/
 function showLoadout() {
   tempHeld = [];
   tempVan = [...allLoadoutItems];
@@ -1790,59 +1793,50 @@ function showLoadout() {
   const vanList = document.getElementById("van-list");
   const confirmBtn = document.getElementById("confirm-loadout");
 
-function renderLoadout() {
-  heldList.innerHTML = tempHeld
-    .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
-    .join("");
+  function renderLoadout() {
+    heldList.innerHTML = tempHeld
+      .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
+      .join("");
 
-  vanList.innerHTML = tempVan
-    .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
-    .join("");
+    vanList.innerHTML = tempVan
+      .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
+      .join("");
 
-  // ✅ You must hold at least 1 investigation item to start
-  if (tempHeld.length > 0) {
-    confirmBtn.classList.add("active");
-    confirmBtn.disabled = false;
-  } else {
-    confirmBtn.classList.remove("active");
-    confirmBtn.disabled = true;
-  }
-}
-
-window.addHeldItem = function (item) {
-  // ✅ Exclude Notebook and Lighter from the 3-item limit
-  const carryableHeld = tempHeld.filter(
-    x => x !== "Notebook" && x !== "Lighter"
-  );
-
-  if (carryableHeld.length >= 3) {
-    logToGame("⚠️ You can only hold 3 items (Notebook & Lighter excluded).");
-    return;
+    if (tempHeld.length > 0) {
+      confirmBtn.classList.add("active");
+      confirmBtn.disabled = false;
+    } else {
+      confirmBtn.classList.remove("active");
+      confirmBtn.disabled = true;
+    }
   }
 
-  tempHeld.push(item);
-  tempVan = tempVan.filter(v => v !== item);
+  window.addHeldItem = function (item) {
+    const carryableHeld = tempHeld.filter(x => x !== "Notebook" && x !== "Lighter");
+    if (carryableHeld.length >= 3) {
+      logToGame("⚠️ You can only hold 3 items (Notebook & Lighter excluded).");
+      return;
+    }
+    tempHeld.push(item);
+    tempVan = tempVan.filter(v => v !== item);
+    renderLoadout();
+  };
+
+  window.removeHeldItem = function (item) {
+    tempVan.push(item);
+    tempHeld = tempHeld.filter(h => h !== item);
+    renderLoadout();
+  };
+
   renderLoadout();
-};
-
-window.removeHeldItem = function (item) {
-  tempVan.push(item);
-  tempHeld = tempHeld.filter(h => h !== item);
-  renderLoadout();
-};
-
-renderLoadout();
-document.getElementById("loadout-screen").style.display = "flex";
-
+  document.getElementById("loadout-screen").style.display = "flex";
+} // ✅ showLoadout properly closes here
 
 /***********************
  === DOMContentLoaded ===
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
-  // ✅ Reset game state at startup
   resetGame();
-
-  // ✅ Initialize Fog System (so rolling mist is ready if needed)
   initFog();
   animateFog();
 
@@ -1881,19 +1875,17 @@ document.addEventListener("DOMContentLoaded", () => {
     renderActionButtons();
     saveGame(true);
 
-    setTimeout(() => {
-      confirmBtn.disabled = false;
-    }, 1500);
+    setTimeout(() => { confirmBtn.disabled = false; }, 1500);
   });
 
-  // ✅ Handle All Action Buttons
+  // ✅ Handle Action Buttons
   commandContainer.addEventListener("click", (e) => {
     if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
       handleCommand(e.target.dataset.cmd);
     }
   });
 
-  // ✅ Auto Resume if Save Exists (No Escaping Your Mistakes)
+  // ✅ Auto Resume if Save Exists
   if (localStorage.getItem("phasmaPhoneySave")) {
     loadGame();
   }
@@ -1901,7 +1893,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // ✅ Auto Save on Close or Refresh
   window.addEventListener("beforeunload", () => saveGame(true));
 });
-}
 </script>
 
 </body>
