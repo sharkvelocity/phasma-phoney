@@ -96,19 +96,20 @@
     z-index: 10; max-width: 40%; word-wrap: break-word;
   }
   /* === NARRATOR UI === */
- #narrator-ui {
+#narrator-ui {
+  z-index: 20;              /* Ensures above fog/orbs */
+  display: none;            /* Hidden until investigation starts */
   position: absolute;
   bottom: 0;
   left: 0;
   width: 100%;
   height: 40%;
-  z-index: 20; /* ABOVE fog/orbs */
-  display: none; /* Ensure hidden until startInvestigation */
   flex-direction: column;
   justify-content: space-between;
-  background: rgba(0, 0, 0, 0.4); /* optional for contrast */
-  padding-bottom: 32px; /* keeps footer clear */
+  background: rgba(0, 0, 0, 0.4);
+  padding-bottom: 32px;
 }
+
 
   #game-log {
     flex: 1; overflow-y: auto; padding: 10px;
