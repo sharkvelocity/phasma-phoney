@@ -249,8 +249,32 @@
       <button id="confirm-loadout">Confirm</button>
     </div>
   </div>
-  <!-- === GUESS POPUP === -->
-  <div id="guess-popup"><div id="guess-list"></div></div>
+
+ <!-- === GUESS POPUP === -->
+<div id="guess-popup" style="
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 3000;
+">
+  <div id="guess-list" style="
+    background: #111;
+    padding: 20px;
+    border: 1px solid #444;
+    max-height: 70%;
+    overflow-y: auto;
+    max-width: 300px;
+    width: 80%;
+    text-align: center;
+  "></div>
+</div>
+
   <!-- === FOOTER === -->
   <footer>
     <div><strong>Phasma‑Phoney v2.8</strong> — Master Build (Cleaned)</div>
