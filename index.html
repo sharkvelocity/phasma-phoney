@@ -835,44 +835,39 @@ function initFog() {
   fogCanvas.height = window.innerHeight;
   fogParticles = [];
 
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 20; i++) {
     fogParticles.push({
       x: Math.random() * fogCanvas.width,
       y: Math.random() * fogCanvas.height,
-      radius: 150 + Math.random() * 100,
-      speedX: -0.2 + Math.random() * 0.4,
-      speedY: -0.1 + Math.random() * 0.2,
-      opacity: 0.1 + Math.random() * 0.15
+      radius: 300 + Math.random() * 200,
+      speedX: -0.05 + Math.random() * 0.1,
+      speedY: -0.03 + Math.random() * 0.06,
+      opacity: 0.05 + Math.random() * 0.08
     });
   }
 }
 
 function animateFog() {
-  if (game.weather !== "Foggy") {
-    fogCtx.clearRect(0, 0, fogCanvas.width, fogCanvas.height);
-    requestAnimationFrame(animateFog);
-    return;
-  }
-
   fogCtx.clearRect(0, 0, fogCanvas.width, fogCanvas.height);
 
-  fogParticles.forEach(p => {
-    fogCtx.beginPath();
-    const gradient = fogCtx.createRadialGradient(p.x, p.y, p.radius * 0.2, p.x, p.y, p.radius);
-    gradient.addColorStop(0, `rgba(200,200,200,${p.opacity})`);
-    gradient.addColorStop(1, "rgba(200,200,200,0)");
-    fogCtx.fillStyle = gradient;
-    fogCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-    fogCtx.fill();
+  if (game.weather === "Foggy") {
+    fogParticles.forEach(p => {
+      fogCtx.beginPath();
+      const gradient = fogCtx.createRadialGradient(p.x, p.y, p.radius * 0.2, p.x, p.y, p.radius);
+      gradient.addColorStop(0, `rgba(200,200,200,${p.opacity})`);
+      gradient.addColorStop(1, "rgba(200,200,200,0)");
+      fogCtx.fillStyle = gradient;
+      fogCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      fogCtx.fill();
 
-    p.x += p.speedX;
-    p.y += p.speedY;
-
-    if (p.x - p.radius > fogCanvas.width) p.x = -p.radius;
-    if (p.x + p.radius < 0) p.x = fogCanvas.width + p.radius;
-    if (p.y - p.radius > fogCanvas.height) p.y = -p.radius;
-    if (p.y + p.radius < 0) p.y = fogCanvas.height + p.radius;
-  });
+      p.x += p.speedX;
+      p.y += p.speedY;
+      if (p.x > fogCanvas.width + p.radius) p.x = -p.radius;
+      if (p.x < -p.radius) p.x = fogCanvas.width + p.radius;
+      if (p.y > fogCanvas.height + p.radius) p.y = -p.radius;
+      if (p.y < -p.radius) p.y = fogCanvas.height + p.radius;
+    });
+  }
 
   requestAnimationFrame(animateFog);
 }
