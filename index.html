@@ -243,13 +243,35 @@
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen">
     <div id="loadout-container">
-      <h3>Good luck TipsyHustle, its still in the works</h3>
+      <h3>its still in the works</h3>
       <div><strong>Holding:</strong><div id="held-list"></div></div>
       <div><strong>Van Inventory:</strong><div id="van-list"></div></div>
       <button id="confirm-loadout">Confirm</button>
     </div>
   </div>
-
+<!-- === VAN SWAP INTERFACE === -->
+<div id="van-swap-screen" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:#111; color:#eee; font-family:monospace; border:2px solid #555; padding:10px; z-index:2000;">
+  <h3>Van Inventory Swap</h3>
+  <div style="display:flex; justify-content:space-between; height:70%;">
+    
+    <!-- PLAYER HELD ITEMS -->
+    <div style="width:45%; border:1px solid #333; padding:5px;">
+      <h4>Holding:</h4>
+      <ul id="van-held-list" style="list-style:none; padding-left:0;"></ul>
+    </div>
+    
+    <!-- VAN STOCK ITEMS -->
+    <div style="width:45%; border:1px solid #333; padding:5px;">
+      <h4>Van Inventory:</h4>
+      <ul id="van-stock-list" style="list-style:none; padding-left:0;"></ul>
+    </div>
+    
+  </div>
+  
+  <p style="margin-top:10px;">Max 3 items can be held (Notebook & Lighter excluded)</p>
+  
+  <button id="van-swap-confirm" style="margin-top:10px; padding:5px 10px;">Confirm & Return</button>
+</div>
  <!-- === GUESS POPUP === -->
 <div id="guess-popup" style="
   position: fixed;
@@ -286,7 +308,70 @@
 
 <script>
 "use strict";
+// === VAN SWAP VARIABLES ===
+let tempHeld = [];
+let tempVan = [];
 
+// === OPEN VAN SWAP ===
+function openVanSwap() {
+  tempHeld = [...player.heldItems];
+  tempVan = [...player.vanItems];
+  
+  renderVanSwap();
+  document.getElementById("van-swap-screen").style.display = "block";
+}
+
+// === RENDER LISTS ===
+function renderVanSwap() {
+  const heldList = document.getElementById("van-held-list");
+  const stockList = document.getElementById("van-stock-list");
+  heldList.innerHTML = "";
+  stockList.innerHTML = "";
+  
+  tempHeld.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    const btn = document.createElement("button");
+    btn.textContent = "Send to Van";
+    btn.style.marginLeft = "5px";
+    btn.onclick = () => {
+      tempHeld.splice(index, 1);
+      tempVan.push(item);
+      renderVanSwap();
+    };
+    li.appendChild(btn);
+    heldList.appendChild(li);
+  });
+
+  tempVan.forEach((item, index) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    const btn = document.createElement("button");
+    btn.textContent = "Take";
+    btn.style.marginLeft = "5px";
+    btn.onclick = () => {
+      if (tempHeld.length >= 3) {
+        alert("You can only hold 3 items!");
+        return;
+      }
+      tempVan.splice(index, 1);
+      tempHeld.push(item);
+      renderVanSwap();
+    };
+    li.appendChild(btn);
+    stockList.appendChild(li);
+  });
+}
+
+// === CONFIRM CHANGES ===
+document.getElementById("van-swap-confirm").addEventListener("click", () => {
+  player.heldItems = [...tempHeld];
+  player.vanItems = [...tempVan];
+  
+  document.getElementById("van-swap-screen").style.display = "none";
+  logToGame("You adjusted your gear and returned to the investigation.");
+  advanceTurn(); // Costs a turn to mess with the van
+});
 /***********************
  === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) ===
 ************************/
