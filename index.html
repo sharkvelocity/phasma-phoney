@@ -29,7 +29,7 @@
     position: fixed; top: 0; left: 0;
     width: 100vw; height: 100vh;
     display: flex; justify-content: center; align-items: center;
-    background: #000; z-index: 1000; opacity: 40;
+    background: #000; z-index: 1000; opacity: 1;
     transition: opacity 1.5s ease;
   }
   #title-screen img {
@@ -243,35 +243,13 @@
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen">
     <div id="loadout-container">
-      <h3>its still in the works</h3>
+      <h3>Good luck TipsyHustle, its still in the works</h3>
       <div><strong>Holding:</strong><div id="held-list"></div></div>
       <div><strong>Van Inventory:</strong><div id="van-list"></div></div>
       <button id="confirm-loadout">Confirm</button>
     </div>
   </div>
-<!-- === VAN SWAP INTERFACE === -->
-<div id="van-swap-screen" style="display:none; position:fixed; top:10%; left:10%; width:80%; height:80%; background:#111; color:#eee; font-family:monospace; border:2px solid #555; padding:10px; z-index:2000;">
-  <h3>Van Inventory Swap</h3>
-  <div style="display:flex; justify-content:space-between; height:70%;">
-  </div>
-    <!-- PLAYER HELD ITEMS -->
-    <div style="width:45%; border:1px solid #333; padding:5px;">
-      <h4>Holding:</h4>
-      <ul id="van-held-list" style="list-style:none; padding-left:0;"></ul>
-    </div>
-    
-    <!-- VAN STOCK ITEMS -->
-    <div style="width:45%; border:1px solid #333; padding:5px;">
-      <h4>Van Inventory:</h4>
-      <ul id="van-stock-list" style="list-style:none; padding-left:0;"></ul>
-    </div>
-    
-  
-  
-  <p style="margin-top:10px;">Max 3 items can be held (Notebook & Lighter excluded)</p>
-  
-  <button id="van-swap-confirm" style="margin-top:10px; padding:5px 10px;">Confirm & Return</button>
-</div>
+
  <!-- === GUESS POPUP === -->
 <div id="guess-popup" style="
   position: fixed;
@@ -308,6 +286,7 @@
 
 <script>
 "use strict";
+
 /***********************
  === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) ===
 ************************/
@@ -367,10 +346,10 @@ function runVanBootSequence(monitor) {
 
   const lines = [
     ">C:/boot ghost.os",
-    "Loading Visuals...",
-    "antagonizing ghost...",
-    "Loading nearest exit path plan...",
-    "Starting Monitoring Network..."
+    "Loading modules...",
+    "Initializing ghost detection services...",
+    "Connecting to spectral network...",
+    "Starting Phasma‑Phoney Monitoring Service..."
   ];
 
   let i = 0;
@@ -601,9 +580,6 @@ function animateAllCameraOrbs() {
 /***********************
  === GLOBAL CONSTANTS & GHOST PROFILES ===
 ************************/
-let tempHeld = [];
-let tempVan = [...allLoadoutItems]; 
-
 const allLoadoutItems = [
   "EMF Reader", "Spirit Box", "Camera", "UV Light", "D.O.T.S Projector",
   "Thermometer", "Ghost Writing Book", "Video Camera", "Crucifix",
