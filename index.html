@@ -281,6 +281,8 @@
     <div class="update-log">
       Latest Changes: Duplicate Hunt Fix, Cleaned HUD & Confirm Logic |
       <a href="mailto:sharkvelocity@gmail.com?subject=Phasma-Phoney%20Bug%20Report">Report Bug</a>
+      <button id="reset-btn" class="btn-danger">Reset Investigation</button>
+
     </div>
   </footer>
 
@@ -712,6 +714,15 @@ function resetGame(){
   updateSanityBar(); renderHUD(); updateBackground();
 }
 "use strict";
+
+document.getElementById("reset-btn").addEventListener("click", () => {
+  if (confirm("Are you sure you want to reset the investigation?")) {
+    localStorage.clear();
+    sessionStorage.clear();
+    resetGame(); // optional, to restore default object structure
+    location.reload();
+  }
+});
 
 /***********************
  === RANDOMIZED INVESTIGATION SETUP ===
@@ -1885,14 +1896,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ✅ Auto Resume if Save Exists
-  if (localStorage.getItem("phasmaPhoneySave")) {
-    loadGame();
-  }
-
-  // ✅ Auto Save on Close or Refresh
-  window.addEventListener("beforeunload", () => saveGame(true));
-});
 </script>
 
 </body>
