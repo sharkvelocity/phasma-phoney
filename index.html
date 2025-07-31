@@ -715,14 +715,6 @@ function resetGame(){
 }
 "use strict";
 
-document.getElementById("reset-btn").addEventListener("click", () => {
-  if (confirm("Are you sure you want to reset the investigation?")) {
-    localStorage.clear();
-    sessionStorage.clear();
-    resetGame(); // optional, to restore default object structure
-    location.reload();
-  }
-});
 
 /***********************
  === RANDOMIZED INVESTIGATION SETUP ===
