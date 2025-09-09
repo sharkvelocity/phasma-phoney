@@ -2,216 +2,104 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Phasma‑Phoney v2.8 — Master Build (Cleaned)</title>
+  <title>Phasma-Phoney v2.9 — Master Build (Cameras + IR + Restart)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <meta name="description" content="Phasma‑Phoney: Turn-based ghost investigation horror with 25 ghosts, mimic logic, cursed items, full hunt system, and save/restore.">
-<style>
-  html, body {
-    margin: 0;
-    padding: 0;
-    width: 100vw;
-    height: 100vh;
-    background: black;
-    color: #eee;
-    font-family: monospace, sans-serif;
-    overflow: hidden;
-    -webkit-user-select: none;
-    user-select: none;
-  }
-  button {
-    min-width: 60px;
-    min-height: 30px;
-    padding: calc(4px + 0.4vw) calc(6px + 0.6vw);
-    border-radius: 4px;
-  }
-  /* === TITLE SCREEN === */
-  #title-screen {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    display: flex; justify-content: center; align-items: center;
-    background: #000; z-index: 1000; opacity: 1;
-    transition: opacity 1.5s ease;
-  }
-  #title-screen img {
-    max-width: 70%;
-    animation: pulse 5s infinite ease-in-out;
-  }
-  @keyframes pulse {
-    0%, 100% {opacity: 0.9; transform: scale(1);}
-    50% {opacity: 1; transform: scale(1.04);}
-  }
-  #startButton, #loadGameButton {
-    position: absolute; left: 50%;
-    transform: translateX(-50%);
-    font-size: calc(12px + 1vw);
-    background: #111; color: #eee;
-    border: 2px solid #444; cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  #startButton {bottom: 20%;}
-  #loadGameButton {bottom: 10%;}
-  #startButton:hover, #loadGameButton:hover {
-    background: #222; border-color: #888;
-  }
-  /* === MAIN SCENE === */
-#main-scene {
-  position: relative;
-  width: 100vw;
-  height: calc(100vh - 30px); /* leave space for footer height */
-  overflow: hidden;
-  background: black;
-}
-  #background, #lightning, #fog-layer, #orbCanvas {
-    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  }
-  #background {z-index: 1; background-size: cover; background-position: center;}
-  #lightning {z-index: 3; background: white; opacity: 0; pointer-events: none;}
-  #fog-layer {z-index: 4; pointer-events: none;}
-  #orbCanvas {z-index: 5; pointer-events: none;}
-  /* === HUD === */
-  #hud {
-    position: absolute; top: 1%; left: 1%;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0.6em 0.8em;
-    border: 1px solid #444;
-    font-size: calc(10px + 0.5vw);
-    z-index: 10; max-width: 45%; word-wrap: break-word;
-  }
-  #sanity-bar-container {
-    width: calc(60px + 5vw); height: 10px;
-    background: #222; border: 1px solid #555;
-    margin-top: 4px; position: relative;
-  }
-  #sanity-bar {
-    position: absolute; top: 0; left: 0;
-    height: 100%; background: #0f0; width: 100%;
-    transition: width 0.3s ease;
-  }
-  #inventory-display {
-    position: absolute; top: 1%; right: 1%;
-    background: rgba(0, 0, 0, 0.5);
-    padding: 0.4em 0.6em;
-    border: 1px solid #444;
-    font-size: calc(9px + 0.4vw);
-    z-index: 10; max-width: 40%; word-wrap: break-word;
-  }
-  /* === NARRATOR UI === */
-#narrator-ui {
-  z-index: 20;              /* Ensures above fog/orbs */
-  display: none;            /* Hidden until investigation starts */
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 40%;
-  flex-direction: column;
-  justify-content: space-between;
-  background: rgba(0, 0, 0, 0.4);
-  padding-bottom: 32px;
-}
+  <meta name="description" content="Phasma-Phoney: Turn-based ghost investigation horror with 25 ghosts, mimic logic, cursed items, full hunt system, and save/restore.">
+  <style>
+    html, body {
+      margin: 0; padding: 0; width: 100vw; height: 100vh;
+      background: black; color: #eee; font-family: monospace, sans-serif;
+      overflow: hidden; -webkit-user-select: none; user-select: none;
+    }
+    button { min-width: 60px; min-height: 30px; padding: calc(4px + 0.4vw) calc(6px + 0.6vw); border-radius: 4px; }
+    /* === TITLE SCREEN === */
+    #title-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      display: flex; justify-content: center; align-items: center;
+      background: #000; z-index: 1000; opacity: 1; transition: opacity 1.5s ease;
+    }
+    #title-screen img { max-width: 70%; animation: pulse 5s infinite ease-in-out; }
+    @keyframes pulse { 0%,100%{opacity:.9;transform:scale(1)} 50%{opacity:1;transform:scale(1.04)} }
+    #startButton, #loadGameButton {
+      position: absolute; left: 50%; transform: translateX(-50%);
+      font-size: calc(12px + 1vw); background: #111; color: #eee; border: 2px solid #444; cursor: pointer; transition: all .3s ease;
+    }
+    #startButton { bottom: 20%; } #loadGameButton { bottom: 10%; }
+    #startButton:hover, #loadGameButton:hover { background: #222; border-color: #888; }
 
+    /* === MAIN SCENE === */
+    #main-scene { position: relative; width: 100vw; height: calc(100vh - 30px); overflow: hidden; background: black; }
+    #background, #lightning, #fog-layer, #orbCanvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+    #background { z-index: 1; background-size: cover; background-position: center; }
+    #lightning { z-index: 3; background: white; opacity: 0; pointer-events: none; }
+    #fog-layer { z-index: 4; pointer-events: none; }
+    #orbCanvas { z-index: 5; pointer-events: none; }
 
-  #game-log {
-    flex: 1; overflow-y: auto; padding: 10px;
-    font-size: calc(9px + 0.5vw); line-height: 1.4; max-height: 65%;
-  }
-  .log-entry {opacity: 0.85; transition: opacity 1s ease-in-out;}
-  .log-entry.fade {opacity: 0.4;}
-#command-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-around;
-  padding: 0.5em;
-  border-top: 1px solid #555;
-  background: rgba(0, 0, 0, 0.5);
-  margin-top: auto; /* ✅ forces it to stick to the bottom of narrator-ui */
-  margin-bottom: 32px; /* keeps it above the footer */
-}
+    /* === HUD === */
+    #hud {
+      position: absolute; top: 1%; left: 1%;
+      background: rgba(0,0,0,.5); padding: .6em .8em; border: 1px solid #444;
+      font-size: calc(10px + .5vw); z-index: 10; max-width: 45%; word-wrap: break-word;
+    }
+    #sanity-bar-container { width: calc(60px + 5vw); height: 10px; background: #222; border: 1px solid #555; margin-top: 4px; position: relative; }
+    #sanity-bar { position: absolute; top: 0; left: 0; height: 100%; background: #0f0; width: 100%; transition: width .3s ease; }
 
+    #inventory-display {
+      position: absolute; top: 1%; right: 1%;
+      background: rgba(0,0,0,.5); padding: .4em .6em; border: 1px solid #444;
+      font-size: calc(9px + .4vw); z-index: 10; max-width: 40%; word-wrap: break-word;
+    }
 
-  #command-buttons button {
-    flex: 1 1 18%;
-    margin: 0.2em;
-    font-size: calc(9px + 0.5vw);
-    background: #222; color: #eee;
-    border: 1px solid #555; cursor: pointer;
-  }
-  #command-buttons button:hover {background: #333;}
-  /* === LOADOUT SCREEN === */
-  #loadout-screen {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
-    display: none; justify-content: center; align-items: center;
-    flex-direction: column; z-index: 2000;
-  }
-  #loadout-container {
-    background: rgba(15, 15, 15, 0.9);
-    padding: 2em; border: 2px solid #444;
-    border-radius: 8px;
-    max-width: 480px; width: 90%;
-    color: #eee; text-align: center;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.2);
-  }
-  .item-button {
-    background: #222; color: #eee;
-    border: 1px solid #555; border-radius: 4px;
-    padding: 6px 10px; margin: 4px;
-    cursor: pointer; transition: all 0.2s ease-in-out;
-  }
-  .item-button.selected {
-    background: #0a0; border-color: #0f0;
-  }
-  #confirm-loadout {
-    margin-top: 1em; padding: 10px 20px;
-    background: #111; color: #666;
-    border: 1px solid #333;
-    cursor: not-allowed; border-radius: 4px;
-  }
-  #confirm-loadout.active {
-    background: #0a0; color: #fff;
-    border-color: #0f0; cursor: pointer;
-  }
-  /* === GUESS POPUP === */
-  #guess-popup {
-    position: fixed; top: 0; left: 0;
-    width: 100vw; height: 100vh;
-    background: rgba(0, 0, 0, 0.8);
-    display: none; justify-content: center; align-items: center;
-    z-index: 3000;
-  }
-  #guess-list {
-    background: #111; padding: 20px;
-    border: 1px solid #444;
-    max-height: 70%; overflow-y: auto;
-  }
-  #guess-list button {
-    display: block; width: 100%;
-    margin: 4px 0; padding: 6px;
-    background: #222; color: #eee;
-    border: 1px solid #555; cursor: pointer;
-  }
-  #guess-list button:hover {background: #333;}
-  /* === FOOTER === */
-  footer {
-    position: fixed; bottom: 0;
-    width: 100%; text-align: center;
-    background: #111; color: #aaa;
-    font-size: calc(7px + 0.3vw);
-    padding: 4px 0; border-top: 1px solid #333;
-    z-index: 3500;
-  }
-  footer strong {color: #eee;}
-  footer .update-log {
-    font-size: calc(6px + 0.3vw); color: #888;
-    margin-top: 2px;
-  }
-  footer a {
-    color: #0af; text-decoration: none;
-    font-weight: bold; margin-left: 4px;
-  }
-  footer a:hover {color: #0ff; text-decoration: underline;}
-</style>
+    /* === NARRATOR UI === */
+    #narrator-ui {
+      z-index: 20; display: none; position: absolute; bottom: 0; left: 0; width: 100%; height: 40%;
+      flex-direction: column; justify-content: space-between; background: rgba(0,0,0,.4); padding-bottom: 32px;
+    }
+    #game-log { flex: 1; overflow-y: auto; padding: 10px; font-size: calc(9px + .5vw); line-height: 1.4; max-height: 65%; }
+    .log-entry { opacity: .85; transition: opacity 1s ease-in-out; }
+    .log-entry.fade { opacity: .4; }
+    #command-buttons {
+      display: flex; flex-wrap: wrap; justify-content: space-around; padding: .5em;
+      border-top: 1px solid #555; background: rgba(0,0,0,.5);
+      margin-top: auto; margin-bottom: 32px;
+    }
+    #command-buttons button {
+      flex: 1 1 18%; margin: .2em; font-size: calc(9px + .5vw);
+      background: #222; color: #eee; border: 1px solid #555; cursor: pointer;
+    }
+    #command-buttons button:hover { background: #333; }
+
+    /* === LOADOUT SCREEN === */
+    #loadout-screen {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,.85); display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 2000;
+    }
+    #loadout-container {
+      background: rgba(15,15,15,.9); padding: 2em; border: 2px solid #444; border-radius: 8px;
+      max-width: 480px; width: 90%; color: #eee; text-align: center; box-shadow: 0 0 15px rgba(0,255,255,.2);
+    }
+    .item-button { background: #222; color: #eee; border: 1px solid #555; border-radius: 4px; padding: 6px 10px; margin: 4px; cursor: pointer; transition: all .2s; }
+    .item-button.selected { background: #0a0; border-color: #0f0; }
+    #confirm-loadout { margin-top: 1em; padding: 10px 20px; background: #111; color: #666; border: 1px solid #333; cursor: not-allowed; border-radius: 4px; }
+    #confirm-loadout.active { background: #0a0; color: #fff; border-color: #0f0; cursor: pointer; }
+
+    /* === GUESS POPUP === */
+    #guess-popup {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,.8); display: none; justify-content: center; align-items: center; z-index: 3000;
+    }
+    #guess-list { background: #111; padding: 20px; border: 1px solid #444; max-height: 70%; overflow-y: auto; max-width: 300px; width: 80%; text-align: center; }
+
+    /* === FOOTER === */
+    footer {
+      position: fixed; bottom: 0; width: 100%; text-align: center; background: #111; color: #aaa;
+      font-size: calc(7px + .3vw); padding: 4px 0; border-top: 1px solid #333; z-index: 3500;
+    }
+    footer strong { color: #eee; }
+    footer .update-log { font-size: calc(6px + .3vw); color: #888; margin-top: 2px; }
+    footer a { color: #0af; text-decoration: none; font-weight: bold; margin-left: 4px; }
+    footer a:hover { color: #0ff; text-decoration: underline; }
+  </style>
 </head>
 <body>
   <!-- === TITLE SCREEN === -->
@@ -220,66 +108,55 @@
     <button id="startButton">Start New Game</button>
     <button id="loadGameButton">Load Game</button>
   </div>
+
   <!-- === MAIN SCENE === -->
   <div id="main-scene">
     <div id="background"></div>
     <div id="lightning"></div>
     <canvas id="fog-layer"></canvas>
     <canvas id="orbCanvas"></canvas>
-  <div id="hud">
-  <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
-  <div>Turns: <span id="hud-turns">0</span></div>
-  <div>Sanity:</div>
-  <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
-  <div>Temp: <span id="hud-temp">--°C</span></div>
-</div>
-    <div id="save-indicator" style="
-  position: absolute; top: 1%; left: 50%; transform: translateX(-50%);
-  font-size: 1.2em; color: #0f0; opacity: 0; transition: opacity 0.5s ease;
-">💾</div>
-    <div id="inventory-display"><div>Held:</div><div id="held-items-display">None</div></div>
-    <div id="narrator-ui"><div id="game-log"></div><div id="command-buttons"></div></div>
+
+    <div id="hud">
+      <div>Location: <span id="hud-location">Van</span> | Weather: <span id="hud-weather">--</span></div>
+      <div>Turns: <span id="hud-turns">0</span></div>
+      <div>Sanity:</div>
+      <div id="sanity-bar-container"><div id="sanity-bar"></div></div>
+      <div>Temp: <span id="hud-temp">--°C</span></div>
+    </div>
+
+    <div id="save-indicator" style="position:absolute; top:1%; left:50%; transform:translateX(-50%); font-size:1.2em; color:#0f0; opacity:0; transition:opacity .5s ease;">💾</div>
+
+    <div id="inventory-display">
+      <div>Held:</div>
+      <div id="held-items-display">None</div>
+    </div>
+
+    <div id="narrator-ui">
+      <div id="game-log"></div>
+      <div id="command-buttons"></div>
+    </div>
   </div>
+
   <!-- === LOADOUT SCREEN === -->
   <div id="loadout-screen">
     <div id="loadout-container">
-      <h3>Good luck TipsyHustle, its still in the works</h3>
+      <h3>Good luck TipsyHustle, it’s still in the works</h3>
       <div><strong>Holding:</strong><div id="held-list"></div></div>
       <div><strong>Van Inventory:</strong><div id="van-list"></div></div>
       <button id="confirm-loadout">Confirm</button>
     </div>
   </div>
 
- <!-- === GUESS POPUP === -->
-<div id="guess-popup" style="
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 3000;
-">
-  <div id="guess-list" style="
-    background: #111;
-    padding: 20px;
-    border: 1px solid #444;
-    max-height: 70%;
-    overflow-y: auto;
-    max-width: 300px;
-    width: 80%;
-    text-align: center;
-  "></div>
-</div>
+  <!-- === GUESS POPUP === -->
+  <div id="guess-popup">
+    <div id="guess-list"></div>
+  </div>
 
   <!-- === FOOTER === -->
   <footer>
-    <div><strong>Phasma‑Phoney v2.8</strong> — Master Build (Cleaned)</div>
+    <div><strong>Phasma-Phoney v2.9</strong> — Master Build (Cameras + IR + Restart)</div>
     <div class="update-log">
-      Latest Changes: Duplicate Hunt Fix, Cleaned HUD & Confirm Logic |
+      Latest Changes: Per-unit Cameras; Monitor shows room; IR in fullscreen; Van “View Monitor”; Restart Investigation |
       <a href="mailto:sharkvelocity@gmail.com?subject=Phasma-Phoney%20Bug%20Report">Report Bug</a>
     </div>
   </footer>
@@ -288,7 +165,7 @@
 "use strict";
 
 /***********************
- === VAN MONITOR BOOT SYSTEM (v2.9 Master Build) ===
+  VAN MONITOR BOOT SYSTEM
 ************************/
 let vanMonitorBooted = false;
 let vanMonitorInterval = null;
@@ -299,21 +176,10 @@ function openVanMonitor() {
   const monitor = document.createElement("div");
   monitor.id = "van-monitor";
   Object.assign(monitor.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    width: "100vw",
-    height: "100vh",
-    background: "#000",
-    color: "#0f0",
-    fontFamily: "monospace",
-    fontSize: "16px",
-    zIndex: "4000",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    overflow: "hidden"
+    position: "fixed", top: "0", left: "0", width: "100vw", height: "100vh",
+    background: "#000", color: "#0f0", fontFamily: "monospace", fontSize: "16px",
+    zIndex: "4000", display: "flex", flexDirection: "column",
+    justifyContent: "center", alignItems: "center", overflow: "hidden"
   });
   document.body.appendChild(monitor);
 
@@ -329,35 +195,21 @@ function runVanBootSequence(monitor) {
   monitor.innerHTML = `
     <img src="logo.png" alt="Phasma-Phoney Logo" style="max-width:200px;margin-bottom:20px;opacity:0.9;">
     <div id="boot-text" style="width:80%;text-align:left;margin-bottom:10px;"></div>
-    <div id="boot-bar-container" style="
-      width:80%;
-      height:20px;
-      background:#111;
-      border:1px solid #0f0;
-      margin-top:4px;
-      overflow:hidden;">
-      <div id="boot-bar" style="
-        width:0%;
-        height:100%;
-        background:#0f0;
-        transition:width 0.3s linear;"></div>
+    <div id="boot-bar-container" style="width:80%;height:20px;background:#111;border:1px solid #0f0;margin-top:4px;overflow:hidden;">
+      <div id="boot-bar" style="width:0%;height:100%;background:#0f0;transition:width .3s linear;"></div>
     </div>
   `;
-
   const lines = [
     ">C:/boot ghost.os",
     "Loading modules...",
     "Initializing ghost detection services...",
     "Connecting to spectral network...",
-    "Starting Phasma‑Phoney Monitoring Service..."
+    "Starting Phasma-Phoney Monitoring Service..."
   ];
-
-  let i = 0;
-  let progress = 0;
+  let i = 0, progress = 0;
   const bootText = document.getElementById("boot-text");
   const bootBar = document.getElementById("boot-bar");
-
-  function addLine() {
+  (function addLine(){
     if (i < lines.length) {
       bootText.innerHTML += `<div>${lines[i++]}</div>`;
       progress += 100 / lines.length;
@@ -366,36 +218,23 @@ function runVanBootSequence(monitor) {
     } else {
       setTimeout(() => showLogin(monitor), 1000);
     }
-  }
-  addLine();
+  })();
 }
 
 function showLogin(monitor) {
   monitor.innerHTML = `
-    <div style="
-      background:#111;
-      padding:20px;
-      border:2px solid #0f0;
-      width:300px;
-      text-align:left;
-      box-shadow:0 0 12px #0f0;">
+    <div style="background:#111;padding:20px;border:2px solid #0f0;width:300px;text-align:left;box-shadow:0 0 12px #0f0;">
       <h3 style="color:#0f0;margin-top:0;text-align:center;">System Login</h3>
       <div id="login-output" style="font-family:monospace;color:#0f0;min-height:60px;"></div>
     </div>
   `;
-
   const output = document.getElementById("login-output");
-  const username = "sharkvelocity";
-  const password = "********";
+  const username = "sharkvelocity", password = "********";
   let step = 0;
-
   function typeLogin() {
     if (step === 0) {
       output.innerHTML += `<div>Username: <span id="user-type"></span></div>`;
-      autoType("user-type", username, () => {
-        step = 1;
-        setTimeout(typeLogin, 500);
-      });
+      autoType("user-type", username, () => { step = 1; setTimeout(typeLogin, 500); });
     } else if (step === 1) {
       output.innerHTML += `<div>Password: <span id="pass-type"></span></div>`;
       autoType("pass-type", password, () => {
@@ -409,186 +248,27 @@ function showLogin(monitor) {
   typeLogin();
 }
 
-function autoType(elementId, text, callback, delay = 100) {
+function autoType(elementId, text, cb, delay = 100) {
   const el = document.getElementById(elementId);
   let i = 0;
-  function type() {
-    if (i < text.length) {
-      el.textContent += text[i++];
-      setTimeout(type, delay);
-    } else if (callback) callback();
-  }
-  type();
-}
-
-/* ✅ Unified version: now uses nosignal.gif & orbs */
-function generateCameraFeeds() {
-  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
-
-  return rooms.slice(0, 4).map(r => {
-    const hasCameraInRoom =
-      (game.roomItems[r] || []).includes("Video Camera") ||
-      (game.roomItems[r] || []).includes("Camera");
-
-    let imgSrc = "nosignal.gif";  // ✅ GIF for inactive
-    let label = "NO SIGNAL";
-
-    if (hasCameraInRoom) {
-      imgSrc = roomVisuals[r].N;
-      label = `${r} — ACTIVE`;
-      if (r === game.ghostRoom) {
-        if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-          label = `${r} — FAKE ORBS DETECTED`;
-        } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
-          label = `${r} — ORBS DETECTED`;
-        }
-      }
-    }
-
-    return `
-      <div class="camera-feed" data-room="${r}" style="
-        position:relative;
-        background:#000;
-        border:1px solid #0f0;
-        overflow:hidden;
-        cursor:pointer;"
-        onclick="openCameraFullscreen('${r}','${imgSrc}','${label}')">
-        <img id="camera-img-${r}" src="${imgSrc}" alt="${r}" style="
-          width:100%;
-          height:100%;
-          object-fit:cover;
-          filter:contrast(1.2) brightness(0.8) saturate(0.7);">
-        <canvas id="camera-orbs-${r}" style="
-          position:absolute;
-          top:0;left:0;
-          width:100%;
-          height:100%;
-          pointer-events:none;"></canvas>
-        <div id="camera-label-${r}" style="
-          position:absolute;
-          bottom:0;
-          width:100%;
-          text-align:center;
-          font-size:11px;
-          background:rgba(0,0,0,0.5);
-          color:#0f0;">${label}</div>
-      </div>`;
-  }).join("");
-}
-
-function updateCameraFeeds() {
-  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
-  rooms.slice(0, 4).forEach(r => {
-    const img = document.getElementById(`camera-img-${r}`);
-    const label = document.getElementById(`camera-label-${r}`);
-    if (!img || !label) return;
-
-    const hasCameraInRoom =
-      (game.roomItems[r] || []).includes("Video Camera") ||
-      (game.roomItems[r] || []).includes("Camera");
-
-    if (!hasCameraInRoom) {
-      img.src = "nosignal.gif";  // ✅ Animated offline feed
-      label.textContent = "NO SIGNAL";
-      return;
-    }
-
-    img.src = roomVisuals[r].N;
-    if (r === game.ghostRoom) {
-      if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") {
-        label.textContent = `${r} — FAKE ORBS DETECTED`;
-      } else if (ghostProfiles[game.ghost].evidence.includes("Orbs")) {
-        label.textContent = `${r} — ORBS DETECTED`;
-      } else {
-        label.textContent = `${r} — ACTIVE`;
-      }
-    } else {
-      label.textContent = `${r} — ACTIVE`;
-    }
-  });
-}
-
-function renderCameraGrid(monitor) {
-  monitor.innerHTML = `
-    <h3 style="color:#0f0;margin-top:0;">Camera Feed</h3>
-    <div id="camera-grid" style="
-      display:grid;
-      grid-template-columns:repeat(2,200px);
-      grid-template-rows:repeat(2,150px);
-      gap:8px;
-      justify-content:center;
-      align-items:center;
-      margin:10px auto;">
-      ${generateCameraFeeds()}
-    </div>
-    <button style="
-      margin-top:12px;
-      padding:6px 12px;
-      background:#111;
-      color:#0f0;
-      border:1px solid #0f0;
-      cursor:pointer;"
-      onclick="closeVanMonitor()">Close Monitor</button>
-  `;
-  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
-  vanMonitorInterval = setInterval(updateCameraFeeds, 1000);
-  animateAllCameraOrbs();
-}
-
-function closeVanMonitor() {
-  const monitor = document.getElementById("van-monitor");
-  if (monitor) document.body.removeChild(monitor);
-  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
-}
-
-/* === Orb Animation === */
-function drawCameraOrbs(room) {
-  const canvas = document.getElementById(`camera-orbs-${room}`);
-  if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = canvas.offsetWidth;
-  canvas.height = canvas.offsetHeight;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  const active =
-    (game.roomItems[room] || []).includes("Video Camera") &&
-    (room === game.ghostRoom &&
-      (ghostProfiles[game.ghost].evidence.includes("Orbs") ||
-        game.ghost === "TheMimic" || game.mimicForm === "TheMimic"));
-
-  if (!active) return;
-
-  for (let i = 0; i < 6; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const size = 1.5 + Math.random() * 3;
-    const opacity = 0.15 + Math.random() * 0.4;
-    ctx.beginPath();
-    ctx.arc(x, y, size, 0, Math.PI * 2);
-    ctx.fillStyle = `rgba(0,255,0,${opacity})`;
-    ctx.fill();
-  }
-}
-
-function animateAllCameraOrbs() {
-  const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
-  rooms.slice(0, 4).forEach(r => drawCameraOrbs(r));
-  requestAnimationFrame(animateAllCameraOrbs);
+  (function type(){
+    if (i < text.length) { el.textContent += text[i++]; setTimeout(type, delay); }
+    else if (cb) cb();
+  })();
 }
 
 /***********************
- === GLOBAL CONSTANTS & GHOST PROFILES ===
+  GLOBAL CONSTANTS / DATA
 ************************/
 const allLoadoutItems = [
-  "EMF Reader", "Spirit Box", "Camera", "UV Light", "D.O.T.S Projector",
-  "Thermometer", "Ghost Writing Book", "Video Camera", "Crucifix",
-  "Smudge Stick", "Salt", "Parabolic Microphone", "Motion Sensor",
-  "Sound Sensor", "Candle"
+  "EMF Reader","Spirit Box","Camera","UV Light","D.O.T.S Projector",
+  "Thermometer","Ghost Writing Book","Video Camera","Crucifix",
+  "Smudge Stick","Salt","Parabolic Microphone","Motion Sensor",
+  "Sound Sensor","Candle"
 ];
 
 let tempHeld = [];
-let tempVan = [...allLoadoutItems]; 
+let tempVan = [...allLoadoutItems];
 
 const cursedItems = {
   "Ouija Board": {desc: "Ask ghost questions, drains sanity.", cost: 15},
@@ -598,8 +278,7 @@ const cursedItems = {
   "Summoning Circle": {desc: "Forces ghost appearance.", cost: 25},
   "Monkey Paw": {desc: "Grants risky wishes.", cost: 10}
 };
-
-function getCursedItemCost(i){return cursedItems[i]?.cost||5;}
+function getCursedItemCost(i){ return cursedItems[i]?.cost || 5; }
 
 const possibleWeather = ["Stormy","Clear","Foggy","Blood Moon"];
 
@@ -658,7 +337,7 @@ const mapConnections = {
 };
 
 /***********************
- === GAME STATE ===
+  GAME STATE
 ************************/
 const game = {
   ghost: null,
@@ -678,11 +357,14 @@ const game = {
   smudgeActive: 0,
   placedCrucifix: {},
   roomItems: {},
-  usedCursedItems: {}
+  usedCursedItems: {},
+  // CAMERA SYSTEM (per-unit cams)
+  cameras: [],       // [{id:1..4, room:"Kitchen"|null, active:true|false}]
+  heldCameraId: null // which cam unit you're holding (if any)
 };
 
 /***********************
- === UTILITIES ===
+  UTILITIES
 ************************/
 function logToGame(msg) {
   const log = document.getElementById("game-log");
@@ -693,9 +375,7 @@ function logToGame(msg) {
   log.scrollTop = log.scrollHeight;
   setTimeout(() => e.classList.add("fade"), 8000);
 }
-
-function randomFromArray(arr){return arr[Math.floor(Math.random()*arr.length)];}
-
+function randomFromArray(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
 function updateSanityBar(){
   const bar=document.getElementById("sanity-bar");
   if(!bar)return;
@@ -703,60 +383,66 @@ function updateSanityBar(){
   bar.style.width=s+"%";
   bar.style.background=s>66?"#0f0":s>33?"#ff0":"#f00";
 }
-
-function resetGame(){
-  game.ghost=null; game.ghostRoom=null; game.playerRoom="Van"; game.playerDirection="N";
-  game.inventory=[]; game.vanStock=[...allLoadoutItems]; game.selectedEvidence.clear();
-  game.currentTurn=0; game.sanity=100; game.weather=null; game.mimicForm=null; game.nextMimicShift=0;
-  game.huntCooldown=0; game.smudgeActive=0; game.placedCrucifix={}; game.roomItems={}; game.usedCursedItems={};
-  updateSanityBar(); renderHUD(); updateBackground();
+function firstAvailableCamId(cameras) {
+  const used = new Set(cameras.map(c => c.id));
+  for (let i = 1; i <= 4; i++) if (!used.has(i)) return i;
+  return null;
 }
-"use strict";
+function getCamById(id) { return game.cameras.find(c => c.id === id) || null; }
+function upsertCamera(id, room, active) {
+  const existing = getCamById(id);
+  if (existing) { existing.room = room; existing.active = active; }
+  else game.cameras.push({ id, room, active });
+  game.cameras.sort((a,b)=>a.id-b.id);
+}
 
 /***********************
- === RANDOMIZED INVESTIGATION SETUP ===
+  RESTART (keeps loadout)
+************************/
+function restartInvestigation() {
+  const inv = Array.isArray(game.inventory) ? [...game.inventory] : [];
+  const van = Array.isArray(game.vanStock) ? [...game.vanStock] : [...allLoadoutItems];
+  try { closeVanMonitor(); } catch(_) {}
+  resetGame();
+  game.inventory = inv;
+  game.vanStock  = van;
+  game.playerRoom = "Van";
+  logToGame("🔁 Restarting investigation with current loadout...");
+  startInvestigation();
+  renderActionButtons();
+  saveGame(true);
+}
+
+/***********************
+  RANDOMIZED SETUP
 ************************/
 function startInvestigation() {
-  // ✅ Make sure UI elements are visible and layered correctly
   const mainScene = document.getElementById("main-scene");
   const narratorUI = document.getElementById("narrator-ui");
   const gameLog = document.getElementById("game-log");
 
   mainScene.style.display = "block";
   narratorUI.style.display = "flex";
-  narratorUI.style.zIndex = "20"; // <-- ensures it's above fog/orbs
+  narratorUI.style.zIndex = "20";
 
-  // ✅ Clear and add an initial welcome log so you can confirm it's working
   gameLog.innerHTML = "";
   logToGame("📖 Investigation started. Setting up environment...");
 
-  // ✅ Randomized ghost/weather setup
   game.weather = randomFromArray(possibleWeather);
   game.ghost = randomFromArray(Object.keys(ghostProfiles));
   if (game.ghost === "TheMimic") assignMimicForm();
-  game.ghostRoom = randomFromArray(
-    Object.keys(roomVisuals).filter(r => r !== "Van")
-  );
+  game.ghostRoom = randomFromArray(Object.keys(roomVisuals).filter(r => r !== "Van"));
 
-  // ✅ Place cursed items & first log entry
   placeCursedItems();
   logToGame(`You are in the van. The weather is ${game.weather.toLowerCase()}.`);
 
-  // ✅ Render updated HUD, background, and buttons
   renderHUD();
   updateBackground();
   renderActionButtons();
-
-  // ✅ Ensure a save snapshot right away
   saveGame(true);
-
-  // ✅ Extra confirmation log
   logToGame("✔ All systems ready. Begin your investigation.");
 }
 
-/***********************
- === MIMIC LOGIC ===
-************************/
 function assignMimicForm() {
   const g = Object.keys(ghostProfiles).filter(x => x !== "TheMimic");
   game.mimicForm = randomFromArray(g);
@@ -764,7 +450,7 @@ function assignMimicForm() {
 }
 
 /***********************
- === HUD & BACKGROUND ===
+  HUD & BACKGROUND
 ************************/
 function renderHUD() {
   document.getElementById("hud-location").textContent = game.playerRoom;
@@ -788,20 +474,14 @@ function updateBackground() {
   const v = roomVisuals[game.playerRoom] || roomVisuals["Van"];
   const d = game.playerDirection || "N";
   const bg = document.getElementById("background");
-
-  if (v && v[d]) {
-    bg.style.backgroundImage = `url('${v[d]}')`;
-  }
-
-  if (game.weather === "Foggy") {
-    fogCanvas.style.opacity = "0.5"; // Visible mist
-  } else {
-    fogCanvas.style.opacity = "0";
-  }
+  if (v && v[d]) bg.style.backgroundImage = `url('${v[d]}')`;
+  if (game.weather === "Foggy") { fogCanvas.style.opacity = "0.5"; }
+  else { fogCanvas.style.opacity = "0"; }
 }
 
-
-// === ROLLING MIST FOG SYSTEM ===
+/***********************
+  FOG
+************************/
 const fogCanvas = document.getElementById("fog-layer");
 const fogCtx = fogCanvas.getContext("2d");
 let fogParticles = [];
@@ -810,7 +490,6 @@ function initFog() {
   fogCanvas.width = window.innerWidth;
   fogCanvas.height = window.innerHeight;
   fogParticles = [];
-
   for (let i = 0; i < 20; i++) {
     fogParticles.push({
       x: Math.random() * fogCanvas.width,
@@ -822,10 +501,8 @@ function initFog() {
     });
   }
 }
-
 function animateFog() {
-  fogCtx.clearRect(0, 0, fogCanvas.width, fogCanvas.height);
-
+  fogCtx.clearRect(0,0,fogCanvas.width,fogCanvas.height);
   if (game.weather === "Foggy") {
     fogParticles.forEach(p => {
       fogCtx.beginPath();
@@ -833,81 +510,56 @@ function animateFog() {
       gradient.addColorStop(0, `rgba(200,200,200,${p.opacity})`);
       gradient.addColorStop(1, "rgba(200,200,200,0)");
       fogCtx.fillStyle = gradient;
-      fogCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-      fogCtx.fill();
-
-      p.x += p.speedX;
-      p.y += p.speedY;
+      fogCtx.arc(p.x, p.y, p.radius, 0, Math.PI * 2); fogCtx.fill();
+      p.x += p.speedX; p.y += p.speedY;
       if (p.x > fogCanvas.width + p.radius) p.x = -p.radius;
       if (p.x < -p.radius) p.x = fogCanvas.width + p.radius;
       if (p.y > fogCanvas.height + p.radius) p.y = -p.radius;
       if (p.y < -p.radius) p.y = fogCanvas.height + p.radius;
     });
   }
-
   requestAnimationFrame(animateFog);
 }
-
-// ✅ Re-init fog on resize
-window.addEventListener("resize", () => initFog());
+window.addEventListener("resize", initFog);
 
 /***********************
- === ROOM & MOVEMENT ===
+  MOVEMENT
 ************************/
 function openMoveOverlay() {
   const existing = document.getElementById("move-temp");
   if (existing) document.body.removeChild(existing);
 
   const exits = mapConnections[game.playerRoom] || [];
-  if (!exits.length) {
-    logToGame("No available exits.");
-    return;
-  }
+  if (!exits.length) { logToGame("No available exits."); return; }
 
   const overlay = document.createElement("div");
   overlay.id = "move-temp";
   Object.assign(overlay.style, {
-    position: "fixed", top: "50%", left: "50%",
-    transform: "translate(-50%,-50%)",
-    background: "#111", padding: "10px", maxWidth: "90%",
-    zIndex: "3000", border: "1px solid #555", borderRadius: "4px"
+    position: "fixed", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+    background: "#111", padding: "10px", maxWidth: "90%", zIndex: "3000",
+    border: "1px solid #555", borderRadius: "4px"
   });
-
   let html = `<h3 style="color:#0ff;margin-top:0;">Available Exits</h3>`;
   html += exits.map(r => `<button data-move="${r}">Go to ${r}</button>`).join("");
   html += `<button style="margin-top:6px;" data-close="true">Close</button>`;
-
   overlay.innerHTML = html;
   document.body.appendChild(overlay);
 
   overlay.addEventListener("click", (e) => {
-    if (e.target.dataset.move) {
-      moveToRoom(e.target.dataset.move);
-      document.body.removeChild(overlay);
-    }
-    if (e.target.dataset.close) {
-      document.body.removeChild(overlay);
-    }
+    if (e.target.dataset.move) { moveToRoom(e.target.dataset.move); document.body.removeChild(overlay); }
+    if (e.target.dataset.close) { document.body.removeChild(overlay); }
   });
 }
 
 function moveToRoom(r) {
-  if (game.playerRoom === r) {
-    logToGame("You are already in " + r + ".");
-    return;
-  }
-  game.playerRoom = r;
-  game.currentTurn++;
-  game.playerDirection = "N";
+  if (game.playerRoom === r) { logToGame("You are already in " + r + "."); return; }
+  game.playerRoom = r; game.currentTurn++; game.playerDirection = "N";
   logToGame("You move to " + r + ".");
-  renderHUD();
-  updateBackground();
-  checkTurnEvents();
-  saveGame(true);
+  renderHUD(); updateBackground(); checkTurnEvents(); renderActionButtons(); saveGame(true);
 }
 
 /***********************
- === LOOK AROUND ===
+  LOOK AROUND
 ************************/
 function lookAround() {
   game.currentTurn++;
@@ -921,8 +573,7 @@ function lookAround() {
       game.roomItems[game.playerRoom] = items;
       setTimeout(() => {
         if (game.roomItems[game.playerRoom]) {
-          game.roomItems[game.playerRoom] =
-            game.roomItems[game.playerRoom].filter(x => x !== "Footprints");
+          game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom].filter(x => x !== "Footprints");
           logToGame("The footprints have faded."); saveGame(true);
         }
       }, 9000);
@@ -933,19 +584,15 @@ function lookAround() {
       logToGame("The flame suddenly extinguishes!");
     }
 
-    if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic")
-      logToGame("Fake orbs shimmer briefly.");
+    if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") logToGame("Fake orbs shimmer briefly.");
   } else {
     logToGame("Nothing unusual.");
   }
-
-  renderHUD();
-  checkTurnEvents();
-  saveGame(true);
+  renderHUD(); checkTurnEvents(); saveGame(true);
 }
 
 /***********************
- === CURSED ITEMS ===
+  CURSED ITEMS
 ************************/
 function placeCursedItems() {
   const rooms = Object.keys(roomVisuals).filter(r => r !== "Van");
@@ -956,8 +603,9 @@ function placeCursedItems() {
   const pick = randomFromArray(keys);
   game.roomItems[chosen].push(pick);
 }
+
 /***********************
- === TURN EVENTS & AMBIENCE ===
+  TURN EVENTS / AMBIENCE
 ************************/
 function checkTurnEvents() {
   if (game.ghost === "TheMimic" && game.currentTurn >= game.nextMimicShift) {
@@ -972,20 +620,14 @@ function checkTurnEvents() {
       const g = (game.ghost === "TheMimic" ? game.mimicForm : game.ghost);
       logToGame("[Ambient] " + (ghostProfiles[g].behavior || "The air feels heavy..."));
     }
-  } else {
-    game.sanity -= 1;
-  }
+  } else { game.sanity -= 1; }
 
   Object.keys(game.roomItems).forEach(r => {
     if (!game.roomItems[r]?.includes("Motion Sensor")) return;
     if (Math.random() < 0.25) {
-      if (game.playerRoom === "Van") {
-        logToGame("[Van Monitor] Motion detected in " + r + "!");
-      } else if (game.playerRoom === r) {
-        logToGame("You hear the motion sensor *beep* nearby.");
-      } else if (mapConnections[game.playerRoom]?.includes(r) && Math.random() < 0.4) {
-        logToGame("You faintly hear a muffled *beep* through the walls...");
-      }
+      if (game.playerRoom === "Van") logToGame("[Van Monitor] Motion detected in " + r + "!");
+      else if (game.playerRoom === r) logToGame("You hear the motion sensor *beep* nearby.");
+      else if (mapConnections[game.playerRoom]?.includes(r) && Math.random() < 0.4) logToGame("You faintly hear a muffled *beep* through the walls...");
     }
   });
 
@@ -995,7 +637,7 @@ function checkTurnEvents() {
 }
 
 /***********************
- === HUNT SYSTEM ===
+  HUNT SYSTEM
 ************************/
 function attemptHunt() {
   if (game.smudgeActive > 0) { game.smudgeActive--; return; }
@@ -1003,7 +645,6 @@ function attemptHunt() {
   if (game.ghost === "Onryo" && Object.values(game.roomItems).some(a => a.includes("Candle"))) return;
   if (game.sanity < 30 && Math.random() < 0.25) startHunt();
 }
-
 function startHunt() {
   logToGame("💀 The ghost is hunting!");
   flashRed();
@@ -1018,34 +659,24 @@ function startHunt() {
       } else {
         logToGame(`The crucifix burns, stopping the hunt. (${game.placedCrucifix[game.playerRoom]} uses left)`);
       }
-    } else {
-      setTimeout(playerDeath, 1500);
-    }
-  } else {
-    logToGame("You survived the hunt...");
-  }
+    } else { setTimeout(playerDeath, 1500); }
+  } else { logToGame("You survived the hunt..."); }
 
-  const aggressiveGhosts = ["Demon", "Oni", "Raiju", "Moroi"];
+  const aggressiveGhosts = ["Demon","Oni","Raiju","Moroi"];
   game.huntCooldown = aggressiveGhosts.includes(game.ghost)
     ? 3 + Math.floor(Math.random() * 2)
     : 5 + Math.floor(Math.random() * 3);
 }
-
 function flashRed() {
   const l = document.getElementById("lightning");
   let flashes = 3, count = 0;
-  function pulse() {
+  (function pulse(){
     if (count >= flashes) { l.style.opacity = 0; return; }
     l.style.background = "red";
     l.style.opacity = 0.6 + Math.random() * 0.2;
-    setTimeout(() => {
-      l.style.opacity = 0; count++;
-      setTimeout(pulse, 150 + Math.random() * 200);
-    }, 150 + Math.random() * 100);
-  }
-  pulse();
+    setTimeout(() => { l.style.opacity = 0; count++; setTimeout(pulse, 150 + Math.random() * 200); }, 150 + Math.random() * 100);
+  })();
 }
-
 function playerDeath() {
   const existing = document.getElementById("death-screen");
   if (existing) document.body.removeChild(existing);
@@ -1053,56 +684,33 @@ function playerDeath() {
   const overlay = document.createElement("div");
   overlay.id = "death-screen";
   Object.assign(overlay.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    width: "100vw",
-    height: "100vh",
-    background: "rgba(0,0,0,0.9)",
-    color: "#f00",
-    fontFamily: "monospace",
-    fontSize: "4em",
-    fontWeight: "bold",
-    textAlign: "center",
-    display: "flex",
-    flexDirection: "column",
-    justifyContent: "center",
-    alignItems: "center",
-    zIndex: "5000",
-    opacity: "0",
-    transition: "opacity 0.3s ease"
+    position:"fixed", top:"0", left:"0", width:"100vw", height:"100vh",
+    background:"rgba(0,0,0,.9)", color:"#f00", fontFamily:"monospace",
+    fontSize:"4em", fontWeight:"bold", textAlign:"center", display:"flex",
+    flexDirection:"column", justifyContent:"center", alignItems:"center",
+    zIndex:"5000", opacity:"0", transition:"opacity .3s ease"
   });
-
   const ghostName = game.ghost || "Unknown";
-
   overlay.innerHTML = `
     <div>YOU DIED</div>
-    <div style="font-size:0.5em;margin-top:10px;color:#faa;">
+    <div style="font-size:.5em;margin-top:10px;color:#faa;">
       The ghost was <span style="color:#fff;">${ghostName}</span>
     </div>
   `;
-
   document.body.appendChild(overlay);
-
   let flashes = 0;
-  function flash() {
+  (function flash(){
     if (flashes >= 6) {
-      setTimeout(() => {
-        document.body.removeChild(overlay);
-        resetGame();
-        showLoadout();
-      }, 800);
+      setTimeout(() => { document.body.removeChild(overlay); resetGame(); showLoadout(); }, 800);
       return;
     }
     overlay.style.opacity = flashes % 2 === 0 ? "1" : "0.2";
-    flashes++;
-    setTimeout(flash, 300);
-  }
-  flash();
+    flashes++; setTimeout(flash, 300);
+  })();
 }
 
 /***********************
- === INVENTORY OVERLAY ===
+  INVENTORY OVERLAY
 ************************/
 function openInventoryOverlay() {
   const existing = document.getElementById("inventory-temp");
@@ -1111,21 +719,9 @@ function openInventoryOverlay() {
   const c = document.createElement("div");
   c.id = "inventory-temp";
   Object.assign(c.style, {
-    position: "fixed",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%,-50%)",
-    background: "#111",
-    padding: "16px",
-    maxHeight: "75%",
-    overflowY: "auto",
-    maxWidth: "92%",
-    zIndex: "3000",
-    border: "1px solid #555",
-    borderRadius: "6px",
-    color: "#eee",
-    textAlign: "center",
-    lineHeight: "1.4"
+    position:"fixed", top:"50%", left:"50%", transform:"translate(-50%,-50%)",
+    background:"#111", padding:"16px", maxHeight:"75%", overflowY:"auto", maxWidth:"92%",
+    zIndex:"3000", border:"1px solid #555", borderRadius:"6px", color:"#eee", textAlign:"center", lineHeight:"1.4"
   });
 
   let html = `<h3 style="margin-top:0;color:#0ff;">Inventory</h3>`;
@@ -1144,24 +740,18 @@ function openInventoryOverlay() {
         </div>`;
     });
     html += `</div>`;
-  } else {
-    html += `<p style="opacity:0.7;">No items held.</p>`;
-  }
+  } else { html += `<p style="opacity:.7;">No items held.</p>`; }
 
   const roomInv = game.roomItems[game.playerRoom] || [];
   if (roomInv.length > 0) {
     html += `<h4 style="margin-top:12px;color:#0ff;">Items in This Room</h4>`;
     roomInv.forEach(i => {
-      html += `
-        <div style="margin:4px 0;">
-          <button onclick="pickItem('${i}');closeInventory()">Pick up: ${i}</button>
-        </div>`;
+      html += `<div style="margin:4px 0;"><button onclick="pickItem('${i}');closeInventory()">Pick up: ${i}</button></div>`;
     });
   }
 
   html += `<button style="margin-top:12px;" onclick="closeInventory()">Close</button>`;
-  c.innerHTML = html;
-  document.body.appendChild(c);
+  c.innerHTML = html; document.body.appendChild(c);
 
   window.closeInventory = function () {
     const t = document.getElementById("inventory-temp");
@@ -1169,7 +759,6 @@ function openInventoryOverlay() {
     saveGame(true);
   };
 }
-
 
 function inspectItem(i) {
   let desc = cursedItems[i]?.desc || "Standard investigation gear.";
@@ -1184,124 +773,65 @@ function inspectItem(i) {
   }
   logToGame(`Inspecting ${i}: ${desc}`);
 }
-function openNotebook() {
-  const existing = document.getElementById("notebook-popup");
-  if (existing) document.body.removeChild(existing);
 
-  const overlay = document.createElement("div");
-  overlay.id = "notebook-popup";
-  Object.assign(overlay.style, {
-    position: "fixed",
-    top: "0",
-    left: "0",
-    width: "100vw",
-    height: "100vh",
-    background: "rgba(0,0,0,0.9)",
-    color: "#0f0",
-    fontFamily: "monospace",
-    fontSize: "14px",
-    zIndex: "6000",
-    overflowY: "auto",
-    padding: "20px"
-  });
-
-  let html = `<h2 style="text-align:center;color:#0ff;margin-top:0;">
-    Ghost Investigation Notebook</h2>
-    <p style="font-size:12px;color:#aaa;text-align:center;">
-    ✅ Evidence you’ve already found will be highlighted.</p>`;
-
-  Object.keys(ghostProfiles).forEach(g => {
-    const evList = ghostProfiles[g].evidence
-      .map(ev =>
-        `<span style="color:${
-          game.selectedEvidence.has(ev) ? '#0f0' : '#aaa'
-        }">${ev}${game.selectedEvidence.has(ev) ? ' ✅' : ''}</span>`
-      ).join(", ");
-    html += `
-      <div style="border-bottom:1px solid #044;padding:6px 0;">
-        <strong style="color:#0ff;">${g}</strong><br>
-        <em>Evidence:</em> ${evList}<br>
-        <em>Behavior:</em> ${ghostProfiles[g].behavior}
-      </div>`;
-  });
-
-  html += `<div style="text-align:center;margin-top:12px;">
-    <button style="
-      padding:6px 12px;
-      background:#111;
-      color:#0f0;
-      border:1px solid #0f0;
-      cursor:pointer;"
-      onclick="document.body.removeChild(document.getElementById('notebook-popup'))">
-      Close
-    </button></div>`;
-
-  overlay.innerHTML = html;
-  document.body.appendChild(overlay);
-}
-
+/***********************
+  DROP / PICK / USE ITEMS
+************************/
 function dropItem(i) {
   if (game.playerRoom === "Van") {
-    if (!game.vanStock.includes(i)) {
-      game.vanStock.push(i);
-      game.vanStock.sort();
-    }
+    if (!game.vanStock.includes(i)) { game.vanStock.push(i); game.vanStock.sort(); }
     logToGame(`Returned ${i} to van.`);
   } else {
     game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
-    if (!game.roomItems[game.playerRoom].includes(i))
-      game.roomItems[game.playerRoom].push(i);
+    if (!game.roomItems[game.playerRoom].includes(i)) game.roomItems[game.playerRoom].push(i);
     logToGame(`Dropped ${i} here.`);
   }
   game.inventory = game.inventory.filter(x => x !== i);
-  renderHUD();
-  saveGame(true);
+  renderHUD(); saveGame(true);
 }
 
 function pickItem(i) {
-  // ✅ Don't count Notebook/Lighter toward 3-item limit
-  const carryableItems = game.inventory.filter(
-    x => x !== "Notebook" && x !== "Lighter"
-  );
+  // Picking up a physical camera unit
+  if (i.startsWith("VideoCam#")) {
+    const id = parseInt(i.split("#")[1], 10);
+    if (!Number.isFinite(id)) { logToGame("Camera token corrupted."); return; }
+    game.roomItems[game.playerRoom] = (game.roomItems[game.playerRoom] || []).filter(x => x !== i);
+    upsertCamera(id, null, false);
 
-  if (carryableItems.length >= 3) {
-    logToGame("Max 3 investigation items (Notebook & Lighter excluded).");
-    return;
-  }
-
-  if (cursedItems[i] && i === "Summoning Circle") {
-    logToGame("The circle cannot be moved.");
-    return;
-  }
-
-  game.roomItems[game.playerRoom] =
-    game.roomItems[game.playerRoom].filter(x => x !== i);
-
-  if (!game.inventory.includes(i)) {
-    game.inventory.push(i);
+    const carryableItems = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
+    if (carryableItems.length >= 3) {
+      logToGame("Max 3 investigation items (Notebook & Lighter excluded).");
+      // put the token back
+      game.roomItems[game.playerRoom].push(i);
+      return;
+    }
+    if (!game.inventory.includes("Video Camera")) game.inventory.push("Video Camera");
     game.inventory.sort();
+    game.heldCameraId = id;
+
+    logToGame(`Picked up Video Camera (Cam ${id}).`);
+    renderHUD(); saveGame(true);
+    return;
   }
+
+  // Regular item flow
+  const carryableItems = game.inventory.filter(x => x !== "Notebook" && x !== "Lighter");
+  if (carryableItems.length >= 3) { logToGame("Max 3 investigation items (Notebook & Lighter excluded)."); return; }
+  if (cursedItems[i] && i === "Summoning Circle") { logToGame("The circle cannot be moved."); return; }
+
+  game.roomItems[game.playerRoom] = (game.roomItems[game.playerRoom] || []).filter(x => x !== i);
+  if (!game.inventory.includes(i)) { game.inventory.push(i); game.inventory.sort(); }
 
   logToGame(`Picked up ${i}.`);
-  renderHUD();
-  saveGame(true);
+  renderHUD(); saveGame(true);
 }
 
-
-/***********************
- === ITEM USE ===
-************************/
 function useItem(i) {
   switch (i) {
-    // === Defensive / Utility Items ===
     case "Smudge Stick":
-      if (game.playerRoom === game.ghostRoom) {
-        game.smudgeActive = 3;
-        logToGame("You smudge the room, calming the ghost.");
-      } else {
-        logToGame("You smudge, but nothing happens.");
-      }
-      game.inventory = game.inventory.filter(x => x !== i); // Smudge is consumed
+      if (game.playerRoom === game.ghostRoom) { game.smudgeActive = 3; logToGame("You smudge the room, calming the ghost."); }
+      else { logToGame("You smudge, but nothing happens."); }
+      game.inventory = game.inventory.filter(x => x !== i);
       break;
 
     case "Crucifix":
@@ -1309,69 +839,46 @@ function useItem(i) {
         game.placedCrucifix[game.playerRoom] = 2;
         logToGame("You place the crucifix. It may stop two hunts.");
         game.inventory = game.inventory.filter(x => x !== i);
-      } else {
-        logToGame("Cannot place crucifix in the van.");
-      }
+      } else { logToGame("Cannot place crucifix in the van."); }
       break;
 
     case "Salt":
       if (game.playerRoom !== "Van") {
         game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
-        if (!game.roomItems[game.playerRoom].includes("Salt")) {
-          game.roomItems[game.playerRoom].push("Salt");
-          logToGame("You sprinkle salt on the ground.");
-        } else {
-          logToGame("Salt already sprinkled here.");
-        }
+        if (!game.roomItems[game.playerRoom].includes("Salt")) { game.roomItems[game.playerRoom].push("Salt"); logToGame("You sprinkle salt on the ground."); }
+        else { logToGame("Salt already sprinkled here."); }
       }
       break;
 
     case "Candle":
       if (game.playerRoom !== "Van") {
         game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
-        if (!game.roomItems[game.playerRoom].includes("Candle")) {
-          game.roomItems[game.playerRoom].push("Candle");
-          logToGame("You place and light a candle here.");
-        } else {
-          logToGame("A candle is already lit here.");
-        }
+        if (!game.roomItems[game.playerRoom].includes("Candle")) { game.roomItems[game.playerRoom].push("Candle"); logToGame("You place and light a candle here."); }
+        else { logToGame("A candle is already lit here."); }
       }
       break;
 
     case "Motion Sensor":
       if (game.playerRoom !== "Van") {
         game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
-        if (!game.roomItems[game.playerRoom].includes("Motion Sensor")) {
-          game.roomItems[game.playerRoom].push("Motion Sensor");
-          logToGame("You place a motion sensor in this room.");
-        } else {
-          logToGame("A motion sensor is already active here.");
-        }
+        if (!game.roomItems[game.playerRoom].includes("Motion Sensor")) { game.roomItems[game.playerRoom].push("Motion Sensor"); logToGame("You place a motion sensor in this room."); }
+        else { logToGame("A motion sensor is already active here."); }
       }
       break;
 
     case "Sound Sensor":
       if (game.playerRoom !== "Van") {
         game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
-        if (!game.roomItems[game.playerRoom].includes("Sound Sensor")) {
-          game.roomItems[game.playerRoom].push("Sound Sensor");
-          logToGame("You place a sound sensor in this room.");
-        } else {
-          logToGame("A sound sensor is already active here.");
-        }
+        if (!game.roomItems[game.playerRoom].includes("Sound Sensor")) { game.roomItems[game.playerRoom].push("Sound Sensor"); logToGame("You place a sound sensor in this room."); }
+        else { logToGame("A sound sensor is already active here."); }
       }
       break;
 
     case "Parabolic Microphone":
       if (game.playerRoom !== "Van") {
-        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
-          logToGame("You pick up strange whispers on the parabolic mic...");
-        } else {
-          logToGame("No significant sound detected.");
-        }
-      } else {
-        logToGame("Cannot use parabolic mic in van.");
-      }
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) logToGame("You pick up strange whispers on the parabolic mic...");
+        else logToGame("No significant sound detected.");
+      } else { logToGame("Cannot use parabolic mic in van."); }
       break;
 
     case "Thermometer":
@@ -1380,43 +887,39 @@ function useItem(i) {
           const temp = Math.random() < 0.4 ? -4 + Math.random() * 2 : 5 + Math.random() * 3;
           logToGame(`Thermometer reading: ${temp.toFixed(1)}°C`);
           if (temp <= 0) game.selectedEvidence.add("Freezing Temps");
-        } else {
-          logToGame(`Thermometer reading: ${(15 + Math.random() * 5).toFixed(1)}°C`);
-        }
-      } else {
-        logToGame("No reason to check temperature in van.");
-      }
+        } else { logToGame(`Thermometer reading: ${(15 + Math.random() * 5).toFixed(1)}°C`); }
+      } else { logToGame("No reason to check temperature in van."); }
       break;
 
-    // === Cameras & Orbs ===
+    // CAMERAS (per-unit)
     case "Camera":
-    case "Video Camera":
-      if (game.playerRoom !== "Van") {
-        game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
-        if (!game.roomItems[game.playerRoom].includes("Video Camera")) {
-          game.roomItems[game.playerRoom].push("Video Camera");
-          logToGame("You set up a video camera in this room.");
-          game.inventory = game.inventory.filter(x => x !== i);
-        } else {
-          logToGame("A camera is already set up here.");
-        }
-      } else {
-        logToGame("Cannot place cameras in the van.");
-      }
-      break;
+    case "Video Camera": {
+      if (game.playerRoom === "Van") { logToGame("Cannot place cameras in the van."); break; }
+      game.roomItems[game.playerRoom] = game.roomItems[game.playerRoom] || [];
 
-    // === EMF & Spirit Box ===
+      let camId = game.heldCameraId;
+      if (camId == null) {
+        const slot = firstAvailableCamId(game.cameras);
+        if (!slot) { logToGame("All 4 cameras are already deployed."); break; }
+        camId = slot;
+      }
+      upsertCamera(camId, game.playerRoom, true);
+      const token = `VideoCam#${camId}`;
+      if (!game.roomItems[game.playerRoom].includes(token)) game.roomItems[game.playerRoom].push(token);
+
+      game.inventory = game.inventory.filter(x => x !== i);
+      game.heldCameraId = null;
+      logToGame(`You set up Video Camera (Cam ${camId}) in ${game.playerRoom}.`);
+      break;
+    }
+
     case "EMF Reader":
       if (game.playerRoom !== "Van") {
         if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
           logToGame("The EMF Reader spikes to Level 5!");
           game.selectedEvidence.add("EMF Level 5");
-        } else {
-          logToGame("EMF shows no significant reading.");
-        }
-      } else {
-        logToGame("No EMF readings in the van.");
-      }
+        } else { logToGame("EMF shows no significant reading."); }
+      } else { logToGame("No EMF readings in the van."); }
       break;
 
     case "Spirit Box":
@@ -1424,62 +927,36 @@ function useItem(i) {
         if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
           logToGame(`The Spirit Box crackles: "${Math.random() < 0.5 ? 'Leave...' : 'Behind you...'}"`);
           game.selectedEvidence.add("Spirit Box");
-        } else {
-          logToGame("Spirit Box stays silent.");
-        }
-      } else {
-        logToGame("Too far from the ghost to use the Spirit Box.");
-      }
+        } else { logToGame("Spirit Box stays silent."); }
+      } else { logToGame("Too far from the ghost to use the Spirit Box."); }
       break;
 
-    // === UV Light & D.O.T.S ===
     case "UV Light":
       if (game.roomItems[game.playerRoom]?.includes("Footprints") || Math.random() < 0.3) {
         logToGame("You see glowing fingerprints or footprints under UV!");
         game.selectedEvidence.add("Fingerprints");
-      } else {
-        logToGame("No visible prints under UV.");
-      }
+      } else { logToGame("No visible prints under UV."); }
       break;
 
     case "D.O.T.S Projector":
       if (game.playerRoom !== "Van") {
-        if (game.playerRoom === game.ghostRoom && Math.random() < 0.4) {
-          logToGame("A faint shadow flickers across the D.O.T.S grid!");
-          game.selectedEvidence.add("D.O.T.S");
-        } else {
-          logToGame("No movement detected in D.O.T.S grid.");
-        }
-      } else {
-        logToGame("D.O.T.S cannot be placed in van.");
-      }
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.4) { logToGame("A faint shadow flickers across the D.O.T.S grid!"); game.selectedEvidence.add("D.O.T.S"); }
+        else { logToGame("No movement detected in D.O.T.S grid."); }
+      } else { logToGame("D.O.T.S cannot be placed in van."); }
       break;
 
-    // === Ghost Writing ===
     case "Ghost Writing Book":
       if (game.playerRoom !== "Van") {
-        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) {
-          logToGame("The ghost has written in the book!");
-          game.selectedEvidence.add("Ghost Writing");
-        } else {
-          logToGame("The book remains empty.");
-        }
-      } else {
-        logToGame("Notebook just for notes, not evidence.");
-      }
+        if (game.playerRoom === game.ghostRoom && Math.random() < 0.5) { logToGame("The ghost has written in the book!"); game.selectedEvidence.add("Ghost Writing"); }
+        else { logToGame("The book remains empty."); }
+      } else { logToGame("Notebook just for notes, not evidence."); }
       break;
 
-    // === Notebook (Cheat Sheet) ===
-    case "Notebook":
-      openNotebook();
-      break;
+    case "Notebook": openNotebook(); break;
 
     default:
-      if (cursedItems[i]) {
-        handleCursedItem(i);
-      } else {
-        logToGame(`You use the ${i}, but nothing significant occurs.`);
-      }
+      if (cursedItems[i]) { handleCursedItem(i); }
+      else { logToGame(`You use the ${i}, but nothing significant occurs.`); }
   }
 
   game.currentTurn++;
@@ -1489,118 +966,107 @@ function useItem(i) {
 }
 
 function handleCursedItem(i) {
-  if (game.usedCursedItems[i]) {
-    logToGame(`The ${i} is inert now.`);
-    return;
-  }
-
+  if (game.usedCursedItems[i]) { logToGame(`The ${i} is inert now.`); return; }
   logToGame(`You use the ${i}...`);
-  game.sanity -= getCursedItemCost(i);
-  if (game.sanity < 0) game.sanity = 0;
-  updateSanityBar();
+  game.sanity -= getCursedItemCost(i); if (game.sanity < 0) game.sanity = 0; updateSanityBar();
   logToGame(`Sanity now at ${Math.floor(game.sanity)}%.`);
 
   switch (i) {
     case "Ouija Board":
       logToGame("The board moves by itself, letters slowly spelling words...");
-      if (Math.random() < 0.2) {
-        logToGame("The planchette flies violently across the board!");
-        startHunt();
-      }
+      if (Math.random() < 0.2) { logToGame("The planchette flies violently across the board!"); startHunt(); }
       break;
-
-    case "Tarot Cards":
+    case "Tarot Cards": {
       const r = Math.random();
-      if (r < 0.15) {
-        logToGame("The Fool — nothing happens.");
-      } else if (r < 0.3) {
-        logToGame("The Tower — ghost activity spikes!");
-      } else if (r < 0.45) {
-        logToGame("The Moon — your sanity drops sharply.");
-        game.sanity = Math.max(0, game.sanity - 25);
-        updateSanityBar();
-      } else if (r < 0.6) {
-        logToGame("The Death card — the ghost begins hunting!");
-        startHunt();
-      } else if (r < 0.8) {
-        logToGame("The Devil — ghost becomes aggressive for a while!");
-        game.huntCooldown = 1; // very short cooldown
-      } else {
-        logToGame("The Sun — a warm light fills you, sanity restored.");
-        game.sanity = Math.min(100, game.sanity + 25);
-        updateSanityBar();
-      }
+      if (r < 0.15) logToGame("The Fool — nothing happens.");
+      else if (r < 0.3) logToGame("The Tower — ghost activity spikes!");
+      else if (r < 0.45) { logToGame("The Moon — your sanity drops sharply."); game.sanity = Math.max(0, game.sanity - 25); updateSanityBar(); }
+      else if (r < 0.6) { logToGame("The Death card — the ghost begins hunting!"); startHunt(); }
+      else if (r < 0.8) { logToGame("The Devil — ghost becomes aggressive for a while!"); game.huntCooldown = 1; }
+      else { logToGame("The Sun — a warm light fills you, sanity restored."); game.sanity = Math.min(100, game.sanity + 25); updateSanityBar(); }
       break;
-
+    }
     case "Music Box":
       logToGame("A soft, eerie melody plays... the ghost is drawn to it.");
       if (Math.random() < 0.4) startHunt();
       break;
-
     case "Haunted Mirror":
       logToGame("You glimpse a distorted reflection... a room you haven’t visited?");
       if (Math.random() < 0.3) startHunt();
       break;
-
     case "Summoning Circle":
       logToGame("You light the circle... the flames roar! The ghost manifests violently.");
       startHunt();
       break;
-
     case "Monkey Paw":
       if (Math.random() < 0.5) {
         logToGame("The paw curls, granting your wish... but you feel cursed.");
-        if (Math.random() < 0.5) {
-          logToGame("Your wish backfires! The ghost starts hunting.");
-          startHunt();
-        } else {
-          logToGame("Your wish succeeds. Sanity restored.");
-          game.sanity = Math.min(100, game.sanity + 20);
-          updateSanityBar();
-        }
-      } else {
-        logToGame("The paw remains still, as if judging you.");
-      }
+        if (Math.random() < 0.5) { logToGame("Your wish backfires! The ghost starts hunting."); startHunt(); }
+        else { logToGame("Your wish succeeds. Sanity restored."); game.sanity = Math.min(100, game.sanity + 20); updateSanityBar(); }
+      } else { logToGame("The paw remains still, as if judging you."); }
       break;
   }
-
   game.usedCursedItems[i] = true;
   saveGame(true);
 }
 
 /***********************
- === Save/Load Block ===
+  NOTEBOOK (evidence sheet)
+************************/
+function openNotebook() {
+  const existing = document.getElementById("notebook-popup");
+  if (existing) document.body.removeChild(existing);
+
+  const overlay = document.createElement("div");
+  overlay.id = "notebook-popup";
+  Object.assign(overlay.style, {
+    position: "fixed", top: "0", left: "0", width: "100vw", height: "100vh",
+    background: "rgba(0,0,0,.9)", color: "#0f0", fontFamily: "monospace", fontSize: "14px",
+    zIndex: "6000", overflowY: "auto", padding: "20px"
+  });
+
+  let html = `<h2 style="text-align:center;color:#0ff;margin-top:0;">Ghost Investigation Notebook</h2>
+  <p style="font-size:12px;color:#aaa;text-align:center;">✅ Evidence you’ve already found will be highlighted.</p>`;
+
+  Object.keys(ghostProfiles).forEach(g => {
+    const evList = ghostProfiles[g].evidence.map(ev =>
+      `<span style="color:${game.selectedEvidence.has(ev)?'#0f0':'#aaa'}">${ev}${game.selectedEvidence.has(ev)?' ✅':''}</span>`
+    ).join(", ");
+    html += `<div style="border-bottom:1px solid #044;padding:6px 0;">
+      <strong style="color:#0ff;">${g}</strong><br>
+      <em>Evidence:</em> ${evList}<br>
+      <em>Behavior:</em> ${ghostProfiles[g].behavior}
+    </div>`;
+  });
+
+  html += `<div style="text-align:center;margin-top:12px;">
+    <button style="padding:6px 12px;background:#111;color:#0f0;border:1px solid #0f0;cursor:pointer;"
+            onclick="document.body.removeChild(document.getElementById('notebook-popup'))">Close</button>
+  </div>`;
+
+  overlay.innerHTML = html;
+  document.body.appendChild(overlay);
+}
+
+/***********************
+  SAVE / LOAD
 ************************/
 function saveGame() {
   try {
     const saveData = {
-      ghost: game.ghost,
-      ghostRoom: game.ghostRoom,
-      playerRoom: game.playerRoom,
-      playerDirection: game.playerDirection,
-      inventory: game.inventory,
-      vanStock: game.vanStock,
-      selectedEvidence: Array.from(game.selectedEvidence),
-      currentTurn: game.currentTurn,
-      sanity: game.sanity,
-      weather: game.weather,
-      mimicForm: game.mimicForm,
-      nextMimicShift: game.nextMimicShift,
-      cameraActive: game.cameraActive,
-      huntCooldown: game.huntCooldown,
-      smudgeActive: game.smudgeActive,
-      placedCrucifix: game.placedCrucifix,
-      roomItems: game.roomItems,
-      usedCursedItems: game.usedCursedItems
+      ghost: game.ghost, ghostRoom: game.ghostRoom, playerRoom: game.playerRoom, playerDirection: game.playerDirection,
+      inventory: game.inventory, vanStock: game.vanStock, selectedEvidence: Array.from(game.selectedEvidence),
+      currentTurn: game.currentTurn, sanity: game.sanity, weather: game.weather,
+      mimicForm: game.mimicForm, nextMimicShift: game.nextMimicShift, cameraActive: game.cameraActive,
+      huntCooldown: game.huntCooldown, smudgeActive: game.smudgeActive, placedCrucifix: game.placedCrucifix,
+      roomItems: game.roomItems, usedCursedItems: game.usedCursedItems,
+      // cameras
+      cameras: game.cameras, heldCameraId: game.heldCameraId
     };
     localStorage.setItem("phasmaPhoneySave", JSON.stringify(saveData));
     showSaveIndicator();
-  } catch (e) {
-    console.error("Save failed:", e);
-    logToGame("⚠️ Save failed.");
-  }
+  } catch (e) { console.error("Save failed:", e); logToGame("⚠️ Save failed."); }
 }
-
 function showSaveIndicator() {
   const ind = document.getElementById("save-indicator");
   if (!ind) return;
@@ -1609,181 +1075,110 @@ function showSaveIndicator() {
   setTimeout(() => { ind.style.opacity = "0.3"; }, 300);
   setTimeout(() => { ind.style.display = "none"; }, 1000);
 }
-
 function loadGame() {
   const data = localStorage.getItem("phasmaPhoneySave");
-  if (!data) {
-    logToGame("⚠ No save data found.");
-    return;
-  }
-
+  if (!data) { logToGame("⚠ No save data found."); return; }
   try {
     const s = JSON.parse(data);
     Object.assign(game, s);
-
-    // ✅ Ensure all critical properties exist even if missing in old saves
     game.selectedEvidence = new Set(s.selectedEvidence || []);
     game.placedCrucifix = s.placedCrucifix || {};
     game.roomItems = s.roomItems || {};
     game.usedCursedItems = s.usedCursedItems || {};
+    game.cameras = Array.isArray(s.cameras) ? s.cameras : [];
+    game.heldCameraId = s.heldCameraId ?? null;
 
     logToGame("📂 Game loaded. Resuming investigation...");
-
-    // ✅ Show the investigation UI
     document.getElementById("title-screen").style.display = "none";
     document.getElementById("loadout-screen").style.display = "none";
     document.getElementById("main-scene").style.display = "block";
     document.getElementById("narrator-ui").style.display = "flex";
 
-    // ✅ Refresh HUD & action buttons
-    renderHUD();
-    updateBackground();
-    renderActionButtons();
-
-    // ✅ Save snapshot immediately (keeps state updated if older saves are missing new data)
-    saveGame(true);
+    renderHUD(); updateBackground(); renderActionButtons(); saveGame(true);
   } catch (e) {
     console.error("Load failed:", e);
     logToGame("⚠ Load failed. Starting new game...");
     localStorage.removeItem("phasmaPhoneySave");
-    resetGame();
-    showLoadout();
+    resetGame(); showLoadout();
   }
 }
-
-function clearSave() {
-  localStorage.removeItem("phasmaPhoneySave");
-  logToGame("🗑️ Save data cleared.");
-}
-
+function clearSave() { localStorage.removeItem("phasmaPhoneySave"); logToGame("🗑️ Save data cleared."); }
 
 /***********************
- === GHOST GUESS SYSTEM ===
+  GUESS SYSTEM
 ************************/
 function openGuess() {
   const popup = document.getElementById("guess-popup");
   const list = document.getElementById("guess-list");
   list.innerHTML = "<h3 style='color:#0ff;margin-top:0;'>Select the Ghost</h3>";
-
   Object.keys(ghostProfiles).forEach(g => {
     const btn = document.createElement("button");
-    Object.assign(btn.style, {
-      display: "block",
-      width: "100%",
-      margin: "4px 0",
-      padding: "6px",
-      background: "#222",
-      color: "#eee",
-      border: "1px solid #555",
-      cursor: "pointer"
-    });
+    Object.assign(btn.style, { display:"block", width:"100%", margin:"4px 0", padding:"6px",
+      background:"#222", color:"#eee", border:"1px solid #555", cursor:"pointer" });
     btn.textContent = g;
     btn.onmouseenter = () => (btn.style.background = "#333");
     btn.onmouseleave = () => (btn.style.background = "#222");
-    btn.onclick = () => {
-      makeGuess(g);
-      closeGuess();
-    };
+    btn.onclick = () => { makeGuess(g); closeGuess(); };
     list.appendChild(btn);
   });
-
   const closeBtn = document.createElement("button");
-  Object.assign(closeBtn.style, {
-    marginTop: "8px",
-    padding: "6px 12px",
-    background: "#111",
-    color: "#aaa",
-    border: "1px solid #444",
-    cursor: "pointer"
-  });
-  closeBtn.textContent = "Close";
-  closeBtn.onclick = closeGuess;
-  list.appendChild(closeBtn);
-
+  Object.assign(closeBtn.style, { marginTop:"8px", padding:"6px 12px", background:"#111", color:"#aaa", border:"1px solid #444", cursor:"pointer" });
+  closeBtn.textContent = "Close"; closeBtn.onclick = closeGuess; list.appendChild(closeBtn);
   popup.style.display = "flex";
 }
-
-function closeGuess() {
-  document.getElementById("guess-popup").style.display = "none";
-}
-
+function closeGuess() { document.getElementById("guess-popup").style.display = "none"; }
 function makeGuess(guess) {
-  if (!game.ghost) {
-    logToGame("⚠️ No active ghost to guess yet!");
-    return;
-  }
-
-  if (guess === game.ghost) {
-    logToGame(`✅ Correct! The ghost was ${guess}.`);
-    alert(`You WON! The ghost was ${guess}.`);
-  } else {
-    logToGame(`❌ Wrong! The ghost was ${game.ghost}.`);
-    alert(`Game Over. The ghost was ${game.ghost}.`);
-  }
-
-  // Reset and return to loadout after guess
-  resetGame();
-  showLoadout();
+  if (!game.ghost) { logToGame("⚠️ No active ghost to guess yet!"); return; }
+  if (guess === game.ghost) { logToGame(`✅ Correct! The ghost was ${guess}.`); alert(`You WON! The ghost was ${guess}.`); }
+  else { logToGame(`❌ Wrong! The ghost was ${game.ghost}.`); alert(`Game Over. The ghost was ${game.ghost}.`); }
+  resetGame(); showLoadout();
 }
 
 /***********************
- === COMMAND HANDLER ===
+  COMMANDS
 ************************/
 function handleCommand(cmd) {
   switch (cmd) {
-    case "move":
-      openMoveOverlay();
+    case "move": openMoveOverlay(); break;
+    case "look": lookAround(); break;
+    case "inventory": openInventoryOverlay(); break;
+    case "guess": openGuess(); break;
+    case "van":
+      if (game.playerRoom !== "Van") { moveToRoom("Van"); logToGame("You return to the van."); }
+      else { openVanMonitor(); }
       break;
-    case "look":
-      lookAround();
+    case "restart":
+      if (game.playerRoom !== "Van") { logToGame("Return to the van to restart."); }
+      else { restartInvestigation(); }
       break;
-    case "inventory":
-      openInventoryOverlay();
-      break;
-    case "guess":
-      openGuess();
-      break;
-  case "van":
-  if (game.playerRoom !== "Van") {
-    moveToRoom("Van");
-    logToGame("You return to the van.");
-  } else {
-    openVanMonitor(); // ✅ Opens the camera feed
-  }
-  break;
-
-    case "save":
-      saveGame(true);
-      break;
-    case "load":
-      loadGame();
-      break;
-    default:
-      logToGame("⚠️ Unknown command: " + cmd);
+    case "save": saveGame(true); break;
+    case "load": loadGame(); break;
+    default: logToGame("⚠️ Unknown command: " + cmd);
   }
 }
 
 /***********************
- === ACTION BUTTONS ===
+  ACTION BUTTONS
 ************************/
 function renderActionButtons() {
   const cmd = document.getElementById("command-buttons");
+  const inVan = (game.playerRoom === "Van");
+  const vanLabel = inVan ? "View Monitor" : "Return to Van";
+  const extraVan = inVan ? `<button data-cmd="restart">Restart Investigation</button>` : "";
   cmd.innerHTML = `
     <button data-cmd="move">Move</button>
     <button data-cmd="look">Look Around</button>
     <button data-cmd="inventory">Inventory</button>
     <button data-cmd="guess">Ghost Guess</button>
-    <button data-cmd="van">Return to Van</button>
+    <button data-cmd="van">${vanLabel}</button>
+    ${extraVan}
     <button data-cmd="save">Save Game</button>
     <button data-cmd="load">Load Game</button>
   `;
 }
 
 /***********************
- === LOADOUT SELECTION ===
-************************/
-/***********************
- === LOADOUT SELECTION ===
+  LOADOUT
 ************************/
 function showLoadout() {
   tempHeld = [];
@@ -1794,34 +1189,19 @@ function showLoadout() {
   const confirmBtn = document.getElementById("confirm-loadout");
 
   function renderLoadout() {
-    heldList.innerHTML = tempHeld
-      .map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`)
-      .join("");
-
-    vanList.innerHTML = tempVan
-      .map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`)
-      .join("");
-
-    if (tempHeld.length > 0) {
-      confirmBtn.classList.add("active");
-      confirmBtn.disabled = false;
-    } else {
-      confirmBtn.classList.remove("active");
-      confirmBtn.disabled = true;
-    }
+    heldList.innerHTML = tempHeld.map(i => `<button class="item-button selected" onclick="removeHeldItem('${i}')">${i}</button>`).join("");
+    vanList.innerHTML = tempVan.map(i => `<button class="item-button" onclick="addHeldItem('${i}')">${i}</button>`).join("");
+    if (tempHeld.length > 0) { confirmBtn.classList.add("active"); confirmBtn.disabled = false; }
+    else { confirmBtn.classList.remove("active"); confirmBtn.disabled = true; }
   }
 
   window.addHeldItem = function (item) {
     const carryableHeld = tempHeld.filter(x => x !== "Notebook" && x !== "Lighter");
-    if (carryableHeld.length >= 3) {
-      logToGame("⚠️ You can only hold 3 items (Notebook & Lighter excluded).");
-      return;
-    }
+    if (carryableHeld.length >= 3) { logToGame("⚠️ You can only hold 3 items (Notebook & Lighter excluded)."); return; }
     tempHeld.push(item);
     tempVan = tempVan.filter(v => v !== item);
     renderLoadout();
   };
-
   window.removeHeldItem = function (item) {
     tempVan.push(item);
     tempHeld = tempHeld.filter(h => h !== item);
@@ -1830,40 +1210,200 @@ function showLoadout() {
 
   renderLoadout();
   document.getElementById("loadout-screen").style.display = "flex";
-} // ✅ showLoadout properly closes here
+}
 
 /***********************
- === DOMContentLoaded ===
+  CAMERA MONITORING (per-unit cams)
+************************/
+function slotLabel(cam) {
+  if (!cam || !cam.active || !cam.room) return "NO SIGNAL";
+  const r = cam.room;
+  if (r === game.ghostRoom) {
+    if (game.ghost === "TheMimic" || game.mimicForm === "TheMimic") return `Cam ${cam.id}: ${r} — FAKE ORBS DETECTED`;
+    if (ghostProfiles[game.ghost].evidence.includes("Orbs")) return `Cam ${cam.id}: ${r} — ORBS DETECTED`;
+  }
+  return `Cam ${cam.id}: ${r} — ACTIVE`;
+}
+function camImage(cam) {
+  if (!cam || !cam.active || !cam.room) return "nosignal.gif";
+  const v = roomVisuals[cam.room];
+  return v ? v.N : "nosignal.gif";
+}
+function generateCameraGridHTML() {
+  const slots = [1,2,3,4].map(n => getCamById(n) || {id:n, active:false, room:null});
+  return slots.map(cam => {
+    const imgSrc = camImage(cam);
+    const label = slotLabel(cam);
+    const click = cam.active ? `onclick="openCameraFullscreen(${cam.id})"` : "";
+    return `
+      <div class="camera-feed" data-cam="${cam.id}" style="position:relative;background:#000;border:1px solid #0f0;overflow:hidden;cursor:${cam.active?'pointer':'default'};" ${click}>
+        <img id="camera-img-${cam.id}" src="${imgSrc}" alt="Cam ${cam.id}" style="width:100%;height:100%;object-fit:cover;filter:contrast(1.2) brightness(0.8) saturate(0.7);">
+        <canvas id="camera-orbs-${cam.id}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;"></canvas>
+        <div id="camera-label-${cam.id}" style="position:absolute;bottom:0;width:100%;text-align:center;font-size:11px;background:rgba(0,0,0,.5);color:#0f0;">${label}</div>
+      </div>`;
+  }).join("");
+}
+function updateCameraGrid() {
+  [1,2,3,4].forEach(id => {
+    const cam = getCamById(id);
+    const img = document.getElementById(`camera-img-${id}`);
+    const lab = document.getElementById(`camera-label-${id}`);
+    if (!img || !lab) return;
+    img.src = camImage(cam);
+    lab.textContent = slotLabel(cam);
+  });
+}
+function drawMonitorOrbsOnce(id) {
+  const cam = getCamById(id);
+  const canvas = document.getElementById(`camera-orbs-${id}`);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  canvas.width = canvas.offsetWidth; canvas.height = canvas.offsetHeight;
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if (!cam || !cam.active || !cam.room) return;
+
+  const orbActive =
+    cam.room === game.ghostRoom &&
+    (ghostProfiles[game.ghost].evidence.includes("Orbs") ||
+     game.ghost === "TheMimic" || game.mimicForm === "TheMimic");
+
+  if (!orbActive) return;
+  for (let i=0;i<6;i++){
+    const x=Math.random()*canvas.width, y=Math.random()*canvas.height;
+    const size=1.5+Math.random()*3, opacity=0.15+Math.random()*0.4;
+    ctx.beginPath(); ctx.arc(x,y,size,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,255,0,${opacity})`; ctx.fill();
+  }
+}
+function renderCameraGrid(monitor) {
+  const held = game.inventory.length ? game.inventory.join(", ") : "None";
+  const stock = game.vanStock.length ? game.vanStock.join(", ") : "Empty";
+  monitor.innerHTML = `
+    <h3 style="color:#0f0;margin-top:8px;">Camera Feed</h3>
+    <div id="camera-grid" style="display:grid;grid-template-columns:repeat(2,240px);grid-template-rows:repeat(2,160px);gap:10px;justify-content:center;align-items:center;margin:10px auto 6px;">
+      ${generateCameraGridHTML()}
+    </div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;color:#0f0;font-size:12px;margin-top:6px;">
+      <div><strong>Held:</strong> <span style="color:#9ff">${held}</span></div>
+      <div><strong>Van Stock:</strong> <span style="color:#9ff">${stock}</span></div>
+    </div>
+    <div style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+      <button style="padding:6px 12px;background:#111;color:#0f0;border:1px solid #0f0;cursor:pointer;" onclick="closeVanMonitor()">Close Monitor</button>
+      <button style="padding:6px 12px;background:#111;color:#0f0;border:1px solid #0f0;cursor:pointer;" onclick="restartInvestigation()">Restart Investigation</button>
+    </div>
+  `;
+  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
+  vanMonitorInterval = setInterval(() => {
+    updateCameraGrid();
+    [1,2,3,4].forEach(drawMonitorOrbsOnce);
+  }, 1000);
+  [1,2,3,4].forEach(drawMonitorOrbsOnce);
+}
+function openCameraFullscreen(camId) {
+  const cam = getCamById(camId);
+  if (!cam || !cam.active || !cam.room) return;
+
+  const existing = document.getElementById("cam-fullscreen");
+  if (existing) document.body.removeChild(existing);
+
+  const overlay = document.createElement("div");
+  overlay.id = "cam-fullscreen";
+  Object.assign(overlay.style, {
+    position:"fixed", inset:"0", background:"#000", zIndex:"5000",
+    display:"flex", alignItems:"center", justifyContent:"center"
+  });
+
+  overlay.innerHTML = `
+    <div style="position:relative;width:min(92vw,980px);height:min(92vh,552px);border:1px solid #0f0;">
+      <img id="fs-cam-img" src="${camImage(cam)}" alt="Cam ${camId}" style="width:100%;height:100%;object-fit:cover;filter:brightness(0.85) saturate(0.75);">
+      <canvas id="fs-cam-orbs" style="position:absolute;inset:0;pointer-events:none;"></canvas>
+      <div style="position:absolute;left:8px;bottom:8px;color:#0f0;font:12px monospace;background:rgba(0,0,0,.45);padding:4px 6px;border:1px solid #0f0;">
+        Cam ${camId} — ${cam.room}
+      </div>
+      <button id="fs-ir" style="position:absolute;right:8px;bottom:8px;background:#111;color:#0f0;border:1px solid #0f0;padding:6px 10px;cursor:pointer;">IR: OFF</button>
+      <button id="fs-close" style="position:absolute;right:8px;top:8px;background:#111;color:#0f0;border:1px solid #0f0;padding:6px 10px;cursor:pointer;">Close</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const img = overlay.querySelector("#fs-cam-img");
+  const canv = overlay.querySelector("#fs-cam-orbs");
+  const ctx = canv.getContext("2d");
+  let irOn = false;
+
+  function size() { canv.width = canv.offsetWidth; canv.height = canv.offsetHeight; }
+  function drawOrbs() {
+    ctx.clearRect(0,0,canv.width,canv.height);
+    if (!irOn) return;
+    const orbActive =
+      cam.room === game.ghostRoom &&
+      (ghostProfiles[game.ghost].evidence.includes("Orbs") ||
+       game.ghost === "TheMimic" || game.mimicForm === "TheMimic");
+    if (!orbActive) return;
+    for (let i=0;i<10;i++){
+      const x=Math.random()*canv.width, y=Math.random()*canv.height;
+      const s=2+Math.random()*3, o=0.2+Math.random()*0.5;
+      ctx.beginPath(); ctx.arc(x,y,s,0,Math.PI*2);
+      ctx.fillStyle=`rgba(0,255,0,${o})`; ctx.fill();
+    }
+  }
+  function tick() { drawOrbs(); requestAnimationFrame(tick); }
+
+  size(); tick();
+  window.addEventListener("resize", size);
+  overlay.querySelector("#fs-close").onclick = () => {
+    window.removeEventListener("resize", size);
+    document.body.removeChild(overlay);
+  };
+  overlay.querySelector("#fs-ir").onclick = (e) => {
+    irOn = !irOn;
+    e.currentTarget.textContent = irOn ? "IR: ON" : "IR: OFF";
+    img.style.filter = irOn ? "brightness(0.95) contrast(1.2) saturate(0.6) hue-rotate(90deg)" : "brightness(0.85) saturate(0.75)";
+  };
+}
+function closeVanMonitor() {
+  const monitor = document.getElementById("van-monitor");
+  if (monitor) document.body.removeChild(monitor);
+  if (vanMonitorInterval) clearInterval(vanMonitorInterval);
+}
+
+/***********************
+  RESET
+************************/
+function resetGame(){
+  game.ghost=null; game.ghostRoom=null; game.playerRoom="Van"; game.playerDirection="N";
+  game.inventory=[]; game.vanStock=[...allLoadoutItems]; game.selectedEvidence.clear();
+  game.currentTurn=0; game.sanity=100; game.weather=null; game.mimicForm=null; game.nextMimicShift=0;
+  game.huntCooldown=0; game.smudgeActive=0; game.placedCrucifix={}; game.roomItems={}; game.usedCursedItems={};
+  game.cameras=[]; game.heldCameraId=null;
+  updateSanityBar(); renderHUD(); updateBackground();
+}
+
+/***********************
+  LOADOUT CONFIRM & DOM INIT
 ************************/
 document.addEventListener("DOMContentLoaded", () => {
-  resetGame();
-  initFog();
-  animateFog();
+  resetGame(); initFog(); animateFog();
 
   const startBtn = document.getElementById("startButton");
   const confirmBtn = document.getElementById("confirm-loadout");
   const commandContainer = document.getElementById("command-buttons");
 
-  // ✅ Start Button → Title → Loadout
+  // Start Button → Title → Loadout
   startBtn.addEventListener("click", () => {
     if (startBtn.disabled) return;
     startBtn.disabled = true;
     const t = document.getElementById("title-screen");
     t.style.opacity = "0";
-    setTimeout(() => {
-      t.style.display = "none";
-      showLoadout();
-    }, 1500);
+    setTimeout(() => { t.style.display = "none"; showLoadout(); }, 1500);
   });
 
-  // ✅ Confirm Loadout → Start Investigation
+  // Confirm Loadout → Start Investigation
   confirmBtn.addEventListener("click", () => {
     if (confirmBtn.disabled || !confirmBtn.classList.contains("active")) {
-      logToGame("⚠️ Select at least one item before confirming.");
-      return;
+      logToGame("⚠️ Select at least one item before confirming."); return;
     }
     confirmBtn.disabled = true;
-
     if (!Array.isArray(tempHeld)) tempHeld = [];
     if (!Array.isArray(tempVan)) tempVan = [...allLoadoutItems];
 
@@ -1871,29 +1411,21 @@ document.addEventListener("DOMContentLoaded", () => {
     game.vanStock = [...tempVan];
 
     document.getElementById("loadout-screen").style.display = "none";
-    startInvestigation();
-    renderActionButtons();
-    saveGame(true);
-
+    startInvestigation(); renderActionButtons(); saveGame(true);
     setTimeout(() => { confirmBtn.disabled = false; }, 1500);
   });
 
-  // ✅ Handle Action Buttons
+  // Action Buttons
   commandContainer.addEventListener("click", (e) => {
-    if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) {
-      handleCommand(e.target.dataset.cmd);
-    }
+    if (e.target.tagName === "BUTTON" && e.target.dataset.cmd) handleCommand(e.target.dataset.cmd);
   });
 
-  // ✅ Auto Resume if Save Exists
-  if (localStorage.getItem("phasmaPhoneySave")) {
-    loadGame();
-  }
+  // Auto Resume if Save Exists
+  if (localStorage.getItem("phasmaPhoneySave")) { loadGame(); }
 
-  // ✅ Auto Save on Close or Refresh
+  // Auto Save on Close or Refresh
   window.addEventListener("beforeunload", () => saveGame(true));
 });
 </script>
-
 </body>
 </html>
