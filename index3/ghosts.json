@@ -1,0 +1,455 @@
+{
+  "Spirit": {
+    "name": "Spirit",
+    "evidence": [
+      "EMF Level 5",
+      "Spirit Box",
+      "Ghost Writing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Will wait 180s after being incensed before attempting to hunt again, instead of the standard 90s",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Wraith": {
+    "name": "Wraith",
+    "evidence": [
+      "EMF Level 5",
+      "Spirit Box",
+      "DOTS Projector"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Will not be slowed down by tier 3 salt during a hunt",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Phantom": {
+    "name": "Phantom",
+    "evidence": [
+      "Spirit Box",
+      "Ultraviolet",
+      "DOTS Projector"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Less visible during hunts",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Poltergeist": {
+    "name": "Poltergeist",
+    "evidence": [
+      "Spirit Box",
+      "Ghost Writing",
+      "Ultraviolet"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "During hunts, Poltergeists will throw an item every 0.5s with an increased force",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Banshee": {
+    "name": "Banshee",
+    "evidence": [
+      "Ultraviolet",
+      "DOTS Projector",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": 50,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Hunts based on target's sanity instead of average sanity",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Jinn": {
+    "name": "Jinn",
+    "evidence": [
+      "EMF Level 5",
+      "Ultraviolet",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": 2.5,
+    "speed_max_mps": 2.5,
+    "notes": "With the breaker on, the Jinn will speed up during a hunt if a player is in LOS and further than 3m away",
+    "movement": {
+      "model": "distance_scaled_far",
+      "roam_speed": 2.5,
+      "chase_speed": 2.5,
+      "los_speedup": false,
+      "near_speed": 1.7,
+      "far_speed": 2.5,
+      "far_distance": 6.0
+    }
+  },
+  "Mare": {
+    "name": "Mare",
+    "evidence": [
+      "Spirit Box",
+      "Ghost Writing",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": 60,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Won't hunt until 40% average sanity when light switch in its current room is in the on position (regardless of breaker state), 60% average sanity if light switch is in the off position or if the lights are broken (regard",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Revenant": {
+    "name": "Revenant",
+    "evidence": [
+      "Ghost Writing",
+      "Ghost Orbs",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": 3.0,
+    "speed_max_mps": 3.0,
+    "notes": "During a hunt, a Revenant will be slow (1.0m/s) until it detects a player (voice, active electronic equipment, or LOS) where it will immediately speed up to 3.0m/s and remain at that speed until it reaches the players la",
+    "movement": {
+      "model": "revenant",
+      "roam_speed": 3.0,
+      "chase_speed": 3.0,
+      "los_speedup": true,
+      "no_los_speed": 1.1,
+      "los_speed": 3.0
+    }
+  },
+  "Shade": {
+    "name": "Shade",
+    "evidence": [
+      "EMF Level 5",
+      "Ghost Writing",
+      "Freezing"
+    ],
+    "hunt_sanity": 35,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Will not hunt if in the same room as a player",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Demon": {
+    "name": "Demon",
+    "evidence": [
+      "Ghost Writing",
+      "Ultraviolet",
+      "Freezing"
+    ],
+    "hunt_sanity": 70,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Can hunt 60s after being smudged instead of the standard 90s",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Yurei": {
+    "name": "Yurei",
+    "evidence": [
+      "DOTS Projector",
+      "Ghost Orbs",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Only ghost that can close or interact with an exit door outside of a hunt/event",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Oni": {
+    "name": "Oni",
+    "evidence": [
+      "EMF Level 5",
+      "DOTS Projector",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Blinks more frequently during hunts, making them more visible",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Yokai": {
+    "name": "Yokai",
+    "evidence": [
+      "Spirit Box",
+      "DOTS Projector",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": 80,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Hearing/detection distance is 2.5m and less during hunts",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Hantu": {
+    "name": "Hantu",
+    "evidence": [
+      "Ultraviolet",
+      "Ghost Orbs",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Will have visible freezing breath during hunts when the breaker is off/broken",
+    "movement": {
+      "model": "temperature_scaled",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false,
+      "warm_speed": 1.4,
+      "cold_speed": 2.7
+    }
+  },
+  "Goryo": {
+    "name": "Goryo",
+    "evidence": [
+      "EMF Level 5",
+      "Ultraviolet",
+      "DOTS Projector"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "DOTS only appear on video camera and will not show if a player is in the same room (DOTS state can start outside of room and enter a player's room)",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Myling": {
+    "name": "Myling",
+    "evidence": [
+      "EMF Level 5",
+      "Ghost Writing",
+      "Ultraviolet"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Footsteps and vocals cannot be heard more than 12m away during hunts (normal is 20m)",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Onryo": {
+    "name": "Onryo",
+    "evidence": [
+      "Spirit Box",
+      "Ghost Orbs",
+      "Freezing"
+    ],
+    "hunt_sanity": 60,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Will attempt to hunt at any sanity after extinguishing every 3rd flame",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "The Twins": {
+    "name": "The Twins",
+    "evidence": [
+      "EMF Level 5",
+      "Spirit Box",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": 1.5,
+    "speed_max_mps": 1.5,
+    "notes": "Ghost speed during hunts will be either 1.5m/s or 1.9m/s",
+    "movement": {
+      "model": "twins",
+      "roam_speed": 1.5,
+      "chase_speed": 1.5,
+      "los_speedup": false,
+      "primary_speed": 1.7,
+      "secondary_speed": 1.2,
+      "alternate_events": true
+    }
+  },
+  "Raiju": {
+    "name": "Raiju",
+    "evidence": [
+      "EMF Level 5",
+      "DOTS Projector",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": 65,
+    "speed_min_mps": 2.5,
+    "speed_max_mps": 2.5,
+    "notes": "During events and hunts, causes electronic disturbance at a 15m range instead of 10m",
+    "movement": {
+      "model": "electronics_scaled",
+      "roam_speed": 2.5,
+      "chase_speed": 2.5,
+      "los_speedup": false,
+      "no_elec_speed": 1.7,
+      "elec_speed": 2.9,
+      "elec_radius": 8.0
+    }
+  },
+  "Obake": {
+    "name": "Obake",
+    "evidence": [
+      "EMF Level 5",
+      "Ultraviolet",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Special 6 fingered fingerprints ( Open 'Guides' tab )",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "The Mimic": {
+    "name": "The Mimic",
+    "evidence": [
+      "Spirit Box",
+      "Ultraviolet",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": null,
+    "speed_max_mps": null,
+    "notes": "Mimics a different ghost every 30 - 120 seconds, taking on all behaviors, tells, and abilities of that ghost (excluding evidence), leading to inconsistent behavior",
+    "movement": {
+      "model": "default",
+      "roam_speed": 1.4,
+      "chase_speed": 2.6,
+      "los_speedup": false
+    }
+  },
+  "Moroi": {
+    "name": "Moroi",
+    "evidence": [
+      "Spirit Box",
+      "Ghost Writing",
+      "Freezing"
+    ],
+    "hunt_sanity": null,
+    "speed_min_mps": 3.71,
+    "speed_max_mps": 3.71,
+    "notes": "Incense blindness duration during hunts is increased from 5s to 7s",
+    "movement": {
+      "model": "sanity_scaled",
+      "roam_speed": 3.71,
+      "chase_speed": 3.71,
+      "los_speedup": false,
+      "min_speed": 1.5,
+      "max_speed": 3.5
+    }
+  },
+  "Deogen": {
+    "name": "Deogen",
+    "evidence": [
+      "Spirit Box",
+      "Ghost Writing",
+      "DOTS Projector"
+    ],
+    "hunt_sanity": 40,
+    "speed_min_mps": 3.0,
+    "speed_max_mps": 3.0,
+    "notes": "Very fast hunt speed, but will slow down as it nears the targeted player",
+    "movement": {
+      "model": "distance_scaled",
+      "roam_speed": 3.0,
+      "chase_speed": 3.0,
+      "los_speedup": false,
+      "min_speed": 0.4,
+      "max_speed": 3.0,
+      "distance_slow_radius": 2.5
+    }
+  },
+  "Thaye": {
+    "name": "Thaye",
+    "evidence": [
+      "Ghost Writing",
+      "DOTS Projector",
+      "Ghost Orbs"
+    ],
+    "hunt_sanity": 75,
+    "speed_min_mps": 2.75,
+    "speed_max_mps": 2.75,
+    "notes": "Hunts at 75% at its youngest, 15% at its oldest",
+    "movement": {
+      "model": "age_scaled",
+      "roam_speed": 2.75,
+      "chase_speed": 2.75,
+      "los_speedup": false,
+      "young_speed": 2.75,
+      "old_speed": 1.0,
+      "aging_minutes": 20
+    }
+  }
+}

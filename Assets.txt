@@ -1,0 +1,396 @@
+
+# PhasmaPhoney Asset & Resource Locations
+# This file is the source of truth for all external asset paths.
+# Structure updated to reflect multi-project organization.
+
+
+---
+## Project: PhasmaPhoney created with the following hybrid architecture code base systems.
+BabylonJS, Havok, WebGL, Cannon, earcut, TailwindCSS, Vite, Zustand
+JSX, JS, TSX, TS, CSS, HTML, JSON.
+using the following ASSETS.txt locations for all external sounds, images, models
+---
+
+## ASSET_BASE_URL: https://sharkvelocity.github.io/3d/assets/
+
+|   house layout.png
+|   logo.png
+|   logo2.png
+|   warning.png
+|   
++---audio
+|   +---cursed_item
+|   |       music_box_play.mp3
+|   |       tarot_card_flip.mp3
+|   |       
+|   +---ghost_sfx
+|   |       banshee_parabolic.mp3
+|   |       breath.mp3
+|   |       breath_male.mp3
+|   |       ghost_hunt.wav
+|   |       ghost_hunt_raiju.wav
+|   |       giggle_female.mp3
+|   |       growl_male.wav
+|   |       heartbeat_raiju.wav
+|   |       hum_event.wav
+|   |       humming_event_female.wav
+|   |       knock.mp3
+|   |       laugh.mp3
+|   |       laugh_female.mp3
+|   |       lightbulb.mp3
+|   |       moan_female.mp3
+|   |       sing_event.mp3
+|   |       sing_event.wav
+|   |       whisper.mp3
+|   |       whisper_male.mp3
+|   |       
+|   +---house_sfx
+|   |       circuit.mp3
+|   |       door_creak.mp3
+|   |       door_creak1.mp3
+|   |       door_creak2.mp3
+|   |       door_creak3.mp3
+|   |       door_creak4.mp3
+|   |       door_lock.mp3
+|   |       door_rattle.mp3
+|   |       door_slam.mp3
+|   |       door_slam1.mp3
+|   |       door_slam2.mp3
+|   |       door_unlock.mp3
+|   |       lightswitch.mp3
+|   |       secret_map.mp3
+|   |       
+|   +---item_sfx
+|   |   |   beep.wav
+|   |   |   burn_cross.wav
+|   |   |   burn_cross1.wav
+|   |   |   burn_cross2.wav
+|   |   |   burn_smudge.mp3
+|   |   |   camera_on.wav
+|   |   |   click.wav
+|   |   |   flamethrower.wav
+|   |   |   ghost_writing.mp3
+|   |   |   lighter.mp3
+|   |   |   page_turn.mp3
+|   |   |   phone_ring.wav
+|   |   |   power_on.wav
+|   |   |   scribble.mp3
+|   |   |   spirit_box.wav
+|   |   |   toss.wav
+|   |   |
+|   |   \---phonograph
+|   |       beatbox.wav
+|   |       jam.wav
+|   |       let_it_run.wav
+|   |       mimic.wav
+|   |       untitled.wav
+|   |       
+|   +---player_sfx
+|   |       footstep_asphalt.mp3
+|   |       footstep_asphalt1.mp3
+|   |       footstep_gravel.mp3
+|   |       footstep_gravel1.mp3
+|   |       footstep_wood.mp3
+|   |       footstep_wood1.mp3
+|   |       game_over.mp3
+|   |       heartbeat.mp3
+|   |       step1.mp3
+|   |       step2.mp3
+|   |       step3.mp3
+|   |       step4.wav
+|   |       step5.wav
+|   |       step6.wav
+|   |       step7.wav
+|   |       step8.wav
+|   |       
+|   \---weather_sfx
+|           clear.mp3
+|           rain.wav
+|           snow.mp3
+|           thunder.mp3
+|           thunder_loud.mp3
+|           thunder_rumble.mp3
+|           
++---icons
+|       camera.png
+|       crucifix.png
+|       dots.png
+|       emf.png
+|       flamethrower.png
+|       flashlight.png
+|       ghost_being_chased.png
+|       ghost_chase.png
+|       ghost_chase2.png
+|       lantern.png
+|       lighter.png
+|       notebook.png
+|       parabolic.png
+|       player_chase.png
+|       player_chase2.png
+|       player_chased.png
+|       player_chasing.png
+|       salt.png
+|       sanity.png
+|       sensor.png
+|       smudge.png
+|       spirit_box.png
+|       thermometer.png
+|       tripod.png
+|       uv.png
+|       video_camera.png
+|       video_tripod.png
+|       
++---images
+|   +---particles
+|   |       smoke.png
+|   |       
+|   \---sky
+|           clouds_night.jpg
+|           Moon.jpeg
+|           
++---models
+|   +---ghosts
+|   |       ghost_female_1.glb
+|   |       ghost_female_1_idle.glb
+|   |       ghost_female_2.glb
+|   |       ghost_female_2_idle.glb
+|   |       ghost_male_1.glb
+|   |       ghost_male_1_idle.glb
+|   |       ghost_male_2.glb
+|   |       ghost_male_2_idle.glb
+|   |      
+|   +---items
+|   |   |   books.glb
+|   |   |   book_closed.glb
+|   |   |   book_open.glb
+|   |   |   camera.glb
+|   |   |   crucifix.glb
+|   |   |   DOTS.glb
+|   |   |   EMF.glb
+|   |   |   flamethrower.glb
+|   |   |   flashlight.glb
+|   |   |   lantern.glb
+|   |   |   lighter.glb
+|   |   |   monitor.glb
+|   |   |   parabolic.glb
+|   |   |   sanity.glb
+|   |   |   sensor.glb
+|   |   |   smudge.glb
+|   |   |   spirit_box.glb
+|   |   |   thermometer.glb
+|   |   |   tripod.glb
+|   |   |   uv.glb
+|   |   |   video_camera.glb
+|   |   |   video_tripod.glb
+|   |   |   
+|   |   +---bone
+|   |   |       bone1.glb
+|   |   |       bone2.glb
+|   |   |       bone3.glb
+|   |   |       bone4.glb
+|   |   |       bone5.glb
+|   |   |
+|   |   +---cursed
+|   |   |       musicbox.glb
+|   |   |       summoning_circle.glb
+|   |   |   
+|   |   \---wallphotos
+|   |       |   1.glb
+|   |       |   10.glb
+|   |       |   2.glb
+|   |       |   3.glb
+|   |       |   4.glb
+|   |       |   5.glb
+|   |       |   6.glb
+|   |       |   7.glb
+|   |       |   8.glb
+|   |       |   9.glb
+|   |       |   all.glb
+|   |       |   
+|   |       \---adult
+|   |               20.glb
+|   |               21.glb
+|   |               22.glb
+|   |               23.glb
+|   |               
+|   +---map
+|   |       map.glb
+|   |       map1.glb
+|   |       map2.glb
+|   |       map3.glb
+|   |       
+|   +---player
+|   |       girl.glb
+|   |       main_player.glb
+|   |       player.glb
+|   |       player1.glb
+|   |       player2.glb
+|   |       
+|   +---scene
+|   |       bedroom_queen.glb
+|   |       breaker.glb
+|   |       dining_table.glb
+|   |       front_door.glb
+|   |       house.glb
+|   |       lightswitch.glb
+|   |       orb.glb
+|   |       outside.glb
+|   |       phonograph.glb
+|   |       snowglobe.glb
+|   |       tent.glb
+|   |       truck.glb
+|   |       tub.glb
+|   |       TVStand.glb
+|   |       window.glb
+|   |       window_broken.glb
+|   |       window_blinds_closed.glb
+|   |       window_blinds_open.glb
+|   |      
+|   \---sky
+|           moon.glb
+|           skybox.glb
+|           
+\---textures
+        cloud.png
+        ghost_orb.png
+        grass.png
+        no sig.png
+        nosignal.gif
+        outside_wall.jpg
+        particle.png
+        rain.png
+        roof.png
+        tile.png
+        uv_fingerprint.png
+        uv_footprint_left.png
+        uv_footprint_right.png
+        uv_handprint.png
+        uv_obake_fingerprint.png
+        uv_obake_handprint.png
+        wood.png
+
+____________________________
+____________________________
+MINIGAME: FOR USE WITH THE  
+ARCADE MACHINE IN TENT.
+BLACKJACK, TEXAS HOLD'EM  
+____________________________
+    IMPORTANT INFORMATION 
+ * AI-DIRECTIVE
+ * Do not modify or alter any information inside of the ASSETS.txt file, 
+ * The user will update this file accordingly with any future revisions.
+
+---
+repo directory is only for the use and information regarding the external assets for blackjack, texas hold'em
+https://sharkvelocity.github.io/3d/chips/
+
+
++---poker
+|       earth.glb
+|       mars.glb
+|       mercury.glb
+|       moon.glb
+|       poker_chart.jpg
+|       table.glb
+|       ufo.glb
+|       venus.glb
+|       
++---shared
+|   |   1.glb
+|   |   10.glb
+|   |   100.glb
+|   |   1000.glb
+|   |   20.glb
+|   |   25.glb
+|   |   5.glb
+|   |   50.glb
+|   |   500.glb
+|   |   5000.glb
+|   |   bet.mp3
+|   |   card_flip.mp3
+|   |   check.wav
+|   |   chips.glb
+|   |   chip_stacking.mp3
+|   |   click.mp3
+|   |   deal.mp3
+|   |   fold.mp3
+|   |   game_over.mp3
+|   |   skybox.glb
+|   |   table_felt.png
+|   |   win.mp3
+|   |   
+|   \---cards
+|           10_Club.png
+|           10_Diamond.png
+|           10_Heart.png
+|           10_Spade.png
+|           2_Club.png
+|           2_Diamond.png
+|           2_Heart.png
+|           2_Spade.png
+|           3_Club.png
+|           3_Diamond.png
+|           3_Heart.png
+|           3_Spade.png
+|           4_Club.png
+|           4_Diamond.png
+|           4_Heart.png
+|           4_Spade.png
+|           5_Club.png
+|           5_Diamond.png
+|           5_Heart.png
+|           5_Spade.png
+|           6_Club.png
+|           6_Diamond.png
+|           6_Heart.png
+|           6_Spade.png
+|           7_Club.png
+|           7_Diamond.png
+|           7_Heart.png
+|           7_Spade.png
+|           8_Club.png
+|           8_Diamond.png
+|           8_Heart.png
+|           8_Spade.png
+|           9_Club.png
+|           9_Diamond.png
+|           9_Heart.png
+|           9_Spade.png
+|           A_Club.png
+|           A_Diamond.png
+|           A_Heart.png
+|           A_Spade.png
+|           Back.png
+|           Joker 1.png
+|           Joker.png
+|           J_Club.png
+|           J_Diamond.png
+|           J_Heart.png
+|           J_Spade.png
+|           K_Club.png
+|           K_Diamond.png
+|           K_Heart.png
+|           K_Spade.png
+|           Q_Club.png
+|           Q_Diamond.png
+|           Q_Heart.png
+|           Q_Spade.png
+|           
++---slot
+|       dolphinreels.png
+|       freespinloop.mp3
+|       freespinresults.mp3
+|       paylines.jpg
+|       Paylines.png
+|       slotsbigwin.mp3
+|       slotspin.mp3
+|       spin.mp3
+|       stopspin.mp3
+|       
+\---suits
+        club.glb
+        diamond.glb
+        heart.glb
+        spade.glb
+|           
+\---*future updates to come*
